@@ -5,12 +5,12 @@ namespace backend\modules\repayment\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use backend\modules\repayment\models\EmployerMonthlyPenaltySetting;
+use backend\modules\repayment\models\EmployerPenaltyCycle;
 
 /**
- * EmployerMonthlyPenaltySettingSearch represents the model behind the search form about `backend\modules\repayment\models\EmployerMonthlyPenaltySetting`.
+ * EmployerPenaltyCycleSearch represents the model behind the search form about `backend\modules\repayment\models\EmployerPenaltyCycle`.
  */
-class EmployerMonthlyPenaltySettingSearch extends EmployerMonthlyPenaltySetting
+class EmployerPenaltyCycleSearch extends EmployerPenaltyCycle
 {
     /**
      * @inheritdoc
@@ -18,9 +18,9 @@ class EmployerMonthlyPenaltySettingSearch extends EmployerMonthlyPenaltySetting
     public function rules()
     {
         return [
-            [['employer_mnthly_penalty_setting_id', 'employer_type_id', 'payment_deadline_day_per_month', 'is_active', 'created_by'], 'integer'],
-            [['penalty'], 'number'],
-            [['created_at'], 'safe'],
+            [['employer_penalty_cycle_id', 'employer_id', 'repayment_deadline_day', 'duration', 'is_active', 'created_by', 'updated_by'], 'integer'],
+            [['penalty_rate'], 'number'],
+            [['duration_type', 'cycle_type', 'start_date', 'end_date', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -42,8 +42,7 @@ class EmployerMonthlyPenaltySettingSearch extends EmployerMonthlyPenaltySetting
      */
     public function search($params)
     {
-        $query = EmployerMonthlyPenaltySetting::find()
-		                                        ->orderBy('employer_mnthly_penalty_setting_id DESC');
+        $query = EmployerPenaltyCycle::find();
 
         // add conditions that should always apply here
 
@@ -61,14 +60,22 @@ class EmployerMonthlyPenaltySettingSearch extends EmployerMonthlyPenaltySetting
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'employer_mnthly_penalty_setting_id' => $this->employer_mnthly_penalty_setting_id,
-            'employer_type_id' => $this->employer_type_id,
-            'payment_deadline_day_per_month' => $this->payment_deadline_day_per_month,
-            'penalty' => $this->penalty,
+            'employer_penalty_cycle_id' => $this->employer_penalty_cycle_id,
+            'employer_id' => $this->employer_id,
+            'repayment_deadline_day' => $this->repayment_deadline_day,
+            'penalty_rate' => $this->penalty_rate,
+            'duration' => $this->duration,
             'is_active' => $this->is_active,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
             'created_at' => $this->created_at,
             'created_by' => $this->created_by,
+            'updated_at' => $this->updated_at,
+            'updated_by' => $this->updated_by,
         ]);
+
+        $query->andFilterWhere(['like', 'duration_type', $this->duration_type])
+            ->andFilterWhere(['like', 'cycle_type', $this->cycle_type]);
 
         return $dataProvider;
     }
