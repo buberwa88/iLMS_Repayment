@@ -13,7 +13,9 @@ use kartik\date\DatePicker;
 /* @var $form yii\widgets\ActiveForm */
 $form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL]);
 ?>
-
+<?php
+echo $form->errorSummary($model);
+?>
 <?php
 echo Form::widget([ // fields with labels
     'model' => $model,

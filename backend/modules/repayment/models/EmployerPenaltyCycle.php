@@ -42,6 +42,7 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
             [['employer_id', 'repayment_deadline_day', 'duration', 'is_active', 'created_by', 'updated_by'], 'integer'],
             [['repayment_deadline_day', 'penalty_rate', 'duration', 'duration_type', 'cycle_type', 'start_date', 'created_at', 'created_by'], 'required'],
             [['penalty_rate'], 'number'],
+            [['created_by'], 'validateConfiguration'],
             [['duration_type', 'cycle_type'], 'string'],
             [['start_date', 'end_date', 'created_at', 'updated_at'], 'safe'],
         ];
@@ -73,6 +74,30 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
         return $this->hasOne(\backend\modules\repayment\models\Employer::className(), ['employer_id' => 'employer_id']);
     }
 
+    function validateConfiguration($attribute) {
+        if ($attribute) {
+            $condition = ['is_active' => 1];
+            switch ($this->cycle_type) {
+                case self::REPAYMENT_CYCLE_GENERAL:
+                    $condition['cycle_type'] = self::REPAYMENT_CYCLE_GENERAL;
+                    $condition['employer_id'] = NULL;
+
+                    break;
+
+                case self::REPAYMENT_CYCLE_EMPLOYER:
+                    $condition['cycle_type'] = self::REPAYMENT_CYCLE_EMPLOYER;
+                    $condition['employer_id'] = $this->employer_id;
+
+                    break;
+            }
+            if (self::find()->where($condition)->exists()) {
+                $this->addError($attribute, 'Configuration Already Exist in similar Dates');
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
+
     static function durationType() {
         return [
             'd' => 'Daily', 'w' => 'Weekly', 'm' => 'Monthly', 'y' => 'Yearly'
@@ -100,7 +125,5 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
         }
         return NULL;
     }
-    
-   
 
 }
