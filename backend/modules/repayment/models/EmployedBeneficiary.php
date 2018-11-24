@@ -704,9 +704,14 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 	$details = EmployerMonthlyPenaltySetting::findBySql("SELECT employer_monthly_penalty_setting.penalty*0.01 AS 'penalty',employer_monthly_penalty_setting.payment_deadline_day_per_month AS 'payment_deadline_day_per_month' FROM employer_monthly_penalty_setting WHERE  employer_monthly_penalty_setting.employer_type_id='$employer_type_id' AND employer_monthly_penalty_setting.is_active='1'")->one();
     return $details;
 	}
-	*/
+	
 	public static function getEmployerMontlyPenaltyRate($employer_type_id){
 	$details = LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'penalty',loan_repayment_setting.payment_deadline_day_per_month AS 'payment_deadline_day_per_month' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_setting.employer_type_id='$employer_type_id' AND loan_repayment_setting.is_active='1' AND loan_repayment_item.item_code='EPNT'")->one();
+    return $details;
+	}
+	*/
+	public static function getEmployerMontlyPenaltyRate(){
+	$details = LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'penalty',loan_repayment_setting.payment_deadline_day_per_month AS 'payment_deadline_day_per_month' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE loan_repayment_setting.is_active='1' AND loan_repayment_item.item_code='EPNT'")->one();
     return $details;
 	}
     public static function updateBeneficiaryFromOldEmployer($employerID,$applicantID,$newverificationStatus){

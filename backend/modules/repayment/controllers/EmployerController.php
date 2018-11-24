@@ -20,7 +20,7 @@ use frontend\modules\repayment\models\EmployerPenaltyPaymentSearch;
 /**
  * EmployerController implements the CRUD actions for Employer model.
  */
-class EmployersController extends Controller
+class EmployerController extends Controller
 {
     /**
      * @inheritdoc

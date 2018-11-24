@@ -40,6 +40,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
         return [
             //[['employer_id', 'amount', 'payment_date', 'created_at'], 'required'],
 			[['cancel_reason'], 'required','on'=>'Cancell_employer_penalty'],
+			[['amount'], 'required','on'=>'employer_penalty_payment'],
             [['employer_id'], 'integer'],
             [['amount'], 'number', 'min' => 1000],		
             //['age', 'integer', 'min' => 0],			
@@ -100,7 +101,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	public static function updatePenaltyPaymentAfterGePGconfirmPaymentDone($controlNumber,$amount){
         EmployerPenaltyPayment::updateAll(['payment_status' =>'1'], 'control_number ="'.$controlNumber.'" AND amount ="'.$amount.'" AND payment_status ="0"');
  }
- 
+ /*
 	public static function getPenaltyToEmployer(){
 	
 	//check employer has active loan summary
@@ -220,8 +221,60 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 					//end check employer has loan summary
 	 }
 	 }
+	 */
+	 public static function getPenaltyToEmployer(){
+	
+	//check employer has active loan summary
+	$todate=date("Y-m-d");
+	$yeaAndMonth=date("Y-m");
+	$checkingDate=$yeaAndMonth."-16";
+    if($todate > $checkingDate){
+	//get deadline date per month
+	$resultsEmplBeneficiary=\backend\modules\repayment\models\EmployedBeneficiary::getEmployerMontlyPenaltyRate();
+	$percent=$resultsEmplBeneficiary->penalty;
+    $payment_deadline_day_per_month=$resultsEmplBeneficiary->payment_deadline_day_per_month;
+	$deadlineDateOfMonth=$yeaAndMonth."-".$payment_deadline_day_per_month;
+	$penaltyDate=$yeaAndMonth."-".$payment_deadline_day_per_month;
+	//end get deadline date per month
+	//get last month
+	$firstDayPreviousMonth=date("Y-m-d", strtotime("first day of previous month"));
+	$checkPaymentsOfMonth=date("Y-m", strtotime("first day of previous month"));;
+	//end get last moth
+	$loanSummaryDetailsEmployer = LoanSummary::findBySql("SELECT loan_summary_id,created_at,employer_id FROM loan_summary WHERE  (status='0' OR status='1') AND (employer_id IS NOT NULL OR employer_id <>'') ORDER BY loan_summary_id DESC")->all();
+				    if((count($loanSummaryDetailsEmployer) > 0)){
+                    foreach ($loanSummaryDetailsEmployer as $loanSummaryDetailsResults) {
+                    $employerID=$loanSummaryDetailsResults->employer_id; 
+                    $employer_type_id=$loanSummaryDetailsResults->employer->employer_type_id;					
+					$loan_summary_id=$loanSummaryDetailsResults->loan_summary_id;
+					$dateLoanSummaryCreated=date("Y-m-d",strtotime($loanSummaryDetailsResults->created_at));					
+					$resultsLoanRepaymentCheck=\frontend\modules\repayment\models\LoanRepayment::checkPaymentsEmployer($employerID,$firstDayPreviousMonth,$deadlineDateOfMonth,$checkPaymentsOfMonth);
+					if($resultsLoanRepaymentCheck == 0){
+					$penaltyCountCheck=self::checklastPenaltyEmployer($employerID,$penaltyDate);
+					if($penaltyCountCheck==0){
+				    $amount=EmployerPenaltyPayment::getAmountRequiredForMonthlyPaymentToEmployedBeneficiaryPerEmployer($employerID,$loan_summary_id);		
+                    if($percent !='' OR $percent > 0){
+					$penaltyAmount=$amount * $percent;
+					}else{
+					$penaltyAmount=0;
+					}						
+					Yii::$app->db->createCommand()
+					->insert('employer_penalty', [
+					'employer_id' =>$employerID,
+					'amount' =>$penaltyAmount,
+					'penalty_date' =>$penaltyDate,
+					'created_at' =>$todate,
+                    'loan_summary_id' =>$loan_summary_id,					
+					])->execute();
+					\frontend\modules\repayment\models\LoanRepayment::createAutomaticBills($penaltyDate,$employerID);
+                    }					
+					}					
+					}
+					}
+	}
+	 return true;
+	 }
 	 public static function getAmountRequiredForMonthlyPaymentToEmployedBeneficiaryPerEmployer($employerID,$loan_summary_id){	 
-	 $details_applicant = EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1'")->all();
+	 $details_applicant = EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1' AND salary_source IN(2,3)")->all();
         $moder=new EmployedBeneficiary();
 		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
         $totalAmount=0;        
@@ -251,13 +304,37 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	
 }
     public static function getTotalPenaltyAmount($employerID){	 
-	 $penaltyAmount = EmployerPenalty::findBySql("SELECT  SUM(amount) AS 'amount'  FROM  employer_penalty WHERE  employer_penalty.employer_id='$employerID'")->one();        
-	 return $penaltyAmount->amount;
-	
+	 $penaltyAmount = EmployerPenalty::findBySql("SELECT  SUM(amount) AS 'amount'  FROM  employer_penalty WHERE  employer_penalty.employer_id='$employerID' AND employer_penalty.is_active='1'")->one();
+     if($penaltyAmount->amount > 0){
+	$amount=$penaltyAmount->amount;	 
+	 }else{
+	$amount=0; 
+	 }	 
+	 return $amount;
 }
     public static function getTotalPenaltyAmountPaid($employerID){	 
-	 $penaltyAmountPaid = EmployerPenaltyPayment::findBySql("SELECT  SUM(amount) AS 'amount'  FROM  employer_penalty_payment WHERE  employer_penalty_payment.employer_id='$employerID' AND payment_status='1'")->one();        
-	 return $penaltyAmountPaid->amount;
+	 $penaltyAmountPaid = EmployerPenaltyPayment::findBySql("SELECT  SUM(amount) AS 'amount'  FROM  employer_penalty_payment WHERE  employer_penalty_payment.employer_id='$employerID' AND payment_status='1'")->one(); 
+     if($penaltyAmountPaid->amount > 0){
+	$amount=$penaltyAmountPaid->amount;	 
+	 }else{
+	$amount=0; 
+	 }		 
+	 return $amount;
 	
 }
+
+public static function getAmountPendingPaymentPNTNotConfirmed($employerID){
+	$paidAmount=\frontend\modules\repayment\models\EmployerPenaltyPayment::findBySql("SELECT  SUM(amount) AS 'amount'  FROM  employer_penalty_payment WHERE  employer_penalty_payment.employer_id='$employerID' AND (payment_status IS NULL OR payment_status='')")->one();
+	if($paidAmount->amount > 0){
+	$amount=$paidAmount->amount;	 
+	 }else{
+	$amount=0; 
+	 }
+	return $amount;
+}
+public static function checklastPenaltyEmployer($employerID,$penaltyDate){
+	$penaltyCheckCount=EmployerPenalty::findBySql("SELECT  *  FROM  employer_penalty WHERE  employer_id='$employerID' AND penalty_date='$penaltyDate'")->count();
+    return $penaltyCheckCount;
+}
+
 }

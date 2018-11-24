@@ -178,8 +178,8 @@ class LoanSummary extends \yii\db\ActiveRecord
         return $bill_new;
         }
         
-    public function getActiveBill($employerID){
-      $details_bill = $this->findBySql("SELECT * FROM loan_summary WHERE  employer_id='$employerID' AND (status='0' OR status='1') ORDER BY loan_summary_id DESC")->one();
+    public static function getActiveBill($employerID){
+      $details_bill = loanSummary::findBySql("SELECT * FROM loan_summary WHERE  employer_id='$employerID' AND (status='0' OR status='1') ORDER BY loan_summary_id DESC")->one();
       $bill=$details_bill->loan_summary_id;     
       $billValue = (count($bill) == 0) ? '0' : $details_bill;
         return $billValue;

@@ -1,0 +1,95 @@
+ALTER TABLE `employed_beneficiary` ADD `is_active` TINYINT(2) NOT NULL DEFAULT '1' AFTER `uploaded_sex`;
+ALTER TABLE `employed_beneficiary` ADD `confirmed` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `is_active`;
+ALTER TABLE `employed_beneficiary` ADD `mult_employed` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `confirmed`;
+ALTER TABLE `employed_beneficiary` ADD `support_document` VARCHAR(100) NULL DEFAULT NULL AFTER `mult_employed`;
+ALTER TABLE `employed_beneficiary` CHANGE `support_document` `support_document` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'To handle documents for \'TERMINATED\',\'RETIRED\',\'DECEASED\' beneficiary';
+
+ALTER TABLE `loan_summary_detail` ADD `is_active` TINYINT NOT NULL DEFAULT '1' COMMENT '0: Inactive, 1: Active(This column to be updated when cancelling or adding employee)' AFTER `vrf_accumulated`;
+ALTER TABLE `loan_summary` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `created_at`;
+ALTER TABLE `loan_summary` ADD `updated_by` DATETIME NULL DEFAULT NULL AFTER `created_by`;
+
+ALTER TABLE `loan_repayment` ADD `treasury_user_id` INT(11) NULL DEFAULT NULL AFTER `treasury_payment_id`;
+ALTER TABLE `loan_repayment_detail` ADD `treasury_user_id` INT(11) NULL DEFAULT NULL AFTER `treasury_payment_id`;
+
+ALTER TABLE `employed_beneficiary` ADD `loan_confirmed` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `support_document`;
+
+ALTER TABLE `user` ADD `sex` CHAR(1) NULL DEFAULT NULL AFTER `surname`;
+
+======================================================
+ALTER TABLE `loan_repayment_item` ADD `parrent_id` INT(11) NULL DEFAULT NULL COMMENT 'FK: refer to loan_repayment_id for child items' AFTER `loan_repayment_item_id`, ADD INDEX `loan_repayment_item_id` (`parrent_id`);
+
+ALTER TABLE `loan_repayment_setting` ADD `charging_interval` ENUM('NULL','HOURLY','DAILY','MONTHLY','ANNUALLY') NULL DEFAULT NULL COMMENT 'Duration used to charge the item' AFTER `end_date`, ADD INDEX `item_charging_interval` (`charging_interval`);
+
+ALTER TABLE `loan_repayment_setting` CHANGE `charging_interval` `charging_interval` ENUM('ONCE','HOURLY','DAILY','MONTHLY','ANNUALLY') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Duration used to charge the item';
+
+ALTER TABLE `loan_repayment_setting` CHANGE `percent` `rate` FLOAT NOT NULL;
+
+ALTER TABLE `loan_repayment_setting` ADD `item_applicable_scope` ENUM('LOANEE','INSTITUTION','','') NOT NULL COMMENT 'Applicable for loanee and institution' AFTER `calculation_mode`, ADD INDEX `repayment_item_scope` (`item_applicable_scope`);
+
+ALTER TABLE `loan_repayment_setting` CHANGE `calculation_mode` `calculation_mode` ENUM('1','2') NULL DEFAULT NULL COMMENT '1: Once at first, 2: Continous ';
+ALTER TABLE `loan_repayment_setting` CHANGE `item_applicable_scope` `item_applicable_scope` ENUM('LOANEE','INSTITUTION') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'Applicable for loanee and institution';
+ALTER TABLE `loan_repayment_setting` ADD `item_formula` TEXT NULL COMMENT 'Formula used to get the item value' AFTER `item_applicable_scope`;
+ALTER TABLE `loan_repayment_setting` ADD `formula_stage` ENUM('0','1','2') NULL DEFAULT NULL COMMENT '0:General,1:Before Repayment,2:On Repayment' AFTER `item_formula`, ADD INDEX `item_formula_stage` (`formula_stage`);
+ALTER TABLE `loan_repayment_setting` CHANGE `item_applicable_scope` `item_applicable_scope` ENUM('LOANEE','EMPLOYER') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Applicable for loanee and institution';
+ALTER TABLE `loan_repayment_setting` ADD `employer_type_id` INT(11) NULL DEFAULT NULL COMMENT 'FK: refer employer type' AFTER `formula_stage`, ADD INDEX `employer_type` (`employer_type_id`);
+ALTER TABLE `loan_repayment_setting` ADD `payment_deadline_day_per_month` INT(11) NULL DEFAULT NULL COMMENT 'Day per month of which the pernalty should be issues to employer if payments of the previous month not yet paid' AFTER `employer_type_id`, ADD INDEX `payment_deadline_day_per_month` (`payment_deadline_day_per_month`);
+ALTER TABLE `loan_repayment_setting` ADD `rate_type` ENUM('percent','amount') NOT NULL AFTER `rate`;
+ALTER TABLE `loan_repayment_item` ADD `payable_status` TINYINT(2) NOT NULL AFTER `item_code`, ADD `payable_order_list` INT(11) NULL DEFAULT NULL COMMENT 'Sequence of monthly payment depending on the items to be paid' AFTER `payable_status`;
+ALTER TABLE `loan_repayment_item` CHANGE `payable_status` `payable_status` TINYINT(2) NOT NULL COMMENT '0: Independent, 1: Payable order list';
+ALTER TABLE `loan_repayment_item` ADD `payable_order_list_status` TINYINT NULL DEFAULT NULL COMMENT '1: Full paid before other items, 2: Partially Depending onthe item rate' AFTER `payable_order_list`;
+
+
+ALTER TABLE `system_setting` CHANGE `value_data_type` `value_data_type` ENUM('TEXT','NUMBER','DATE','PERCENT','AMOUNT') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `system_setting` CHANGE `value_data_type` `value_data_type` ENUM('TEXT','NUMBER','DATE','PERCENT','AMOUNT','DAY') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `system_setting` ADD `item_formula` TEXT NULL DEFAULT NULL AFTER `is_active`;
+ALTER TABLE `system_setting` CHANGE `value_data_type` `value_data_type` ENUM('TEXT','NUMBER','DATE','PERCENT','AMOUNT','DAY') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_repayment_setting` ADD `loan_repayment_rate` FLOAT NULL DEFAULT NULL COMMENT 'Loan repayment rate calculated from the monthly payment' AFTER `payment_deadline_day_per_month`;
+
+ALTER TABLE `loan` CHANGE `application_id` `applicant_id` INT(11) NOT NULL;
+ALTER TABLE `loan` CHANGE `principal_balance` `other_charges_amount` FLOAT NOT NULL;
+ALTER TABLE `loan` ADD `created_at` DATETIME NULL DEFAULT NULL AFTER `other_charges_amount`;
+ALTER TABLE `loan` ADD `other_charges_updated_at` DATETIME NULL DEFAULT NULL AFTER `created_at`;
+ALTER TABLE `loan` DROP FOREIGN KEY `FK_loan_application`; ALTER TABLE `loan` ADD CONSTRAINT `FK_loan_application` FOREIGN KEY (`applicant_id`) REFERENCES `applicant`(`applicant_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+-------14-11-2018------------------------------------
+ALTER TABLE `loan` ADD `loan_repayment_item_id` INT(11) NULL DEFAULT NULL AFTER `loan_number`;
+ALTER TABLE `loan` ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `loan_repayment_item_id`;
+ALTER TABLE `loan` CHANGE `other_charges_updated_at` `updated_at` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `loan` CHANGE `loan_repayment_item_id` `loan_repayment_item_id` INT(11) NULL;
+ALTER TABLE `loan` CHANGE `loan_repayment_item_id` `loan_repayment_item_id` INT(11) NOT NULL;
+
+ALTER TABLE `application` ADD `date_graduated` DATE NULL DEFAULT NULL AFTER `current_study_year`;
+ALTER TABLE `loan_repayment_detail` ADD `vrf_accumulated` DECIMAL(15,2) NULL DEFAULT NULL AFTER `amount`;
+ALTER TABLE `loan_repayment_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,2) NULL DEFAULT NULL COMMENT 'to be added based on between payment time interval';
+ALTER TABLE `loan_repayment_setting` ADD `formula_stage_level` TINYINT(4) NULL DEFAULT NULL COMMENT '1: From Disbursement time, 2: Due Loan, 3: On Repayment' AFTER `formula_stage`;
+ALTER TABLE `loan_repayment_setting` ADD `formula_stage_level_condition` TINYINT(4) NULL DEFAULT NULL COMMENT '1: After Graduation, 2: Per Academic Year' AFTER `formula_stage_level`;
+ALTER TABLE `loan_repayment_setting` ADD `grace_period` INT(11) NULL DEFAULT NULL COMMENT 'Grace period in days' AFTER `formula_stage_level_condition`;
+ALTER TABLE `employer` ADD `vote_number` VARCHAR(50) NULL DEFAULT NULL COMMENT 'For Government institution vote numbers' AFTER `salary_source`;
+ALTER TABLE `employer` CHANGE `salary_source` `salary_source` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Central Government, 2: Own Source, 3: Both(Own source and Government)';
+ALTER TABLE `loan_repayment_setting` CHANGE `formula_stage_level` `formula_stage_level` TINYINT(4) NULL DEFAULT NULL COMMENT '1: From Disbursement date, 2: Due Loan, 3: On Repayment';
+ALTER TABLE `loan_repayment` ADD `receipt_date` DATETIME NULL DEFAULT NULL AFTER `date_control_received`;
+ALTER TABLE `academic_year` ADD `start_date` DATE NULL DEFAULT NULL AFTER `academic_year`, ADD `end_date` DATE NULL DEFAULT NULL AFTER `start_date`;
+ALTER TABLE `employed_beneficiary` ADD `vote_number` VARCHAR(50) NULL DEFAULT NULL AFTER `loan_confirmed`;
+ALTER TABLE `employed_beneficiary` ADD `salary_source` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Central Government, 2: Own Source' AFTER `loan_confirmed`;
+
+ALTER TABLE `loan_repayment_detail` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,4) NULL DEFAULT NULL COMMENT 'to be added based on between payment time interval';
+ALTER TABLE `loan_summary_detail` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_summary_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,4) NULL DEFAULT NULL;
+ALTER TABLE `loan_summary` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_summary` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `salary_source` `salary_source` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Central Government, 2: Own Source, 3: Both';
+ALTER TABLE `loan_repayment` CHANGE `payment_status` `payment_status` INT(11) NULL DEFAULT NULL COMMENT '0: Payment confirmed/Bill Confirmed, 1: GePG confirmed Payment, 2: selected for payment by treasury, 3: Cancelled';
+ALTER TABLE `loan_repayment` ADD `canceled_by` INT(11) NULL DEFAULT NULL AFTER `payment_status`, ADD `canceled_at` DATETIME NULL DEFAULT NULL AFTER `canceled_by`, ADD `cancel_reason` VARCHAR(200) NULL DEFAULT NULL AFTER `canceled_at`;
+ALTER TABLE `employer_penalty_payment` CHANGE `payment_status` `payment_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Payment confirmed, 1: GePG confirmed Payment, 3: Cancelled';
+ALTER TABLE `employer_penalty_payment` ADD `bill_number` VARCHAR(20) NULL DEFAULT NULL AFTER `employer_id`;
+ALTER TABLE `employer_penalty_payment` ADD `canceled_by` INT(11) NULL DEFAULT NULL AFTER `payment_status`, ADD `canceled_at` DATETIME NULL DEFAULT NULL AFTER `canceled_by`, ADD `cancel_reason` VARCHAR(200) NULL DEFAULT NULL AFTER `canceled_at`;
+ALTER TABLE `loan_repayment` ADD `gepg_cancel_request_status` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0: Not Requested, 1: Requested, 2: Request acknowledged' AFTER `cancel_reason`;
+ALTER TABLE `employer_penalty_payment` ADD `gepg_cancel_request_status` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0: Not Requested, 1: Requested, 2: Request acknowledged ' AFTER `cancel_reason`;
+ALTER TABLE `employer_penalty` ADD `is_active` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '0: Cancelled, 1: Active' AFTER `loan_summary_id`, ADD `canceled_by` INT(11) NULL DEFAULT NULL AFTER `is_active`, ADD `canceled_at` DATETIME NULL DEFAULT NULL AFTER `canceled_by`, ADD `cancel_reason` VARCHAR(200) NULL DEFAULT NULL AFTER `canceled_at`;
+
+
+
+ALTER TABLE `employer_penalty_payment` CHANGE `payment_status` `payment_status` INT(11) NULL DEFAULT NULL COMMENT '0: Payment confirmed, 1: GePG confirmed Payment, 3: Cancelled';
+-----------------------------------------------------
+======================================================

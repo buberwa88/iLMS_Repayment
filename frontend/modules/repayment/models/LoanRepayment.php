@@ -7,6 +7,7 @@ use frontend\modules\repayment\models\EmployedBeneficiary;
 use frontend\modules\repayment\models\LoanRepaymentDetail;
 use backend\modules\repayment\models\PayMethod;
 use frontend\modules\repayment\models\LoanRepayment;
+use frontend\modules\repayment\models\LoanRepaymentDetailSearch;
 
 /**
  * This is the model class for table "loan_repayment".
@@ -428,4 +429,31 @@ public function getAllEmployeesUnderBillunderTreasury($loan_repayment_id){
         $value = (count($totalLoanees_v) == 0) ? '0' : $totalLoanees_v;
         return $value;
         }
+public static function checkPaymentsEmployer($employerID,$firstDayPreviousMonth,$deadlineDateOfMonth,$checkPaymentsOfMonth){
+	$details =  LoanRepayment::findBySql("SELECT * FROM loan_repayment WHERE  employer_id='$employerID' AND payment_status='1' AND payment_date >='$firstDayPreviousMonth' AND payment_date <='$deadlineDateOfMonth' AND payment_date LIKE '%$checkPaymentsOfMonth%'")->count();
+	return $details;
+}
+public static function createAutomaticBills($payment_date,$employerID){
+	        $modelLoanRepaymentDetail=new LoanRepaymentDetailSearch();
+			$modelLoanRepayment = new LoanRepayment();
+	        $ActiveBill=\frontend\modules\repayment\models\LoanSummary::getActiveBill($employerID);
+            $billID=$ActiveBill->loan_summary_id;
+            $loan_summary_id=$billID;
+			$modelLoanRepayment->amount=0;
+			$modelLoanRepayment->employer_id=$employerID;
+			$modelLoanRepayment->payment_date=$payment_date;
+			$modelLoanRepayment->save();
+			$employerDetails=\frontend\modules\repayment\models\Employer::findOne($employerID);
+            //$totalAmount1=$model2->getAmountRequiredForPayment($loan_summary_id);          
+            $repaymnet_reference_number=$employerDetails->employer_code."-".$modelLoanRepayment->loan_repayment_id;
+            $loan_repayment_id=$modelLoanRepayment->loan_repayment_id;
+            //$model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$controlNumber);
+            $salarySource==2;
+			$modelLoanRepaymentDetail->insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id,$salarySource);
+
+            $totalAmount1=$modelLoanRepayment->getAmountRequiredForPayment($loan_repayment_id);
+            $modelLoanRepayment->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$loan_repayment_id);
+			
+			return true;
+}		
 }

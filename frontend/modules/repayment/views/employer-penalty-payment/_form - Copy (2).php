@@ -13,39 +13,8 @@ use yii\bootstrap\Modal;
 $totalAmount=frontend\modules\repayment\models\EmployerPenaltyPayment::getTotalPenaltyAmount($employerID);
 $paidAmount=frontend\modules\repayment\models\EmployerPenaltyPayment::getTotalPenaltyAmountPaid($employerID);
 $outstandingAmount=$totalAmount-$paidAmount;
-$outstandingAmount1=number_format($outstandingAmount,2);
-$getExists=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()->where(['employer_id'=>$employerID,'payment_status'=>0])->count();
-$amountPendingUnconfirmedPayment=frontend\modules\repayment\models\EmployerPenaltyPayment::getAmountPendingPaymentPNTNotConfirmed($employerID);
-if($amountPendingUnconfirmedPayment > 0){
-$amountToPayDisplay=number_format($amountPendingUnconfirmedPayment,2);
-$amountSa=$amountPendingUnconfirmedPayment;	
-}else{
-// this is due to restriction if there are amount not yet confirmed
-$amountToPayDisplay=$outstandingAmount1;
-$amountSa=$outstandingAmount;		
-}
-frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer();
 ?>
-<script>
-  function check_status() {
-      //form-group field-user-verifycode
-   document.getElementById("hidden").style.display = "none";
-   document.getElementById("loader").style.display = "block";
-    }
-</script>
-<style>
-.row {
-  width: 60%;
-  /*margin: 0 auto;*/
-    text-align: center;
-}
-.block {
-  width: 100px;
-  /*float: left;*/
-    display: inline-block;
-    zoom: 1;
-}
-</style>
+
 <div class="employer-penalty-payment-form">
 
     
@@ -106,41 +75,28 @@ frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer()
 
 	?>
 	
-	<?php if($getExists==0){ ?>
-	<?php if($outstandingAmount > 0){ ?>
+	
 	<?php $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL]); ?>
-	
-	<div class="col-xs-12">
-            <div class="box box-primary">
-              <div class="box-header">
-              <h4><strong>Penalty Payment</strong></h4>      
-              </div>
-	<div class="row">        
-  <div class="block"><button type="button" class="btn"><?php echo "Pay Amount: ".$amountToPayDisplay; ?></button></div>
-  <div class="block"></div>
-  <div class="block"><?= Html::a('Adjust Amount',['employer-penalty-payment/adjust-amount-penalty'],['data-toggle'=>"modal",'data-target'=>"#adjustAmountPenalty",'data-title'=>"Adjust Amount",'class' => 'btn btn-primary',]
-                )
-		?></div>
-		<div class="block"><?= $form->field($model, 'amount')->label(false)->hiddenInput(['value'=>$amountSa,'readOnly'=>'readOnly']) ?></div>
-		<div class="block" id="hidden"><?= Html::submitButton($model->isNewRecord ? 'Click here to confirm for payment' : 'Click here to confirm for payment', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary','onclick'=>'return  check_status()']) ?>
-		</div>
-<br/><br/><br/>		
+	<?php if($outstandingAmount > 0){ ?>
+	<div class="row" style="width:50%;">
+        <div class="col-md-4">
+            <?= $form->field($model, 'amount')->textInput(['value'=>$outstandingAmount,'readOnly'=>'readOnly']) ?>
+       </div>
+        <div class="col-md-6">
+		<?php
+		echo Html::a('Adjust Amount',['employer-penalty-payment/adjust-amount-penalty'],['data-toggle'=>"modal",'data-target'=>"#adjustAmountPenalty",'data-title'=>"Adjust Amount",'class' => 'btn btn-success',]
+                );
+		?>
+       </div>
     </div>
-	<?php ActiveForm::end(); ?>
 	
+    <div class="text-right">
+        <?= Html::submitButton($model->isNewRecord ? 'Click here to confirm for payment' : 'Click here to confirm for payment', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>
-        </div>			
 	<?php } ?>
-<?php }else{
-?>
-<div class="alert alert-info alert-dismissible">
-Pending Payment!
-</div>
-<?php	
-} ?>
-<p>
-<center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center>
-</p>
+
+    <?php ActiveForm::end(); ?>
+
 </div>
 <?php
 Modal::begin([
