@@ -240,7 +240,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	$firstDayPreviousMonth=date("Y-m-d", strtotime("first day of previous month"));
 	$checkPaymentsOfMonth=date("Y-m", strtotime("first day of previous month"));;
 	//end get last moth
-	$loanSummaryDetailsEmployer = LoanSummary::findBySql("SELECT loan_summary_id,created_at,employer_id FROM loan_summary WHERE  (status='0' OR status='1') AND (employer_id IS NOT NULL OR employer_id <>'') ORDER BY loan_summary_id DESC")->all();
+	$loanSummaryDetailsEmployer = LoanSummary::findBySql("SELECT loan_summary.loan_summary_id,loan_summary.created_at,loan_summary.employer_id FROM loan_summary INNER JOIN employer ON employer.employer_id=loan_summary.employer_id WHERE employer.employer_id=loan_summary.employer_id AND (loan_summary.status='0' OR loan_summary.status='1') AND (loan_summary.employer_id IS NOT NULL OR loan_summary.employer_id <>'') ORDER BY loan_summary.loan_summary_id DESC")->all();
 				    if((count($loanSummaryDetailsEmployer) > 0)){
                     foreach ($loanSummaryDetailsEmployer as $loanSummaryDetailsResults) {
                     $employerID=$loanSummaryDetailsResults->employer_id; 
