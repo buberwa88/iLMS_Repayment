@@ -1,0 +1,1 @@
+<?= $modelInst->application_status_remarks ?>

@@ -1,0 +1,126 @@
+﻿/*********************************************************************
+// Sr. No.		        : 1
+// Program Author      	: Nirmal
+// Work Item            : 1374
+// Date Of Change    	: 02/04/2012 
+// Change Description  	: 1. Changed Related to Read More Design issue.
+                          2.Changed Related to Read More Image Close Button issue.
+//*********************************************************************/
+
+
+
+.testimonial {
+	float:left;
+	clear:both;
+	min-height:220px;
+}
+
+.infiniteCarousel {
+	width: 940px;
+	position: relative;
+}
+.infiniteCarousel .wrapper {
+	width: 860px; /* .infiniteCarousel width - (.wrapper margin-left + .wrapper margin-right) */
+	overflow: auto;
+	min-height:170px;
+	margin: 0 18px;
+	padding: 0 20px;
+	position: absolute;
+	top: 0;
+	border:solid 2px #cccccc;
+}
+.infiniteCarousel .wrapper ul {
+	width: 99999px;
+	list-style-image:none;
+	list-style-position:outside;
+	list-style-type:none;
+	margin:0;
+	padding:0;
+	position: absolute;
+	top: 0;
+}
+.infiniteCarousel ul li {
+	display:block;
+	float:left;
+	padding: 10px;
+	height: 135px;
+	width: 270px;
+	margin-top:5px;
+}
+.infiniteCarousel ul li p {
+	margin:0px;
+	padding:0px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color:#222222;
+	line-height:18px;
+}
+.infiniteCarousel ul li h2 {
+	margin:0px;
+	padding:0px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:14px;
+	font-weight:bold;
+	color:#222222;
+	margin:7px 0px 7px 0px;
+}
+.infiniteCarousel ul li a {
+	margin:0px;
+	padding:0px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color:#b22c1b;
+}
+.infiniteCarousel ul li a:hover {
+	color:#222;
+}
+.infiniteCarousel .arrow {
+	display: block;
+	height: 36px;
+	width: 37px;
+	background: url(../facefiles/arrow.png) no-repeat 0 0;
+	text-indent: -999px;
+	position: absolute;
+	top: 65px;
+	cursor: pointer;
+}
+.infiniteCarousel .forward {
+	background-position: 0 0;
+	right: 0;
+}
+.infiniteCarousel .back {
+	background-position: 0 -72px;
+	left: 0;
+}
+.infiniteCarousel .forward:hover {
+	background-position: 0 -36px;
+}
+.infiniteCarousel .back:hover {
+	background-position: 0 -108px;
+}
+.ModalWindow
+{
+  border:solid 7px #878787;
+  background:#fff;
+  padding:5px 10px 10px 10px;
+  position:absolute;
+  top:-1000px;
+  -moz-border-radius: 7px;
+  border-radius: 7px;
+}
+/************* Nirmal :1.1- start .(Changed Related to Read More Design issue.)-*/
+/************* Nirmal :1.2- start .(Changed Related to Read More Image Close Button issue.)-*/
+
+.close-btn
+{
+    background: url("../../RESOURCES/IMAGES/closelabel.gif") no-repeat;
+    height:17px;
+    display:block;
+    outline:none;
+    border:none;
+    border-top:solid 1px #b22c1b;
+    width:100%;
+}
+
+/************* Nirmal :1.2- End .(Changed Related to Read More Image Close Button issue.)-*/
+/************* Nirmal :1.1- End .(Changed Related to Read More Design issue.)-*/

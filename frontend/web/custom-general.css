@@ -1,0 +1,56 @@
+/* 
+    Created on : Dec 6, 2017, 12:55:40 PM
+    Author     : Ruzo Owzy
+*/
+.wrapper{
+    overflow:visible;
+}
+.main-header .navbar{
+    height:50px;
+}
+.form-control{
+    border:1px solid #AAA;
+}
+.form-control:focus{
+    border:1px solid #888;
+}
+.button-wrapper{
+    text-align:right;
+    padding: 5px 0px;
+}
+.dropdown-menu{
+    border: 1px solid #AAA;
+    overflow: hidden;
+    padding-top: 0px;
+}
+.content-header > .breadcrumb {
+    top:5px;
+}
+.content {
+    padding-top:0px;
+}
+.content-header {
+    padding-top:0.5px;
+}
+.btn{
+    min-width:200px;
+}
+.user-footer .btn{
+    min-width: unset;
+}
+.profile-user-info-striped .profile-info-name {
+    background-color:#DED;
+}
+.table-striped > tbody > tr:nth-of-type(2n+1){
+    background-color: #DEDEDE;
+}
+.alert{
+    padding:4px;
+}
+button.close{
+    font-size: 50px;
+    line-height: 18px;
+}
+.form-group {
+    margin-bottom: 0px;
+}

@@ -1,0 +1,168 @@
+<?php
+
+use yii\helpers\Html;
+use kartik\grid\GridView;
+use yii\helpers\ArrayHelper;
+use frontend\modules\repayment\models\LoanRepayment;
+
+/* @var $this yii\web\View */
+/* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
+/* @var $dataProvider yii\data\ActiveDataProvider */
+
+$this->title = 'Bill';
+$this->params['breadcrumbs'][] = $this->title;
+
+            $resultsAfterCheck=$model->checkWaitingConfirmationFromGePG($employerID);            
+            $results1=$model->checkControlNumberStatus($employerID);
+            $results=$results1->bill_number;
+            $control_number=$results1->control_number;
+            $payment_status=$results1->payment_status;
+            $ActiveBill=$modelBill->getActiveBill($employerID);
+            $billID=$ActiveBill->loan_summary_id;
+            $loan_summary_id=$billID;
+            $totalAmount=number_format($results1->amount,2);
+            $loan_repayment_id=$results1->loan_repayment_id;
+            $totalEmployees=$model->getAllEmployeesUnderBillunderEmployer($loan_repayment_id);
+?>
+<div class="loan-repayment-index">
+
+<div class="panel panel-info">
+                        <div class="panel-heading">
+                      <?php
+                      if($results !=0 && $billID !=0 && $payment_status =='0' && $control_number ==''){
+                      echo "Waiting for Payment Reference number!";    
+                      }
+                      ?>
+                        </div>
+                        <div class="panel-body">
+            <?php
+            if($resultsAfterCheck->payment_status !='0'){
+
+            if($results !=0 && $billID !=0 && $payment_status ==''){
+            ?>
+            <?= $this->render('_form', [
+                'model' => $model,'amount'=>$totalAmount,'paymentRefNo'=>$control_number,'totalEmployees'=>$totalEmployees,'loan_repayment_id'=>$loan_repayment_id,'bill_number'=>$results,
+                ])            
+                    ?>
+            <?php } ?>                 
+                            
+    <?php // echo $this->render('_search', ['model' => $searchModel]); 
+    if($results ==0 && $billID !=0){
+    ?>
+
+    <p>
+        <?= Html::a('Generate Bill', ['generate-bill'], ['class' => 'btn btn-success']) ?>
+        
+    </p>
+    <?php }
+    echo "<br/>";
+    if($results !=0 && $billID !=0 && $payment_status ==''){
+    ?>
+    <h3>Loanees in this Bill.</h3>
+            <?= GridView::widget([
+        'dataProvider' => $dataProvider,
+        'filterModel' => $searchModel,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
+            [
+            'attribute'=>'applicantName',
+            'filter'=>'',    
+            'value' =>function($model)
+            {
+                return $model->applicant->user->firstname.", ".$model->applicant->user->middlename." ".$model->applicant->user->surname;
+            }
+        ],
+            [
+            'attribute'=>'applicant_id',
+            'label'=>'Indexno',    
+            'value' =>function($model)
+            {
+                return $model->applicant->f4indexno;
+            }
+        ],
+            [
+            'attribute'=>'amount',
+            'format'=>'raw',    
+            'value' =>function($model)
+            {
+                 return $model->getAmountRequiredForPaymentIndividualLoanee($model->applicant_id,$model->loan_repayment_id);
+            },
+            'format'=>['decimal',2],
+        ],
+            
+            //['class' => 'yii\grid\ActionColumn'],
+        ],
+    ]); ?>
+    <?php } 
+//View bills
+if($results ==0 && $billID !=0){
+?>
+<?= GridView::widget([
+        'dataProvider' => $dataProviderBills,
+        'filterModel' => $searchModelBills,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
+			[
+                'attribute'=>'bill_number',
+                'format'=>'raw',
+                'value'=>function($model)
+            {
+             return $model->bill_number;                    
+            },
+            ],
+            [
+                'attribute'=>'control_number',
+                'format'=>'raw',
+                'value'=>function($model)
+            {
+            if($model->control_number==''){
+             return '<p class="btn green"; style="color:red;">Waiting!</p>';
+            }else{
+             return $model->control_number;    
+            }                 
+            },
+            ],
+            [
+            'attribute'=>'amount',
+            'format'=>'raw',    
+            'value' =>function($model)
+            {
+                 return $model->amount;
+            }, 
+            'format'=>['decimal',2],
+			'hAlign' => 'right',
+            ],            
+            
+                    ['class' => 'yii\grid\ActionColumn',
+                         'header' => 'Action',
+                         'headerOptions' => ['style' => 'color:#337ab7'],
+			 'template'=>'{view}',
+			 'buttons' => [
+                'view' => function ($url, $model) {
+                    return Html::a('<span class="glyphicon glyphicon-eye-open"></span>', $url, [
+                            'title' => Yii::t('app', 'view'),
+                    ]);
+                },
+                    ],
+                    'urlCreator' => function ($action, $model, $key, $index) {
+                if ($action === 'view') {
+                    $url = 'index.php?r=repayment/loan-repayment-detail/view&id=' . $model->loan_repayment_id;
+                    return $url;
+                }
+            }
+			],
+        ],
+		'hover' => true,
+        'condensed' => true,
+       'floatHeader' => true,
+    ]); ?>
+	<?php
+}
+//end view bills
+
+	
+            }
+    ?>
+</div>
+       </div>
+</div>
