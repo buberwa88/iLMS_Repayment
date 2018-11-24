@@ -25,6 +25,17 @@ $amountToPayDisplay=$outstandingAmount1;
 $amountSa=$outstandingAmount;		
 }
 frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer();
+/*
+    $todate=date("Y-m-d");
+	$dateCreated=date_create($todate);
+	$duration=2;
+	$duration_type="months";
+	$dateDurationAndType=$duration." ".$duration_type;
+	date_sub($dateCreated,date_interval_create_from_date_string($dateDurationAndType));
+	$firstDayPreviousMonth1=date_format($dateCreated,"Y-m-d");
+	echo $firstDayPreviousMonth2=date("Y-m-d",strtotime($firstDayPreviousMonth1));
+	//echo $firstDayPreviousMonth=$firstDayPreviousMonth2."-01";
+*/	
 ?>
 <script>
   function check_status() {

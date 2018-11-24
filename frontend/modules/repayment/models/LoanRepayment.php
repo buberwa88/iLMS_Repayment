@@ -429,8 +429,8 @@ public function getAllEmployeesUnderBillunderTreasury($loan_repayment_id){
         $value = (count($totalLoanees_v) == 0) ? '0' : $totalLoanees_v;
         return $value;
         }
-public static function checkPaymentsEmployer($employerID,$firstDayPreviousMonth,$deadlineDateOfMonth,$checkPaymentsOfMonth){
-	$details =  LoanRepayment::findBySql("SELECT * FROM loan_repayment WHERE  employer_id='$employerID' AND payment_status='1' AND payment_date >='$firstDayPreviousMonth' AND payment_date <='$deadlineDateOfMonth' AND payment_date LIKE '%$checkPaymentsOfMonth%'")->count();
+public static function checkPaymentsEmployer($employerID,$firstDayPreviousMonth,$deadlineDateOfMonth){
+	$details =  LoanRepayment::findBySql("SELECT * FROM loan_repayment WHERE  employer_id='$employerID' AND payment_status='1' AND payment_date >='$firstDayPreviousMonth' AND payment_date <='$deadlineDateOfMonth'")->count();
 	return $details;
 }
 public static function createAutomaticBills($payment_date,$employerID){

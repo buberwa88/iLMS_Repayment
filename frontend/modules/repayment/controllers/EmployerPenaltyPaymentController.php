@@ -81,7 +81,8 @@ class EmployerPenaltyPaymentController extends Controller
      * @return mixed
      */
     public function actionCreate()
-    {
+    { 
+	    //$this->layout="default_main";
         $model = new EmployerPenaltyPayment();
         $employerModel = new EmployerSearch();
 		$loggedin = Yii::$app->user->identity->user_id;

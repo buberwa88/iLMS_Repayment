@@ -19,6 +19,7 @@ use backend\modules\repayment\models\LoanSummaryDetail;
 use backend\modules\repayment\models\LoanSummary;
 use backend\models\SystemSetting;
 use backend\modules\repayment\models\EmployedBeneficiary;
+use backend\modules\repayment\models\EmployerPenaltyCycle;
 
 /**
  * This is the model class for table "employed_beneficiary".
@@ -711,7 +712,11 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 	}
 	*/
 	public static function getEmployerMontlyPenaltyRate(){
-	$details = LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'penalty',loan_repayment_setting.payment_deadline_day_per_month AS 'payment_deadline_day_per_month' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE loan_repayment_setting.is_active='1' AND loan_repayment_item.item_code='EPNT'")->one();
+	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type FROM employer_penalty_cycle  WHERE employer_penalty_cycle.is_active='1' AND employer_penalty_cycle.cycle_type='0'")->one();
+    return $details;
+	}
+	public static function getEmployerMontlyPenaltySpecificEmployer($employerID){
+	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type FROM employer_penalty_cycle  WHERE employer_penalty_cycle.is_active='1' AND employer_id='$employerID' AND employer_penalty_cycle.cycle_type='1'")->one();
     return $details;
 	}
     public static function updateBeneficiaryFromOldEmployer($employerID,$applicantID,$newverificationStatus){

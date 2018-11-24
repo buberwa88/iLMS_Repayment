@@ -435,5 +435,9 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
         $loanSummaryNewAmountUpdate->save();		
 		}
         return true;
-    } 
+    }
+public static function employerDetailsForPenalty(){
+	$details=LoanSummary::findBySql("SELECT loan_summary.loan_summary_id,loan_summary.created_at,loan_summary.employer_id FROM loan_summary INNER JOIN employer ON employer.employer_id=loan_summary.employer_id WHERE employer.employer_id=loan_summary.employer_id AND  (loan_summary.status='0' OR loan_summary.status='1') AND (loan_summary.employer_id IS NOT NULL OR loan_summary.employer_id <>'') AND (employer.salary_source IS NULL OR employer.salary_source='3' OR employer.salary_source='2') ORDER BY loan_summary.loan_summary_id DESC")->all();
+	return $details;
+}	
 }
