@@ -129,7 +129,7 @@ class SMSGateway extends Component {
     }
 
     function TEST() {
-      //SENDER: UDSM or HESLB
+        //SENDER: UDSM or HESLB
         $config = [
             'url' => 'https://secure-gw.fasthub.co.tz/fasthub/messaging/json/api',
             'channel' => '118334',

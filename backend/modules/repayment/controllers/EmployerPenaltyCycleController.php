@@ -12,15 +12,14 @@ use yii\filters\VerbFilter;
 /**
  * EmployerPenaltyCycleController implements the CRUD actions for EmployerPenaltyCycle model.
  */
-class EmployerPenaltyCycleController extends Controller
-{
-    
-     public $layout="main_private";
+class EmployerPenaltyCycleController extends Controller {
+
+    public $layout = "main_private";
+
     /**
      * @inheritdoc
      */
-    public function behaviors()
-    {
+    public function behaviors() {
         return [
             'verbs' => [
                 'class' => VerbFilter::className(),
@@ -35,14 +34,13 @@ class EmployerPenaltyCycleController extends Controller
      * Lists all EmployerPenaltyCycle models.
      * @return mixed
      */
-    public function actionIndex()
-    {
+    public function actionIndex() {
         $searchModel = new EmployerPenaltyCycleSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
+                    'searchModel' => $searchModel,
+                    'dataProvider' => $dataProvider,
         ]);
     }
 
@@ -51,10 +49,9 @@ class EmployerPenaltyCycleController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionView($id)
-    {
+    public function actionView($id) {
         return $this->render('view', [
-            'model' => $this->findModel($id),
+                    'model' => $this->findModel($id),
         ]);
     }
 
@@ -63,15 +60,20 @@ class EmployerPenaltyCycleController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionCreate()
-    {
+    public function actionCreate() {
         $model = new EmployerPenaltyCycle();
-
+        $model->created_by = \Yii::$app->user->id;
+        $model->created_at = date('Y-m-d H:i:s', time());
+        //setting config type
+        $model->cycle_type = EmployerPenaltyCycle::REPAYMENT_CYCLE_GENERAL;
+        if (!empty($model->employer_id) && is_int($model->employer_id)) {
+            $model->cycle_type = EmployerPenaltyCycle::REPAYMENT_CYCLE_EMPLOYER;
+        }
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->employer_penalty_cycle_id]);
         } else {
             return $this->render('create', [
-                'model' => $model,
+                        'model' => $model,
             ]);
         }
     }
@@ -82,15 +84,20 @@ class EmployerPenaltyCycleController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionUpdate($id)
-    {
+    public function actionUpdate($id) {
         $model = $this->findModel($id);
-
+        $model->updated_by = \Yii::$app->user->id;
+        $model->updated_at = date('Y-m-d H:i:s', time());
+        //setting config type
+        $model->cycle_type = EmployerPenaltyCycle::REPAYMENT_CYCLE_GENERAL;
+        if (!empty($model->employer_id) && is_int($model->employer_id)) {
+            $model->cycle_type = EmployerPenaltyCycle::REPAYMENT_CYCLE_EMPLOYER;
+        }
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->employer_penalty_cycle_id]);
         } else {
-            return $this->render('update', [
-                'model' => $model,
+            return $this->render('create', [
+                        'model' => $model,
             ]);
         }
     }
@@ -101,8 +108,7 @@ class EmployerPenaltyCycleController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionDelete($id)
-    {
+    public function actionDelete($id) {
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
@@ -115,12 +121,12 @@ class EmployerPenaltyCycleController extends Controller
      * @return EmployerPenaltyCycle the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id)
-    {
+    protected function findModel($id) {
         if (($model = EmployerPenaltyCycle::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+
 }

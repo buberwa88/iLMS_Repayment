@@ -27,13 +27,33 @@ $this->params['breadcrumbs'][] = $this->title;
             'filterModel' => $searchModel,
             'columns' => [
                 ['class' => 'yii\grid\SerialColumn'],
-                'employer_id',
+                [
+                    'attribute' => 'employer_id',
+                    'value' => function($model) {
+                        return $model->employer_id ? $model->employer->employer_name : 'ALL';
+                    }
+                ],
                 'repayment_deadline_day',
                 'penalty_rate',
                 'duration',
-                'duration_type',
-                'is_active',
-                'cycle_type',
+                [
+                    'attribute' => 'duration_type',
+                    'value' => function($model) {
+                        return $model->getDurationTypeName();
+                    }
+                ],
+                [
+                    'attribute' => 'is_active',
+                    'value' => function($model) {
+                       return $model->is_active? 'Active' : 'In Active'; 
+                    }
+                ],
+                [
+                    'attribute' => 'cycle_type',
+                    'value' => function($model) {
+                        return $model->getCycleTypeName();
+                    },
+                ],
                 'start_date',
                 'end_date',
                 ['class' => 'yii\grid\ActionColumn'],

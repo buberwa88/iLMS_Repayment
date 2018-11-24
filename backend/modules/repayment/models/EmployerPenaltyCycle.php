@@ -22,21 +22,22 @@ use Yii;
  * @property string $updated_at
  * @property integer $updated_by
  */
-class EmployerPenaltyCycle extends \yii\db\ActiveRecord
-{
+class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
+
+    const REPAYMENT_CYCLE_GENERAL = '0';
+    const REPAYMENT_CYCLE_EMPLOYER = '1';
+
     /**
      * @inheritdoc
      */
-    public static function tableName()
-    {
+    public static function tableName() {
         return 'employer_penalty_cycle';
     }
 
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
+    public function rules() {
         return [
             [['employer_id', 'repayment_deadline_day', 'duration', 'is_active', 'created_by', 'updated_by'], 'integer'],
             [['repayment_deadline_day', 'penalty_rate', 'duration', 'duration_type', 'cycle_type', 'start_date', 'created_at', 'created_by'], 'required'],
@@ -49,15 +50,14 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return [
             'employer_penalty_cycle_id' => 'Employer Penalty Cycle ID',
-            'employer_id' => 'Employer ID',
-            'repayment_deadline_day' => 'Repayment Deadline Day',
-            'penalty_rate' => 'Penalty Rate',
+            'employer_id' => 'Employer',
+            'repayment_deadline_day' => 'Repayment Day',
+            'penalty_rate' => 'Penalty Rate(%)',
             'duration' => 'Duration',
-            'duration_type' => 'Duration Type',
+            'duration_type' => 'Penalty Type',
             'is_active' => 'Is Active',
             'cycle_type' => 'Cycle Type',
             'start_date' => 'Start Date',
@@ -68,4 +68,39 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord
             'updated_by' => 'Updated By',
         ];
     }
+
+    public function getEmployer() {
+        return $this->hasOne(\backend\modules\repayment\models\Employer::className(), ['employer_id' => 'employer_id']);
+    }
+
+    static function durationType() {
+        return [
+            'd' => 'Daily', 'w' => 'Weekly', 'm' => 'Monthly', 'y' => 'Yearly'
+        ];
+    }
+
+    function getDurationTypeName() {
+        $duration_type = self::durationType();
+        if ($this->duration_type && isset($duration_type[$this->duration_type])) {
+            return $duration_type[$this->duration_type];
+        }
+        return NULL;
+    }
+
+    static function cycleType() {
+        return [
+            self::REPAYMENT_CYCLE_GENERAL => 'General', self::REPAYMENT_CYCLE_EMPLOYER => 'Employer'
+        ];
+    }
+
+    function getCycleTypeName() {
+        $cycle_type = self::cycleType();
+        if (isset($cycle_type[$this->cycle_type])) {
+            return $cycle_type[$this->cycle_type];
+        }
+        return NULL;
+    }
+    
+   
+
 }

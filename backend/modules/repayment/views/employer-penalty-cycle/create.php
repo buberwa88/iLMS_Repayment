@@ -5,7 +5,7 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\modules\repayment\models\EmployerPenaltyCycle */
 
-$this->title = 'Create Employer Penalty Cycle';
+$this->title = 'Add/Create Employer Repayment Penalty Cycle';
 $this->params['breadcrumbs'][] = ['label' => 'Employer Penalty Cycles', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
