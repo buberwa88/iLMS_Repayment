@@ -31,7 +31,7 @@ class SystemSetting extends \yii\db\ActiveRecord
     {
         return [
             [['setting_name', 'setting_code'], 'required'],
-            [['item_formula'], 'safe'],
+            [['item_formula','graduated_from','graduated_to'], 'safe'],
             [['value_data_type'], 'string'],
             [['is_active'], 'integer'],
             [['setting_name'], 'string', 'max' => 100],
@@ -54,6 +54,8 @@ class SystemSetting extends \yii\db\ActiveRecord
             'value_data_type' => 'Rate Type',
             'is_active' => 'Is Active',
             'item_formula'=>'item_formula',
+			'graduated_from'=>'graduated_from',
+			'graduated_to'=>'graduated_to',
         ];
     }
 }

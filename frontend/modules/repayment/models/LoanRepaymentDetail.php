@@ -1138,12 +1138,12 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
 		}		
         return $amount;
         }
-    public static function getAmountTotalPaidLoanee($applicantID){
+    public static function getAmountTotalPaidLoanee($applicantID,$date){
         $moder=new EmployedBeneficiary();
         $CFBS="CFBS";
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
         $results = LoanRepaymentDetail::findBySql("SELECT b.loan_repayment_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment A ON A.loan_repayment_id = b.loan_repayment_id "
-                . "WHERE b.applicant_id='$applicantID' AND b.loan_repayment_item_id<>'".$CFBS_id."' AND A.payment_status='1'")->one();
+                . "WHERE b.applicant_id='$applicantID' AND b.loan_repayment_item_id<>'".$CFBS_id."' AND A.payment_status='1' AND A.receipt_date<='$date'")->one();
         $amount_paid=$results->amount;
         $value = (count($amount_paid) == 0) ? '0' : $amount_paid;
         return $value;
@@ -1184,9 +1184,9 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         $value2 = (count($VRF) == 0) ? '0' : $VRF;
         return $value2;
         }
-    public static function getOutstandingOriginalLoan($applicantID){
-            $totalPaid=LoanRepaymentDetail::getAmountTotalPaidLoanee($applicantID);
-			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID);
+    public static function getOutstandingOriginalLoan($applicantID,$date){
+            $totalPaid=LoanRepaymentDetail::getAmountTotalPaidLoanee($applicantID,$date);
+			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date);
 			$pendingLoan=$totalLoan-$totalPaid;
 			if($pendingLoan < 0.00){
 			$pendingLoan1=0;

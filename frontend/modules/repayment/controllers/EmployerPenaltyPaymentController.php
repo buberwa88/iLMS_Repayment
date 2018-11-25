@@ -188,17 +188,18 @@ class EmployerPenaltyPaymentController extends Controller
 		$loggedin = Yii::$app->user->identity->user_id;
         $employer2 = $employerModel->getEmployer($loggedin);
         $employer_id=$employer2->employer_id;
-        if ($model->load(Yii::$app->request->post())) {
+		//$request = Yii::$app->request->post();
+        //$number = $request['number'];
+        if (Yii::$app->request->post()) {
+			$request = Yii::$app->request->post();
 			 //&& $model->validate()
-             if(!is_numeric($model->amount) && $model->amount !=''){
+		if($request['amount'] !=''){
+			if(!is_numeric($request['amount'])){
 				$sms="Operation failed, Pay amount must nummber!";
-                Yii::$app->getSession()->setFlash('warning', $sms); 
+                Yii::$app->getSession()->setFlash('danger', $sms); 
 				return $this->redirect(['create']);
-			 }else{
-			$sms="Operation failed, Pay amount must nummber!";
-                Yii::$app->getSession()->setFlash('warning', $sms); 
-				return $this->redirect(['create']);	 
-			 }			
+			}else{
+            if(($request['outstandingAmount'] >= $request['amount']) && $request['amount'] > 0){				
 			$countResults=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()
 			->where(['employer_id'=>$employer_id])
 			->andWhere(['or',
@@ -207,7 +208,7 @@ class EmployerPenaltyPaymentController extends Controller
         ])->one();
 			if(count($countResults) > 0){
 			$employer_penalty_payment_id=$countResults->employer_penalty_payment_id;
-            $totalamount=$model->amount;
+            $totalamount=$request['amount'];
             $newAmount=\frontend\modules\repayment\models\EmployerPenaltyPayment::findOne($employer_penalty_payment_id);
             $newAmount->amount= $totalamount;
             $newAmount->save();			
@@ -221,6 +222,7 @@ class EmployerPenaltyPaymentController extends Controller
 			$model->control_number=$controlNumber;
 			$model->date_control_requested=date("Y-m-d H:i:s");
 			$model->date_control_received =date("Y-m-d H:i:s");
+			$model->amount= $request['amount'];
 			//$model->pay_method_id=4;
 			//$model->payment_status=0;		
 			$model->employer_id = $employer2->employer_id;	
@@ -229,6 +231,16 @@ class EmployerPenaltyPaymentController extends Controller
            $sms="Amount successful adjusted, Kindly confirm payment!";
            Yii::$app->getSession()->setFlash('success', $sms);			
 		return $this->redirect(['create']);
+			}else{
+			$sms="Amount successful adjusted, Kindly confirm payment!";
+           Yii::$app->getSession()->setFlash('danger', $sms);			
+		return $this->redirect(['create']);	
+			}
+		}}else{
+			$sms="Pay Amount must be less than or equal to outstanding amount";
+                Yii::$app->getSession()->setFlash('danger', $sms); 
+				return $this->redirect(['create']);	 
+			 }
 		} else {
             return $this->render('create', [
                 'model' => $model,

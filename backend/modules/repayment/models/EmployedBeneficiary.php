@@ -318,74 +318,33 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         }
          * 
          */
-    public static function getIndividualEmployeesPenalty($applicantID){
-		$details_pnt=EmployedBeneficiary::getPNTsetting();
+    public static function getIndividualEmployeesPenalty($applicantID,$date){
+		//---checking grace period---
+		$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID);		
+        $todateTNew1=strtotime($date);
+		$periodPendingUnpaid=round(($todateTNew1-strtotime($dateGraduated))/(60*60*24));
+		$gracePeriod=EmployedBeneficiary::getGracePeriodSetting($dateGraduated);
+		//---end for grace period----
+		if($gracePeriod >=$periodPendingUnpaid){
+		$penalty_to_pay=0;	
+		}else{
+        	$details_pnt=EmployedBeneficiary::getPNTsetting();
 		$PNT=$details_pnt->rate;
         $loan_repayment_item_id=$details_pnt->loan_repayment_item_id;
-        
-		$gracePeriod=EmployedBeneficiary::getGracePeriodSetting();
-        /*
-        $details_disbursedAmount = Disbursement::findBySql("SELECT SUM('$PNT'*disbursed_amount) AS disbursed_amount "
-                . "FROM disbursement INNER JOIN application ON application.application_id=disbursement.application_id WHERE  application.applicant_id='$applicantID'")->one();
-				*/
-				$details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturn($applicantID,$PNT);
-        $penalty=$details_disbursedAmount->disbursed_amount;
-        $value_penalty = (count($details_disbursedAmount) == 0) ? '0' : $penalty;
-        
-        //---get last academic year----------
-		/*
-        $filter="DESC";
-        $value_academicY = EmployedBeneficiary::getstartToEndAcademicYrOfBeneficiary($applicantID,$filter);
-        if($value_academicY !='0'){
-         $lastYearV=explode("/",$value_academicY);
-         $lastYear_V1=$lastYearV[1]; 
-         $lastYear_V2=$lastYearV[0];
-         $lastV2=strlen($lastYear_V1);
-         if($lastV2==2){
-         $starting=substr($lastYear_V2,0,2);
-         $finalAcademicYear=$starting.$lastYear_V1;
-         }else{
-         $finalAcademicYear=$lastYear_V1;   
-         }
-        }else{
-         $finalAcademicYear=date("Y");   
-        }
-		*/
-		$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID);		
-        $currentYear=date("Y");
-        //---checking grace period---
-        //$periodPendingUnpaid=($currentYear-$finalAcademicYear)*365 + date('z') + 1;
-        $todateTNew=date("Y-m-d");
-        $todateTNew1=strtotime($todateTNew);
-		$periodPendingUnpaid=round(($todateTNew1-strtotime($dateGraduated))/(60*60*24));
-		//echo time()."--".$periodPendingUnpaid."tele";exit;
-        //---end for grace period----
-        //--------end last academic year-----
-                
-        //----check penalty paid---
-        $details_penalty_status = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
-                . "FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment.payment_status='1' AND loan_repayment_detail.loan_repayment_item_id='$loan_repayment_item_id' AND loan_repayment_detail.applicant_id='$applicantID'")->one();
-        $penalty_paid=$details_penalty_status->amount;
-        $value_penalty_paid2 = (count($penalty_paid) == 0) ? '0' : $penalty_paid;
-        //----end check----
-        if(($periodPendingUnpaid > $gracePeriod) && $value_penalty_paid2=='0'){			
-         $penalty_to_pay=$value_penalty;   
-        }else if(($periodPendingUnpaid < $gracePeriod) && $value_penalty_paid2=='0'){  
-         $penalty_to_pay='0';  
-        }else if(($periodPendingUnpaid==$gracePeriod) && $value_penalty_paid2=='0'){  
-         $penalty_to_pay='0';  
-        }else{
-            if($value_penalty_paid2 >=$value_penalty ){
-         $penalty_to_pay='0';  
-        }else if($value_penalty_paid2 < $value_penalty){
-         $penalty_to_pay=$value_penalty-$value_penalty_paid2;   
-        }
+        ////////////
+		$details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturn($applicantID,$PNT);
+        $penalty_to_pay=$details_disbursedAmount->disbursed_amount;
+        if($penalty_to_pay < 0){
+		$penalty_to_pay=0;	
+		}	
+		}
+		/////////////
+        return $penalty_to_pay;
         }
 		
-        return $penalty_to_pay;
-        //return $periodPendingUnpaid;
-        }
+		/*
+		
+		*/
         public static function getIndividualEmployeePaidPrincipalLoan($applicantID){
         $principleCode="PRC";
         $PRC_id=EmployedBeneficiary::getloanRepaymentItemID($principleCode);
@@ -428,22 +387,11 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         public static function getIndividualEmployeesLAF($applicantID){
 		  $details_LAF=EmployedBeneficiary::getLAFsetting();
           $LAF=$details_LAF->rate;
-          $loan_repayment_item_id=$details_LAF->loan_repayment_item_id;
 		  $details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturn($applicantID,$LAF);				
-        $LAF_v=$details_disbursedAmount->disbursed_amount;        
-        $value_LAF = (count($details_disbursedAmount) == 0) ? '0' : $LAF_v;
-        //----check LAF paid---
-        $details_laf_status = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
-                . "FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment.payment_status='1' AND loan_repayment_detail.loan_repayment_item_id='$loan_repayment_item_id' AND loan_repayment_detail.applicant_id='$applicantID'")->one();
-        $LAF_paid=$details_laf_status->amount;
-        $value_LAF_paid2 = (count($LAF_paid) == 0) ? '0' : $LAF_paid;
-        //----end check----
-        if($value_LAF_paid2 >=$value_LAF ){
-          $LAF_to_pay='0';  
-        }else if($value_LAF_paid2 < $value_LAF){
-         $LAF_to_pay=$value_LAF-$value_LAF_paid2;   
-        }
+        $LAF_to_pay=$details_disbursedAmount->disbursed_amount;        
+         if($LAF_to_pay < 0){
+		 $LAF_to_pay=0;
+		 }
         return $LAF_to_pay;
         //return $value_LAF;
         }
@@ -659,8 +607,8 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         $value = (count($totalLoanees) == 0) ? '0' : $totalLoanees;
         return $value;
         }
-	public  static function getGracePeriodSetting(){
-	    $details_gracePeriod = SystemSetting::findBySql("SELECT setting_value FROM system_setting WHERE  setting_code='LRGPD' AND is_active='1'")->one();
+	public  static function getGracePeriodSetting($graduationDate){
+	    $details_gracePeriod = SystemSetting::findBySql("SELECT setting_value FROM system_setting WHERE  setting_code='LRGPD' AND is_active='1' AND graduated_from <= '$graduationDate' AND graduated_to >= '$graduationDate'")->one();
         $gracePeriod=$details_gracePeriod->setting_value;
 		return $gracePeriod;
 	}    

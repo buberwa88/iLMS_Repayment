@@ -8,6 +8,7 @@ use backend\modules\repayment\models\LoanSummaryDetail;
 /* @var $model frontend\modules\repayment\models\EmployedBeneficiary */
 
 $this->title = "Loan Details";
+$date=date("Y-m-d");
 ?>
 <div class="employed-beneficiary-view">
 <div class="panel panel-info">
@@ -25,35 +26,40 @@ $this->title = "Loan Details";
         		'attribute'=>'principal',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-				return backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($data->applicant_id);
+					$date=date("Y-m-d");
+				return backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($data->applicant_id,$date);
             }, $model),
             ],
 			[
         		'attribute'=>'penalty',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($data->applicant_id);
+					$date=date("Y-m-d");
+                return backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($data->applicant_id,$date);
             }, $model),
             ],
 			[
         		'attribute'=>'LAF',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($data->applicant_id);
+					$date=date("Y-m-d");
+                return backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($data->applicant_id,$date);
             }, $model),
             ],
             [
         		'attribute'=>'VRF',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($data->applicant_id);
+					 $date=date("Y-m-d");
+                return backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($data->applicant_id,$date);
             }, $model),
             ],			
             [
         		'attribute'=>'totalLoan',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($data->applicant_id);
+					$date=date("Y-m-d");
+                return backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($data->applicant_id,$date);
             }, $model),
             ],	
 
@@ -61,14 +67,16 @@ $this->title = "Loan Details";
         		'attribute'=>'paid',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return \frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($data->applicant_id);
+					$date=date("Y-m-d");
+                return \frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($data->applicant_id,$date);
             }, $model),
             ],			
             [
         		'attribute'=>'outstanding',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return \frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($data->applicant_id);
+			    $date=date("Y-m-d");		
+                return \frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($data->applicant_id,$date);
             }, $model),
             ],			
         ],

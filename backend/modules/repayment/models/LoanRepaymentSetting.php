@@ -31,6 +31,14 @@ class LoanRepaymentSetting extends \yii\db\ActiveRecord
     const FORMULA_STAGE_0=0;
     const FORMULA_STAGE_1=1;
     const FORMULA_STAGE_2=2;
+	/////constats for formula stage level
+	const FORMULA_STAGE_LEVEL_DISBUSRMENT=1;
+    const FORMULA_STAGE_LEVEL_DUE_LOAN=2;
+    const FORMULA_STAGE_ON_REPAYMENT=3;
+	////cosntants for formalar stage due loan
+	const FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_GRADUATION=1;
+	const FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_ACADEMIC_YEAR=2;
+	
     /**
      * @inheritdoc
      */
@@ -70,7 +78,7 @@ class LoanRepaymentSetting extends \yii\db\ActiveRecord
             'created_at' => 'Created At',
             'created_by' => 'Created By',
 	    'calculation_mode'=>'calculation_mode',
-	    'is_active'=>'Is Applicable?',
+	    'is_active'=>'Activate This Setting?',
 	    'item_name'=>'Item Name',
             'charging_interval'=>'Charging Interval',
             'rate_type'=>'Rate Type',

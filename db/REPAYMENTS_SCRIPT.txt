@@ -115,5 +115,9 @@ CREATE TABLE IF NOT EXISTS `employer_penalty_cycle` (
   PRIMARY KEY (`employer_penalty_cycle_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 COMMIT;
+
+ALTER TABLE `loan_summary_detail` ADD `created_at` DATETIME NOT NULL AFTER `is_active`;
+ALTER TABLE `loan_summary_detail` CHANGE `is_active` `is_active` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '0: Inactive, 1: Active(This column to be updated when cancelling or adding employee), -1: Status for killing the previous loan summary before staring Repayment';
+ALTER TABLE `system_setting` ADD `graduated_from` DATE NULL DEFAULT NULL COMMENT 'Date to guide penalty calculation' AFTER `item_formula`, ADD `graduated_to` DATE NULL DEFAULT NULL COMMENT 'Date to guide penalty calculation' AFTER `graduated_from`;
 -----------------------------------------------------
 ======================================================

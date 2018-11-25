@@ -1,3 +1,22 @@
+<script type="text/javascript">
+    function checkvalidation() {
+	    var autstandingAmount = document.getElementById("outstandingAmount_id").value;
+		var amount_adjusted = document.getElementById("amount_adjusted_id").value.trim();
+		if(amount_adjusted !=''){
+		if((autstandingAmount >=amount_adjusted) && amount_adjusted > 0){
+		return check_status();
+        }else{
+		var smsalert="Pay Amount must be less than or equal to outstanding amount";	
+		alert (smsalert);
+        return false;	
+		}		
+		}else{
+		var smsalert="Pay Amount must be numerical";	
+		alert (smsalert);
+		return false;
+		}
+    }
+</script>
 <?php
 use yii\helpers\Html;
 use kartik\detail\DetailView;
@@ -146,7 +165,7 @@ frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer()
 		<div class="profile-info-value">
     <div class="col-sm-12">
 <?= 
-Html::textInput('outstandingAmount', null, ['value'=>number_format($outstandingAmount,2),'size'=>20,'class'=>'form-control','options'=>['size'=>'20']]) 
+Html::textInput('outstandingAmount', number_format($outstandingAmount,2), ['size'=>20,'class'=>'form-control','readOnly'=>'readOnly','id'=>'outstandingAmount_id','options'=>['size'=>'20']]) 
 ?>
 </div>
     </div>
@@ -157,16 +176,16 @@ Html::textInput('outstandingAmount', null, ['value'=>number_format($outstandingA
 		<div class="profile-info-value">
     <div class="col-sm-12">
 <?= 
-Html::textInput('amount', null, ['size'=>20,'class'=>'form-control','options'=>['size'=>'20']]) 
+Html::textInput('amount', null, ['size'=>20,'class'=>'form-control','id'=>'amount_adjusted_id','options'=>['size'=>'20']]) 
                         ?>
 </div>
     </div>			
 <div class="text-right" >
        <?php //if($model->hasErrors()){ ?>
-	   <?= Html::submitButton('Submit', ['class'=>'pull-right btn btn-primary']) ?>
+	   <?= Html::submitButton('Submit', ['class'=>'btn btn-primary','onclick'=>'return  checkvalidation()']) ?>
 	   <?php //} ?>
 <?php
-//echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['employer-penalty-payment/create'], ['class' => 'btn btn-warning']);
+echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['employer-penalty-payment/create'], ['class' => 'btn btn-warning']);
 ?>
     </div>					
                     <?= Html::endForm(); ?>     

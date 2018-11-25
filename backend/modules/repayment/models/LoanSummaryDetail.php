@@ -1307,33 +1307,158 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 		}
         return $details_outstandingDebt1;
         }	
-public static function getTotalLoanBeneficiaryOriginal($applicantID){
-$totalLoan=LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID) + LoanSummaryDetail::getTotalPenaltyOriginal($applicantID) + LoanSummaryDetail::getTotalLAFOriginal($applicantID) + LoanSummaryDetail::getTotalVRFOriginal($applicantID);
+public static function getTotalLoanBeneficiaryOriginal($applicantID,$date){
+$totalLoan=LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID,$date) + LoanSummaryDetail::getTotalPenaltyOriginal($applicantID,$date) + LoanSummaryDetail::getTotalLAFOriginal($applicantID,$date) + LoanSummaryDetail::getTotalVRFOriginal($applicantID,$date);
 
 return $totalLoan;
 }	
-public static function getTotalPrincipleLoanOriginal($applicantID){
-        $details_applicantID = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' ORDER BY loan_summary_id ASC")->one();
-        $moder=new EmployedBeneficiary();
-        $billDetailModel=new LoanRepaymentDetail();
-        $pricipalLoan1=0;
-		$totalLoanPrincipal=0;
 
-		if(count($details_applicantID)>0){ 
-		$loan_summary_idBenef=$details_applicantID->loan_summary_id;
-        }else{
-		$loan_summary_idBenef=0;
-		}
-		// here if exists in any loan summary
-		if($loan_summary_idBenef > 0){
-		$itemCodePrincipal="PRC";
-        $principal_id=$moder->getloanRepaymentItemID($itemCodePrincipal);
-		$loanPrincipal = LoanSummaryDetail::findBySql("SELECT SUM(amount) AS 'amount' FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$loan_summary_idBenef' AND loan_repayment_item_id='$principal_id'")->one();
-		$totalAmountPrincipal=$loanPrincipal->amount;
 		
-		$totalLoanPrincipal=$totalAmountPrincipal;
-		}else{
-		//--------------------------HERE PRINCIPAL LOAN------------------
+//This method/function returns the total beneficiary VRF date		
+public static function getTotalVRFOriginal($applicantID,$date){
+	$date=strtotime($date);
+	$totlaVRF=0;
+	//check for benefiacy repayment
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	if($repayment){
+		//Caliculate VRF On Repayment
+	    //get the active loan summary
+        $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	    $activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
+		
+		
+		$itemCodeVRF="VRF";
+        $vrf_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
+		$loanVRF = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.amount AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$vrf_id'")->one();
+		$totalAmountVRF=$loanVRF->amount;
+		//getting accumulated VRF
+		$queryVRFaccumulated = LoanSummaryDetail::findBySql("SELECT DISTINCT loan_summary_id FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='$vrf_id' AND loan_summary_id<>'$activeLoanSummary_id' AND loan_summary_detail.is_active<>'-1'")->all();
+		
+		foreach ($queryVRFaccumulated as $resultsVRFaccumulated) {
+                    $OtherLoanSummaryID=$resultsVRFaccumulated->loan_summary_id; 
+        $totalVRFAccumulated = LoanSummary::findBySql("SELECT vrf_accumulated AS vrf_accumulated FROM loan_summary WHERE loan_summary_id='$OtherLoanSummaryID'")->one();
+		
+        $vrfAccumulatedFinal +=$totalVRFAccumulated->vrf_accumulated; 		
+                    }		
+		//end getting accumulated VRF
+		$totlaVRF=$vrfAccumulatedFinal + $totalAmountVRF;
+	}else{
+	//CALCULATE VRF BEFORE ANY REPAYMENT
+	//Get Disbursement per beneficiary
+	  $numberOfDaysPerYear=\backend\modules\repayment\models\EmployedBeneficiary::getTotaDaysPerYearSetting();
+	  $pricipalLoan1qaws=\common\models\LoanBeneficiary::getAmountNoReturned($applicantID);
+	  ///looiping among all the disbursed_amount
+	   
+	      foreach ($pricipalLoan1qaws as $resultsApp) {
+					$pricipalLoan=$resultsApp->disbursed_amount;
+					                    $academicYearEndate=$resultsApp->disbursementBatch->academicYear->end_date;
+                                        $dateLoanDisbursed=date("Y-m-d",strtotime($resultsApp->status_date)); 
+                                        $formula_stage_level=\common\models\LoanBeneficiary::getVrFBeforeRepayment($dateLoanDisbursed);
+                                        //var_dump($formula_stage_level);
+                                        $VRF_Rate=$formula_stage_level->rate;
+					     			switch($formula_stage_level->formula_stage_level){
+										case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DISBUSRMENT:
+										 //formula_stage_level==1 for From Disbursement date
+                                        $totalNumberOfDays=round(($date-strtotime($dateLoanDisbursed))/(60*60*24));
+										break;
+																		
+										case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN:
+										//formula_stage_level==2 for Due Loan 
+                                            //here for after graduation
+											switch($formula_stage_level->formula_stage_level){
+												case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_GRADUATION:
+												$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID) ;
+                                            //---checking grace period---
+                                                   
+                                                    $periodPendingUnpaid=round(($date-strtotime($dateGraduated))/(60*60*24));
+                                                    if(($periodPendingUnpaid-$formula_stage_level->grace_period) > 0){
+                                                    $totalNumberOfDays=$periodPendingUnpaid-$formula_stage_level->grace_period;
+                                                    }else{
+                                                      $totalNumberOfDays=0;              
+                                                    }
+												break;
+												
+												case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_ACADEMIC_YEAR:
+												 // here for after academic year 
+                                                   if((round(($date-strtotime($academicYearEndate))/(60*60*24))) > 0){
+                                                    $totalNumberOfDays=round(($date-strtotime($academicYearEndate))/(60*60*24));   
+                                                    }else{
+                                                     $totalNumberOfDays=0;   
+                                                     }
+												break;
+												
+											}
+																					
+										break;
+										
+									}
+									$item_fomula=$formula_stage_level->item_formula;  //=PRC*R*T
+									
+                                 $totlaVRF +=($pricipalLoan*$VRF_Rate*$totalNumberOfDays)/$numberOfDaysPerYear;
+                    }
+	}
+	if($totlaVRF < 0){
+	$totlaVRF=0;
+	}
+   return  $totlaVRF;
+}
+//This method/function returns the total beneficiary PENALTY BY date
+public static function getTotalPenaltyOriginal($applicantID,$date){
+	//check for benefiacy repayment
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	if($repayment){
+	//calculate total penalty on repayment
+	    $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	    $activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
+        $itemCodePNT="PNT";
+        $PNT_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePNT);
+		$loanPenalty = LoanSummaryDetail::findBySql("SELECT amount FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$PNT_id'")->one();
+		$totalAmountPenalty=$loanPenalty->amount;	
+	}else{
+	//calculate penalty before repayment
+	$totalAmountPenalty=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesPenalty($applicantID,$date)
+	}
+	if($totalAmountPenalty < 0){
+	$totalAmountPenalty=0;	
+	}
+    return $totalAmountPenalty;
+    }
+	
+	
+	
+//This method/function returns the total beneficiary LAF BY date	
+public static function getTotalLAFOriginal($applicantID,$date){	
+	//check for benefiacy repayment
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	if($repayment){
+	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	$activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
+    $itemCodeLAF="LAF";
+    $LAF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeLAF);
+	$loanLAF = LoanSummaryDetail::findBySql("SELECT amount FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$LAF_id'")->one();
+	$totalAmountLAF=$loanLAF->amount;
+	}else{
+	$totalAmountLAF=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesLAF($applicantID);		
+	}
+	if($totalAmountLAF < 0){
+	$totalAmountLAF=0;	
+	}
+return $totalAmountLAF;
+        }
+//This method/function returns the total beneficiary PRINCIPLE BY date		
+public static function getTotalPrincipleLoanOriginal($applicantID,$date){	
+	     //check for benefiacy repayment
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	if($repayment){
+	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	$activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
+	$itemCodePrincipal="PRC";
+    $principal_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePrincipal);
+	$loanPrincipal = LoanSummaryDetail::findBySql("SELECT SUM(amount) AS 'amount' FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$principal_id'")->one();
+	$totalAmountPrincipal=$loanPrincipal->amount;		
+	$totalLoanPrincipal=$totalAmountPrincipal;
+	}else{
+	//--------------------------HERE PRINCIPAL LOAN------------------
 		$itemCodePrincipal="PRC";
         $principal_id=$moder->getloanRepaymentItemID($itemCodePrincipal);       
         //$getDistinctAccademicYrPerApplicant = Application::findBySql("SELECT DISTINCT academic_year_id AS 'academic_year_id' FROM application WHERE  applicant_id='$applicantID'")->all();
@@ -1345,116 +1470,18 @@ public static function getTotalPrincipleLoanOriginal($applicantID){
         $pricipalLoan1 +=$pricipalLoan->disbursed_amount;        
                     }
 		//-----------------------END PRINCIPAL LOAN----------------------
-		$totalLoanPrincipal= $pricipalLoan1;
-		}       
-
-       
-        if($totalLoanPrincipal > 0){
-		$value=$totalLoanPrincipal;
-		}else{
-		$value=0;
+		$totalLoanPrincipal= $pricipalLoan1;	
+	}
+        if($totalLoanPrincipal < 0){
+		$totalLoanPrincipal=0;
 		}
-       return $value;
-        }
-    public static function getTotalPenaltyOriginal($applicantID){
-        $details_applicantID = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' ORDER BY loan_summary_id ASC")->one();
-        $si=0;
-        $moder=new EmployedBeneficiary();
-        $billDetailModel=new LoanRepaymentDetail();
-		$penalty1=0;
-        $totalAmountPenalty=0;		
-		if(count($details_applicantID)>0){ 
-		$loan_summary_idBenef=$details_applicantID->loan_summary_id;
-        }else{
-		$loan_summary_idBenef=0;
-		}
-		// here if exists in any loan summary
-		if($loan_summary_idBenef > 0){
-		$itemCodePNT="PNT";
-        $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
-		$loanPenalty = LoanSummaryDetail::findBySql("SELECT amount FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$loan_summary_idBenef' AND loan_repayment_item_id='$PNT_id'")->one();
-		$totalAmountPenalty=$loanPenalty->amount;
-		}else{
-        $totalAmountPenalty=$moder->getIndividualEmployeesPenalty($applicantID);
-		}       
-
-       
-        if($totalAmountPenalty > 0){
-		$value=$totalAmountPenalty;
-		}else{
-		$value=0;
-		}
-       return $value;
-        }	
-    public static function getTotalLAFOriginal($applicantID){
-        $details_applicantID = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' ORDER BY loan_summary_id ASC")->one();
-        $si=0;
-        $moder=new EmployedBeneficiary();
-        $billDetailModel=new LoanRepaymentDetail();
-        $totalAmountLAF=0;		
-		if(count($details_applicantID)>0){ 
-		$loan_summary_idBenef=$details_applicantID->loan_summary_id;
-        }else{
-		$loan_summary_idBenef=0;
-		}
-		// here if exists in any loan summary
-		if($loan_summary_idBenef > 0){
-		$itemCodeLAF="LAF";
-        $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-		$loanLAF = LoanSummaryDetail::findBySql("SELECT amount FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$loan_summary_idBenef' AND loan_repayment_item_id='$LAF_id'")->one();
-		$totalAmountLAF=$loanLAF->amount;
-		}else{
-		$totalAmountLAF=$moder->getIndividualEmployeesLAF($applicantID);           
-		}       
-
-       
-        if($totalAmountLAF > 0){
-		$value=$totalAmountLAF;
-		}else{
-		$value=0;
-		}
-       return $value;
-        }
-public static function getTotalVRFOriginal($applicantID){
-        $details_applicantID = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' ORDER BY loan_summary_id ASC")->one();
-        $si=0;
-		$vrfAccumulatedFinal=0;
-		$totalAmountVRF=0;
-		$totalLoanVRF=0;
-        $moder=new EmployedBeneficiary();
-        $billDetailModel=new LoanRepaymentDetail();
-		$vrf1=0;		 
-		if(count($details_applicantID)>0){ 
-		$loan_summary_idBenef=$details_applicantID->loan_summary_id;
-        }else{
-		$loan_summary_idBenef=0;
-		}
-		// here if exists in any loan summary
-		if($loan_summary_idBenef > 0){
-		$itemCodeVRF="VRF";
-        $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-		$loanVRF = LoanSummaryDetail::findBySql("SELECT amount FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$loan_summary_idBenef' AND loan_repayment_item_id='$vrf_id'")->one();
-		$totalAmountVRF=$loanVRF->amount;
-		//getting accumulated VRF
-		$queryVRFaccumulated = LoanSummaryDetail::findBySql("SELECT DISTINCT loan_summary_id FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='$vrf_id' AND loan_summary_id<>'$loan_summary_idBenef'")->all();
+       return $totalLoanPrincipal;
+}		
 		
-		foreach ($queryVRFaccumulated as $resultsVRFaccumulated) {
-                    $OtherLoanSummaryID=$resultsVRFaccumulated->loan_summary_id; 
-        $totalVRFAccumulated = LoanSummary::findBySql("SELECT vrf_accumulated AS vrf_accumulated FROM loan_summary WHERE loan_summary_id='$OtherLoanSummaryID'")->one();
-		
-        $vrfAccumulatedFinal +=$totalVRFAccumulated->vrf_accumulated; 		
-                    }		
-		//end getting accumulated VRF
-		$totalLoanVRF=$vrfAccumulatedFinal + $totalAmountVRF;
-		}else{	
-		$totalLoanVRF=$moder->getIndividualEmployeesVRF($applicantID);		
-		}       
-       
-        if($totalLoanVRF > 0){
-		$value=$totalLoanVRF;
-		}else{
-		$value=0;
-		}
-       return $value;
-        }		
+public static function getActiveLoanSummaryOfBeneficiary($applicantID){
+return self::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
+}
+public static function getActiveLoanSummaryOfBeneficiaryDetails($applicantID,$loanSummary_id,$itemCode_id){
+return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS 'amount' FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' AND loan_summary_detail.loan_summary_id='$loanSummary_id' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id'  ORDER BY loan_summary_detail.loan_summary_id DESC")->one();	
+}
 }

@@ -48,14 +48,16 @@ $this->title = "Loan Details";
         		'attribute'=>'VRF',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return \backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($data->applicant_id);
+					$date=date("Y-m-d");
+                return \backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($data->applicant_id,$date);
             }, $model),
             ],			
             [
         		'attribute'=>'totalLoan',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return \backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($data->applicant_id);
+			    $date=date("Y-m-d");		
+                return \backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($data->applicant_id,$date);
             }, $model),
             ],	
 
@@ -70,7 +72,8 @@ $this->title = "Loan Details";
         		'attribute'=>'outstanding',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
-                return frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($data->applicant_id);
+				$date=date("Y-m-d");	
+                return frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($data->applicant_id,$date);
             }, $model),
             ],			
         ],
