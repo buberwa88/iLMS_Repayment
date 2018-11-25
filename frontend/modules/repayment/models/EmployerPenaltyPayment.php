@@ -42,7 +42,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 			[['cancel_reason'], 'required','on'=>'Cancell_employer_penalty'],
 			[['amount'], 'required','on'=>'employer_penalty_payment'],
             [['employer_id'], 'integer'],
-            [['amount'], 'number', 'min' => 1000],		
+            //[['amount'], 'number', 'min' => 1000],		
             //['age', 'integer', 'min' => 0],			
             [['payment_date', 'created_at','control_number','receipt_number','pay_method_id','date_control_requested','date_control_received','date_receipt_received','payment_status','totalAmount','outstandingAmount','paidAmount','employer_id', 'amount',], 'safe'],
         ];

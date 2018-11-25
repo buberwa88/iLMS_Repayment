@@ -41,7 +41,6 @@ frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer()
   function check_status() {
       //form-group field-user-verifycode
    document.getElementById("hidden").style.display = "none";
-   document.getElementById("hiddenAdjust").style.display = "none";
    document.getElementById("loader").style.display = "block";
     }
 </script>
@@ -120,6 +119,7 @@ frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer()
 	
 	<?php if($getExists==0){ ?>
 	<?php if($outstandingAmount > 0){ ?>
+	<?php $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL]); ?>
 	
 	<div class="col-xs-12">
             <div class="box box-primary">
@@ -129,57 +129,10 @@ frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer()
 	<div class="row">        
   <div class="block"><button type="button" class="btn"><?php echo "Pay Amount: ".$amountToPayDisplay; ?></button></div>
   <div class="block"></div>
-  <div class="block" id="hiddenAdjust">
-  
-  
-  <?php
-                Modal::begin([
-                    'header' => '<h4>Adjust Pay Amount</h4>',
-                    'toggleButton' =>   ['label' => 'Adjust Amount', 'style'=>'margin-left:4px', 'class' => 'btn btn-primary'],
-                ]);
-            ?>
-                <div class="panel-body">
-                    <?= Html::beginForm("index.php?r=repayment/employer-penalty-payment/adjust-amount-penalty"); ?>
-					<div class="profile-info-name">
-          <label>Outstanding Amount:</label>
-        </div>
-		<div class="profile-info-value">
-    <div class="col-sm-12">
-<?= 
-Html::textInput('outstandingAmount', null, ['value'=>number_format($outstandingAmount,2),'size'=>20,'class'=>'form-control','options'=>['size'=>'20']]) 
-?>
-</div>
-    </div>
-	<br/>
-                <div class="profile-info-name">
-          <label>Pay Amount:</label>
-        </div>
-		<div class="profile-info-value">
-    <div class="col-sm-12">
-<?= 
-Html::textInput('amount', null, ['size'=>20,'class'=>'form-control','options'=>['size'=>'20']]) 
-                        ?>
-</div>
-    </div>			
-<div class="text-right" >
-       <?php //if($model->hasErrors()){ ?>
-	   <?= Html::submitButton('Submit', ['class'=>'pull-right btn btn-primary']) ?>
-	   <?php //} ?>
-<?php
-//echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['employer-penalty-payment/create'], ['class' => 'btn btn-warning']);
-?>
-    </div>					
-                    <?= Html::endForm(); ?>     
-                </div>
-            <?php
-                Modal::end();
-                
-            ?>  
-  
-  </div>        
-		<div class="block">
-		<?php $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL]); ?>
-		<?= $form->field($model, 'amount')->label(false)->hiddenInput(['value'=>$amountSa,'readOnly'=>'readOnly']) ?></div>
+  <div class="block"><?= Html::a('Adjust Amount',['employer-penalty-payment/adjust-amount-penalty'],['data-toggle'=>"modal",'data-target'=>"#adjustAmountPenalty",'data-title'=>"Adjust Amount",'class' => 'btn btn-primary',]
+                )
+		?></div>
+		<div class="block"><?= $form->field($model, 'amount')->label(false)->hiddenInput(['value'=>$amountSa,'readOnly'=>'readOnly']) ?></div>
 		<div class="block" id="hidden"><?= Html::submitButton($model->isNewRecord ? 'Click here to confirm for payment' : 'Click here to confirm for payment', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary','onclick'=>'return  check_status()']) ?>
 		</div>
 <br/><br/><br/>		

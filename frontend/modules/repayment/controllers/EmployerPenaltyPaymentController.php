@@ -178,16 +178,27 @@ class EmployerPenaltyPaymentController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+	
 	public function actionAdjustAmountPenalty()
     {
-	    $this->layout="default_main";
+	    //$this->layout="default_main";
 		$employerModel = new EmployerSearch();
         $model = new EmployerPenaltyPayment();
         $model->scenario='employer_penalty_payment';		
 		$loggedin = Yii::$app->user->identity->user_id;
         $employer2 = $employerModel->getEmployer($loggedin);
         $employer_id=$employer2->employer_id;
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {			
+        if ($model->load(Yii::$app->request->post())) {
+			 //&& $model->validate()
+             if(!is_numeric($model->amount) && $model->amount !=''){
+				$sms="Operation failed, Pay amount must nummber!";
+                Yii::$app->getSession()->setFlash('warning', $sms); 
+				return $this->redirect(['create']);
+			 }else{
+			$sms="Operation failed, Pay amount must nummber!";
+                Yii::$app->getSession()->setFlash('warning', $sms); 
+				return $this->redirect(['create']);	 
+			 }			
 			$countResults=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()
 			->where(['employer_id'=>$employer_id])
 			->andWhere(['or',
@@ -219,9 +230,25 @@ class EmployerPenaltyPaymentController extends Controller
            Yii::$app->getSession()->setFlash('success', $sms);			
 		return $this->redirect(['create']);
 		} else {
-            return $this->render('adjustAmountPenalty', [
+            return $this->render('create', [
                 'model' => $model,
             ]);
         }
     }
+	
+/*
+	public function actionAdjustAmountPenalty()
+    {
+		$model = new EmployerPenaltyPayment();
+	    if (Yii::$app->request->isAjax) {
+        return $this->renderAjax('_formAdjustAmount', [
+            'model' => $model,
+        ]);
+    } else {
+        return $this->render('_formAdjustAmount', [
+            'model' => $model,
+        ]);
+    }
+    }
+	*/
 }
