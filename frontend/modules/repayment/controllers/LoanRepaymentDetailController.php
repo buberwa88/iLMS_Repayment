@@ -270,9 +270,68 @@ class LoanRepaymentDetailController extends Controller
             'loan_repayment_id' => $loan_repayment_id,
         ]);
     }
+	public function actionUpdateNewPaymentAmount($id=null)
+    {
+	    $this->layout="popup";
+        $ModelLoanRepaymentDetail = $this->findModel($id);
+        $ModelLoanRepaymentDetail2 = new LoanRepaymentDetail();	
+		$searchModel = new LoanRepaymentDetailSearch();
+        $model2 = new LoanRepayment();
+        $employerModel = new EmployerSearch();
+        $ModelLoanRepaymentDetail2->scenario='adjustAmount';		
+		$loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+
+        if (Yii::$app->request->post()) {
+			$request = Yii::$app->request->post();
+			$outstandingAmount=str_replace(",","",$request['outstandingAmount']);
+			$amount=str_replace(",","",$request['amount']);
+			$minimumAmount=str_replace(",","",$request['amountx1']);
+            $loan_summary_id=$request['loan_summary_id'];
+			$loan_repayment_id=$request['loan_repayment_id'];
+			$applicantID=$request['applicant_id'];
+		if($amount !=''){
+			if(!is_numeric($amount)){
+				$sms="Operation failed, Pay amount must nummber!";
+                Yii::$app->getSession()->setFlash('danger', $sms); 
+				return $this->redirect(['loan-repayment/confirm-payment','id'=>$loan_repayment_id]);
+			}else{
+            if(($outstandingAmount >= $amount) && $amount > 0){
+			if($amount < $minimumAmount){
+			$sms="Operation Fail,Pay amount must not be less than ".number_format($minimumAmount,2);
+			Yii::$app->getSession()->setFlash('error', $sms);
+			return $this->redirect(['loan-repayment/confirm-payment','id'=>$loan_repayment_id]);
+			}else{
+			$model2->resetTheOldAmountOnPaymentAdjustmentAccepted($loan_repayment_id,$applicantID);			
+			$ModelLoanRepaymentDetail2->updateNewAmountOnAdjustmentOfPaymentEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$amount,$applicantID);			
+            $totalAmount1=$model2->getAmountRequiredForPayment($loan_repayment_id);				
+            $model2->updateNewTotaAmountAfterPaymentAdjustment($totalAmount1,$loan_repayment_id);
+            }
+            $sms="Amount successful adjusted, Kindly confirm payment!";
+           Yii::$app->getSession()->setFlash('success', $sms);			
+		   return $this->redirect(['loan-repayment/confirm-payment','id'=>$loan_repayment_id]);			
+		    }else{				
+			$sms="Pay Amount must be less than or equal to outstanding amount";
+           Yii::$app->getSession()->setFlash('danger', $sms);			
+		   return $this->redirect(['loan-repayment/confirm-payment','id'=>$loan_repayment_id]);
+			}		
+          }}else{
+			    $sms="Pay amount adjusted successful!";
+			    Yii::$app->getSession()->setFlash('success', $sms); 
+				return $this->redirect(['loan-repayment/confirm-payment','id'=>$loan_repayment_id]); 
+			 }
+		}else {
+            return $this->render('updateNewPaymentAmount', [
+                'model' => $ModelLoanRepaymentDetail,
+            ]);
+        }
+    }
+	
+	/*
 	public function actionUpdateNewPaymentAmount($id)
     {
-	 $this->layout="default_main";
+	 $this->layout="popup";
         $ModelLoanRepaymentDetail = $this->findModel($id);		
 		$searchModel = new LoanRepaymentDetailSearch();
         $model2 = new LoanRepayment();
@@ -331,6 +390,9 @@ class LoanRepaymentDetailController extends Controller
             ]);
         }
     }
+	*/
+	
+	
 	public function actionNewamountinPayment()
     {
 	    $this->layout="default_main";

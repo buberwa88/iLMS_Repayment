@@ -192,14 +192,16 @@ class EmployerPenaltyPaymentController extends Controller
         //$number = $request['number'];
         if (Yii::$app->request->post()) {
 			$request = Yii::$app->request->post();
+			$outstandingAmount=str_replace(",","",$request['outstandingAmount']);
+			$amount=str_replace(",","",$request['amount']);
 			 //&& $model->validate()
-		if($request['amount'] !=''){
-			if(!is_numeric($request['amount'])){
+		if($amount !=''){
+			if(!is_numeric($amount)){
 				$sms="Operation failed, Pay amount must nummber!";
                 Yii::$app->getSession()->setFlash('danger', $sms); 
 				return $this->redirect(['create']);
 			}else{
-            if(($request['outstandingAmount'] >= $request['amount']) && $request['amount'] > 0){				
+            if(($outstandingAmount >= $amount) && $amount > 0){				
 			$countResults=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()
 			->where(['employer_id'=>$employer_id])
 			->andWhere(['or',
@@ -208,7 +210,7 @@ class EmployerPenaltyPaymentController extends Controller
         ])->one();
 			if(count($countResults) > 0){
 			$employer_penalty_payment_id=$countResults->employer_penalty_payment_id;
-            $totalamount=$request['amount'];
+            $totalamount=$amount;
             $newAmount=\frontend\modules\repayment\models\EmployerPenaltyPayment::findOne($employer_penalty_payment_id);
             $newAmount->amount= $totalamount;
             $newAmount->save();			
@@ -222,7 +224,7 @@ class EmployerPenaltyPaymentController extends Controller
 			$model->control_number=$controlNumber;
 			$model->date_control_requested=date("Y-m-d H:i:s");
 			$model->date_control_received =date("Y-m-d H:i:s");
-			$model->amount= $request['amount'];
+			$model->amount= $amount;
 			//$model->pay_method_id=4;
 			//$model->payment_status=0;		
 			$model->employer_id = $employer2->employer_id;	
@@ -232,7 +234,7 @@ class EmployerPenaltyPaymentController extends Controller
            Yii::$app->getSession()->setFlash('success', $sms);			
 		return $this->redirect(['create']);
 			}else{
-			$sms="Amount successful adjusted, Kindly confirm payment!";
+			$sms="Pay Amount must be less than or equal to outstanding amount";
            Yii::$app->getSession()->setFlash('danger', $sms);			
 		return $this->redirect(['create']);	
 			}

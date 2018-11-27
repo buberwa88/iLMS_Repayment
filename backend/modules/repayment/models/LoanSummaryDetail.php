@@ -1416,7 +1416,7 @@ public static function getTotalPenaltyOriginal($applicantID,$date){
 		$totalAmountPenalty=$loanPenalty->amount;	
 	}else{
 	//calculate penalty before repayment
-	$totalAmountPenalty=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesPenalty($applicantID,$date)
+	$totalAmountPenalty=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesPenalty($applicantID,$date);
 	}
 	if($totalAmountPenalty < 0){
 	$totalAmountPenalty=0;	
@@ -1460,7 +1460,7 @@ public static function getTotalPrincipleLoanOriginal($applicantID,$date){
 	}else{
 	//--------------------------HERE PRINCIPAL LOAN------------------
 		$itemCodePrincipal="PRC";
-        $principal_id=$moder->getloanRepaymentItemID($itemCodePrincipal);       
+        $principal_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePrincipal);       
         //$getDistinctAccademicYrPerApplicant = Application::findBySql("SELECT DISTINCT academic_year_id AS 'academic_year_id' FROM application WHERE  applicant_id='$applicantID'")->all();
 		$getDistinctAccademicYrPerApplicant =\common\models\LoanBeneficiary::getAcademicYearTrend($applicantID);
                     foreach ($getDistinctAccademicYrPerApplicant as $resultsApp) {

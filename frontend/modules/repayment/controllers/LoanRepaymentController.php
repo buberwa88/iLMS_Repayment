@@ -315,6 +315,7 @@ class LoanRepaymentController extends Controller
         $employerSalarySource=$employerModel->getEmployerSalarySource2($employerID);
         $searchModel = new LoanRepaymentDetailSearch();
         $modelBill = new LoanSummary();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams,$loan_repayment_id);
 		if ($model->load(Yii::$app->request->post())) {
 		if($model->save()){
         //$dataProvider = $searchModel->search(Yii::$app->request->queryParams,$loan_repayment_id);
@@ -342,7 +343,8 @@ class LoanRepaymentController extends Controller
 		}
 		}else {
             return $this->render('confirmPayment', [
-                'model' => $model,'employerSalarySource'=>$employerSalarySource,
+                'model' => $model,'employerSalarySource'=>$employerSalarySource,'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
             ]);
         }
     }
@@ -575,6 +577,32 @@ class LoanRepaymentController extends Controller
         $modelBill = new LoanSummary();
 		$ModelLoanRepaymentDetail = new LoanRepaymentDetail();
 		$employerModel = new EmployerSearch();
+		//$model->scenario='paymentAdjustmentLoanee';
+		
+        $loggedin=Yii::$app->user->identity->user_id;
+        $applicant=$employerModel->getApplicant($loggedin);
+        $applicantID=$applicant->applicant_id;
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+			//end if amount changed
+		   $sms="Kindly use the below control number for payment!";
+           Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['viewconfirmed-paymentbeneficiary', 'id' => $model->loan_repayment_id]);
+			}else {
+            return $this->render('confirmPaymentbeneficiary', [
+                'model' => $model,
+            ]);
+        }
+    }
+	/*
+	public function actionConfirmPaymentbeneficiary($id)
+    {
+	    $this->layout="main_private_beneficiary";
+        $model = $this->findModel($id);		
+		$searchModel = new LoanRepaymentDetailSearch();
+        $modelBill = new LoanSummary();
+		$ModelLoanRepaymentDetail = new LoanRepaymentDetail();
+		$employerModel = new EmployerSearch();
 		$model->scenario='paymentAdjustmentLoanee';
 		
         $loggedin=Yii::$app->user->identity->user_id;
@@ -602,7 +630,7 @@ class LoanRepaymentController extends Controller
 			return $this->redirect(['confirm-paymentbeneficiary','id'=>$model->loan_repayment_id]);
 			}
 			if($model->amount < $minimumAmount){
-			$sms="Operation Fail,Pay amount must be greater than or equal to ".number_format($minimumAmount,2);
+			$sms="Operation Fail,Pay amount must not be less than ".number_format($minimumAmount,2);
 			Yii::$app->getSession()->setFlash('error', $sms);
 			return $this->redirect(['confirm-paymentbeneficiary','id'=>$model->loan_repayment_id]);
 			}
@@ -621,6 +649,68 @@ class LoanRepaymentController extends Controller
             return $this->redirect(['viewconfirmed-paymentbeneficiary', 'id' => $model->loan_repayment_id]);
 			}
         } else {
+            return $this->render('confirmPaymentbeneficiary', [
+                'model' => $model,
+            ]);
+        }
+    }
+	*/
+	public function actionAdjustAmountBeneficiary()
+    {
+        $model = new LoanRepayment();	
+		$searchModel = new LoanRepaymentDetailSearch();
+        $modelBill = new LoanSummary();
+		$ModelLoanRepaymentDetail = new LoanRepaymentDetail();
+		$employerModel = new EmployerSearch();
+		$model->scenario='paymentAdjustmentLoanee';
+		
+        $loggedin=Yii::$app->user->identity->user_id;
+        $applicant=$employerModel->getApplicant($loggedin);
+        $applicantID=$applicant->applicant_id;
+
+        if (Yii::$app->request->post()) {
+			$request = Yii::$app->request->post();
+			$outstandingAmount=str_replace(",","",$request['outstandingAmount']);
+			$amount=str_replace(",","",$request['amount']);
+			$loan_repayment_id=$request['loan_repayment_id'];
+			$loan_summary_id=$request['loan_summary_id'];
+			$minimumAmount=str_replace(",","",$request['amountApplicant']);
+			 //&& $model->validate()
+			 
+		if($amount !=''){
+			if(!is_numeric($amount)){
+				$sms="Operation failed, Pay amount must nummber!";
+                Yii::$app->getSession()->setFlash('danger', $sms); 
+				return $this->redirect(['confirm-paymentbeneficiary','id'=>$loan_repayment_id]);
+			}else{
+            if(($outstandingAmount >= $amount) && $amount > 0){
+            if($amount < $minimumAmount){
+			$sms="Operation Fail,Pay amount must not be less than ".number_format($minimumAmount,2);
+			Yii::$app->getSession()->setFlash('error', $sms);
+			return $this->redirect(['confirm-paymentbeneficiary','id'=>$loan_repayment_id]);
+			}else{
+			$model->updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber=NULL);
+            //if(($amount != $model->amountApplicant)){
+			$model->resetTheOldAmountOnPaymentAdjustmentAccepted($loan_repayment_id,$applicantID);			
+			$ModelLoanRepaymentDetail->updateNewAmountOnAdjustmentOfPaymentEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$amount,$applicantID);			
+            $totalAmount1=$model->getAmountRequiredForPayment($loan_repayment_id);			
+            $model->updateNewTotaAmountAfterPaymentAdjustment($totalAmount1,$loan_repayment_id);
+			//}	
+			}
+           $sms="Amount successful adjusted, Kindly confirm payment!";
+           Yii::$app->getSession()->setFlash('success', $sms);			
+		   return $this->redirect(['confirm-paymentbeneficiary','id'=>$loan_repayment_id]);
+			}else{
+			$sms="Pay Amount must be less than or equal to outstanding amount";
+           Yii::$app->getSession()->setFlash('danger', $sms);			
+		   return $this->redirect(['confirm-paymentbeneficiary','id'=>$loan_repayment_id]);
+			}
+		}}else{
+			$sms="Pay Amount must be less than or equal to outstanding amount";
+                Yii::$app->getSession()->setFlash('danger', $sms); 
+				return $this->redirect(['confirm-paymentbeneficiary','id'=>$loan_repayment_id]); 
+			 }
+		} else {
             return $this->render('confirmPaymentbeneficiary', [
                 'model' => $model,
             ]);

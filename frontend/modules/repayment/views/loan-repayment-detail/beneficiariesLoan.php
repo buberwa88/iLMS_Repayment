@@ -10,19 +10,19 @@ use frontend\modules\repayment\models\LoanRepayment;
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
-
+$date=date("Y-m-d");
 $this->title = 'My Loan';
 $this->params['breadcrumbs'][] = $this->title;
          
             //$results1=$batchDetailModel->getAmountTotalPaidLoanee($applicantID);
             //$totalLoan=$BillDetailModel->getTotalLoanBeneficiaryOriginal($applicantID);
-			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID);
+			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date);
             
 $total_loan=$totalLoan;
-$principal=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID);
-$penalty=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicantID);
-$LAF=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicantID);
-$vrf=\backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicantID);
+$principal=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID,$date);
+$penalty=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicantID,$date);
+$LAF=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicantID,$date);
+$vrf=\backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicantID,$date);
 $model = new LoanRepayment();
 ?>
 <div class="loan-repayment-index">

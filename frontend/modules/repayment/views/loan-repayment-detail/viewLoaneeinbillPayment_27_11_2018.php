@@ -29,14 +29,9 @@
 		return false;
 		}
     }
-	  function check_status() {
-      //form-group field-user-verifycode
-   document.getElementById("hidden").style.display = "none";
-   document.getElementById("hiddenAdjust").style.display = "none";
-   document.getElementById("loader").style.display = "block";
-    }
 </script>
 <?php
+
 use yii\helpers\Html;
 use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
@@ -127,6 +122,7 @@ $this->title = "Beneficiaries";
 
 
 <?php
+/*
 Modal::begin([
     'id' => 'adjustAmount',
     'header' => '<h4 class="modal-title">...</h4>',
@@ -135,10 +131,12 @@ Modal::begin([
 //echo '...';
  
 Modal::end();
+*/
 ?>
 
 
 <?php
+/*
     $this->registerJs("
     $('#adjustAmount').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget)
@@ -153,4 +151,58 @@ Modal::end();
             });
         })
 ");
+*/
 ?>
+<div class="block" id="hiddenAdjust">  
+  
+  <?php
+                Modal::begin([
+                    'header' => '<h4>Adjust Pay Amount</h4>',
+					'id' => 'adjustAmount',
+                    //'toggleButton' =>   ['label' => false,],
+                ]);
+            ?>
+                <div class="panel-body">
+                    <?= Html::beginForm("index.php?r=repayment/loan-repayment/adjust-amount-beneficiary"); ?>
+					<div class="profile-info-name">
+          <label>Outstanding Amount:</label>
+        </div>
+		<div class="profile-info-value">
+    <div class="col-sm-12">
+<?= 
+Html::textInput('outstandingAmount', $outstandingDebt, ['size'=>20,'class'=>'form-control','readOnly'=>'readOnly','id'=>'outstandingAmount_id','options'=>['size'=>'20']]) 
+?>
+<?= 
+Html::hiddenInput('loan_repayment_id', $loan_repayment_id,['class'=>'form-control'])?>
+<?=Html::hiddenInput('loan_summary_id', $loan_summary_id,['class'=>'form-control'])?>
+<?=Html::hiddenInput('amountApplicant', $amountApplicant,['class'=>'form-control','id'=>'amountApplicant_id']) 
+?>
+</div>
+    </div>
+	<br/>
+                <div class="profile-info-name">
+          <label>Pay Amount:</label>
+        </div>
+		<div class="profile-info-value">
+    <div class="col-sm-12">
+<?= 
+Html::textInput('amount', null, ['size'=>20,'class'=>'form-control','id'=>'amount_adjusted_id','options'=>['size'=>'20']]) 
+                        ?>
+</div>
+    </div>			
+<div class="text-right" >
+       <?php //if($model->hasErrors()){ ?>
+	   <?= Html::submitButton('Submit', ['class'=>'btn btn-primary','onclick'=>'return  checkvalidation()']) ?>
+	   <?php //} ?>
+<?php
+echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['view-loaneeinbill-payment','id'=>$loan_repayment_id], ['class' => 'btn btn-warning']);
+?>
+    </div>					
+                    <?= Html::endForm(); ?>     
+                </div>
+            <?php
+                Modal::end();
+                
+            ?>  
+  
+  </div>

@@ -1,9 +1,14 @@
 <script type="text/javascript">
     function checkvalidation() {
-	    var autstandingAmount = document.getElementById("outstandingAmount_id").value;
-		var amount_adjusted = document.getElementById("amount_adjusted_id").value.trim();
-		if(amount_adjusted !=''){
-		if((autstandingAmount >=amount_adjusted) && amount_adjusted > 0){
+	    var autstandingAmount1 = document.getElementById("outstandingAmount_id").value;
+		var amount_adjusted1 = document.getElementById("amount_adjusted_id").value.trim();
+
+		var autstandingAmount = autstandingAmount1.replace(",", "");
+		var amount_adjusted = amount_adjusted1.replace(",", "");
+		var checkZero="0";
+		//alert(autstandingAmount);
+		if(amount_adjusted !==''){
+		if((parseFloat(autstandingAmount) >= parseFloat(amount_adjusted)) && (parseFloat(amount_adjusted) > parseFloat(checkZero))){			
 		return check_status();
         }else{
 		var smsalert="Pay Amount must be less than or equal to outstanding amount";	

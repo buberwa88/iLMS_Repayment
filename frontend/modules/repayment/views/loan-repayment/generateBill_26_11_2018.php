@@ -32,9 +32,8 @@ $results=frontend\modules\repayment\models\LoanSummary::checkForActiveEmployees(
 	<?php 
 	}
 	?>
-	<br/><br/>
 	<h3>Bills List</h3>
-	<br/>
+	
 <?= GridView::widget([
         'dataProvider' => $dataProviderBills,
         'filterModel' => $searchLoanRepayment,

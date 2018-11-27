@@ -10,7 +10,7 @@ use frontend\modules\repayment\models\LoanRepayment;
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
-
+$date=date("Y-m-d");
 $this->title = 'Loan Payments';
 $this->params['breadcrumbs'][] = $this->title;
 $model = new LoanRepayment();
@@ -21,9 +21,9 @@ $model->updatePaymentAfterGePGconfirmPaymentDone($controlNumber,$amount);
 
  
           
-            $results1=$batchDetailModel->getAmountTotalPaidLoanee($applicantID);
+            $results1=$batchDetailModel->getAmountTotalPaidLoanee($applicantID,$date);
             //$totalLoan=$BillDetailModel->getTotalLoanBeneficiaryOriginal($applicantID);
-			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID);
+			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date);
             
  $total_loan=$totalLoan;
  //$total_loan='2000000';

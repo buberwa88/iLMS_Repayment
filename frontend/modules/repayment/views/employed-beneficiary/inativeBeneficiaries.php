@@ -82,7 +82,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 'hAlign' => 'right',
                 'format' => ['decimal', 2],
                 'value' => function ($model) {
-                return \backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($model->applicant_id);
+					$date=date("Y-m-d");
+                return \backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($model->applicant_id,$date);
         },
             ],
 			[
@@ -91,7 +92,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 'hAlign' => 'right',
                 'format' => ['decimal', 2],
                 'value' => function ($model) {
-                return frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($model->applicant_id);
+					$date=date("Y-m-d");
+                return frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($model->applicant_id,$date);
         },
             ], 
         [

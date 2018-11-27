@@ -5,7 +5,7 @@ use kartik\detail\DetailView;
 use yii\helpers\Url;
 
 $mpdf = new mPDF();
-
+$todate=date("Y-m-d");
 if($applicantID !=''){
 $applicant_id=$applicantID;
 }
@@ -169,6 +169,7 @@ $totalReturn=0;
   $academic_yearIDQ=$generalAcademicYearResults->disbursementBatch->academic_year_id;
  
  $amount1Return = \common\models\LoanBeneficiary::getLoanItemsAmountReturned($applicant_id,$returnedItem,$academic_yearIDQ);
+
  ?>
  <td <?php echo" style=\"text-align:right;\"";?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
  if($amount1Return->disbursed_amount >0){
@@ -246,7 +247,7 @@ $subtitalReturnAcc=0;
  <tr <?php echo" style=\"font-weight:bold;\"";?>><td colspan="<?php echo $val; ?>">Additional Charges :</td></tr>
  <tr <?php echo" style=\"\"";?>><td>Administration Fee</td>
  <?php 
-$LAF=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicant_id);
+$LAF=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicant_id,$todate);
  foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
  //echo $amountSubTtal;
  ?>
@@ -260,7 +261,7 @@ $LAF=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($ap
  </tr>
  <tr <?php echo" style=\"background-color:$colorReqF;\"";?>><td>Penalty</td>
  <?php 
-$penalty=backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicant_id);
+$penalty=backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicant_id,$todate);
  foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
  //echo $amountSubTtal;
  ?>
@@ -274,7 +275,7 @@ $penalty=backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOrig
  </tr>
  <tr <?php echo" style=\"\"";?>><td>Value Retention Fee</td>
  <?php 
-$vrf=backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id);
+$vrf=backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id,$todate);
  foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
  //echo $amountSubTtal;
  ?>
@@ -317,7 +318,7 @@ $totalLoan=$additionalChargeSubTotal+$subtitalAcc;
   <tr <?php echo" style=\"font-weight:bold;\"";?>><td colspan="<?php echo $val; ?>">Repayment :</td></tr>
  <tr <?php echo" style=\"\"";?>><td>Amount Repaid</td>
  <?php 
-$amountPaid=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($applicant_id);
+$amountPaid=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($applicant_id,$todate);
  foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
  //echo $amountSubTtal;
  ?>

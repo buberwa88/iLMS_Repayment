@@ -7,7 +7,7 @@ use yii\grid\GridView;
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Pay Bill';
+$this->title = 'Bill';
 ?>
 <div class="loan-repayment-index">
 

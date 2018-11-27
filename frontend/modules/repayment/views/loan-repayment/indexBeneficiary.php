@@ -1,3 +1,10 @@
+<script type="text/javascript">
+	function checkBillStatus() {
+      //form-group field-user-verifycode
+   document.getElementById("hidden").style.display = "none";
+   document.getElementById("loader").style.display = "block";
+    }
+</script>
 <?php
 
 use yii\helpers\Html;
@@ -97,11 +104,16 @@ $this->params['breadcrumbs'][] = $this->title;
     if($results_bill_number ==0 && $billID !=0 && $outstanding_debt > 1){
         
     ?>
-
+<div class="block" id="hidden">
     <p>
-        <?= Html::a('Generate Bill', ['generate-billbeneficiary'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Generate Bill', ['generate-billbeneficiary'], ['class' => 'btn btn-success','onclick'=>'return  checkBillStatus()']) ?>
         
     </p>
+	</div>
+	<p>
+<center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center>
+<br/><br/><br/>
+</p>
     <?php }            
 			
     ?>

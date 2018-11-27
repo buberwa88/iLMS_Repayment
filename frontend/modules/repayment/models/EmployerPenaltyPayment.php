@@ -376,5 +376,21 @@ public static function checklastPenaltyEmployer($employerID,$penaltyDate){
 	$penaltyCheckCount=EmployerPenalty::findBySql("SELECT  *  FROM  employer_penalty WHERE  employer_id='$employerID' AND penalty_date='$penaltyDate'")->count();
     return $penaltyCheckCount;
 }
+public static function getAmountTobePaidemployedBeneficiary($loan_summary_id,$applicantID){	 
+	 $details_applicant = EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND applicant_id='$applicantID' AND employment_status='ONPOST' AND verification_status='1' AND salary_source IN(2,3)")->one();
+        $moder=new EmployedBeneficiary();
+		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
+        $totalAmount=0; 
+           $applicantID=$details_applicant->applicant_id;
+           $amount1=$MLREB*$details_applicant->basic_salary;           
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           if($totalOutstandingAmount >= $amount1){
+              $amount=$amount1;  
+           }else{
+              $amount=$totalOutstandingAmount;  
+           }
+        $totalAmount +=$amount;		   
+	 return $totalAmount;
+}
 
 }

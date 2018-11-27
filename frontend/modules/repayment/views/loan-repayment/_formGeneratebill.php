@@ -1,3 +1,37 @@
+<script type="text/javascript">
+    function ShowHideDiv() {
+        var dateofbill = document.getElementById("dateofbill_id");
+		var dateofbill_value= dateofbill.value;
+                if(dateofbill_value !==''){
+                          document.getElementById('billDate-details').style.display = 'block';
+                                   }
+                                else{
+                          document.getElementById('billDate-details').style.display = 'none';
+                          						  
+                                }
+    }
+	function ShowHideDiv2() {
+        var dateofbill2 = document.getElementById("dateofbill_id2");
+		var dateofbill2_value= dateofbill2.value;
+                if(dateofbill2_value !==''){
+                          document.getElementById('billDate2-details').style.display = 'block';
+                                   }
+                                else{
+                          document.getElementById('billDate2-details').style.display = 'none';
+                          						  
+                                }
+    }
+	function checkBillStatus() {
+      //form-group field-user-verifycode
+   document.getElementById("hidden").style.display = "none";
+   document.getElementById("loader").style.display = "block";
+    }
+	function checkBillStatus2() {
+      //form-group field-user-verifycode
+   document.getElementById("hiddenData2").style.display = "none";
+   document.getElementById("loader").style.display = "block";
+    }
+</script>
 <?php
 
 use yii\helpers\Html;
@@ -31,6 +65,8 @@ if ($employerDetails->salary_source==3) {
     'options' => [
 	              'placeholder'=>'Select Date of Bill',
 	              'todayHighlight' => true,
+				  'id' => 'dateofbill_id',
+                  'onchange' => 'ShowHideDiv()',
                  ],
     'pluginOptions' => [
         'autoclose'=>true,
@@ -40,14 +76,20 @@ if ($employerDetails->salary_source==3) {
 ]);
     ?>
 
- <?= $form->field($model, 'salarySource')->label('Note: Salary Source of this bill is from Own Source')->hiddenInput(['value'=>2,'readOnly'=>'readOnly']) ?>
-
-	<div class="text-right">
-		<?= Html::submitButton($model->isNewRecord ? 'Generate Bill' : 'Generate Bill', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-success']) ?>
+ <?= $form->field($model, 'salarySource')->label('Note: Salary Source of this bill is from Own Source')->hiddenInput(['value'=>2,'readOnly'=>'readOnly']) ?> 
+        
+		<div class="block" id="hiddenData2">
+		<div id="billDate-details" style='display:none'>
+		<div class="text-right">
+		<?= Html::submitButton($model->isNewRecord ? 'Generate Bill' : 'Generate Bill', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-success','onclick'=>'return  checkBillStatus2()']) ?>
     </div>
+	</div>
+	</div>
 
     <?php ActiveForm::end(); ?>
-
+	<p>
+<center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center>
+</p>
 </div>
 <?php }}else{ ?>
 <div class="loan-repayment-form">
@@ -60,6 +102,8 @@ if ($employerDetails->salary_source==3) {
     'options' => [
 	              'placeholder'=>'Select Date of Bill',
 	              'todayHighlight' => true,
+				  'id' => 'dateofbill_id2',
+                  'onchange' => 'ShowHideDiv2()',
                  ],
     'pluginOptions' => [
         'autoclose'=>true,
@@ -69,12 +113,18 @@ if ($employerDetails->salary_source==3) {
 ]);
     ?>
  <?= $form->field($model, 'salarySource')->label(false)->hiddenInput(['value'=>10,'readOnly'=>'readOnly']) ?>
-
-	<div class="text-right">
-		<?= Html::submitButton($model->isNewRecord ? 'Generate Bill' : 'Generate Bill', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-success']) ?>
-    </div>
+      <div class="block" id="hidden">
+		<div id="billDate2-details" style='display:none'>
+		<div class="text-right">
+		<?= Html::submitButton($model->isNewRecord ? 'Generate Bill' : 'Generate Bill', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-success','onclick'=>'return  checkBillStatus()']) ?>
+     </div>
+	</div>
+	</div>
 
     <?php ActiveForm::end(); ?>
-
+<p>
+<center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center>
+</p>
 </div>
 <?php } ?>
+	
