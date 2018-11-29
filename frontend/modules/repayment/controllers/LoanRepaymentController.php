@@ -72,7 +72,9 @@ class LoanRepaymentController extends Controller
 			$results_bill_number=(count($results1) == 0) ? '0' : $results1->loan_repayment_id;
             $ActiveBill=$modelBill->getActiveBill($employerID);
             $billID=$ActiveBill->loan_summary_id;			
-			$amountRemainedUnpaid=$modelBill->getLoanSummaryBalance($billID);
+			//$amountRemainedUnpaid=$modelBill->getLoanSummaryBalance($billID);
+			$date=date("Y-m-d");
+            $amountRemainedUnpaid=\frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date);
 			if($amountRemainedUnpaid < 1){
 			$modelBill->updateCompletePaidLoanSummary($billID);
 			}			

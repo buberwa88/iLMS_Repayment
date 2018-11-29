@@ -292,4 +292,12 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
        $value = (count($totalAmountOfBill) == '0') ? '0' : $totalAmountOfBill;
        return $value;
         }
+	public static function getTotalAmountUnderBillSummary($loanSummaryID){
+		$detailsLoanSummary = self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id "
+                . "WHERE loan_summary_detail.loan_summary_id='$loanSummaryID'")->one();
+		return $detailsLoanSummary->amount;		
+	}
+    public static function getOustandingAmountUnderLoanSummary($loanSummaryID,$date){
+		return self::getTotalAmountUnderBillSummary($loanSummaryID) - LoanRepaymentDetail::getAmountTotalPaidunderBill($loanSummaryID,$date);
+	}	
 }

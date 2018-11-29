@@ -63,7 +63,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute'=>'paid',
                 'value'=>function($model)
             {
-                 return $model->getTotalPaidunderBill($model->loan_summary_id);
+				$date=date("Y-m-d");
+                 return \frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidunderBill($model->loan_summary_id,$date);
             },
             'format'=>['decimal',2],
 			'hAlign' => 'right',
@@ -72,8 +73,9 @@ $this->params['breadcrumbs'][] = $this->title;
         [
                 'attribute'=>'outstanding_debt',               
                 'value'=>function($model)
-            {
-             return   ($model->amount + $model->vrf_accumulated)-$model->getTotalPaidunderBill($model->loan_summary_id);
+            {	
+			$date=date("Y-m-d");
+             return   \frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($model->loan_summary_id,$date);
             },
             'format'=>['decimal',2],
 			'hAlign' => 'right',

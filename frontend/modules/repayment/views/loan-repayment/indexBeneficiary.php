@@ -28,9 +28,10 @@ $this->params['breadcrumbs'][] = $this->title;
             $loan_summary_id=$billID;
             $totalAmount=number_format($results1->amount,2);
 			
-			$outstanding_debt=\backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($applicantID,$ActiveBill->loan_summary_id);
-			
-			$amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummary::getLoanSummaryBalance($ActiveBill->loan_summary_id);
+			$outstanding_debt=\backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($applicantID,$ActiveBill->loan_summary_id);			
+			//$amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummary::getLoanSummaryBalance($ActiveBill->loan_summary_id);
+			$date=date("Y-m-d");
+            $amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date);
 			if($amountRemainedUnpaid < 1){
 			frontend\modules\repayment\models\LoanSummary::updateCompletePaidLoanSummary($ActiveBill->loan_summary_id);
 			}

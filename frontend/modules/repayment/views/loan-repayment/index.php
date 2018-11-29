@@ -22,10 +22,13 @@ $this->params['breadcrumbs'][] = $this->title;
             $totalAmount=number_format($results1->amount,2);
             //$loan_repayment_id=$results1->loan_repayment_id;
             $totalEmployees=$model->getAllEmployeesUnderBillunderEmployer($loan_repayment_id);
-			$amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummary::getLoanSummaryBalance($billID);
+			//$amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummary::getLoanSummaryBalance($billID);
+			$date=date("Y-m-d");
+            $amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date);
 			if($amountRemainedUnpaid < 1){
 			frontend\modules\repayment\models\LoanSummary::updateCompletePaidLoanSummary($billID);
 			}
+			exit;
 ?>
 <div class="loan-repayment-index">
 

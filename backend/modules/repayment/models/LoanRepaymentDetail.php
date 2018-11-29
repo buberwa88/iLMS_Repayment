@@ -379,9 +379,13 @@ public static function getAmountTotalPaidLoaneeUnderLoanSummaryEmployerOnly($app
 	return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,employer_id,bill_number,control_number,receipt_number,receipt_date,payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE applicant_id='$applicantID' AND loan_repayment.payment_status=1 ORDER BY loan_repayment_detail_id ASC")->one();
 }
 public static function getBeneficiaryRepaymentByDate($applicantID,$date){
+	$date=date("Y-m-d 23:59:59",strtotime($date));
 	return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.receipt_number,loan_repayment.receipt_date,loan_repayment.payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment.receipt_date <='".$date."' ORDER BY loan_repayment_detail_id ASC")->one();
 }
 public static function getPaidItemUnderActiveLoanSummaryPerBeneficiary($applicantID,$loanSummaryID,$itemCode_id){
 	return self::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_repayment_detail.loan_summary_id WHERE applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment_detail.loan_summary_id='$loanSummaryID' AND loan_repayment_detail.loan_repayment_item_id='$itemCode_id' ORDER BY loan_repayment_detail_id ASC")->one();
-}    
+}
+public static function getLastBeneficiaryRepaymentByDate($applicantID,$date){
+	return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.receipt_number,loan_repayment.receipt_date,loan_repayment.payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment.receipt_date <='".$date."' ORDER BY loan_repayment_detail_id DESC")->one();
+}   
 }

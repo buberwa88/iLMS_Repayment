@@ -609,6 +609,109 @@ public function actionList_beneficiaries($id) {
         $dataProvider = $searchModel->getNewEmployedBeneficiariesWaitingSubmit(Yii::$app->request->queryParams);
         //if($employedBeneficiary->verifyEmployeesInBulk()){
 		if($employed_beneficiary_id !=''){
+			                        
+                        //CREATE LOAN SUMMARY
+    $employeesLoanSummary = \backend\modules\repayment\models\EmployedBeneficiary::getActiveNewBeneficiariesDuringLoanSummaryCreation();
+    foreach($employeesLoanSummary AS $employeesLoanSumResults){        
+        $employer_id=$employeesLoanSumResults->employer_id;
+        $LoanSummaryModel=new LoanSummary();
+        $LoanSummaryDetailModel = new \backend\modules\repayment\models\LoanSummaryDetail();
+        //$resultsEmployer=$LoanSummaryModel->getEmployerDetails($employer_id);
+        $billNumber=$employeesLoanSumResults->employer_code."-".date("Y")."-".$LoanSummaryModel->getLastBillID($employer_id);
+        $tracedBy=Yii::$app->user->identity->firstname." ".Yii::$app->user->identity->middlename." ".Yii::$app->user->identity->surname;
+        //$totalEmployees=$employedBeneficiary->getAllEmployeesUnderBillunderEmployer($employer_id);
+        $totalAcculatedLoan=$employedBeneficiary->getTotalLoanInBill($employer_id);
+        $billNote="Due to Value Retention Fee(VRF) which is charged daily, the total loan amount will be changing accordingly.";
+        
+        
+        $LoanSummaryModel->amount = $totalAcculatedLoan;
+        $LoanSummaryModel->created_by=Yii::$app->user->identity->user_id;
+        $LoanSummaryModel->created_at=date("Y-m-d H:i:s");
+        $employerID=$LoanSummaryModel->employer_id;
+        $LoanSummaryModel->vrf_accumulated=0.00;
+        $LoanSummaryModel->vrf_last_date_calculated=$LoanSummaryModel->created_at;
+        $LoanSummaryModel->employer_id=$employer_id;
+        $LoanSummaryModel->reference_number=$billNumber;
+        $LoanSummaryModel->description=$billNote;
+        $LoanSummaryModel->traced_by="Employer Submission";  
+        //check if employer has a loan_summary and it is on payment
+        $employeesLoanSummaryExist = \backend\modules\repayment\models\LoanSummary::findBySql('SELECT loan_summary_id  FROM loan_summary WHERE employer_id="'.$employer_id.'" AND (status=1 OR status=0) ORDER BY loan_summary_id DESC')->one();
+        //end check
+        if(count($employeesLoanSummaryExist)==0){
+          $LoanSummaryModel->save(); 
+          
+        $loan_summary_id=$LoanSummaryModel->loan_summary_id;            
+        $LoanSummaryDetailModel->insertAllBeneficiariesUnderBill($employer_id,$loan_summary_id);
+        $LoanSummaryModel->updateCeasedBill($employer_id);
+        //$Recent_loan_summary_id=$LoanSummaryModel->loan_summary_id;
+        //$LoanSummaryModel->updateCeasedAllPreviousActiveBillUnderEmployer($employer_id,$Recent_loan_summary_id);
+        }else{
+         $totalAcculatedLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalBillAmount($employer_id);   
+         $LoanSummaryModelUpdate=new LoanSummary();
+         $amountLoanSummary=\backend\modules\repayment\models\LoanSummary::findOne(['loan_summary_id'=>$employeesLoanSummaryExist->loan_summary_id]);
+         $amountLoanSummary->amount +=$totalAcculatedLoan;
+         $amountLoanSummary->updated_at=date("Y-m-d H:i:s");
+         $amountLoanSummary->save();
+         
+        $loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;        
+        $loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;            
+        $LoanSummaryDetailModel->insertAllBeneficiariesUnderBill($employer_id,$loan_summary_id);        
+        $LoanSummaryModel->updateCeasedBill($employer_id);
+        //$Recent_loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;
+        //$LoanSummaryModel->updateCeasedAllPreviousActiveBillUnderEmployer($employer_id,$Recent_loan_summary_id);
+        }              
+    }   
+	        if($doubleEmployed==0){
+                        //END CREATE LOAN SUMMARY                          
+		        $sms="Beneficiaries submitted!";
+			Yii::$app->getSession()->setFlash('success', $sms);
+			}else{
+			$sms="Error: Some Beneficiaries won't be submitted because they are in double employment status!";
+			Yii::$app->getSession()->setFlash('warning', $sms);	
+			}
+			}
+			if($employed_beneficiary_id ==''){
+		   $sms=" Error: No any beneficiary selected!";
+		   Yii::$app->getSession()->setFlash('error', $sms);
+		   }
+		return $this->redirect(['new-employed-beneficiaries-found']);
+    }
+	
+	
+	
+	/*
+	public function actionVerifyBeneficiariesInBulk()
+    {
+	    $this->layout="default_main";
+        $searchModel = new EmployedBeneficiarySearch();
+        $employedBeneficiary = new EmployedBeneficiary();
+		//$action=Yii::$app->request->post('action');
+		$selection=(array)Yii::$app->request->post('selection');//typecasting
+		$doubleEmployed=0;
+		foreach($selection as $employed_beneficiary_id){
+        //$employedBeneficiary->verifyEmployeesInBulk($employed_beneficiary_id);
+        $employedBeneficiaryVerify=EmployedBeneficiary::findOne(['employed_beneficiary_id'=>$employed_beneficiary_id]);                   
+                   //$employedBeneficiaryVerify->verification_status='3';
+                   $employedBeneficiaryVerify->verification_status='1';
+				// here for logs
+                        $old_data=\yii\helpers\Json::encode($employedBeneficiaryVerify->oldAttributes);
+			    //end for logs
+        $employedBeneficiaryDetails2=EmployedBeneficiary::findOne(['applicant_id'=>$employedBeneficiaryVerify->applicant_id,'mult_employed'=>1,'confirmed'=>1])-count();                
+                        if($employedBeneficiaryDetails2 =='0'){
+                   $employedBeneficiaryVerify->save();
+						}else{
+							++$doubleEmployed;
+						}				   
+		         // here for logs                        					
+						$new_data=\yii\helpers\Json::encode($employedBeneficiaryVerify->attributes);
+						$model_logs=\common\models\base\Logs::CreateLogall($employedBeneficiaryVerify->employed_beneficiary_id,$old_data,$new_data,"employed_beneficiary","UPDATE",1);
+				//end for logs
+        }		
+        $verification_status=3;
+        $results=$employedBeneficiary->getUnverifiedEmployees($verification_status);
+        $dataProvider = $searchModel->getNewEmployedBeneficiariesWaitingSubmit(Yii::$app->request->queryParams);
+        //if($employedBeneficiary->verifyEmployeesInBulk()){
+		if($employed_beneficiary_id !=''){
 			if($doubleEmployed==0){                        
                         //CREATE LOAN SUMMARY
     $employeesLoanSummary = \backend\modules\repayment\models\EmployedBeneficiary::findBySql('SELECT employed_beneficiary.employer_id,employer.employer_name,employer.employer_code  FROM employed_beneficiary INNER JOIN employer ON employer.employer_id=employed_beneficiary.employer_id WHERE employer.employer_id=employed_beneficiary.employer_id AND  employed_beneficiary.employment_status="ONPOST" AND (employed_beneficiary.loan_summary_id IS NULL OR employed_beneficiary.loan_summary_id="") AND employed_beneficiary.verification_status=1 GROUP BY employed_beneficiary.employer_id')->all();
@@ -676,6 +779,10 @@ public function actionList_beneficiaries($id) {
 		   }
 		return $this->redirect(['new-employed-beneficiaries-found']);
     }
+	*/
+	
+	
+	
     public function actionBulkBeneficiariesSubmited()
     {
         //$searchModel = new EmployedBeneficiarySearch();

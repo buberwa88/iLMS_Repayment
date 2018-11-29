@@ -136,7 +136,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         return $this->hasOne(TreasuryPayment::className(), ['treasury_payment_id' => 'treasury_payment_id']);
     }
     public function insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id){
-        $details_applicant = EmployedBeneficiary::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1'")->all();
+        $details_applicant = EmployedBeneficiary::getBeneficiariesForPaymentProcess($loan_summary_id);
         $si=0;
         $moder=new EmployedBeneficiary();
 		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
@@ -360,7 +360,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         }
 		
 		public function insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id){
-        $details_applicant = EmployedBeneficiary::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1' AND salary_source IN(2,3)")->all();
+        $details_applicant = EmployedBeneficiary::getBeneficiariesForPaymentProcessSalarySourceBases($loan_summary_id);
         $si=0;
         $moder=new EmployedBeneficiary();
 		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
@@ -1105,12 +1105,13 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         $value = (count($amount) == 0) ? '0' : $amount;
         return $value;
         }
-    public function getAmountTotalPaidunderBill($LoanSummaryID){
+    public static function getAmountTotalPaidunderBill($LoanSummaryID,$date){
+		$date=date("Y-m-d 23:59:59",strtotime($date));
         $moder=new EmployedBeneficiary();
         $CFBS="CFBS";
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
        $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
-                . "FROM loan_repayment_detail RIGHT JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.loan_summary_id='$LoanSummaryID' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment.payment_status='1'")->one();
+                . "FROM loan_repayment_detail RIGHT JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.loan_summary_id='$LoanSummaryID' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment.payment_status='1' AND loan_repayment.receipt_date <='$date'")->one();
         $amount=$details_amount->amount;
         $value = (count($amount) == 0) ? '0' : $amount;
         return $value;
@@ -1141,6 +1142,7 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
     public static function getAmountTotalPaidLoanee($applicantID,$date){
         $moder=new EmployedBeneficiary();
         $CFBS="CFBS";
+		$date=date("Y-m-d 23:59:59",strtotime($date));
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
         $results = LoanRepaymentDetail::findBySql("SELECT b.loan_repayment_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment A ON A.loan_repayment_id = b.loan_repayment_id "
                 . "WHERE b.applicant_id='$applicantID' AND b.loan_repayment_item_id<>'".$CFBS_id."' AND A.payment_status='1' AND A.receipt_date<='$date'")->one();
@@ -1251,6 +1253,4 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
     public static function updateAllGovernmentEmployersBillMultSelected($treasury_payment_id,$loan_repayment_id,$user_id){
         	LoanRepaymentDetail::updateAll(['treasury_payment_id' => $treasury_payment_id,'treasury_user_id'=>$user_id],'loan_repayment_id = "'.$loan_repayment_id.'"');   
         }
-        
-    
 }

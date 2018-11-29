@@ -1142,5 +1142,11 @@ static function getSalarySource() {
             self::SALARY_SOURCE_OWN => 'own source',
             self::SALARY_SOURCE_BOTH => 'both',
         ];
-    }  
+    }
+public static function getBeneficiariesForPaymentProcess($loan_summary_id){
+	return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1'")->all();
+}
+public static function getBeneficiariesForPaymentProcessSalarySourceBases($loan_summary_id){
+	return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1' AND salary_source IN(2,3)")->all();
+}	
 }

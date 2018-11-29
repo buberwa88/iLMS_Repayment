@@ -94,7 +94,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format' => ['decimal', 2],
                 'value' => function ($model) {
 					$date=date("Y-m-d");
-                return frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($model->applicant_id,$date);
+                return \frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($model->applicant_id,$date);
         },
             ], 
         [

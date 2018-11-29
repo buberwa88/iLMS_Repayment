@@ -15,8 +15,8 @@ $this->title = 'Loan Payments';
 $this->params['breadcrumbs'][] = $this->title;
 $model = new LoanRepayment();
 
-$controlNumber='14';
-$amount='100000.00';
+$controlNumber='51';
+$amount='120000.00';
 $model->updatePaymentAfterGePGconfirmPaymentDone($controlNumber,$amount);
 
  
