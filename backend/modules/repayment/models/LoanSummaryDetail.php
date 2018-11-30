@@ -1583,12 +1583,59 @@ public static function getTotalPrincipleLoanOriginal($applicantID,$date){
 }		
 		
 public static function getActiveLoanSummaryOfBeneficiary($applicantID){
-return self::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
+return self::findBySql("SELECT loan_summary_detail.loan_summary_id,loan_summary_detail.academic_year_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
 }
 public static function getActiveLoanSummaryOfBeneficiaryDetails($applicantID,$loanSummary_id,$itemCode_id){
 return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS 'amount' FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' AND loan_summary_detail.loan_summary_id='$loanSummary_id' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id'  ORDER BY loan_summary_detail.loan_summary_id DESC")->one();	
 }
 public static function getItemExistInBillBefore($applicantID,$itemID){
 return self::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='".$itemID."' ORDER BY loan_summary_detail.loan_summary_detail_id DESC")->one();	
+}
+public static function getTotalAmountInFirstLoanSummary($applicantID,$itemCode_id){
+return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
+}
+public static function checkAmountMissingUpdatePRCperAcademicYear($loanSummaryID,$applicantID,$amountMissing,$itemID,$academicYearID){
+	$resultsLoanSummary=LoanSummaryDetail::find()->where(['loan_summary_id'=>$loanSummaryID,'applicant_id'=>$applicantID,'loan_repayment_item_id'=>$itemID,'academic_year_id'=>$academicYearID])->one();
+	$amount=$resultsLoanSummary->amount + $amountMissing;
+	$resultsLoanSummary->amount=$amount;
+	$resultsLoanSummary->save();
+}
+public static function checkAmountMissingUpdateGeneral($loanSummaryID,$applicantID,$amountMissing,$itemID){
+	$resultsLoanSummary=LoanSummaryDetail::find()->where(['loan_summary_id'=>$loanSummaryID,'applicant_id'=>$applicantID,'loan_repayment_item_id'=>$itemID])->one();
+	$amount=$resultsLoanSummary->amount + $amountMissing;
+	$resultsLoanSummary->amount=$amount;
+	$resultsLoanSummary->save();
+}
+public static function getTotalAmountPRCInFirstLoanSummaryPerAcademicYear($applicantID,$itemCode_id,$academicYearID){
+return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id' AND loan_summary_detail.academic_year_id='$academicYearID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
+}
+public static function checkPRCexistPerAcademicYearInfirstLoanSummary($applicantID,$itemCode_id,$academicYearID){
+return self::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id' AND loan_summary_detail.academic_year_id='$academicYearID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
+}
+public static function insertItemPRCperAcademicYear($loan_summary_id,$applicant_id,$PRC_id,$academicYearID,$pricipalLoan){
+Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicant_id,
+        'loan_repayment_item_id' =>$PRC_id,
+        'academic_year_id' =>$academicYearID,
+        'amount' =>$pricipalLoan,    
+        ])->execute();
+}
+public static function checkOtherItemsexistInfirstLoanSummary($applicantID,$itemCode_id){
+return self::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id' AND loan_summary_detail.amount >'0' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
+}
+public static function updateGeneralAmountLastLoanSummary($lastLoanSummaryID){
+	$resultsLoanSummaryDetailsTotalAmount=self::getTotalAmountUnderLastLoanSummary($lastLoanSummaryID);
+	$amount=$resultsLoanSummaryDetailsTotalAmount->amount;
+	$amountTotalvrf_accumulated=$resultsLoanSummaryDetailsTotalAmount->vrf_accumulated;
+	$amountTotal=$amount-$amountTotalvrf_accumulated;
+	$resultsLoanSummary=LoanSummary::find()->where(['loan_summary_id'=>$lastLoanSummaryID])->one();
+	$resultsLoanSummary->amount=$amountTotal;
+	$resultsLoanSummary->save();	
+	return true;
+}
+public static function getTotalAmountUnderLastLoanSummary($lastLoanSummaryID){
+return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount,SUM(loan_summary_detail.vrf_accumulated) AS vrf_accumulated FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.loan_summary_id='$lastLoanSummaryID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id DESC")->one();	
 }
 }

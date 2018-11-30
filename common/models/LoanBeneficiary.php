@@ -48,12 +48,15 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
 	public $ward_id;
 	public $operation;
 	public $check_search;
+	public $start_date;
+	public $end_date;
     public function rules()
     {
         return [
             [['firstname', 'middlename', 'surname', 'date_of_birth', 'place_of_birth', 'learning_institution_id', 'physical_address', 'phone_number', 'email_address', 'password','district','confirm_password','sex','region'], 'required', 'on' => 'loanee_registration'],
+			[['start_date', 'end_date'], 'required', 'on' => 'reprocessloan'],
             ['password', 'string', 'length' => [8, 24]],
-            [['date_of_birth','created_at','updated_at','updated_by','sex','region','applicant_id','NID','ward_id','operation','check_search'], 'safe'],
+            [['date_of_birth','created_at','updated_at','updated_by','sex','region','applicant_id','NID','ward_id','operation','check_search','start_date','end_date'], 'safe'],
             [['place_of_birth', 'learning_institution_id', 'phone_number','applicant_id'], 'integer'],
             [['firstname', 'middlename', 'surname', 'f4indexno'], 'string', 'max' => 45],
 			[['firstname', 'middlename', 'surname'], 'match','not' => true,'pattern' => '/[^a-zA-Z_-]/','message' => 'Only Characters  Are Allowed...'],
@@ -102,6 +105,8 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
 			'applicant_id'=>'applicant_id',
 			'ward_id'=>'Ward',
 			'operation'=>'operation',
+			'start_date'=>'From',
+			'end_date'=>'To',
         ];
     }
 
@@ -300,7 +305,7 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
         }
     }
 	public static function getAcademicYearTrend($applicant_id){
-	$academicYearTrend=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id',disbursement.loan_item_id AS 'loan_item_id' FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_Batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN loan_item ON loan_item.loan_item_id=disbursement.loan_item_id INNER JOIN application ON application.application_id=disbursement.application_id"
+	$academicYearTrend=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id',disbursement.loan_item_id AS 'loan_item_id',disbursement.status_date AS 'status_date' FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_Batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN loan_item ON loan_item.loan_item_id=disbursement.loan_item_id INNER JOIN application ON application.application_id=disbursement.application_id"
                         . "  WHERE application.applicant_id='$applicant_id' AND disbursement.status='8' AND  disbursement_batch.is_approved='1' GROUP BY disbursement_batch.academic_year_id ORDER BY disbursement_batch.academic_year_id ASC")->all();
 	return $academicYearTrend;					
 	}

@@ -1253,4 +1253,10 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
     public static function updateAllGovernmentEmployersBillMultSelected($treasury_payment_id,$loan_repayment_id,$user_id){
         	LoanRepaymentDetail::updateAll(['treasury_payment_id' => $treasury_payment_id,'treasury_user_id'=>$user_id],'loan_repayment_id = "'.$loan_repayment_id.'"');   
         }
+	public static function getAmountPaidPerItemtoBeneficiary($applicantID,$itemId){
+        $details = self::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
+                . "FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_item_id='$itemId'")->one();
+        return $details;
+        }	
 }

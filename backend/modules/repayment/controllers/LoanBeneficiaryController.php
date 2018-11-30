@@ -175,6 +175,7 @@ class LoanBeneficiaryController extends Controller
             ]);
         }
     }
+	
 
     /**
      * Deletes an existing LoanBeneficiary model.
@@ -307,5 +308,212 @@ class LoanBeneficiaryController extends Controller
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+    }
+	public function actionReprocessLoan()
+    {
+        $model = new LoanBeneficiary();
+        $model->scenario='reprocessloan';		
+		if ($model->load(Yii::$app->request->post())) {
+		##################### run VRF check ###################
+        \frontend\modules\repayment\models\LoanSummary::updateVRFaccumulatedGeneral();
+        ########################		
+        $startDate=$model->start_date;
+		$endDate=$model->end_date;
+		$dateToday=date("Y-m-d");
+$beneficiariesResults=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiariesOnRepaymentWithinDateRange($startDate,$endDate);
+foreach($beneficiariesResults AS $applicantDetails){
+	$applicant_id=$applicantDetails->applicant_id;
+	//check original amount disbursed
+	$totalAmountDisbursed=\common\models\LoanBeneficiary::getPrincipleNoReturn($applicant_id);
+	$totalDisbursed=$totalAmountDisbursed->disbursed_amount;
+
+	//check amount calculated in a first loan summary
+	//---------------This is for PRC-----------
+	$itemCodePRC="PRC";
+	$PRC_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePRC);
+	$resultPRC=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id,$PRC_id);
+	$totalPRC=$resultPRC->amount;
+	//--------------END PRC------------------
+	if($totalPRC != $totalDisbursed){
+	//---------------This is for LAF-----------
+	$itemCodeLAF="LAF";
+	$LAF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeLAF);
+	$resultLAF=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id,$LAF_id);
+	$totalLAF=$resultLAF->amount;
+	//--------------END LAF------------------	
+	//---------------This is for PNT-----------
+	$itemCodePNT="PNT";
+	$PNT_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePNT);
+	$resultPNT=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id,$PNT_id);
+	$totalPNT=$resultPNT->amount;
+	//--------------END PNT------------------
+	//---------------This is for VRF-----------
+	$itemCodeVRF="VRF";
+	$VRF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
+	$resultVRF=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id,$VRF_id);
+	$totalVRF=$resultVRF->amount;
+	//--------------END VRF------------------
+	$reSid=1;
+	
+	############### Looping for checking disbursed amount Again #######################
+	$getDistinctAccademicYrPerApplicant =\common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);
+	$count=0;
+                    foreach ($getDistinctAccademicYrPerApplicant as $resultsApp) {
+                    $academicYearID=$resultsApp->disbursementBatch->academic_year_id;
+                    $academicYearEndate=$resultsApp->disbursementBatch->academicYear->end_date;	
+                    $statusDate=$resultsApp->status_date;					
+					$pricipalLoanwettggg=\common\models\LoanBeneficiary::getAmountSubtotalPerAccademicYNoReturned($applicant_id,$academicYearID);
+                    $pricipalLoan=$pricipalLoanwettggg->disbursed_amount;
+                    if($pricipalLoan=='' OR $pricipalLoan < 0){
+                       $pricipalLoan=0; 
+                    }
+					
+	//-----------comparing the amount disbursed with the amount in first loanSummary----------				
+	$PRCamountInfirstLoanSummaryPerAcademicYear=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountPRCInFirstLoanSummaryPerAcademicYear($applicant_id,$PRC_id,$academicYearID);
+	$PRCamountFirstLoanSummary=$PRCamountInfirstLoanSummaryPerAcademicYear->amount;
+	if($pricipalLoan !=$PRCamountFirstLoanSummary){
+	$missingAmount=$pricipalLoan-$PRCamountFirstLoanSummary;	
+	}
+	//------check if exist in the loan summary before -------
+	$checkExistsStatus=\backend\modules\repayment\models\LoanSummaryDetail::checkPRCexistPerAcademicYearInfirstLoanSummary($applicant_id,$PRC_id,$academicYearID);
+	$activeLoanSummary=\backend\modules\repayment\models\LoanSummaryDetail::getActiveLoanSummaryOfBeneficiary($applicant_id);
+	$loan_summary_id=$activeLoanSummary->loan_summary_id;
+	$lastLoanSummaryAcademicYearID=$activeLoanSummary->academic_year_id;
+	if($checkExistsStatus->loan_summary_id > 0){
+	if($missingAmount > 0){
+	//-------------update last loan summary with missing amount-------------	
+	if($lastLoanSummaryAcademicYearID==''){
+    \backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$missingAmount,$PRC_id);
+	}else{
+	\backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdatePRCperAcademicYear($loan_summary_id,$applicant_id,$missingAmount,$PRC_id,$lastLoanSummaryAcademicYearID);	
+	}	
+	}
+	//-------------checking other repayment items exists in first loan summary----checkAmountMissingUpdateGeneral
+	$otherItemExistsFirstLoanSummaryLAF=\backend\modules\repayment\models\LoanSummaryDetail::checkOtherItemsexistInfirstLoanSummary($applicant_id,$LAF_id);
+	$otherItemExistsFirstLoanSummaryPNT=\backend\modules\repayment\models\LoanSummaryDetail::checkOtherItemsexistInfirstLoanSummary($applicant_id,$PNT_id);
+	$otherItemExistsFirstLoanSummaryVRF=\backend\modules\repayment\models\LoanSummaryDetail::checkOtherItemsexistInfirstLoanSummary($applicant_id,$VRF_id);
+	if($otherItemExistsFirstLoanSummaryLAF > 0){
+	$additionalAmountLAFreprocessLoan=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualLAFReprocessLoan($missingAmount);
+    \backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$additionalAmountLAFreprocessLoan,$LAF_id);	
+	}
+	if($otherItemExistsFirstLoanSummaryPNT > 0){
+	$additionalAmountPNTreprocessLoan=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualPNTreprocessLoan($missingAmount);
+    \backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$additionalAmountPNTreprocessLoan,$PNT_id);	
+	}
+	if($otherItemExistsFirstLoanSummaryVRF > 0){
+	$additionalAmountVRFreprocessLoan=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualVRFreprocessLoan($applicant_id,$dateToday,$missingAmount,$statusDate,$academicYearEndate);
+    \backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$additionalAmountVRFreprocessLoan,$VRF_id);	
+	}	
+	}else{	
+	//---------------check for last loan summary---------------------	
+	$activeLoanSummary=\backend\modules\repayment\models\LoanSummaryDetail::getActiveLoanSummaryOfBeneficiary($applicant_id);
+	$loan_summary_id=$activeLoanSummary->loan_summary_id;
+	$lastLoanSummaryAcademicYearID=$activeLoanSummary->academic_year_id;
+	
+	\backend\modules\repayment\models\LoanSummaryDetail::insertItemPRCperAcademicYear($loan_summary_id,$applicant_id,$PRC_id,$academicYearID,$pricipalLoan);
+	
+	//--------------------OTHER ITEM------------------
+	$otherItemExistsFirstLoanSummaryLAF=\backend\modules\repayment\models\LoanSummaryDetail::checkOtherItemsexistInfirstLoanSummary($applicant_id,$LAF_id);
+	$otherItemExistsFirstLoanSummaryPNT=\backend\modules\repayment\models\LoanSummaryDetail::checkOtherItemsexistInfirstLoanSummary($applicant_id,$PNT_id);
+	$otherItemExistsFirstLoanSummaryVRF=\backend\modules\repayment\models\LoanSummaryDetail::checkOtherItemsexistInfirstLoanSummary($applicant_id,$VRF_id);
+	if($otherItemExistsFirstLoanSummaryLAF > 0){
+	//--------------LAF---------------------------
+	$additionalAmountLAFreprocessLoan=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualLAFReprocessLoan($pricipalLoan);
+    \backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$additionalAmountLAFreprocessLoan,$LAF_id);	
+	}
+	if($otherItemExistsFirstLoanSummaryPNT > 0){
+    //--------------PNT--------------------------
+	$additionalAmountPNTreprocessLoan=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualPNTreprocessLoan($pricipalLoan);
+    \backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$additionalAmountPNTreprocessLoan,$PNT_id);	
+    }
+	if($otherItemExistsFirstLoanSummaryVRF > 0){
+    //--------------VRF--------------------------
+	$additionalAmountVRFreprocessLoan=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualVRFreprocessLoan($applicant_id,$dateToday,$pricipalLoan,$statusDate,$academicYearEndate);
+    \backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$additionalAmountVRFreprocessLoan,$VRF_id);
+    }
+	//---------------END OTHER ITEM-------------------
+	
+	}
+	++$count;
+	}
+	############################## Looping for checking disbursed amount Again ################
+	
+	#####################Updating the general summary latest########################
+	\backend\modules\repayment\models\LoanSummaryDetail::updateGeneralAmountLastLoanSummary($loan_summary_id);
+	}else{
+	//check status of the amount already paid per item against orgin amount from first loanSummary
+    #######################Items id#####################
+	$itemCodeLAF="LAF";
+	$LAF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeLAF);
+	$itemCodePNT="PNT";
+	$PNT_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePNT);
+	$itemCodeVRF="VRF";
+	$VRF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
+	$itemCodePRC="PRC";
+	$PRC_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePRC);
+	#####################################end items id#########
+	###############################ORGIN###########################
+	//---------------This is for LAF-----------
+	$resultLAF=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id,$LAF_id);
+	$totalLAFORGN=$resultLAF->amount;
+	//---------------This is for PNT-----------
+	$resultPNT=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id,$PNT_id);
+	$totalPNTORGN=$resultPNT->amount;
+	//----------------This is for VRF-----------------
+	$totalVRFORGN=\backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id,$dateToday);
+	//---------------this is for PRC-------------
+	$resultPRC=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id,$PRC_id);
+	$totalPRCORGN=$resultPRC->amount;
+	####################################end for ORGIN####################################
+	########################here for amount paid in each loan repayment item#################################
+	$AmountPaidPerItemTotalLAF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$LAF_id);
+	$totalAmountAlreadyPaidLAF=$AmountPaidPerItemTotalLAF->amount;
+	$AmountPaidPerItemTotalPNT=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PNT_id);
+	$totalAmountAlreadyPaidPNT=$AmountPaidPerItemTotalPNT->amount;
+	$AmountPaidPerItemTotalVRF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$VRF_id);
+	$totalAmountAlreadyPaidVRF=$AmountPaidPerItemTotalVRF->amount;
+	$AmountPaidPerItemTotalPRC=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PRC_id);
+	$totalAmountAlreadyPaidPRC=$AmountPaidPerItemTotalPRC->amount;
+	#########################end for amount paid in each loan repayment item######################
+	#######################LAST LOAN SUMMARY get amount remained##########################################
+	$activeLoanSummary=\backend\modules\repayment\models\LoanSummaryDetail::getActiveLoanSummaryOfBeneficiary($applicant_id);
+	$loan_summary_id=$activeLoanSummary->loan_summary_id;
+	$lastLoanSummaryAcademicYearID=$activeLoanSummary->academic_year_id;
+    $vrfAmountLastLoanSummaryUnpaid=\frontend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesVRFUnderBill($applicant_id,$loan_summary_id);
+    $LAFAmountLoanSummaryUnpaid=\frontend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesLAFUnderBill($applicant_id,$loan_summary_id);
+    $penaltyAmountLastLoanSummaryUnpaid=\frontend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesPenaltyUnderBill($applicant_id,$loan_summary_id);
+	$PRCAmountLastLoanSummaryUnpaid=\frontend\modules\repayment\models\EmployedBeneficiary::getOutstandingPrincipalLoanUnderBill($applicant_id,$loan_summary_id);
+	###############################################################################################
+	if((($totalLAFORGN-$totalAmountAlreadyPaidLAF)-$LAFAmountLoanSummaryUnpaid) > 0){
+		$generalMissingAmountLAF=($totalLAFORGN-$totalAmountAlreadyPaidLAF)-$LAFAmountLoanSummaryUnpaid;
+\backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$generalMissingAmountLAF,$LAF_id);		
+	}
+	if((($totalPNTORGN-$totalAmountAlreadyPaidPNT)-$penaltyAmountLastLoanSummaryUnpaid) > 0){
+		$generalMissingAmountPNT=($totalPNTORGN-$totalAmountAlreadyPaidPNT)-$penaltyAmountLastLoanSummaryUnpaid;
+\backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$generalMissingAmountPNT,$PNT_id);			
+	}
+	if((($totalVRFORGN-$totalAmountAlreadyPaidVRF)-$vrfAmountLastLoanSummaryUnpaid) > 0){
+		$generalMissingAmountVRF=($totalVRFORGN-$totalAmountAlreadyPaidVRF)-$vrfAmountLastLoanSummaryUnpaid;
+\backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$generalMissingAmountVRF,$VRF_id);		
+	}
+	if((($totalPRCORGN-$totalAmountAlreadyPaidPRC)-$PRCAmountLastLoanSummaryUnpaid) > 0){
+		$generalMissingAmountPRC=($totalPRCORGN-$totalAmountAlreadyPaidPRC)-$PRCAmountLastLoanSummaryUnpaid;	
+    if($lastLoanSummaryAcademicYearID==''){
+\backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdateGeneral($loan_summary_id,$applicant_id,$generalMissingAmountPRC,$PRC_id);
+	}else{
+	\backend\modules\repayment\models\LoanSummaryDetail::checkAmountMissingUpdatePRCperAcademicYear($loan_summary_id,$applicant_id,$generalMissingAmountPRC,$PRC_id,$lastLoanSummaryAcademicYearID);	
+	}
+	}
+	#############################################################################################
+	#####################Updating the general summary latest########################
+    \backend\modules\repayment\models\LoanSummaryDetail::updateGeneralAmountLastLoanSummary($loan_summary_id);	
+	}
+}
+    return $this->redirect(['reprocess-loan']);
+        } else {
+            return $this->render('reprocessLoan', [
+                'model' => $model
+            ]);
+        }
     }
 }

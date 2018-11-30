@@ -6,25 +6,45 @@ use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use backend\modules\report\models\Report;
 use backend\modules\disbursement\models\Disbursement;
+/*
 $stle_header='style="border: 1px solid #000000; border-collapse: collapse;\"';
-$stle_headerNumb='style="border: 1px solid #000000; border-collapse: collapse;text-align: right;\"';
-$stleTitle='style="font-weight:bold;width:100%;\"';
+$style1='style="width:20%;text-align: right;font-size: 13pt;font-weight:bold;"';
+$style2='style="width:10%;text-align:right;font-size:13pt;font-weight:bold;"';
+$style3='style="width:50%;text-align:left;font-size: 7pt;"';
+$style4='style="width:20%;text-align: right;font-size: 7pt;"';
+$style5HeaderS='style="width:5%;text-align: right;font-weight:bold;"';
+$style5HeaderEmpC='style="width:15%;text-align: right;font-weight:bold;"';
+$style5HeaderPayD='style="width:10%;text-align: right;font-weight:bold;"';
+$style5HeaderAmount='style="width:30%;text-align: right;font-weight:bold;"';
+
+$style5DataS='style="width:5%;text-align: right;font-size: 13pt;"';
+$style5DataEmpC='style="width:15%;text-align: right;font-size: 13pt;"';
+$style5DataPayD='style="width:10%;text-align: right;font-size: 13pt;"';
+$style5DataAmount='style="width:30%;text-align: right;font-size: 13pt;"';
+*/
+$stle_header='style="border: 1px solid #000000; border-collapse: collapse;\"';
+$style1='style="width:20%;text-align: right;font-weight:bold;"';
+$style2='style="width:10%;text-align:right;font-weight:bold;"';
+$style3='style="width:50%;text-align:left;font-size: 13pt;"';
+$style4='style="width:20%;text-align: right;font-size: 13pt;"';
+$style5HeaderS='style="width:5%;text-align: right;font-weight:bold;"';
+$style5HeaderEmpC='style="width:15%;text-align: right;font-weight:bold;"';
+$style5HeaderPayD='style="width:10%;text-align: right;font-weight:bold;"';
+$style5HeaderAmount='style="width:30%;text-align: right;font-weight:bold;"';
+
+$style5DataS='style="width:5%;text-align: right;font-size: 13pt;"';
+$style5DataEmpC='style="width:15%;text-align: right;font-size: 13pt;"';
+$style5DataPayD='style="width:10%;text-align: right;font-size: 13pt;"';
+$style5DataAmount='style="width:30%;text-align: right;font-size: 13pt;"';
 
 $subtitalAcc=0;
 $subtitalAccq=0;
+$date=date("Y-m-d");
 ?>
-<table <?php echo" style=\"width:100%;font-family:Calibri;background-color:white;\"";?>>
- <th <?php echo "style=\"width:70%;background-color:white;text-align:center;\"" ?>>
- <hr>
- CUSTOMER STATEMEMNT
- <hr>
- </th>
- <tr>
- <td colspan="5">
  <?php 
 $loanee = frontend\modules\application\models\Applicant::find()
 	                                                           ->where(['applicant_id'=>$applicant_id])->one();
-$getProgramme = frontend\modules\application\models\application::findBySql("SELECT applicant.f4indexno,programme.programme_name,learning_institution.institution_code FROM application INNER JOIN applicant ON applicant.applicant_id=application.applicant_id INNER JOIN disbursement ON disbursement.application_id=application.application_id INNER JOIN programme ON programme.programme_id=disbursement.programme_id INNER JOIN learning_institution ON learning_institution.learning_institution_id=programme.learning_institution_id WHERE application.applicant_id=:applicant_id",[':applicant_id'=>$applicant_id])->one();
+$getProgramme = frontend\modules\application\models\application::findBySql("SELECT applicant.sex,applicant.f4indexno,programme.programme_name,learning_institution.institution_code FROM application INNER JOIN applicant ON applicant.applicant_id=application.applicant_id INNER JOIN disbursement ON disbursement.application_id=application.application_id INNER JOIN programme ON programme.programme_id=disbursement.programme_id INNER JOIN learning_institution ON learning_institution.learning_institution_id=programme.learning_institution_id WHERE application.applicant_id=:applicant_id",[':applicant_id'=>$applicant_id])->one();
 /*
                 ->joinWith(['disbursements','disbursements'])->groupBy(['disbursement.application_id'])
                 ->joinWith(['disbursements','disbursements.programme'])
@@ -33,294 +53,58 @@ $getProgramme = frontend\modules\application\models\application::findBySql("SELE
  * 
  */
  ?>
- <table><tr><td <?php echo" style=\"text-align:right;font-weight:bold;\"";?>>LOANEE NAME:&nbsp;&nbsp;&nbsp;</td><td><?php echo $loanee->user->firstname.", ".$loanee->user->middlename." ".$loanee->user->surname; ?></td></tr><tr><td <?php echo" style=\"text-align:right;font-weight:bold;\"";?>>INSTITUTION/COLLEGE:&nbsp;&nbsp;&nbsp;</td><td><?php 
- /*
- foreach ($loanee->applications as $appEduDetails2) {
-                        $programme_name =$appEduDetails2->programme->programme_name; 
-						foreach ($appEduDetails2->educations as $appLearningIns) {
-						$institutionDetails =$appLearningIns->learningInstitution->institution_name;
-                        $olevel_index =$appLearningIns->olevel_index;						
-                        }						
-                    }
-  * 
-  */
- echo $getProgramme->institution_code; ?></td></tr><tr><td <?php echo" style=\"text-align:right;font-weight:bold;\"";?>>COURSE:&nbsp;&nbsp;&nbsp;</td><td><?php echo $getProgramme->programme_name; ?></td></tr><tr><td <?php echo" style=\"text-align:right;font-weight:bold;\"";?>>INDEX NUMBER:&nbsp;&nbsp;&nbsp;</td><td><?php echo $getProgramme->f4indexno; ?></td></tr></table>
+ <table witdth='100%'><tr>
+         <td <?php echo $style2; ?>>FULL NAME:&nbsp;&nbsp;&nbsp;</td>
+         <td <?php echo $style3; ?>><?php echo $loanee->user->firstname.", ".$loanee->user->middlename." ".$loanee->user->surname; ?></td>
+         <td <?php echo $style1; ?>></td><td <?php echo $style4; ?>></td>
+         </tr><tr>
+         <td <?php echo $style2; ?>>INDEXNO:&nbsp;&nbsp;&nbsp;</td>
+         <td <?php echo $style3; ?>><?php echo $getProgramme->f4indexno; ?></td>
+         <td <?php echo $style1; ?>>TOTAL LOAN : </td>
+         <td <?php echo $style4; ?>><?php 
+         $totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicant_id,$date);
+         echo number_format($totalLoan); ?></td></tr>
+         <tr>
+             <td <?php echo $style2; ?>>GENDER:&nbsp;&nbsp;&nbsp;</td>
+             <td <?php echo $style3; ?>><?php echo $getProgramme->sex; ?></td>
+             <td <?php echo $style1; ?>>REPAYMENT :</td>
+             <td <?php echo $style4; ?>><?php 
+             $repayment=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($applicant_id,$date);
+             echo number_format($repayment); ?></td></tr>
+         <tr>
+             <td <?php echo $style2; ?>>INSTITUTION(S):&nbsp;&nbsp;&nbsp;</td>
+             <td <?php echo $style3; ?>><?php echo $getProgramme->institution_code; ?></td>
+             <td <?php 
+             $balance=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($applicant_id,$date);
+             echo $style1; ?>>LOAN BALANCE :</td>
+             <td <?php echo $style4; ?>><?php echo number_format($balance); ?></td>
+         </tr></table>
+<?php
 
-<table style="font-size: 8pt; color: #123; font-family: Times;">
- &nbsp;&nbsp;&nbsp;
- <tr <?php echo" style=\"font-weight:bold;\"";?>>
- <td>Item/AC. Year</td>
- <?php
-	$resultAcademic = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);	
-	foreach ($resultAcademic as $disbursedbatchResults) {
-	?>
- <td <?php echo" style=\"\"";?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
-  echo $disbursedbatchResults->disbursementBatch->academicYear->academic_year;
- ?></td>
- <?php
-$sn++;
- }
- $val=$sn + 1;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Total</td>
- </tr>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td colspan="<?php echo $val; ?>"><strong>Loan Items :</strong></td></tr>
- <?php
-
- $resultLoanItems = \common\models\LoanBeneficiary::getLoanItemsProvided($applicant_id);	
-	foreach ($resultLoanItems as $resultLoanItemsResults) {
-	?>
- <tr <?php echo" style=\"\"";?>><td ><?php 
- $loanItem=$resultLoanItemsResults->loan_item_id;
- echo $resultLoanItemsResults->loanItem->item_name; ?></td>
- <?php
-$loanItemReturnsAcademicY1 = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id); 
-$loopItem=0;
-$total=0;
- foreach($loanItemReturnsAcademicY1 as $generalAcademicYearResults1){
- $loopItem++;
- $academic_yearID=$generalAcademicYearResults1->disbursementBatch->academic_year_id;
- 
- 
- $amount1 = \common\models\LoanBeneficiary::getAmountPerLoanItemsProvided($applicant_id,$loanItem,$academic_yearID);
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- if($amount1->disbursed_amount >0){
- echo number_format($amount1->disbursed_amount,2); 
- $total +=$amount1->disbursed_amount;
- }else{
- echo '';
- }
- ?></td>
- <?php
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($total,2); ?></td>
- </tr>
- <?php
- } 
- 
- //here for subtotal 
-
- $resultAcademicTrendSubTotal = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);
- ?>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td><strong>Sub Total:</strong></td>
- <?php 
- foreach ($resultAcademicTrendSubTotal as $resultsAmountSubtotal2) { 
- $academic_yearIDQR=$resultsAmountSubtotal2->disbursementBatch->academic_year_id;
- $SubTotalAmount2 = \common\models\LoanBeneficiary::getAmountSubtotalPerAccademicY($applicant_id,$academic_yearIDQR);
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- if($SubTotalAmount2->disbursed_amount > 0){
- echo number_format($SubTotalAmount2->disbursed_amount,2); 
- }else{
- echo "";
- }
- $subtitalAccq +=$SubTotalAmount2->disbursed_amount;
- ?></td>
- <?php 
- } ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($subtitalAccq,2); ?></td>
- </tr>
-
- <?php
- //end
- $resultReturnCheck=\common\models\LoanBeneficiary::checkForReturnForLoanee($applicant_id);
- if($resultReturnCheck==1){
- ?>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td colspan="<?php echo $val; ?>"><strong>Returns :</strong></td></tr>
-
- <?php
-
- $loanItemReturns = \common\models\LoanBeneficiary::getLoanItemsReturned($applicant_id);	
-	foreach ($loanItemReturns as $loanItemReturnsResults) {
-	?>
- <tr <?php echo" style=\"\"";?>><td ><?php 
- $returnedItem=$loanItemReturnsResults->loan_item_id;
- echo $loanItemReturnsResults->loanItem->item_name; ?></td>
- <?php
-  $loanItemReturnsAcademicY = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);
-$loopItemReturn=0;
-$totalReturn=0;	
- foreach($loanItemReturnsAcademicY as $generalAcademicYearResults){
- $loopItemReturn++;
-
-  $academic_yearIDQ=$generalAcademicYearResults->disbursementBatch->academic_year_id;
- 
- $amount1Return = \common\models\LoanBeneficiary::getLoanItemsAmountReturned($applicant_id,$returnedItem,$academic_yearIDQ);
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- if($amount1Return->disbursed_amount >0){
- echo number_format($amount1Return->disbursed_amount,2);
-}else{
-echo '';
+$getPaymentsOfLoanee = \backend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount,loan_repayment.payment_date,employer.employer_code,employer.short_name,loan_repayment_detail.applicant_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id LEFT JOIN employer ON employer.employer_id=loan_repayment.employer_id LEFT JOIN applicant ON applicant.applicant_id=loan_repayment.applicant_id WHERE loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id AND loan_repayment_detail.applicant_id=:applicant_id GROUP BY loan_repayment.payment_date ORDER BY loan_repayment.payment_date ASC",[':applicant_id'=>$applicant_id])->all();
+$sno=1;
+?>
+<br/><br/>
+     <table witdth='100%'>
+         <tr><th <?php echo $style5HeaderS; ?>>SNO</th><th <?php echo $style5HeaderEmpC; ?>>EMP.CODE</th><th <?php echo $style5HeaderEmpC; ?>>SHORT CODE</th><th <?php echo $style5HeaderPayD; ?>>PAY PERIOD</th><th <?php echo $style5HeaderAmount; ?>>AMOUNT</th><th <?php echo $style5HeaderAmount; ?>>LOAN BALANCE</th></tr>
+<?php 
+$amountDeduct=0;
+foreach ($getPaymentsOfLoanee AS $values){
+    $amountDeduct +=$values->amount;
+    $totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($values->applicant_id,$date);
+?>
+<tr><td <?php echo $style5DataS; ?>><?php echo $sno; ?></td>
+    <td <?php echo $style5DataEmpC; ?>><?php echo $values->employer_code; ?></td>
+    <td <?php echo $style5DataEmpC; ?>><?php echo $values->short_name; ?></td>
+    <td <?php echo $style5DataPayD; ?>><?php echo date("d-m-Y",strtotime($values->payment_date)); ?></td>
+    <td <?php echo $style5DataAmount; ?>><?php echo number_format($values->amount); ?></td>
+    <td <?php echo $style5DataAmount; ?>><?php echo number_format($totalLoan-$amountDeduct); ?></td>
+</tr>
+<?php
+++$sno;
 }
- $totalReturn +=$amount1Return->disbursed_amount;
- ?></td>
- <?php }?>
-  <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($totalReturn,2); ?></td>
- </tr>
- <?php }
-//here for subtotal return 
 
- $resultAcademicTrendReturn = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);
- ?>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td><strong>Returns Sub Total</strong></td>
- <?php 
-$subtitalReturnAcc=0;
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotal) { 
- $academic_yearIDQR=$resultsAmountSubtotal->disbursementBatch->academic_year_id;
- $ReturnsAmountSubTotal = \common\models\LoanBeneficiary::getAmountSubtotalReturned($applicant_id,$academic_yearIDQR);
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- if($ReturnsAmountSubTotal->disbursed_amount > 0){
- echo number_format($ReturnsAmountSubTotal->disbursed_amount,2); 
- }else{
- echo "";
- }
- $subtitalReturnAcc +=$ReturnsAmountSubTotal->disbursed_amount;
- ?></td>
- <?php 
- } ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($subtitalReturnAcc,2); ?></td>
- </tr>
- 
- <?php
- //}
- //end
- 
- //here after subtotal return 
- $resultAcademicTrendReturn = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);
- ?>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td><strong>Sub Total (After Returns)</strong></td>
- <?php 
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- $academic_yearIDQR=$resultsAmountSubtotalAcc->disbursementBatch->academic_year_id;
+?>
+</table>    
 
- $amountSubTtal = \common\models\LoanBeneficiary::getSubTotalAfterReturn($applicant_id,$academic_yearIDQR);
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- if($amountSubTtal > 0){
- echo number_format($amountSubTtal,2); 
- }else{
- echo "";
- }
- $subtitalAcc +=$amountSubTtal;
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($subtitalAcc,2); ?></td>
- </tr>
- <?php
- }else{
- $subtitalAcc=$subtitalAccq;
- }
-//here for additional charges 
- $resultAcademicTrendReturn = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);
- ?>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td colspan="<?php echo $val; ?>"><strong>Additional Charges :</strong></td></tr>
- <tr <?php echo" style=\"\"";?>><td>Administration Fee</td>
- <?php 
-$LAF=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicant_id);
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- echo "";
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($LAF,2); ?></td>
- </tr>
- <tr <?php echo" style=\"\"";?>><td>Penalty</td>
- <?php 
-$penalty=backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicant_id);
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- echo "";
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($penalty,2); ?></td>
- </tr>
- <tr <?php echo" style=\"\"";?>><td>Value Retention Fee</td>
- <?php 
-$vrf=backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id);
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- echo "";
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($vrf,2); ?></td>
- </tr>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td><strong>Additional Charges Sub Total</strong></td>
- <?php 
-$additionalChargeSubTotal=$LAF+$penalty+$vrf;
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- echo "";
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($additionalChargeSubTotal,2); ?></td>
- </tr>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td>Total Loan</td>
- <?php 
-//$totalLoan=$additionalChargeSubTotal+$subtitalAcc;
-$totalLoan=$additionalChargeSubTotal+$subtitalAcc;
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- echo "";
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($totalLoan,2); ?></td>
- </tr>
-  <tr <?php echo" style=\"font-weight:bold;\"";?>><td colspan="<?php echo $val; ?>"><strong>Repayment :</strong></td></tr>
- <tr <?php echo" style=\"\"";?>><td>Amount Repaid</td>
- <?php 
-$amountPaid=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($applicant_id);
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- echo "";
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($amountPaid,2); ?></td>
- </tr>
- <tr <?php echo" style=\"font-weight:bold;\"";?>><td><strong>Outstanding Loan :</strong></td>
- <?php 
-$outstandingLoan=$totalLoan-$amountPaid;
- foreach ($resultAcademicTrendReturn as $resultsAmountSubtotalAcc) { 
- //echo $amountSubTtal;
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
- echo "";
- ?></td>
- <?php 
- }
- ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?php echo number_format($outstandingLoan,2); ?></td>
- </tr>
-</table>     
-</table>
  

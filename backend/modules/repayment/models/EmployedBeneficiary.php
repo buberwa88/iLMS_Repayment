@@ -264,9 +264,6 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         return $employee_existance_nonApplicant;
         }
     public static function getstartToEndAcademicYrOfBeneficiary($applicantID,$filter){
-	    /*
-        $details_academicY = AcademicYear::findBySql("SELECT academic_year.academic_year_id AS 'academic_year_id',academic_year.academic_year AS 'academic_year' FROM academic_year INNER JOIN application ON academic_year.academic_year_id=application.academic_year_id WHERE  application.applicant_id='$applicantID'  ORDER BY application.application_id $filter")->one();
-		*/
 		$details_academicY =\common\models\LoanBeneficiary::getAcademicYear($applicantID,$filter);
         $academicYid=$details_academicY->disbursementBatch->academic_year_id;
         //$LastacademicYear=$details_academicY->academic_year;
@@ -294,11 +291,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
     public function updateBeneficiaryNonApplicant($checkIsmoney,$results_nonApplicantFound,$f4indexno,$firstname,$phone_number,$NID){
         $this->updateAll(['basic_salary' =>$checkIsmoney,'f4indexno'=>$f4indexno,'firstname'=>$firstname,'phone_number'=>$phone_number,'NID'=>$NID], 'employed_beneficiary_id ="'.$results_nonApplicantFound.'"');
  }
-    public static function getIndividualEmployeesPrincipalLoan($applicantID){
-	    /*
-        $details_disbursedAmount = Disbursement::findBySql("SELECT SUM(disbursed_amount) AS disbursed_amount "
-                . "FROM disbursement INNER JOIN application ON application.application_id=disbursement.application_id WHERE  application.applicant_id='$applicantID'")->one();
-		*/		
+    public static function getIndividualEmployeesPrincipalLoan($applicantID){	
 				
 		$details_disbursedAmount=\common\models\LoanBeneficiary::getPrincipleNoReturn($applicantID);			
         $principal=$details_disbursedAmount->disbursed_amount;
@@ -306,18 +299,6 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         $value2 = (count($principal) == 0) ? '0' : $principal;
         return $value2;
         }
-        /*
-    public function getIndividualEmployeesPenalty($applicantID){
-        $details_pnt = LoanRepaymentSetting::findBySql("SELECT percent*0.01 AS 'percent' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_item.item_code='PNT'")->one();
-        $PNT=$details_pnt->percent; 
-        $details_disbursedAmount = Disbursement::findBySql("SELECT SUM('$PNT'*disbursed_amount) AS disbursed_amount "
-                . "FROM disbursement INNER JOIN application ON application.application_id=disbursement.application_id WHERE  application.applicant_id='$applicantID'")->one();
-        $penalty=$details_disbursedAmount->disbursed_amount;
-        $value_penalty = (count($penalty) == 0) ? '0' : $penalty;
-        return $value_penalty;
-        }
-         * 
-         */
     public static function getIndividualEmployeesPenalty($applicantID,$date){
 		//---checking grace period---
 		$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID);		
@@ -342,9 +323,6 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         return $penalty_to_pay;
         }
 		
-		/*
-		
-		*/
         public static function getIndividualEmployeePaidPrincipalLoan($applicantID){
         $principleCode="PRC";
         $PRC_id=EmployedBeneficiary::getloanRepaymentItemID($principleCode);
@@ -356,33 +334,6 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         $value = (count($paidAmount) == 0) ? '0' : $paidAmount;
         return $value;
         }
-        /*
-    public function getIndividualEmployeesLAF($applicantID){
-          $details_LAF = LoanRepaymentSetting::findBySql("SELECT percent*0.01 AS 'percent',loan_repayment_setting.loan_repayment_item_id AS 'loan_repayment_item_id' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_item.item_code='LAF'")->one();
-          $LAF=$details_LAF->percent;
-          $loan_repayment_item_id=$details_LAF->loan_repayment_item_id;
-        
-        $details_disbursedAmount = Disbursement::findBySql("SELECT SUM('$LAF'*disbursed_amount) AS disbursed_amount "
-                . "FROM disbursement INNER JOIN application ON application.application_id=disbursement.application_id WHERE  application.applicant_id='$applicantID'")->one();
-        $LAF_v=$details_disbursedAmount->disbursed_amount;        
-        $value_LAF = (count($LAF_v) == 0) ? '0' : $LAF_v;
-        //----check LAF paid---
-        $details_laf_status = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
-                . "FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment.payment_status='1' AND loan_repayment_detail.loan_repayment_item_id='$loan_repayment_item_id' AND loan_repayment_detail.applicant_id='$applicantID'")->one();
-        $LAF_paid=$details_laf_status->amount;
-        $value_LAF_paid2 = (count($LAF_paid) == 0) ? '0' : $LAF_paid;
-        //----end check----
-        if($value_LAF_paid2 >=$value_LAF ){
-          $LAF_to_pay='0';  
-        }else if($value_LAF_paid2 < $value_LAF){
-         $LAF_to_pay=$value_LAF-$value_LAF_paid2;   
-        }
-        return $LAF_to_pay;
-        //return $value_LAF_paid2;
-        }
-         * 
-         */
         public static function getIndividualEmployeesLAF($applicantID){
 		  $details_LAF=EmployedBeneficiary::getLAFsetting();
           $LAF=$details_LAF->rate;
@@ -402,129 +353,8 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         $value = (count($OutstandingAmount) == 0) ? '0' : $OutstandingAmount;
         return $value;
         }
-        /*
-        public static function getIndividualEmployeesVRF($applicantID){
-        $moder=new EmployedBeneficiary();
-		$details_VRF=EmployedBeneficiary::getVRFsetting();
-        $VRF=$details_VRF->rate; 
-        $vrfGeneralCalculationMode=$details_VRF->calculation_mode;		
-        //---checking time intervals----------
-        $filter="ASC";
-        $value_academicY = EmployedBeneficiary::getstartToEndAcademicYrOfBeneficiary($applicantID,$filter);
-        $firstAcademicYear=EmployedBeneficiary::getExplodeAcademicYear($value_academicY);
-        $currentYear=date("Y");       
-        //$vrfGeneralCalculationMode=2;        
-        if($firstAcademicYear !=0){
-            if($vrfGeneralCalculationMode==2){
-        //---get total years from the first accademic year--
-        $firstVRFCondition_getCompleteYrs=$currentYear-$firstAcademicYear;
-        //-----end of total years from the first accademic year--
-        //----get total days passed for the current year---
-        $secondVRFCondition_getTotalDaysInCurrentYr=date('z') + 1;
-            }
-        //-----end total days passed for the current year
-        }
-        //--------end checking time interval-----
-        $iterations=0;
-        $totlaVRF1=0;
-		            $getDistinctAccademicYrPerApplicant =\common\models\LoanBeneficiary::getAcademicYearTrend($applicantID);
-		            
-                    foreach ($getDistinctAccademicYrPerApplicant as $resultsApp) {
-                    //$academicYearID=$resultsApp->academic_year_id;
-                    //$academicYr=$resultsApp->academicYear->academic_year;
-					$academicYr=$resultsApp->disbursementBatch->academicYear->academic_year;
-					$academicYearID=$resultsApp->disbursementBatch->academic_year_id;
-                    //$pricipalLoan=$moder->getIndividualEmployeesPrincipalLoanPerAccademicYR($applicantID,$academicYearID);
-					$pricipalLoan1qaws=\common\models\LoanBeneficiary::getAmountSubtotalPerAccademicYNoReturned($applicantID,$academicYearID);
-					$pricipalLoan=$pricipalLoan1qaws->disbursed_amount;
-                    $valueInterval=$firstVRFCondition_getCompleteYrs-$iterations;
-                    $value_year=EmployedBeneficiary::getExplodeAcademicYear($academicYr);
-                    if($value_year < $currentYear){
-                     $totlaVRF1 +=$valueInterval*$pricipalLoan*$VRF;   
-                    }                     
-                    ++$iterations;
-                    }
-                    //---here VRF will stop automatically once the remaining priciple loan is zero
-                    $outstandingPrincipalLoan=EmployedBeneficiary::getOutstandingPrincipalLoan($applicantID);
-                    $totlaVRF2=($secondVRFCondition_getTotalDaysInCurrentYr*$VRF*$outstandingPrincipalLoan)/365;
-                    $paidVRFTotal=EmployedBeneficiary::getIndividualEmployeePaidVRF($applicantID);
-                    $overallVRFPending=($totlaVRF1 + $totlaVRF2)-$paidVRFTotal;
-                    if($overallVRFPending > 0){
-                     $overallVRFPending1 =$overallVRFPending;  
-                    }else{
-                        $overallVRFPending1=0;
-                    }
-                    $value_VRFTOTAL = (count($overallVRFPending1) == 0) ? '0' : $overallVRFPending1;
-        return $value_VRFTOTAL ;
-        //return $totlaVRF2;
-        }
-        */
-		/* 28-11-2018
-        public static function getIndividualEmployeesVRF($applicantID){
-            //get first payment date
-        $details_applicant_firstPayment = LoanSummaryDetail::findBySql("SELECT loan_repayment.date_receipt_received FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id AND loan_repayment_detail.applicant_id='$applicantID' ORDER BY loan_repayment_detail.loan_summary_id ASC")->one();
-        if($details_applicant_firstPayment->date_receipt_received !=''){
-        $firstPaymentDate=date("Y-m-d",strtotime($details_applicant_firstPayment->date_receipt_received));
-        }else{
-        $firstPaymentDate='';         
-        }
-        //$dateLoanDisbursed='2016-12-31';
-        //$dateLoanDisbursed1='2017-03-09';
-        //echo round((strtotime($dateLoanDisbursed1)-strtotime($dateLoanDisbursed))/(60*60*24));
-        //exit;
-        if($firstPaymentDate !=''){
-         $firstPayment=strtotime($firstPaymentDate);
-        }else{
-         $firstPayment1=date("Y-m-d");
-         $firstPayment=strtotime($firstPayment1);
-        }
-        $numberOfDaysPerYear=self::getTotaDaysPerYearSetting();
-        $iterations=0;
-        $totlaVRF1=0;
-
-					$pricipalLoan1qaws=\common\models\LoanBeneficiary::getAmountNoReturned($applicantID);
-                                        foreach ($pricipalLoan1qaws as $resultsApp) {
-					$pricipalLoan=$resultsApp->disbursed_amount;
-                                        $academicYearEndate=$resultsApp->disbursementBatch->academicYear->end_date;
-                                        $dateLoanDisbursed=date("Y-m-d",strtotime($resultsApp->status_date)); 
-                                        $formula_stage_level=\common\models\LoanBeneficiary::getVrFBeforeRepayment($dateLoanDisbursed);
-                                        //var_dump($formula_stage_level);
-                                        $VRF=$formula_stage_level->rate;
-                                        if($formula_stage_level->formula_stage_level==1){
-                                            //formula_stage_level==1 for From Disbursement date
-                                         $totalNumberOfSays=round(($firstPayment-strtotime($dateLoanDisbursed))/(60*60*24));
-                                         //echo $totalNumberOfSays;
-                                         //exit;
-                                        }else if($formula_stage_level->formula_stage_level==2){
-                                            //formula_stage_level==2 for Due Loan 
-                                            //here for after graduation
-                                            if($formula_stage_level->formula_stage_level_condition==1){
-                                            $dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID) ;
-                                            //---checking grace period---
-                                                    $today=date("Y-m-d");
-                                                    $periodPendingUnpaid=round((strtotime($today)-strtotime($dateGraduated))/(60*60*24));
-                                                    if(($periodPendingUnpaid-$formula_stage_level->grace_period) > 0){
-                                         $totalNumberOfSays=$periodPendingUnpaid-$formula_stage_level->grace_period;
-                                                    }else{
-                                          $totalNumberOfSays=0;              
-                                                    }
-                                            }else if($formula_stage_level->formula_stage_level_condition==2){
-                                             // here for after academic year 
-                                                if((round(($firstPayment-strtotime($academicYearEndate))/(60*60*24))) > 0){
-                                                 $totalNumberOfSays=round(($firstPayment-strtotime($academicYearEndate))/(60*60*24));   
-                                                }else{
-                                                 $totalNumberOfSays=0;   
-                                                }
-                                            
-                                            }
-                                        }
-                                        $totlaVRF1 +=($pricipalLoan*$VRF*$totalNumberOfSays)/$numberOfDaysPerYear;
-                    }                    
-        return $totlaVRF1 ;
-        //return $totlaVRF2;
-        }
-		*/
-        public static function getIndividualEmployeesVRF($applicantID,$date){
+        
+    public static function getIndividualEmployeesVRF($applicantID,$date){
 		//CALCULATE VRF BEFORE ANY REPAYMENT
 	//Get Disbursement per beneficiary
 	  $numberOfDaysPerYear=\backend\modules\repayment\models\EmployedBeneficiary::getTotaDaysPerYearSetting();
@@ -707,17 +537,6 @@ return 	$totlaVRF;
         $results=EmployedBeneficiary::find()->where(['employed_beneficiary_id' =>$employed_beneficiary_id])->one();
 		return $results;
  }
- /*
-   public static function getEmployerMontlyPenaltyRate($employer_type_id){
-	$details = EmployerMonthlyPenaltySetting::findBySql("SELECT employer_monthly_penalty_setting.penalty*0.01 AS 'penalty',employer_monthly_penalty_setting.payment_deadline_day_per_month AS 'payment_deadline_day_per_month' FROM employer_monthly_penalty_setting WHERE  employer_monthly_penalty_setting.employer_type_id='$employer_type_id' AND employer_monthly_penalty_setting.is_active='1'")->one();
-    return $details;
-	}
-	
-	public static function getEmployerMontlyPenaltyRate($employer_type_id){
-	$details = LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'penalty',loan_repayment_setting.payment_deadline_day_per_month AS 'payment_deadline_day_per_month' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_setting.employer_type_id='$employer_type_id' AND loan_repayment_setting.is_active='1' AND loan_repayment_item.item_code='EPNT'")->one();
-    return $details;
-	}
-	*/
 	public static function getEmployerMontlyPenaltyRate(){
 	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type FROM employer_penalty_cycle  WHERE employer_penalty_cycle.is_active='1' AND employer_penalty_cycle.cycle_type='0'")->one();
     return $details;
@@ -741,5 +560,85 @@ public static function getActiveNewBeneficiariesDuringLoanSummaryCreation(){
 	// this function checks all selected beneficiaries from HESLB panel
 public static function getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreation($employerID){
 	return  self::findBySql("SELECT * FROM employed_beneficiary WHERE  employer_id='$employerID'  AND applicant_id IS NOT NULL  AND employment_status='ONPOST' AND verification_status='1' AND (loan_summary_id IS NULL OR loan_summary_id='')")->all();
-}	
+}
+public static function getIndividualLAFReprocessLoan($amount){
+		  $details_LAF=EmployedBeneficiary::getLAFsetting();
+          $LAF=$details_LAF->rate;				
+        $LAF_to_pay=$amount*$LAF;        
+         if($LAF_to_pay < 0){
+		 $LAF_to_pay=0;
+		 }
+        return $LAF_to_pay;
+        //return $value_LAF;
+}
+ public static function getIndividualPNTreprocessLoan($amount){
+	 //NOTE: If somebody has penalty before, go straight to the calculation because this is the scenario of ON REPAYMENT
+        $details_pnt=EmployedBeneficiary::getPNTsetting();
+		$PNT=$details_pnt->rate;
+        ////////////
+        $penalty_to_pay=$amount*$PNT;
+        if($penalty_to_pay < 0){
+		$penalty_to_pay=0;	
+		}
+		/////////////
+        return $penalty_to_pay;
+}
+public static function getIndividualVRFreprocessLoan($applicantID,$date,$amount,$statusDate,$academicYearEndate){
+		//CALCULATE VRF BEFORE ANY REPAYMENT
+		$date=strtotime($date);
+	//Get Disbursement per beneficiary
+	  $numberOfDaysPerYear=\backend\modules\repayment\models\EmployedBeneficiary::getTotaDaysPerYearSetting();
+	  ///looiping among all the disbursed_amount
+	   
+	      //foreach ($pricipalLoan1qaws as $resultsApp) {
+					$pricipalLoan=$amount;
+                                        $dateLoanDisbursed=date("Y-m-d",strtotime($statusDate)); 
+                                        $formula_stage_level=\common\models\LoanBeneficiary::getVrFBeforeRepayment($dateLoanDisbursed);
+                                        //var_dump($formula_stage_level);
+                                        $VRF_Rate=$formula_stage_level->rate;
+					     			switch($formula_stage_level->formula_stage_level){
+										case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DISBUSRMENT:
+										 //formula_stage_level==1 for From Disbursement date
+                                        $totalNumberOfDays=round(($date-strtotime($dateLoanDisbursed))/(60*60*24));
+										break;
+																		
+										case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN:
+										//formula_stage_level==2 for Due Loan 
+                                            //here for after graduation
+											switch($formula_stage_level->formula_stage_level){
+												case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_GRADUATION:
+												$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID) ;
+                                            //---checking grace period---
+                                                   
+                                                    $periodPendingUnpaid=round(($date-strtotime($dateGraduated))/(60*60*24));
+                                                    if(($periodPendingUnpaid-$formula_stage_level->grace_period) > 0){
+                                                    $totalNumberOfDays=$periodPendingUnpaid-$formula_stage_level->grace_period;
+                                                    }else{
+                                                      $totalNumberOfDays=0;              
+                                                    }
+												break;
+												
+												case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_ACADEMIC_YEAR:
+												 // here for after academic year 
+                                                   if((round(($date-strtotime($academicYearEndate))/(60*60*24))) > 0){
+                                                    $totalNumberOfDays=round(($date-strtotime($academicYearEndate))/(60*60*24));   
+                                                    }else{
+                                                     $totalNumberOfDays=0;   
+                                                     }
+												break;
+												
+											}
+																					
+										break;
+										
+									}
+									$item_fomula=$formula_stage_level->item_formula;  //=PRC*R*T
+									
+                                 $totlaVRF +=($pricipalLoan*$VRF_Rate*$totalNumberOfDays)/$numberOfDaysPerYear;
+                    
+					if($totlaVRF < 0){
+		$totlaVRF=0;	
+		}
+return 	$totlaVRF;				
+		}	
 }

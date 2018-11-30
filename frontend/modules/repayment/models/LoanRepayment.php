@@ -62,6 +62,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
     public $employerId_bulk;
 	public $salarySource;
 	public $outstandingAmount;
+	public $payment_date2;
 
     public function rules()
     {

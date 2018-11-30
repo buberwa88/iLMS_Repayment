@@ -543,6 +543,7 @@ class ReportController extends Controller {
             $posted_data = Yii::$app->request->post();
             $id = $posted_data['Application']['uniqid'];
             $application_id = $posted_data['Application']['application_id'];
+            $applicant_id = $posted_data['Application']['applicant_id'];
 			$export_mode = $posted_data['Application']['export_mode'];
             if($id==''){
                 $reportName="";
@@ -587,6 +588,7 @@ class ReportController extends Controller {
             $category = $model->category;
             $exportCategory = $posted_data['Application']['exportCategory'];
             $pageIdentify = $posted_data['Application']['pageIdentifyStud'];
+            $applicant_id = $posted_data['Application']['applicant_id'];
             $modelReportTemplate = Report::findOne($id);
             $sql = $modelReportTemplate->sql;
             $sql_subquery = $modelReportTemplate->sql_subquery;
@@ -595,6 +597,360 @@ class ReportController extends Controller {
             $reportFilter = '';
             $reportFilterFinal = '';
             $applicantCategorySet = '';
+            $file_name = $modelReportTemplate->file_name;
+            $printed_on = "Printed on " . date('l F d Y H:i A', time());            
+            $resultsBanks=\backend\modules\repayment\models\BankAccount::find()->joinWith(['bank'])->all();
+            $desc='';
+            $count1=0;
+                    foreach($resultsBanks AS $resultsBanksFound){
+                        //if($count1==0){
+                    $desc.=$resultsBanksFound->bank->bank_name." - ".$resultsBanksFound->account_number."<br/>";
+                        //}
+                    /*
+                        if($count1==1){
+                    $desc1=$resultsBanksFound->bank->bank_name." - ".$resultsBanksFound->account_number;
+                        }
+                        if($count1==2){
+                    $desc2=$resultsBanksFound->bank->bank_name." - ".$resultsBanksFound->account_number;
+                        }
+                     * 
+                     */
+                        ++$count1;
+                    }
+                    if($id==19){
+             $custtomerState="<br/><strong>CUSTOMER STATEMENT : REPAYMENTS</strong>";           
+             $pritedOnside=$printed_on;
+            }else{
+             $custtomerState="<hr>
+         <strong>CUSTOMER STATEMENT</strong>
+           <hr>"; 
+             $pritedOnside="Loan Correction Acounts:<br/>".$desc."<br/>".$printed_on;
+            }
+            if($modelReportTemplate->printing_mode ==1){
+                     $reportLabel = "report_" . date("Y_m_d_h_m_s");
+                     $printedBy="Printed By: " . Yii::$app->user->identity->firstname . " " . Yii::$app->user->identity->surname."<br/><br/>Verified By : ______________________________________________ ";
+                     $htmlContent = $this->renderPartial($file_name, ['applicant_id' => $applicant_id]);
+                     
+                     
+                     if($export_mode ==1){
+                    $mpdf = new mPDF('c','A4-L','','',5,5,30,25,10,10);
+                      }else{
+					$mpdf = new mPDF();
+                      }
+                    //$mpdf = new \Mpdf\Mpdf(['orientation' => 'L']);
+                    //$mpdf->showImageErrors = true;
+                    //$mpdf->SetHTMLHeader('','',true);
+                    $mpdf->SetDefaultFontSize(8.0);
+                    $mpdf->useDefaultCSS2 = true;
+                    $mpdf->SetTitle('Report');
+                    $mpdf->SetDisplayMode('fullpage');
+		    $mpdf->setAutoTopMargin = 'stretch';
+                    $mpdf->setAutoBottomMargin = 'stretch';
+                    $logoHESLB=Yii::$app->params['HESLBlogo'].'logohelsb_new.jpg';
+                    $mpdf->SetHTMLHeader("<div class='header' style='text-align: center;'><table width='100%'>
+          <tr>
+           <td width='100%' style='margin: 1%;text-align: center;'>
+            <span style='font-weight: bold; font-size: 14pt;'>HIGHER EDUCATION STUDENT'S LOANS BOARD</span><br />
+            <img class='img' src='".$logoHESLB."' alt='' style='height: 70px;width: 70px;'>
+             <br />
+             Plot No. 8, Block No. 46; Sam Nujoma Rd; P.O Box 76068 Dar es Salaam, <strong>Tanzania</strong><br/>
+             <strong>Tel: </strong>(General) +255 22 22772432/22772433;  <strong>Fax: </strong> +255 22 2700286; <strong>Email:</strong>repayment@heslb.go.tz;<br/>
+             <strong>Website:</strong>www.heslb.go.tz
+           </td>          
+         </tr>
+         <tr>
+         <td width='100%' style='margin: 1%;text-align: center;'>
+          ".$custtomerState."
+           </td>
+           </tr>
+             
+
+       </table></div>");
+
+                    $mpdf->SetFooter($printedBy.'  |Page {PAGENO} of {nbpg} |<div style="text-align:left;font-size: 6pt;">'.$pritedOnside.'</div>');
+                    $mpdf->WriteHTML($htmlContent);
+                    return $mpdf->Output($reportLabel . '.pdf', "I");
+                    exit;
+                     
+                    }
+                    //exit;
+            if (!empty($modelReportTemplate->sql_where)) {
+                $where = ' where ' . $modelReportTemplate->sql_where.' AND allocation.application_id='.$application_id;
+            }
+            if (!empty($modelReportTemplate->sql_subquery_where)) {
+                $subquery_where = ' where ' . $modelReportTemplate->sql_subquery_where.' AND allocation.application_id='.$application_id;
+            }
+            $results = \backend\modules\report\models\ReportFilterSetting::find()
+                    ->select('number_of_rows')
+                    ->where(['is_active' => '1'])
+                    ->orderBy(['report_filter_setting_id' => SORT_DESC])
+                    ->one();
+            
+              $getStudent = \backend\modules\application\models\Application::findBySql('SELECT user.firstname AS firstname,user.middlename,user.surname,education.registration_number AS regNumber,education.completion_year  FROM application INNER JOIN applicant ON  applicant.applicant_id=application.applicant_id INNER JOIN user ON user.user_id=applicant.user_id INNER JOIN education ON education.application_id=application.application_id WHERE application.application_id = "'.$application_id.'" AND education.application_id ="'.$application_id.'" AND education.level="OLEVEL"')->one();
+               $fullName="STUDENT NAME: ".$getStudent->firstname." ".$getStudent->middlename." ".$getStudent->surname." : ".$getStudent->regNumber.".".$getStudent->completion_year;
+            
+            //$number_of_rows=$results->number_of_rows;
+            $number_of_rows = 15;
+            $sql .= ' ' . $where;
+            $sql_subquery .= ' ' . $subquery_where;
+
+            if (!empty($modelReportTemplate->sql_group)) {
+                $sql .= ' group by ' . $modelReportTemplate->sql_group;
+            }
+
+            if (!empty($modelReportTemplate->sql_order)) {
+                $sql .= ' order by ' . $modelReportTemplate->sql_order;
+            }
+
+            if (!empty($modelReportTemplate->sql_subquery_group)) {
+                $sql_subquery .= ' group by ' . $modelReportTemplate->sql_subquery_group;
+            }
+
+            if (!empty($modelReportTemplate->sql_subquery_order)) {
+                $sql_subquery .= ' order by ' . $modelReportTemplate->sql_subquery_order;
+            }
+        //}
+        }
+        /*
+        if (empty($reportFilterFinal)) {
+            $reportFilterFinal_F = "";
+        } else {
+            $reportFilterFinal_F = "  " . preg_replace('/\W\w+\s*(\W*)$/', '$1', $reportFilterFinal);
+        }
+         * 
+         */
+        $reportFilterFinal_F=$fullName;
+        $file_name = $modelReportTemplate->file_name;
+        $printed_on = "Printed on " . date('l F d Y H:i A', time());
+        $reportName = "<strong><center>" . strtoupper($modelReportTemplate->name . " Report <br>" . $reportFilterFinal_F) . "<br/> " . $printed_on . "<center/></strong>";
+        $reportNameExcel = $modelReportTemplate->name . " Report " . $reportFilterFinal_F;
+        $reportLabel = "report_" . date("Y_m_d_h_m_s");
+
+        $dataExists = count($this->reportGenerate($sql));
+        if ($dataExists > 0) {
+            if ($exportCategory == 1) {
+
+                if ($file_name != '' && $file_name != NULL) {
+                    $htmlContent = $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams]);
+                    $generated_by = Yii::$app->user->identity->firstname . " " . Yii::$app->user->identity->middlename . " " . Yii::$app->user->identity->surname;
+
+                      if($export_mode ==1){
+                    $mpdf = new mPDF('c','A4-L','','',5,5,30,25,10,10);
+                      }else{
+					$mpdf = new mPDF();
+                      }
+                    //$mpdf = new \Mpdf\Mpdf(['orientation' => 'L']);
+                    //$mpdf->showImageErrors = true;
+                    //$mpdf->SetHTMLHeader('','',true);
+                    $mpdf->SetDefaultFontSize(8.0);
+                    $mpdf->useDefaultCSS2 = true;
+                    $mpdf->SetTitle('Report');
+                    $mpdf->SetDisplayMode('fullpage');
+		    $mpdf->setAutoTopMargin = 'stretch';
+                    $logoHESLB=Yii::$app->params['HESLBlogo'].'logohelsb_new.jpg';
+                    $mpdf->SetHTMLHeader("<div class='header' style='text-align: center;'><table width='100%'>
+          <tr>
+          <td width='5%' style='text-align: left;'>
+        <img class='img' src='".$logoHESLB."' alt='' style='height: 70px;width: 70px;'><br /></b>
+            </td>
+           <td width='95%' style='margin: 1%;text-align: center;'>
+            <span style='font-weight: bold; font-size: 14pt;'>HIGHER EDUCATION STUDENT'S LOANS BOARD</span><br />
+             <b><i>(BODI YA MIKOPO YA WANAFUNZI WA ELIMU YA JUU)</i></b><br /><br />
+             $reportName
+           </td>          
+         </tr>         
+       </table></div>");
+
+                    
+
+                    $mpdf->SetFooter('|Page {PAGENO} of {nbpg}|');
+                    $mpdf->WriteHTML($htmlContent);
+                    return $mpdf->Output($reportLabel . '.pdf', "I");
+                    exit;
+                }
+            } 
+        } else {
+            $reportName="";
+                $htmlContent="";
+                      if($id !=4){
+                    $mpdf = new mPDF();
+                      }else{
+                      
+                    $mpdf = new mPDF('c','A4-L','','',5,5,30,25,10,10);
+                      }
+                    //$mpdf = new \Mpdf\Mpdf(['orientation' => 'L']);
+                    //$mpdf->showImageErrors = true;
+                    //$mpdf->SetHTMLHeader('','',true);
+                    $mpdf->SetDefaultFontSize(8.0);
+                    $mpdf->useDefaultCSS2 = true;
+                    $mpdf->SetTitle('Report');
+                    $mpdf->SetDisplayMode('fullpage');
+		    $mpdf->setAutoTopMargin = 'stretch';
+                    $mpdf->SetHTMLHeader("<div class='header' style='text-align: center;'><table width='100%'>
+          <tr>
+           <td width='100%' style='margin: 1%;text-align: center;'>
+            <span style='font-weight: bold; font-size: 14pt;'>HIGHER EDUCATION STUDENT'S LOANS BOARD</span><br />
+             <b><i>(BODI YA MIKOPO YA WANAFUNZI WA ELIMU YA JUU)</i></b><br />                     
+           </td>          
+         </tr>
+         <tr><td width='100%'>$reportName</td></tr>
+             <tr><td width='100%'></td></tr>
+       </table></div>");
+
+                    
+
+                    $mpdf->SetFooter('|Page {PAGENO} of {nbpg}|');
+                    $mpdf->WriteHTML($htmlContent);
+                    return $mpdf->Output($reportLabel . '.pdf', "I");
+                    exit;
+                
+        }
+    }
+	
+	public function actionPrintReportStudaccount() {
+        // $generatedBy = "Printed By " . Yii::$app->user->identity->firstname . " " . Yii::$app->user->identity->surname;
+        $generatedBy = NULL;
+        $searchParams = array();
+        $model = new Report();
+        $modelApplication = new \backend\modules\application\models\Application();
+        //$model->scenario='exportReport';
+        //if($modelApplication->load(Yii::$app->request->post())){
+            
+            if (isset($_POST['Application'])) {
+            $posted_data = Yii::$app->request->post();
+            $id = $posted_data['Application']['uniqid'];
+            $application_id = $posted_data['Application']['application_id'];
+            $applicant_id = $posted_data['Application']['applicant_id'];
+			$export_mode = $posted_data['Application']['export_mode'];
+            if($id==''){
+                $reportName="";
+                $htmlContent="";
+                      if($id !=4){
+                    $mpdf = new mPDF();
+                      }else{
+                      
+                    $mpdf = new mPDF('c','A4-L','','',5,5,30,25,10,10);
+                      }
+                    //$mpdf = new \Mpdf\Mpdf(['orientation' => 'L']);
+                    //$mpdf->showImageErrors = true;
+                    //$mpdf->SetHTMLHeader('','',true);
+                    $mpdf->SetDefaultFontSize(8.0);
+                    $mpdf->useDefaultCSS2 = true;
+                    $mpdf->SetTitle('Report');
+                    $mpdf->SetDisplayMode('fullpage');
+		    $mpdf->setAutoTopMargin = 'stretch';
+                    $mpdf->SetHTMLHeader("<div class='header' style='text-align: center;'><table width='100%'>
+          <tr>
+           <td width='100%' style='margin: 1%;text-align: center;'>
+            <span style='font-weight: bold; font-size: 14pt;'>HIGHER EDUCATION STUDENT'S LOANS BOARD</span><br />
+             <b><i>(BODI YA MIKOPO YA WANAFUNZI WA ELIMU YA JUU)</i></b><br />                     
+           </td>          
+         </tr>
+         <tr><td width='100%'>$reportName</td></tr>
+             <tr><td width='100%'></td></tr>
+       </table></div>");
+
+                    
+
+                    $mpdf->SetFooter('|Page {PAGENO} of {nbpg}|');
+                    $mpdf->WriteHTML($htmlContent);
+                    return $mpdf->Output($reportLabel . '.pdf', "I");
+                    exit;
+                
+            }
+        //}
+        //if ($model->load(Yii::$app->request->post())) {
+//            var_dump($model->attributes);
+//            exit;
+            $category = $model->category;
+            $exportCategory = $posted_data['Application']['exportCategory'];
+            $pageIdentify = $posted_data['Application']['pageIdentifyStud'];
+            $applicant_id = $posted_data['Application']['applicant_id'];
+            $modelReportTemplate = Report::findOne($id);
+            $sql = $modelReportTemplate->sql;
+            $sql_subquery = $modelReportTemplate->sql_subquery;
+            //return $sql;
+            $where = $subquery_where = '';
+            $reportFilter = '';
+            $reportFilterFinal = '';
+            $applicantCategorySet = '';
+            $file_name = $modelReportTemplate->file_name;
+            $printed_on = "Printed on " . date('l F d Y H:i A', time());            
+            $resultsBanks=\backend\modules\repayment\models\BankAccount::find()->joinWith(['bank'])->all();
+            $desc='';
+            $count1=0;
+                    foreach($resultsBanks AS $resultsBanksFound){
+                        //if($count1==0){
+                    $desc.=$resultsBanksFound->bank->bank_name." - ".$resultsBanksFound->account_number."<br/>";
+                        //}
+                    /*
+                        if($count1==1){
+                    $desc1=$resultsBanksFound->bank->bank_name." - ".$resultsBanksFound->account_number;
+                        }
+                        if($count1==2){
+                    $desc2=$resultsBanksFound->bank->bank_name." - ".$resultsBanksFound->account_number;
+                        }
+                     * 
+                     */
+                        ++$count1;
+                    }
+                    if($id==19){
+             $custtomerState="<br/><strong>CUSTOMER STATEMENT : REPAYMENTS</strong>";           
+             $pritedOnside=$printed_on;
+            }else{
+             $custtomerState="<hr>
+         <strong>CUSTOMER STATEMENT</strong>
+           <hr>"; 
+             $pritedOnside="Loan Correction Acounts:<br/>".$desc."<br/>".$printed_on;
+            }
+            if($modelReportTemplate->printing_mode ==1){
+                     $reportLabel = "report_" . date("Y_m_d_h_m_s");
+                     $printedBy="Printed By: " . Yii::$app->user->identity->firstname . " " . Yii::$app->user->identity->surname."<br/><br/>Verified By : ______________________________________________ ";
+                     $htmlContent = $this->renderPartial($file_name, ['applicant_id' => $applicant_id]);
+                     
+                     
+                     if($export_mode ==1){
+                    $mpdf = new mPDF('c','A4-L','','',5,5,30,25,10,10);
+                      }else{
+					$mpdf = new mPDF();
+                      }
+                    //$mpdf = new \Mpdf\Mpdf(['orientation' => 'L']);
+                    //$mpdf->showImageErrors = true;
+                    //$mpdf->SetHTMLHeader('','',true);
+                    $mpdf->SetDefaultFontSize(8.0);
+                    $mpdf->useDefaultCSS2 = true;
+                    $mpdf->SetTitle('Report');
+                    $mpdf->SetDisplayMode('fullpage');
+		    $mpdf->setAutoTopMargin = 'stretch';
+                    $mpdf->setAutoBottomMargin = 'stretch';
+                    $logoHESLB=Yii::$app->params['HESLBlogo'].'logohelsb_new.jpg';
+                    $mpdf->SetHTMLHeader("<div class='header' style='text-align: center;'><table width='100%'>
+          <tr>
+           <td width='100%' style='margin: 1%;text-align: center;'>
+            <span style='font-weight: bold; font-size: 14pt;'>HIGHER EDUCATION STUDENT'S LOANS BOARD</span><br />
+            <img class='img' src='".$logoHESLB."' alt='' style='height: 70px;width: 70px;'>
+             <br />
+             Plot No. 8, Block No. 46; Sam Nujoma Rd; P.O Box 76068 Dar es Salaam, <strong>Tanzania</strong><br/>
+             <strong>Tel: </strong>(General) +255 22 22772432/22772433;  <strong>Fax: </strong> +255 22 2700286; <strong>Email:</strong>repayment@heslb.go.tz;<br/>
+             <strong>Website:</strong>www.heslb.go.tz
+           </td>          
+         </tr>
+         <tr>
+         <td width='100%' style='margin: 1%;text-align: center;'>
+          ".$custtomerState."
+           </td>
+           </tr>
+             
+
+       </table></div>");
+
+                    $mpdf->SetFooter($printedBy.'  |Page {PAGENO} of {nbpg} |<div style="text-align:left;font-size: 6pt;">'.$pritedOnside.'</div>');
+                    $mpdf->WriteHTML($htmlContent);
+                    return $mpdf->Output($reportLabel . '.pdf', "I");
+                    exit;
+                     
+                    }
+                    //exit;
             if (!empty($modelReportTemplate->sql_where)) {
                 $where = ' where ' . $modelReportTemplate->sql_where.' AND allocation.application_id='.$application_id;
             }
@@ -622,100 +978,7 @@ class ReportController extends Controller {
             
             //$number_of_rows=$results->number_of_rows;
             $number_of_rows = 15;
-            /*
-            for ($i = 1; $i <= $number_of_rows; $i++) {
-                $attr = 'input' . $i;
-                $column = 'column' . $i;
-                $condition = 'condition' . $i;
-                $type = 'type' . $i;
-                $field = 'field' . $i;
-                $typeValue = $modelReportTemplate->$type;
-                $attrValue = $model->$attr;
-                $conditionValue = $modelReportTemplate->$condition;
-                $columnValue = $modelReportTemplate->$column;
-                $fieldValue = $modelReportTemplate->$field;
-                if (!empty($model->$attr)) {
-                    $value = $model->$attr;
-
-                    if ($typeValue == 'date')
-                        $value = date('Y-m-d', strtotime($value));
-
-                    if ($conditionValue == 'like') {
-                        $mysearch = "$columnValue $conditionValue '%" . $value . "%'";
-                        $reportFilter = "$fieldValue $conditionValue $value AND ";
-                    } else {
-                        $mysearch = "$columnValue $conditionValue '$value'";
-                        if ($typeValue == 'date') {
-                            $reportFilter = "$fieldValue  $value AND ";
-                        } else {
-                            if ($typeValue == 'applicant_category') {
-                                $applicantCategory = \backend\modules\application\models\ApplicantCategory::findOne($value);
-                                $reportFilter = "$fieldValue  :  $applicantCategory->applicant_category AND ";
-                                $applicantCategorySet = $value;
-                                $searchParams['applicant_category'] = $value;
-                            } else if ($typeValue == 'sex') {
-                                if ($value == 'M') {
-                                    $reportFilter = "$fieldValue  :  Male AND ";
-                                } else {
-                                    $reportFilter = "$fieldValue  :  Female AND ";
-                                }
-                                $searchParams['sex'] = $value;
-                            } else if ($typeValue == 'institution') {
-                                $institution_name = \frontend\modules\application\models\LearningInstitution::findOne($value);
-                                $reportFilter = "$fieldValue  :  $institution_name->institution_code AND ";
-                                $searchParams['sex'] = $value;
-                            } else if ($typeValue == 'loan_item') {
-                                $item_name = \backend\modules\allocation\models\LoanItem::findOne($value);
-                                $reportFilter = "$fieldValue  :  $item_name->item_name AND ";
-                                $searchParams['loan_item']=$value;
-                            } else if ($typeValue == 'country') {
-                                $country_name = \frontend\modules\application\models\Country::findOne($value);
-                                $reportFilter = "$fieldValue  :  $country_name->country_name AND ";
-                                $searchParams['country']=$value;
-                            } else if ($typeValue == 'programme_group') {
-                                $group_name = \backend\modules\allocation\models\ProgrammeGroup::findOne($value);
-                                $reportFilter = "$fieldValue  :  $group_name->group_name AND ";
-                                 $searchParams['programme_group']=$value;
-                            } else if ($typeValue == 'scholarship_type') {
-                                $scholarship_name = \backend\modules\allocation\models\ScholarshipDefinition::findOne($value);
-                                $reportFilter = "$fieldValue  :  $scholarship_name->scholarship_name AND ";
-                                $searchParams['scholarship_type']=$value;
-                            } else if ($typeValue == 'academic_year') {
-                                $academic_year = \common\models\AcademicYear::findOne($value);
-                                $reportFilter = "$fieldValue : $academic_year->academic_year AND ";
-                                $searchParams['academic_year']=$value;
-                            } else if ($typeValue == 'allocation_batch') {
-                                $allocation_batch = \backend\modules\allocation\models\AllocationBatch::findOne($value);
-                                $reportFilter = "$fieldValue : $allocation_batch->batch_number AND ";
-                                $searchParams['allocation_batch']=$value;
-                            } else {
-                                $reportFilter = "$fieldValue  :  $value AND ";
-                            }
-                        }
-
-                        //$mysearch = "$columnValue $conditionValue '%".$value."%'";
-                    }
-                    if (empty($where)) {
-                        $where = " where $mysearch AND allocation.application=$application_id";
-                        $reportFilterFinal = $reportFilter;
-                    } else {
-                        $where .= " and $mysearch AND allocation.application=$application_id";
-                        $reportFilterFinal.=$reportFilter;
-                    }
-
-                    if (empty($subquery_where)) {
-                        $subquery_where = " where $mysearch AND allocation.application=$application_id";
-                    } else {
-                        $subquery_where .= " and $mysearch AND allocation.application=$application_id";
-                    }
-                }
-            }
-             */
-            //echo $where;
-            //exit;
-             
-             
-
+			
             $sql .= ' ' . $where;
             $sql_subquery .= ' ' . $subquery_where;
 

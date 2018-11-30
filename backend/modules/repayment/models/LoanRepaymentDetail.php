@@ -387,5 +387,10 @@ public static function getPaidItemUnderActiveLoanSummaryPerBeneficiary($applican
 }
 public static function getLastBeneficiaryRepaymentByDate($applicantID,$date){
 	return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.receipt_number,loan_repayment.receipt_date,loan_repayment.payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment.receipt_date <='".$date."' ORDER BY loan_repayment_detail_id DESC")->one();
+}
+public static function getBeneficiariesOnRepaymentWithinDateRange($startDate,$endDate){
+$startDate=date("Y-m-d 23:59:59",strtotime($startDate));
+$endDate=date("Y-m-d 23:59:59",strtotime($endDate));
+return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,loan_repayment.control_number,loan_repayment.receipt_number,loan_repayment.receipt_date,loan_repayment.payment_status,loan_repayment_detail.applicant_id FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment.payment_status=1 AND loan_repayment.receipt_date >='".$startDate."' AND loan_repayment.receipt_date <='".$endDate."' GROUP BY loan_repayment_detail.applicant_id  ORDER BY loan_repayment_detail.loan_repayment_detail_id ASC")->all();	
 }   
 }
