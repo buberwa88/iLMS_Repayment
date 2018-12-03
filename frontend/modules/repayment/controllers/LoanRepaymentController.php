@@ -9,8 +9,8 @@ use frontend\modules\repayment\models\EmployerSearch;
 use frontend\modules\repayment\models\LoanSummary;
 use frontend\modules\repayment\models\LoanRepaymentDetailSearch;
 use frontend\modules\repayment\models\LoanRepaymentDetail;
-use yii\web\Controller;
-//use \common\components\Controller;
+//use yii\web\Controller;
+use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -1066,31 +1066,5 @@ return $pdf->render();
             'dataProvider' => $dataProvider,
             
         ]);
-    }
-	public function actionPrepaid()
-    {
-        $searchModel = new LoanRepaymentDetailSearch();
-        $model2 = new LoanRepayment();
-        $modelBill = new LoanSummary();
-        $employerModel = new EmployerSearch();
-		$searchLoanRepayment = new LoanRepaymentSearch();
-        $loggedin=Yii::$app->user->identity->user_id;
-        $employer2=$employerModel->getEmployer($loggedin);
-        $employerID=$employer2->employer_id;
-        $model2->employer_id=$employerID;
-		$model2->scenario='billGeneration';
-        //$model2->repayment_reference_number=$employer2->employer_code;
-        $model2->amount=0;
-        //$model2->pay_method_id=4;
-        //$model2->pay_method_id=$model2->getPaymentMethod();
-        //generating payment reference number
-        //end generating
-        if ($model2->load(Yii::$app->request->post())) {
-        }		
-        return $this->render('prepaid', [
-            'model' => $model2
-            
-        ]);
-		
     }
 }

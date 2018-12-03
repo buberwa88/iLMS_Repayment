@@ -28,7 +28,6 @@ $this->params['breadcrumbs'][] = $this->title;
 			if($amountRemainedUnpaid < 1){
 			frontend\modules\repayment\models\LoanSummary::updateCompletePaidLoanSummary($billID);
 			}
-			exit;
 ?>
 <div class="loan-repayment-index">
 

@@ -8,6 +8,7 @@ use frontend\modules\repayment\models\LoanRepaymentDetail;
 use backend\modules\repayment\models\PayMethod;
 use frontend\modules\repayment\models\LoanRepayment;
 use frontend\modules\repayment\models\LoanRepaymentDetailSearch;
+use frontend\modules\repayment\models\LoanRepaymentPrepaid;
 
 /**
  * This is the model class for table "loan_repayment".
@@ -209,6 +210,13 @@ class LoanRepayment extends \yii\db\ActiveRecord
     public function updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$loan_repayment_id){
         $date=date("Y-m-d H:i:s");
         $this->updateAll(['bill_number' =>$repaymnet_reference_number,'amount'=>$totalAmount1,'date_bill_generated'=>$date], 'loan_repayment_id ="'.$loan_repayment_id.'"'); 
+    }
+	public static function updateTotalAmountPrepaid($totalAmount1,$loan_repayment_id){
+        self::updateAll(['amount'=>$totalAmount1], 'loan_repayment_id ="'.$loan_repayment_id.'"'); 
+    }
+	public static function updateMonthlyDeductionStatus($payment_date,$employer_id){
+		$date=date("Y-m-d H:i:s");
+        LoanRepaymentPrepaid::updateAll(['monthly_deduction_status'=>1,'date_deducted'=>$date], 'payment_date="'.$payment_date.'" AND employer_id="'.$employer_id.'"'); 
     }
     public function updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber){
         $date=date("Y-m-d H:i:s");
@@ -457,5 +465,122 @@ public static function createAutomaticBills($payment_date,$employerID){
             $modelLoanRepayment->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$loan_repayment_id);
 			
 			return true;
-}		
+}
+public static function getAmountRequiredForMonthlyRepaymentBeneficiary($employerID,$loan_summary_id,$bill_number,$created_by,$payment_date,$totalMonths,$created_at){
+$amountPTotal=0;
+$amountPTotalAccumulated=0;	
+	 $details_applicant = EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND employed_beneficiary.employer_id='$employerID' AND verification_status='1' AND salary_source IN(2,3)")->all();
+        $moder=new EmployedBeneficiary();
+		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
+        $totalAmount=0; 
+        $yeaAndMonth=date("Y-m",strtotime($payment_date));
+        $duration_type="months";		
+        foreach ($details_applicant as $paymentCalculation) { 
+           $applicantID=$paymentCalculation->applicant_id;
+           $amount1=$MLREB*$paymentCalculation->basic_salary; 
+           $TotalAmountUnderRange=$amount1 * $totalMonths;			   
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+		   if($totalOutstandingAmount >= $TotalAmountUnderRange){
+			   $countForPaymentDate=0;
+           for($count=1;$count <= $totalMonths; ++$count){
+			   //get payment date
+			    $dateConstantForPayment=$yeaAndMonth."-10";
+				$dateCreatedqq=date_create($dateConstantForPayment);
+				$dateDurationAndTypeqq=$countForPaymentDate." ".$duration_type;
+				date_add($dateCreatedqq,date_interval_create_from_date_string($dateDurationAndTypeqq));
+				$payment_date=date_format($dateCreatedqq,"Y-m-d");
+				//end			   
+			self::insertprepaidAmount($employerID,$applicantID,$loan_summary_id,$amount1,$created_by,$bill_number,$payment_date,$created_at);
+			++$countForPaymentDate;
+		}
+		}else{
+			$countForPaymentDate=0;
+        for($countP=1;$countP <= $totalMonths; ++$countP){
+			$amountPTotal +=$amount1;
+			if($totalOutstandingAmount >= $amountPTotal){
+			//get payment date
+			    $dateConstantForPayment=$yeaAndMonth."-10";
+				$dateCreatedqq=date_create($dateConstantForPayment);
+				$dateDurationAndTypeqq=$countForPaymentDate." ".$duration_type;
+				date_add($dateCreatedqq,date_interval_create_from_date_string($dateDurationAndTypeqq));
+				$payment_date=date_format($dateCreatedqq,"Y-m-d");
+				//end	
+			self::insertprepaidAmount($employerID,$applicantID,$loan_summary_id,$amount1,$created_by,$bill_number,$payment_date,$created_at);
+			$amountPTotalAccumulated=$amountPTotal;
+			$payment_dateLast=$payment_date;
+			}
+			++$countForPaymentDate;
+		}
+        $OverallBalance=$totalOutstandingAmount-$amountPTotalAccumulated;
+        if($OverallBalance > 0){
+			    //get payment date
+			    $dateConstantForPayment=$payment_dateLast;
+				$dateCreatedqq=date_create($dateConstantForPayment);
+				$dateDurationAndTypeqq="1"." ".$duration_type;
+				date_add($dateCreatedqq,date_interval_create_from_date_string($dateDurationAndTypeqq));
+				$payment_date=date_format($dateCreatedqq,"Y-m-d");
+				//end			
+        self::insertprepaidAmount($employerID,$applicantID,$loan_summary_id,$OverallBalance,$created_by,$bill_number,$payment_date,$created_at);		
+		}
+		}
+        	   
+	 }
+	 return true;	
+}
+public static function insertprepaidAmount($employerID,$applicantID,$loan_summary_id,$amount,$created_by,$bill_number,$payment_date,$created_at){
+	Yii::$app->db->createCommand()
+        ->insert('loan_repayment_prepaid', [
+        'employer_id' =>$employerID,
+        'applicant_id' =>$applicantID,
+        'loan_summary_id' =>$loan_summary_id,
+        'monthly_amount' =>$amount,
+        'created_by' =>$created_by,
+        'bill_number' =>$bill_number,
+        'payment_date'=>$payment_date,
+        'created_at'=>$created_at,
+        'date_bill_generated'=>$created_at,		
+        ])->execute();
+}
+public static function updatePaymentAfterGePGconfirmPaymentDonePrePaid($controlNumber){
+        $model=new LoanSummary();
+		$date_control_received=date("Y-m-d H:i:s");
+		$receiptDate=date("Y-m-d H:i:s");
+		$receiptNumber=rand(100,1000);
+        LoanRepaymentPrepaid::updateAll(['payment_status' =>'1','date_control_received'=>$date_control_received,'receipt_date'=>$receiptDate,'date_receipt_received'=>$receiptDate,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND payment_status ="0"');
+ }
+public static function createAutomaticBillsPrepaid(){
+	        $modelLoanRepaymentDetail=new LoanRepaymentDetailSearch();
+			$modelLoanRepayment = new LoanRepayment();
+			$todate=date("Y-m-d");
+			$yeaAndMonth=date("Y-m");
+			$checkingDate=$yeaAndMonth."-10";
+    if($todate > $checkingDate){
+		$prepaidDetails = LoanRepaymentPrepaid::findBySql("SELECT employer_id,payment_date,bill_number,loan_summary_id,control_number,receipt_number,date_bill_generated,date_control_received,receipt_date,date_receipt_received,payment_status FROM loan_repayment_prepaid WHERE  payment_date='$checkingDate' AND monthly_deduction_status='0' AND payment_status='1'")->groupBy('employer_id')->all();
+	        foreach($prepaidDetails AS $prepaidDetailsResults){
+			$modelLoanRepayment = new LoanRepayment();	
+            $loan_summary_id=$prepaidDetailsResults->loan_summary_id;
+			$modelLoanRepayment->amount=0;
+			$modelLoanRepayment->employer_id=$prepaidDetailsResults->employer_id;
+			$modelLoanRepayment->payment_date=$prepaidDetailsResults->payment_date;
+			$modelLoanRepayment->bill_number=$prepaidDetailsResults->bill_number;
+			$modelLoanRepayment->control_number=$prepaidDetailsResults->control_number;
+			$modelLoanRepayment->receipt_number=$prepaidDetailsResults->receipt_number;
+			$modelLoanRepayment->date_bill_generated=$prepaidDetailsResults->date_bill_generated;
+			$modelLoanRepayment->date_control_received=$prepaidDetailsResults->date_control_received;
+			$modelLoanRepayment->receipt_date=date("Y-m-d H:i:s",strtotime($prepaidDetailsResults->payment_date));
+			$modelLoanRepayment->date_receipt_received=date("Y-m-d H:i:s",strtotime($prepaidDetailsResults->payment_date));
+			$modelLoanRepayment->payment_status=$prepaidDetailsResults->payment_status;
+			$payment_date=$prepaidDetailsResults->payment_date;
+			$modelLoanRepayment->save();
+            $loan_repayment_id=$modelLoanRepayment->loan_repayment_id;
+			$employer_id=$prepaidDetailsResults->employer_id;
+			$modelLoanRepaymentDetail->insertAllPaymentsofAllLoaneesUnderPrepaidMonthly($loan_summary_id,$loan_repayment_id,$payment_date,$employer_id);
+
+            $totalAmount1=$modelLoanRepayment->getAmountRequiredForPayment($loan_repayment_id);
+            $modelLoanRepayment->updateTotalAmountPrepaid($totalAmount1,$loan_repayment_id);
+			
+			}
+	}	
+			return true;
+} 
 }

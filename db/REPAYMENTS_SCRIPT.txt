@@ -119,5 +119,35 @@ COMMIT;
 ALTER TABLE `loan_summary_detail` ADD `created_at` DATETIME NOT NULL AFTER `is_active`;
 ALTER TABLE `loan_summary_detail` CHANGE `is_active` `is_active` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '0: Inactive, 1: Active(This column to be updated when cancelling or adding employee), -1: Status for killing the previous loan summary before staring Repayment';
 ALTER TABLE `system_setting` ADD `graduated_from` DATE NULL DEFAULT NULL COMMENT 'Date to guide penalty calculation' AFTER `item_formula`, ADD `graduated_to` DATE NULL DEFAULT NULL COMMENT 'Date to guide penalty calculation' AFTER `graduated_from`;
+ALTER TABLE `loan_repayment_detail` ADD `loan_balance` DECIMAL(15,4) NULL DEFAULT NULL COMMENT 'To be updated at the principal repayment item' AFTER `loan_summary_id`;
+ALTER TABLE `loan_repayment_detail` ADD `prepaid_id` INT(11) NULL DEFAULT NULL COMMENT 'for prepaid payments' AFTER `treasury_user_id`;
+ALTER TABLE `loan_summary_detail` ADD `vrf_before_repayment` DECIMAL(15,4) NULL DEFAULT NULL AFTER `amount`;
+
+CREATE TABLE `loan_repayment_prepaid` (
+  `prepaid_id` int(11) NOT NULL AUTO_INCREMENT,
+  `employer_id` int(11) NOT NULL,
+  `applicant_id` int(11) NOT NULL,
+  `loan_summary_id` int(11) NOT NULL,
+  `monthly_amount` decimal(15,4) NOT NULL,
+  `payment_date` date DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `created_by` int(11) NOT NULL,
+  `bill_number` varchar(20) NOT NULL,
+  `control_number` varchar(20) DEFAULT NULL,
+  `receipt_number` varchar(20) DEFAULT NULL,
+  `date_bill_generated` datetime DEFAULT NULL,
+  `date_control_received` datetime DEFAULT NULL,
+  `receipt_date` datetime DEFAULT NULL,
+  `date_receipt_received` datetime DEFAULT NULL,
+  `payment_status` tinyint(4) DEFAULT NULL COMMENT '0: Payment confirmed/Bill Confirmed, 1: GePG confirmed Payment, 2: selected for payment by treasury, 3: Cancelled ',
+  `cancelled_by` int(11) DEFAULT NULL,
+  `cancelled_at` datetime DEFAULT NULL,
+  `cancel_reason` varchar(200) DEFAULT NULL,
+  `gepg_cancel_request_status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '0: Not Requested, 1: Requested, 2: Request acknowledged ',
+  `monthly_deduction_status` tinyint(4) NOT NULL DEFAULT '0',
+  `date_deducted` datetime DEFAULT NULL,
+  PRIMARY KEY (`prepaid_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -----------------------------------------------------
 ======================================================
