@@ -14,6 +14,7 @@ use frontend\modules\repayment\models\EmployerSearch;
 <?php $this->beginPage() ?>
 <?php 
 $countAllocation=0;
+$countGraduated=0;
 $user_id = Yii::$app->user->identity->user_id;
 $modelApplicant = \frontend\modules\application\models\Applicant::find()->where("user_id = {$user_id}")->one();
 $existAllocation=\frontend\modules\application\models\Application::checkExistAllocation($modelApplicant->applicant_id);
@@ -24,15 +25,23 @@ $existDisbursement=\frontend\modules\application\models\Application::checkExistD
         $loggedin=Yii::$app->user->identity->user_id;
         $applicant=EmployerSearch::getApplicant($loggedin);
         $applicantID=$applicant->applicant_id;
-        
+		
+        $checkGraduated= \frontend\modules\application\models\Application::find()
+        ->where(['applicant_id'=>$applicantID,'student_status'=>'GRADUATED'])->orderBy(['application_id'=>SORT_ASC])->count();
+        if($checkGraduated > 0){
+            $countGraduated=1;
+        }
         //check loged in employer
+		/*
         $employerStatus= \frontend\modules\repayment\models\Employer::find()
         ->where(['user_id'=>$loggedin,'salary_source'=>1])->orderBy(['employer_id'=>SORT_DESC])->count();
         if($employerStatus ==0){
-            $label="Pay Bill";$label="Pay Bill";
+            $label="My Bill";$label="My Bill";
         }else{           
            $label="Prepare & Send Bill";
         }
+		*/
+		$label="My Bill";
         //end check
 
 ?>
@@ -174,13 +183,14 @@ desired effect
 						[
 									"label" => "Repayment",
 									"icon" => "th",
+									'visible' =>$countGraduated=='1',
 									"url" => "#",
 								"items" => [								
 								    ["label" => "My Loan", "url" => Url::to(['/repayment/loan-beneficiary/viewloan-statement-beneficiary']), 'active' => (Yii::$app->controller->id =='loan-beneficiary'&&Yii::$app->controller->action->id=='viewloan-statement-beneficiary'), "icon" => "money"],
                                     //["label" => "Loan Summary", "url" => Url::to(['/repayment/loan-summary/index-beneficiary']), 'active' => (Yii::$app->controller->id =='loan-summary'&&Yii::$app->controller->action->id=='index-beneficiary'), "icon" => "money"],
                                     ["label" =>$label, "url" => Url::to(['/repayment/loan-repayment/index-beneficiary']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='index-beneficiary'), "icon" => "th"],
                                     ["label" => "Payments", "url" => Url::to(['/repayment/loan-repayment-detail/bills-payments-benefiaciary']), 'active' => (Yii::$app->controller->id =='loan-repayment-detail'), "icon" => "th"],
-				    ["label" => "Receipts", "url" => Url::to(['/repayment/loan-repayment/receipt']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='receipt'), "icon" => "money"],
+				    //["label" => "Receipts", "url" => Url::to(['/repayment/loan-repayment/receipt']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='receipt'), "icon" => "money"],
 					],
 					],
                                 ['label' => 'Appeal', 'icon' => 'balance-scale', 'url' => ['/appeal/appeal/index'],'active' => (Yii::$app->controller->id == 'appeal'),'visible' =>$countAllocation=='23'],

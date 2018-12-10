@@ -54,8 +54,8 @@ class SystemSetting extends \yii\db\ActiveRecord
             'value_data_type' => 'Rate Type',
             'is_active' => 'Is Active',
             'item_formula'=>'item_formula',
-			'graduated_from'=>'graduated_from',
-			'graduated_to'=>'graduated_to',
+			'graduated_from'=>'Graduated From',
+			'graduated_to'=>'Graduated To',
         ];
     }
 }

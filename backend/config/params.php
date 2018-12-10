@@ -10,7 +10,6 @@ return [
     'seconday_school_study_level' => [0 => 'Primary School', 1 => 'O-Level', 2 => 'A-Level'],
     'allocation_maximum_data_to_process' => 30, /// 
 	'reportTemplate' =>'../backend/modules/report/views/report/',
-        //'reportTemplate' =>'/var/www/html/olams_uat/backend/modules/report/views/report/',
 	'HESLBlogo' =>'../image/logo/',
     'report_modules' => [
         1 => 'application', 2 => 'allocation', 3 => 'disbursement', 4 => 'repayment', 5 => 'complaint', 6 => 'appleal',

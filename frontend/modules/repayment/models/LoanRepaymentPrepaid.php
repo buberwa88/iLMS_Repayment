@@ -47,6 +47,13 @@ class LoanRepaymentPrepaid extends \yii\db\ActiveRecord
     const TOTAL_MONTHS_10 = '10';
     const TOTAL_MONTHS_11 = '11';
 	const TOTAL_MONTHS_12 = '12';
+	
+	const GEPG_PAYMENT_CATEGORY_EMPLOYER_BILL = 'EMPLOYER_BILL';
+    const GEPG_PAYMENT_CATEGORY_BENEFICIARY_BILL = 'BENEFICIARY_BILL';
+    const GEPG_PAYMENT_CATEGORY_EMPLOYER_PENALTY_BILL = 'EMPLOYER_PENALTY_BILL';
+	const GEPG_PAYMENT_CATEGORY_EMPLOYER_PRE_PAID_BILL = 'EMPLOYER_PRE_PAID_BILL';
+	const GEPG_PAYMENT_CATEGORY_TRESURY_BILL = 'TRESURY_BILL';
+	
     public static function tableName()
     {
         return 'loan_repayment_prepaid';
@@ -57,6 +64,7 @@ class LoanRepaymentPrepaid extends \yii\db\ActiveRecord
      */
 	 public $payment_date2;
 	 public $totalMonths;
+	 public $totalBeneficiaries;
     public function rules()
     {
         return [
@@ -131,7 +139,7 @@ class LoanRepaymentPrepaid extends \yii\db\ActiveRecord
         }
 	public static function getTotalBeneficiariesUnderPrePaid($employerID){
        return self::findBySql("SELECT * "
-                . "FROM loan_repayment_prepaid  WHERE  loan_repayment_prepaid.employer_id='$employerID' AND (loan_repayment_prepaid.payment_status IS NULL)")->count();
+                . "FROM loan_repayment_prepaid  WHERE  loan_repayment_prepaid.employer_id='$employerID' AND (loan_repayment_prepaid.payment_status IS NULL) GROUP BY applicant_id")->count();
         }
 public static function updateConfirmPaymentandControlNoprepaidbill($bill_number,$controlNumber,$employerID){
         $date=date("Y-m-d H:i:s");
@@ -148,5 +156,33 @@ public static function getGetPendingPayment($employerID){
 public static function checkForCofrmedPaymentNotConsumed($employerID){
        return self::findBySql("SELECT * "
                 . "FROM loan_repayment_prepaid  WHERE  loan_repayment_prepaid.employer_id='$employerID' AND loan_repayment_prepaid.payment_status ='1' AND loan_repayment_prepaid.monthly_deduction_status='0'")->count();
-        }		
+        }
+static function getGePGpaymentCategory() {
+        return 
+		    [self::GEPG_PAYMENT_CATEGORY_EMPLOYER_BILL => 'EMPLOYER BILL',
+            self::GEPG_PAYMENT_CATEGORY_BENEFICIARY_BILL => 'BENEFICIARY BILL',
+            self::GEPG_PAYMENT_CATEGORY_EMPLOYER_PENALTY_BILL => 'EMPLOYER PENALTY BILL',
+            self::GEPG_PAYMENT_CATEGORY_EMPLOYER_PRE_PAID_BILL => 'EMPLOYER PRE PAID BILL',
+			self::GEPG_PAYMENT_CATEGORY_TRESURY_BILL => 'TRESURY BILL',
+        ];
+    }
+public static function getTotalBeneficiariesUnderPrePaidheslb($employerID,$bill_number){
+       return self::findBySql("SELECT * "
+                . "FROM loan_repayment_prepaid  WHERE  loan_repayment_prepaid.employer_id='$employerID' AND  loan_repayment_prepaid.bill_number='$bill_number' GROUP BY applicant_id")->count();
+        }	
+public static function getstartPrePaidheslb($employerID,$bill_number){
+      $results=self::findBySql("SELECT payment_date "
+                . "FROM loan_repayment_prepaid  WHERE  loan_repayment_prepaid.employer_id='$employerID' AND  loan_repayment_prepaid.bill_number='$bill_number' ORDER BY loan_repayment_prepaid.prepaid_id ASC")->one();
+				return $results->payment_date;
+        }
+public static function getEndPrePaidheslb($employerID,$bill_number){
+      $results33=self::findBySql("SELECT payment_date "
+                . "FROM loan_repayment_prepaid  WHERE  loan_repayment_prepaid.employer_id='$employerID' AND  loan_repayment_prepaid.bill_number='$bill_number' ORDER BY loan_repayment_prepaid.prepaid_id DESC")->one();
+				return $results33->payment_date;
+        }
+public static function getTotalAmountUnderBillPrepaid($employerID,$bill_number){
+      $results=self::findBySql("SELECT SUM(monthly_amount) AS monthly_amount "
+                . "FROM loan_repayment_prepaid  WHERE  loan_repayment_prepaid.employer_id='$employerID' AND  loan_repayment_prepaid.bill_number='$bill_number'")->one();
+				return $results->monthly_amount;
+        }
 }

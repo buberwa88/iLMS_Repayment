@@ -444,7 +444,7 @@ class EmployerController extends Controller
            $modelLoanBeneficiary->updateEmployerVerifiedEmail($employerID,$verification_status);
 		   $modelLoanBeneficiary->updateUserActivateAccount($userID->user_id);
            $modelLoanBeneficiary->updateUserVerifyEmail($userID->user_id);		   
-		   $sms = '<p>Account activated successful!</p>';
+		   $sms = '<p>Account activated successful, kindly login using contact person email address as the username and your password. Thanks!</p>';
             Yii::$app->getSession()->setFlash('success', $sms);
 		   }else if($results->status==10){
 		   $sms = '<p>Account already activated!</p>';

@@ -11,7 +11,8 @@
 		//alert(autstandingAmount);
 		if(amount_adjusted !==''){
 		if(parseFloat(amount_adjusted) >= parseFloat(amountApplicant)){	
-		if((parseFloat(autstandingAmount) >= parseFloat(amount_adjusted)) && (parseFloat(amount_adjusted) > parseFloat(checkZero))){			
+		if((parseFloat(autstandingAmount) >= parseFloat(amount_adjusted)) && (parseFloat(amount_adjusted) > parseFloat(checkZero))){
+       //if((parseFloat(autstandingAmount) >= parseFloat(amount_adjusted))){			
 		return check_status();
         }else{
 		var smsalert="Pay Amount must be less than or equal to outstanding amount";	
@@ -50,6 +51,7 @@ $amountApplicant=number_format(\frontend\modules\repayment\models\EmployedBenefi
 
 $bill_number=$model->bill_number;
 $outstandingDebt=$outstandingDebt;
+$outstandingDebt22=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($results->applicant_id,$date);
 $controlNumber=mt_rand (10,100);
 $date=date("Y-m-d H:i:s");
 
@@ -146,7 +148,7 @@ $date=date("Y-m-d H:i:s");
 		<div class="profile-info-value">
     <div class="col-sm-12">
 <?= 
-Html::textInput('outstandingAmount', $outstandingDebt, ['size'=>20,'class'=>'form-control','readOnly'=>'readOnly','id'=>'outstandingAmount_id','options'=>['size'=>'20']]) 
+Html::textInput('outstandingAmount', $outstandingDebt22, ['size'=>20,'class'=>'form-control','readOnly'=>'readOnly','id'=>'outstandingAmount_id','options'=>['size'=>'20']]) 
 ?>
 <?= 
 Html::hiddenInput('loan_repayment_id', $loan_repayment_id,['class'=>'form-control'])?>

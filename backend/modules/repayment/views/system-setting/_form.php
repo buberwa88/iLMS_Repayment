@@ -36,6 +36,34 @@ echo Form::widget([ // fields with labels
     ]
 ]);
 ?>
+<?=
+$form->field($model, 'graduated_from')->widget(DatePicker::classname(), [
+    'name' => 'graduated_from',
+    //'value' => date('Y-m-d', strtotime('+2 days')),
+    'options' => ['placeholder' => 'yyyy-mm-dd',
+        'todayHighlight' => true,
+    ],
+    'pluginOptions' => [
+        'autoclose' => true,
+        'format' => 'yyyy-mm-dd',
+        'todayHighlight' => true,
+    ],
+]);
+?>
+<?=
+$form->field($model, 'graduated_to')->widget(DatePicker::classname(), [
+    'name' => 'graduated_to',
+    //'value' => date('Y-m-d', strtotime('+2 days')),
+    'options' => ['placeholder' => 'yyyy-mm-dd',
+        'todayHighlight' => true,
+    ],
+    'pluginOptions' => [
+        'autoclose' => true,
+        'format' => 'yyyy-mm-dd',
+        'todayHighlight' => true,
+    ],
+]);
+?>
 
 <?php $model->isNewRecord == 1 ? $model->is_active = 1 : $model->is_active; ?>
     <?= $form->field($model, 'is_active')->radioList(array(1 => 'Active', '0' => 'Inactive')); ?>

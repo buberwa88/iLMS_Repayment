@@ -12,6 +12,8 @@ use backend\modules\repayment\models\LoanRepaymentDetailSearch;
 use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use frontend\modules\repayment\models\LoanRepaymentPrepaid;
+use frontend\modules\repayment\models\LoanRepaymentPrepaidSearch;
 
 /**
  * LoanRepaymentController implements the CRUD actions for LoanRepayment model.
@@ -450,4 +452,96 @@ class LoanRepaymentController extends Controller
         ]);    
         
     }
+	public function actionGepgPayments()
+    {
+		$modelLoanRepayment = new \frontend\modules\repayment\models\LoanRepayment();
+        $employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+        $modelLoanRepaymentPrepaid->employer_id=$employerID;
+		$modelLoanRepayment->scenario='gepgPayment';
+        if ($modelLoanRepayment->load(Yii::$app->request->post())) {
+		$controlNumber = $modelLoanRepayment->control_number;
+        $amount = $modelLoanRepayment->amount;	
+		if($modelLoanRepayment->payCategory=='EMPLOYER_BILL' OR $modelLoanRepayment->payCategory=='BENEFICIARY_BILL'){
+        $modelLoanRepayment->updatePaymentAfterGePGconfirmPaymentDone($controlNumber, $amount);
+		}
+		if($modelLoanRepayment->payCategory=='TRESURY_BILL'){
+        $modelLoanRepayment->updatePaymentAfterGePGconfirmPaymentDoneTreasury($controlNumber, $amount);
+		}
+		if($modelLoanRepayment->payCategory=='EMPLOYER_PENALTY_BILL'){
+		$modelLoanRepayment->updatePaymentAfterGePGconfirmPaymentEmployerPenalty($controlNumber,$amount);	
+		}
+		if($modelLoanRepayment->payCategory=='EMPLOYER_PRE_PAID_BILL'){
+		$modelLoanRepayment->updatePaymentAfterGePGconfirmPaymentEmployerPrepaid($controlNumber,$amount);	
+		}		
+	    $sms="Payment successful posted";
+        Yii::$app->getSession()->setFlash('success', $sms);		
+		return $this->redirect(['gepg-payments']);
+        }		
+        return $this->render('gepgpayment', [
+            'model' => $modelLoanRepayment
+            
+        ]);
+		
+    }
+	public function actionPrepaid()
+    {
+		$modelLoanRepaymentPrepaid = new LoanRepaymentPrepaid();
+        $searchModelLoanRepaymentPrepaid = new LoanRepaymentPrepaidSearch();
+        $dataProvider=$searchModelLoanRepaymentPrepaid->searchPrepaidheslb(Yii::$app->request->queryParams);
+
+        return $this->render('prepaid', [
+		    'model' => $modelLoanRepaymentPrepaid,
+            'searchModel' => $searchModelLoanRepaymentPrepaid,
+            'dataProvider' => $dataProvider,            
+        ]);    
+        
+    }
+	
+	public function actionViewPrepaid($bill_number,$employer_id)
+    {
+		$modelLoanRepaymentPrepaid = new LoanRepaymentPrepaid();
+        $searchModelLoanRepaymentPrepaid = new LoanRepaymentPrepaidSearch();
+        $dataProvider=$searchModelLoanRepaymentPrepaid->searchPrepaidheslb(Yii::$app->request->queryParams);
+
+        return $this->render('viewPrepaid', [
+		    'model' => $modelLoanRepaymentPrepaid,
+            'searchModel' => $searchModelLoanRepaymentPrepaid,
+            'dataProvider' => $dataProvider,
+            'bill_number'=>$bill_number,
+            'employer_id'=>$employer_id,            
+        ]);    
+        
+    }
+	public function actionPrepaidbillview($bill_number,$employer_id)
+    {
+		$this->layout="default_main";
+		$modelLoanRepaymentPrepaid = new LoanRepaymentPrepaid();
+        $searchModelLoanRepaymentPrepaid = new LoanRepaymentPrepaidSearch();
+        $dataProvider=$searchModelLoanRepaymentPrepaid->searchPrepaidheslbviewBill(Yii::$app->request->queryParams,$bill_number,$employer_id);
+
+        return $this->render('prepaidbillview', [
+		    'model' => \frontend\modules\repayment\models\LoanRepaymentPrepaid::find()->where(['bill_number'=>$bill_number,'employer_id'=>$employer_id])->one(),
+            'searchModel' => $searchModelLoanRepaymentPrepaid,
+            'dataProvider' => $dataProvider,            
+        ]);    
+        
+    }
+	public function actionPrepaidbeneficiariesview($bill_number,$employer_id)
+    {
+		$this->layout="default_main";
+		$modelLoanRepaymentPrepaid = new LoanRepaymentPrepaid();
+        $searchModelLoanRepaymentPrepaid = new LoanRepaymentPrepaidSearch();
+        $dataProvider=$searchModelLoanRepaymentPrepaid->searchPrepaidheslbbeneficiaries(Yii::$app->request->queryParams,$bill_number,$employer_id);
+
+        return $this->render('prepaidbeneficiariesview', [
+		    'model' => $modelLoanRepaymentPrepaid,
+            'searchModel' => $searchModelLoanRepaymentPrepaid,
+            'dataProvider' => $dataProvider,            
+        ]);    
+        
+    }
+	
 }

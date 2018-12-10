@@ -135,4 +135,10 @@ class LoanRepaymentSetting extends \yii\db\ActiveRecord
             self::FORMULA_STAGE_2 => 'On Repayment', 
         ];
     }
+	public static function getLoanRepaymentRateVRF($vrfID){
+	return  self::findBySql("SELECT loan_repayment_rate FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_setting.loan_repayment_item_id='$vrfID' AND loan_repayment_setting.is_active='1' AND loan_repayment_setting.formula_stage='2' AND loan_repayment_item.item_code='VRF' AND loan_repayment_item.is_active='1'")->one();	
+	}
+	public static function getLoanRepaymentRateOtherItems($itemsID){
+	return  self::findBySql("SELECT loan_repayment_rate FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_setting.loan_repayment_item_id='$itemsID' AND loan_repayment_setting.is_active='1' AND loan_repayment_item.is_active='1'")->one();	
+	}
 }

@@ -71,6 +71,32 @@ $this->params['breadcrumbs'][] = $this->title;
                             }
             },
         ],
+		[
+            'attribute'=>'graduated_from',
+            'header'=>'Graduated From',
+            'format'=>'raw',    
+            'value' => function($model)
+            {  
+                            if($model->graduated_from !=''){
+            return $model->graduated_from;
+                            }else{
+            return 'N/A';                    
+                            }
+            },
+        ],
+		[
+            'attribute'=>'graduated_to',
+            'header'=>'Graduated To',
+            'format'=>'raw',    
+            'value' => function($model)
+            {  
+                            if($model->graduated_to !=''){
+            return $model->graduated_to;
+                            }else{
+            return 'N/A';                    
+                            }
+            },
+        ],
         [
             'attribute'=>'is_active',            
             'filter' => ['1'=>'Active', '0'=>'In Active'],

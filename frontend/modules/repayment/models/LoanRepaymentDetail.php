@@ -52,6 +52,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
     public $amountx1;
     public $payment_status;
     public $receipt_number;
+	public $payment_date;
     public function rules()
     {
         return [

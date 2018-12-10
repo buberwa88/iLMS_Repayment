@@ -9,6 +9,7 @@ use backend\modules\repayment\models\PayMethod;
 use frontend\modules\repayment\models\LoanRepayment;
 use frontend\modules\repayment\models\LoanRepaymentDetailSearch;
 use frontend\modules\repayment\models\LoanRepaymentPrepaid;
+use frontend\modules\repayment\models\EmployerPenaltyPayment;
 
 /**
  * This is the model class for table "loan_repayment".
@@ -64,6 +65,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
 	public $salarySource;
 	public $outstandingAmount;
 	public $payment_date2;
+	public $payCategory;
 
     public function rules()
     {
@@ -72,6 +74,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
             [['amount','repaymentID'], 'required','on'=>'paymentAdjustmentLoanee'],
             [['amount'], 'number','on'=>'paymentAdjustmentLoanee'],
 	    [['payment_date'], 'required','on'=>'billGeneration'],
+		[['control_number','amount','payCategory'], 'required','on'=>'gepgPayment'],
             [['employerId_bulk'], 'required','on'=>'bulkBillTreasury'],
             [['payment_date'], 'required','on'=>'billConfirmationTreasury'],
             [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource'], 'safe'],
@@ -96,7 +99,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
             'applicant_id' => 'Applicant ID',
             'bill_number' => 'Bill Number',
             'control_number' => 'Control Number',
-            'amount' => 'Amount(TZS)',
+            'amount' => 'Amount',
             'receipt_number' => 'Receipt Number',
             'pay_method_id' => 'Pay Method ID',
             'pay_phone_number' => 'Pay Phone Number',
@@ -119,7 +122,8 @@ class LoanRepayment extends \yii\db\ActiveRecord
 			'loan_summary_id'=>'Loan Summary ID',
 			'amountx'=>'Amount',
 			'payment_date'=>'Date of Bill',
-                        'print'=>'Print',
+            'print'=>'Print',
+			'payCategory'=>'Category',
         ];
     }
 
@@ -219,8 +223,15 @@ class LoanRepayment extends \yii\db\ActiveRecord
         LoanRepaymentPrepaid::updateAll(['monthly_deduction_status'=>1,'date_deducted'=>$date], 'payment_date="'.$payment_date.'" AND employer_id="'.$employer_id.'"'); 
     }
     public function updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber){
-        $date=date("Y-m-d H:i:s");
-     $this->updateAll(['date_control_received'=>$date,'control_number'=>$controlNumber,'payment_status'=>'0'], 'loan_repayment_id ="'.$loan_repayment_id.'" AND (control_number="" OR control_number IS NULL)');       
+        //$date=date("Y-m-d H:i:s");
+		if($controlNumber !=''){
+		$date=date("Y-m-d H:i:s");
+        $paymentStatus=0;		
+		}else{
+		$date=null;	
+		$paymentStatus=null;
+		}
+     $this->updateAll(['date_control_received'=>$date,'control_number'=>$controlNumber,'payment_status'=>$paymentStatus], 'loan_repayment_id ="'.$loan_repayment_id.'" AND (control_number="" OR control_number IS NULL)');       
         }
         // used twice
     public function getLoanRepayment($loan_repayment_id){
@@ -272,7 +283,19 @@ class LoanRepayment extends \yii\db\ActiveRecord
                 . "WHERE  loan_repayment.control_number='$controlNumber'")->one();
         $loan_summary_id=$details->loan_summary_id;
         $model->updateAll(['status' =>'1'], 'loan_summary_id ="'.$loan_summary_id.'" AND status<>2 AND status<>5 AND status<>4');
- }  
+ }
+public function updatePaymentAfterGePGconfirmPaymentEmployerPenalty($controlNumber,$amount){
+		$date_control_received=date("Y-m-d H:i:s");
+		$receiptDate=date("Y-m-d H:i:s");
+		$receiptNumber=rand(100,1000);
+        EmployerPenaltyPayment::updateAll(['payment_status' =>'1','date_control_received'=>$date_control_received,'receipt_date'=>$receiptDate,'date_receipt_received'=>$receiptDate,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND amount ="'.$amount.'" AND payment_status ="0"');
+ }
+public function updatePaymentAfterGePGconfirmPaymentEmployerPrepaid($controlNumber,$amount){
+		$date_control_received=date("Y-m-d H:i:s");
+		$receiptDate=date("Y-m-d H:i:s");
+		$receiptNumber=rand(100,1000);
+        LoanRepaymentPrepaid::updateAll(['payment_status' =>'1','date_control_received'=>$date_control_received,'receipt_date'=>$receiptDate,'date_receipt_received'=>$receiptDate,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND payment_status ="0"');
+ } 
  public function getTotalAmountPaidLoaneeUnderTransaction($loan_repayment_id){
         $model=new EmployerSearch();
         $moder=new EmployedBeneficiary();

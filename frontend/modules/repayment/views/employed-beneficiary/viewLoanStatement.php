@@ -42,7 +42,7 @@ $this->params['breadcrumbs'][] = $this->title;
 		//end
 		$loanee = frontend\modules\application\models\Applicant::find()
 	                                                           ->where(['applicant_id'=>$applicant_id])->one();
-$getProgramme = frontend\modules\application\models\application::findBySql("SELECT applicant.f4indexno,programme.programme_name,learning_institution.institution_code FROM application INNER JOIN applicant ON applicant.applicant_id=application.applicant_id INNER JOIN disbursement ON disbursement.application_id=application.application_id INNER JOIN programme ON programme.programme_id=disbursement.programme_id INNER JOIN learning_institution ON learning_institution.learning_institution_id=programme.learning_institution_id WHERE application.applicant_id=:applicant_id",[':applicant_id'=>$applicant_id])->one();
+$getProgramme = frontend\modules\application\models\Application::findBySql("SELECT applicant.f4indexno,programme.programme_name,learning_institution.institution_code FROM application INNER JOIN applicant ON applicant.applicant_id=application.applicant_id INNER JOIN disbursement ON disbursement.application_id=application.application_id INNER JOIN programme ON programme.programme_id=disbursement.programme_id INNER JOIN learning_institution ON learning_institution.learning_institution_id=programme.learning_institution_id WHERE application.applicant_id=:applicant_id",[':applicant_id'=>$applicant_id])->one();
 $programmeResultd=\common\models\LoanBeneficiary::getAllProgrammeStudied($applicant_id);
  ?>
  <table><tr><td <?php echo" style=\"text-align:right;font-weight:bold;font-family: Times;\"";?>>INSTITUTION/COLLEGE:&nbsp;&nbsp;&nbsp;</td><td><?php 

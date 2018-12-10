@@ -88,7 +88,7 @@ Html::hiddenInput('applicant_id', $applicantID, ['size'=>20,'class'=>'form-contr
 </div>
     </div>			
 <div class="text-right" >
-	   <?= Html::submitButton('Submit', ['class'=>'btn btn-primary','onclick'=>'return  check_status_employedBeneficiary()']) ?>
+	   <?= Html::submitButton('Submit', ['class'=>'btn btn-primary','onclick'=>'return  checkvalidation_employedBeneficiary()']) ?>
 	     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <?php
 echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['loan-repayment/confirm-payment','id'=>$model->loan_repayment_id], ['class' => 'btn btn-warning']);

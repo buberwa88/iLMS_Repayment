@@ -620,12 +620,15 @@ class ReportController extends Controller {
                     if($id==19){
              $custtomerState="<br/><strong>CUSTOMER STATEMENT : REPAYMENTS</strong>";           
              $pritedOnside=$printed_on;
+            }else if($id==20){
+            $custtomerState="<br/><strong>CUSTOMER STATEMENT : REPAYMENT SCHEDULE</strong>";           
+             $pritedOnside=$printed_on;
             }else{
-             $custtomerState="<hr>
+			 $custtomerState="<hr>
          <strong>CUSTOMER STATEMENT</strong>
            <hr>"; 
-             $pritedOnside="Loan Correction Acounts:<br/>".$desc."<br/>".$printed_on;
-            }
+             $pritedOnside="Loan Correction Acounts:<br/>".$desc."<br/>".$printed_on;	
+			}
             if($modelReportTemplate->printing_mode ==1){
                      $reportLabel = "report_" . date("Y_m_d_h_m_s");
                      $printedBy="Printed By: " . Yii::$app->user->identity->firstname . " " . Yii::$app->user->identity->surname."<br/><br/>Verified By : ______________________________________________ ";

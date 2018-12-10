@@ -55,7 +55,7 @@ $getProgramme = frontend\modules\application\models\application::findBySql("SELE
 	$resultAcademic = \common\models\LoanBeneficiary::getAcademicYearTrend($applicant_id);	
 	foreach ($resultAcademic as $disbursedbatchResults) {
 	?>
- <td <?php echo" style=\"\"";?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><?php 
+ <td <?php echo "style=\"text-align:right;\"" ?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><?php 
   echo $disbursedbatchResults->disbursementBatch->academicYear->academic_year;
  ?></strong></td>
  <?php
@@ -85,7 +85,7 @@ $total=0;
  
  $amount1 = \common\models\LoanBeneficiary::getAmountPerLoanItemsProvided($applicant_id,$loanItem,$academic_yearID);
  ?>
- <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
+ <td <?php echo "style=\"text-align:right;\"" ?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php 
  if($amount1->disbursed_amount >0){
  echo number_format($amount1->disbursed_amount,2); 
  $total +=$amount1->disbursed_amount;
