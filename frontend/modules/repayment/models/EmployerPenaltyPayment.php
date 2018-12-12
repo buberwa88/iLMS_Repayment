@@ -222,11 +222,95 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	 }
 	 }
 	 */
+	 public static function getPenaltyToEmployerIndividualMonths(){
+	
+	//check employer has active loan summary
+	$todate=date("Y-m-d");
+	$yeaAndMonth=date("Y-m");
+	
+	$duration=1;
+	$duration_type="months";
+	$getDeadlineDay=Yii::$app->params['deadlineDayForEmployerPenaltyEachMonth'];
+	$yearandmonthCurrent=date("Y-m",strtotime($todate));
+	$CurrentdeadlineDateOfMonth=$yearandmonthCurrent."-".$getDeadlineDay;
+	
+	if($todate > $CurrentdeadlineDateOfMonth){
+	$allActivePenalty=\frontend\modules\repayment\models\EmployerPenalty::getActivePenalty();
+	foreach ($allActivePenalty as $resultsActivePenalty){	
+    /*	
+	$dateCreated=date_create($todate);
+	$dateDurationAndType=$duration." ".$duration_type;
+	date_sub($dateCreated,date_interval_create_from_date_string($dateDurationAndType));
+	$firstDayPreviousMonth1=date_format($dateCreated,"Y-m-d");
+	*/
+	$employerID=$resultsActivePenalty->employer_id; 
+	$loan_summary_id=$resultsActivePenalty->loan_summary_id;
+	$penaltyAmount=$resultsActivePenalty->amount;
+	$penaltyDateOrgn=$resultsActivePenalty->penalty_date;
+	$createdat=date("Y-m-d H:i:s");
+	$employer_penalty_cycle_id=$resultsActivePenalty->employer_penalty_cycle_id;
+	$penaltyID=$resultsActivePenalty->employer_penalty_id;
+
+	
+	//check employer special case in penalty
+	$resultsSpecifcEmplPNT=\backend\modules\repayment\models\EmployedBeneficiary::getEmployerPenaltyCycleUsed($employer_penalty_cycle_id);
+	
+	if(count($resultsSpecifcEmplPNT) > 0){
+	$percent=$resultsSpecifcEmplPNT->penalty;
+	$payment_deadline_day_per_month=$resultsSpecifcEmplPNT->payment_deadline_day_per_month;//this is used as  repayment_deadline_day
+	//$duration=$resultsSpecifcEmplPNT->duration;
+	$duration_type1=$resultsSpecifcEmplPNT->duration_type;
+	$employer_penalty_cycle_id=$resultsSpecifcEmplPNT->employer_penalty_cycle_id;
+	if($duration_type1=='d'){$duration_type="days";}else if($duration_type1=='w'){$duration_type="weeks";}else if($duration_type1=='m'){$duration_type="months";}else if($duration_type1=='y'){$duration_type="years";}
+	$deadlineDateOfMonth=$yeaAndMonth."-".$payment_deadline_day_per_month;
+	$penaltyDate=$yeaAndMonth."-".$payment_deadline_day_per_month;	
+
+	//end check
+	$orignalPenaltyDate=date_create($resultsActivePenalty->penalty_date);
+	$dateDurationAndType=$duration." ".$duration_type;
+	date_sub($orignalPenaltyDate,date_interval_create_from_date_string($dateDurationAndType));
+	$firstDayPreviousMonth1=date_format($orignalPenaltyDate,"Y-m-d");
+	if($duration_type=="months"){
+	$firstDayPreviousMonth2=date("Y-m",strtotime($firstDayPreviousMonth1));
+	$firstDayPreviousMonth=$firstDayPreviousMonth2."-01";	
+	}else{
+	$firstDayPreviousMonth=date_format($orignalPenaltyDate,"Y-m-d");
+	}
+    $checkMonth=$firstDayPreviousMonth2;
+	$checkCurrentMonth=date("Y-m",strtotime($todate));
+	$resultsCheck=\frontend\modules\repayment\models\LoanRepayment::checkPaymentsEmployerAcruePenalty($employerID,$checkMonth);
+	                if($resultsCheck==0){
+					$penaltyCountCheckAcruedExist=self::checklastPenaltyEmployerAcrued($employerID,$penaltyDateOrgn,$checkCurrentMonth);
+					if($penaltyCountCheckAcruedExist ==0){
+	                Yii::$app->db->createCommand()
+					->insert('employer_penalty', [
+					'employer_id' =>$employerID,
+					'amount' =>$penaltyAmount,
+					'penalty_date' =>$penaltyDateOrgn,
+					'created_at' =>$createdat,
+                    'loan_summary_id' =>$loan_summary_id,
+                    'employer_penalty_cycle_id'=>$employer_penalty_cycle_id,
+                    'level'=>'2',	
+                    'penalty_id'=>$penaltyID,					
+					])->execute();
+	
+	}
+	}
+	}
+	}
+	 }
+	 return true;
+	 }
 	 public static function getPenaltyToEmployer(){
 	
 	//check employer has active loan summary
 	$todate=date("Y-m-d");
 	$yeaAndMonth=date("Y-m");
+	
+	$getDeadlineDay=Yii::$app->params['deadlineDayForEmployerPenaltyEachMonth'];
+	$yearandmonthCurrent=date("Y-m",strtotime($todate));
+	$CurrentdeadlineDateOfMonth=$yearandmonthCurrent."-".$getDeadlineDay;	
+	if($todate > $CurrentdeadlineDateOfMonth){
 	
 	
 	$loanSummaryDetailsEmployer = \frontend\modules\repayment\models\LoanSummary::employerDetailsForPenalty();
@@ -236,11 +320,19 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
     $employer_type_id=$loanSummaryDetailsResults->employer->employer_type_id;					
 	$loan_summary_id=$loanSummaryDetailsResults->loan_summary_id;
 	$dateLoanSummaryCreated=date("Y-m-d",strtotime($loanSummaryDetailsResults->created_at));
-	
+	//get total days since the loan summary created
+	$LoanSummaryCreatedAt = date_create($dateLoanSummaryCreated);
+	$todateCheckLoanSummary = date_create($todate);
+	$interval = date_diff($LoanSummaryCreatedAt, $todateCheckLoanSummary);
+	$totalDaysSinceLoanSummaryCreated=$interval->format('%a');
+	$totalgraceDaysForNewEmployerTostartRepayment=Yii::$app->params['daysSinceLoanSummaryCreatedCheck'];
+	//end
+	if($totalDaysSinceLoanSummaryCreated > $totalgraceDaysForNewEmployerTostartRepayment){	
 					//check employer special case in penalty
 	$resultsSpecifcEmplPNT=\backend\modules\repayment\models\EmployedBeneficiary::getEmployerMontlyPenaltySpecificEmployer($employerID);
 	if(count($resultsSpecifcEmplPNT) > 0){
 	$percent=$resultsSpecifcEmplPNT->penalty;
+	$employer_penalty_cycle_id=$resultsSpecifcEmplPNT->employer_penalty_cycle_id;
 	$payment_deadline_day_per_month=$resultsSpecifcEmplPNT->payment_deadline_day_per_month;//this is used as  repayment_deadline_day
 	$duration=$resultsSpecifcEmplPNT->duration;
 	$duration_type1=$resultsSpecifcEmplPNT->duration_type;
@@ -250,6 +342,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 					}else{
 	$resultsEmplBeneficiary=\backend\modules\repayment\models\EmployedBeneficiary::getEmployerMontlyPenaltyRate();
 	$percent=$resultsEmplBeneficiary->penalty;
+	$employer_penalty_cycle_id=$resultsEmplBeneficiary->employer_penalty_cycle_id;
     $payment_deadline_day_per_month=$resultsEmplBeneficiary->payment_deadline_day_per_month;//this is used as  repayment_deadline_day
 	$duration=$resultsEmplBeneficiary->duration;
 	$duration_type1=$resultsEmplBeneficiary->duration_type;
@@ -285,15 +378,44 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 					}else{
 					$penaltyAmount=0;
 					}
-                    $createdat=date("Y-m-d H:i:s");					
+                    $createdat=date("Y-m-d H:i:s");	
+					if($duration_type=="months"){						
+						for($count=0;$count < $duration; ++$count){
+							$penaltyDatertr=$yeaAndMonth."-".$payment_deadline_day_per_month;
+						$dateCreatedqq=date_create($penaltyDatertr);
+						$dateDurationAndTypeqq=$count." ".$duration_type;
+						date_sub($dateCreatedqq,date_interval_create_from_date_string($dateDurationAndTypeqq));
+						$penaltyDate=date_format($dateCreatedqq,"Y-m-d");				
+					
+					$penaltyCountCheck=self::checklastPenaltyEmployer($employerID,$penaltyDate);
+					if($penaltyCountCheck==0){
+					    Yii::$app->db->createCommand()
+					->insert('employer_penalty', [
+					'employer_id' =>$employerID,
+					'amount' =>$penaltyAmount,
+					'penalty_date' =>$penaltyDate,
+					'created_at' =>$createdat,
+                    'loan_summary_id' =>$loan_summary_id,
+                    'employer_penalty_cycle_id'=>$employer_penalty_cycle_id,
+                    'level'=>'1',					
+					])->execute();
+						}
+						}
+					}else{									
 					Yii::$app->db->createCommand()
 					->insert('employer_penalty', [
 					'employer_id' =>$employerID,
 					'amount' =>$penaltyAmount,
 					'penalty_date' =>$penaltyDate,
 					'created_at' =>$createdat,
-                    'loan_summary_id' =>$loan_summary_id,					
-					])->execute();
+                    'loan_summary_id' =>$loan_summary_id,
+                    'employer_penalty_cycle_id'=>$employer_penalty_cycle_id,
+                    'level'=>'1',					
+					])->execute();	
+					}
+					
+					
+					
 					 /*Automatic bill
 					if($duration_type=="months"){						
 						for($count=0;$count < $duration; ++$count){
@@ -310,6 +432,8 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 					}
 	}
 	}
+	}
+	 }
 	 }
 	 return true;
 	 }
@@ -373,7 +497,11 @@ public static function getAmountPendingPaymentPNTNotConfirmed($employerID){
 	return $amount;
 }
 public static function checklastPenaltyEmployer($employerID,$penaltyDate){
-	$penaltyCheckCount=EmployerPenalty::findBySql("SELECT  *  FROM  employer_penalty WHERE  employer_id='$employerID' AND penalty_date='$penaltyDate'")->count();
+	$penaltyCheckCount=EmployerPenalty::findBySql("SELECT  *  FROM  employer_penalty WHERE  employer_id='$employerID' AND penalty_date='$penaltyDate' AND level='1'")->count();
+    return $penaltyCheckCount;
+}
+public static function checklastPenaltyEmployerAcrued($employerID,$penaltyDate,$checkCurrentMonth){
+	$penaltyCheckCount=EmployerPenalty::findBySql("SELECT  *  FROM  employer_penalty WHERE  employer_id='$employerID' AND penalty_date='$penaltyDate' AND level='2' AND created_at like '$checkCurrentMonth%'")->count();
     return $penaltyCheckCount;
 }
 public static function getAmountTobePaidemployedBeneficiary($loan_summary_id,$applicantID){	 

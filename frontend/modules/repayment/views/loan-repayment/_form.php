@@ -26,7 +26,8 @@ use yii\widgets\ActiveForm;
             <?php if($employerSalarySource==1 OR $employerSalarySource==0){ ?>
 		<?= Html::submitButton($model->isNewRecord ? 'Click here to confirm Bill' : 'Click here to confirm Bill', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-success','onclick'=>'return  checkBillStatus()']) ?>           
 
-       <?php echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['loan-repayment/index'], ['class' => 'btn btn-warning']); ?>
+       <?php echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['cancel-bill-employer','id'=>$model->loan_repayment_id], ['class' => 'btn btn-warning']);
+	   ?>
 	   <?php } ?>
 	   </div> 
     </div>

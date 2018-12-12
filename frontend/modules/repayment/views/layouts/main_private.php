@@ -173,7 +173,7 @@ if($notificationFailedEmployee > 0){
 									"url" => "#",
 								"items" => [
                                 ["label" => "Loan Summary", "url" => Url::to(['/repayment/loan-summary']), 'active' => (Yii::$app->controller->id =='loan-summary'&&(Yii::$app->controller->action->id=='index'||Yii::$app->controller->action->id=='view')), "icon" => "money"],
-                                ["label" =>$label, "url" => Url::to(['/repayment/loan-repayment']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='index'||Yii::$app->controller->action->id=='generate-bill'), "icon" => "th",'visible' =>$salarySource !='1'],
+                                ["label" =>$label, "url" => Url::to(['/repayment/loan-repayment']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='index'||Yii::$app->controller->action->id=='generate-bill' || Yii::$app->controller->action->id=='confirm-payment'), "icon" => "th",'visible' =>$salarySource !='1'],
 								["label" =>"Pre-Paid", "url" => Url::to(['/repayment/loan-repayment-prepaid/prepaid']), 'active' => (Yii::$app->controller->id =='loan-repayment-prepaid'&&Yii::$app->controller->action->id=='prepaid'), "icon" => "th",'visible' =>$salarySource !='1'],
                                     ["label" => "Payments", "url" => Url::to(['/repayment/loan-repayment-detail/bills-payments']), 'active' => (Yii::$app->controller->id =='loan-repayment-detail'), "icon" => "th"],
                                     ["label" => "Receipts", "url" => Url::to(['/repayment/loan-repayment/receipt']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='receipt'), "icon" => "money"],									

@@ -6,6 +6,7 @@ use Yii;
 use backend\modules\repayment\models\EmployedBeneficiary;
 use backend\modules\repayment\models\EmployedBeneficiarySearch;
 use backend\modules\repayment\models\EmployerSearch;
+use backend\modules\repayment\models\Employer;
 use backend\modules\repayment\models\LoanSummary;
 use frontend\modules\repayment\models\LoanSummaryDetail;
 //use yii\web\Controller;
@@ -621,7 +622,8 @@ public function actionList_beneficiaries($id) {
         $tracedBy=Yii::$app->user->identity->firstname." ".Yii::$app->user->identity->middlename." ".Yii::$app->user->identity->surname;
         //$totalEmployees=$employedBeneficiary->getAllEmployeesUnderBillunderEmployer($employer_id);
         $totalAcculatedLoan=$employedBeneficiary->getTotalLoanInBill($employer_id);
-        $billNote="Due to Value Retention Fee(VRF) which is charged daily, the total loan amount will be changing accordingly.";
+        //$billNote="Due to Value Retention Fee(VRF) which is charged daily, the total loan amount will be changing accordingly.";
+		$billNote='';
         
         
         $LoanSummaryModel->amount = $totalAcculatedLoan;
@@ -1006,6 +1008,80 @@ public function actionList_beneficiaries($id) {
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+    }
+	
+	
+	public function actionLoanthroughEmployers()
+    {
+        $searchModel = new EmployedBeneficiarySearch();
+        $employedBeneficiary = new EmployedBeneficiary();
+		$employerModel = new Employer();
+		$disbursed_amount=0;
+		$date=date("Y-m-d");
+                        //CREATE LOAN SUMMARY
+        $getAllEmployers=\backend\modules\repayment\models\Employer::find()->all();
+		if(count($getAllEmployers) > 0){
+        foreach($getAllEmployers AS $allEmployersResults){
+        $employer_id=$allEmployersResults->employer_id;	
+    $employeesLoanSummary = \common\models\LoanBeneficiary::getAmountPerAccademicYNoReturnedGivenToApplicantThroughEmployerCreateLoanSummary($employer_id);
+	if(count($employeesLoanSummary) > 0){
+    foreach($employeesLoanSummary AS $employeesLoanSumResults){        
+        $employer_id=$employeesLoanSumResults->employer_id;
+		$disbursed_amount=$employeesLoanSumResults->disbursed_amount;
+		$academic_year_id=$employeesLoanSumResults->academic_year_id;
+		$applicant_id=$employeesLoanSumResults->applicant_id;
+        $LoanSummaryModel=new LoanSummary();
+        $LoanSummaryDetailModel = new \backend\modules\repayment\models\LoanSummaryDetail();
+        $resultsEmployerDetails=$employerModel->getEmployerDetails($employer_id);
+        $billNumber=$resultsEmployerDetails->employer_code."-".date("Y")."-".$LoanSummaryModel->getLastBillID($employer_id);
+        $tracedBy='';
+        //$totalEmployees=$employedBeneficiary->getAllEmployeesUnderBillunderEmployer($employer_id);
+        //$totalAcculatedLoan=$employedBeneficiary->getTotalLoanInBill($employer_id);
+        //$billNote="Due to Value Retention Fee(VRF) which is charged daily, the total loan amount will be changing accordingly.";
+		$billNote='';
+        
+        
+        $LoanSummaryModel->amount = 0;
+        $LoanSummaryModel->created_by=Yii::$app->user->identity->user_id;
+        $LoanSummaryModel->created_at=date("Y-m-d H:i:s");
+        $employerID=$employer_id;
+        $LoanSummaryModel->vrf_accumulated=0.00;
+        $LoanSummaryModel->vrf_last_date_calculated=date("Y-m-d H:i:s");
+        $LoanSummaryModel->employer_id=$employer_id;
+        $LoanSummaryModel->reference_number=$billNumber;
+        $LoanSummaryModel->description=$billNote;
+        $LoanSummaryModel->traced_by="";  
+        //check if employer has a loan_summary and it is on payment
+        $employeesLoanSummaryExist = \backend\modules\repayment\models\LoanSummary::findBySql('SELECT loan_summary_id  FROM loan_summary WHERE employer_id="'.$employer_id.'" AND (status=1 OR status=0) ORDER BY loan_summary_id DESC')->one();
+        //end check
+        if(count($employeesLoanSummaryExist)==0){
+          $LoanSummaryModel->save(); 
+          
+        $loan_summary_id=$LoanSummaryModel->loan_summary_id;
+		$itemCategory="PRC";
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$disbursed_amount);
+		$totalVRF=$LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id,$date);
+		if($totalVRF > 0){
+		$itemCategory="VRF";	
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$totalVRF);	
+		}
+        }else{
+        $loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;			
+		$itemCategory="PRC";
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$disbursed_amount);	
+		$totalVRF=$LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id,$date);
+		if($totalVRF > 0){
+		$itemCategory="VRF";	
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$totalVRF);	
+		}
+        //$Recent_loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;
+        //$LoanSummaryModel->updateCeasedAllPreviousActiveBillUnderEmployer($employer_id,$Recent_loan_summary_id);
+        }              
+    }
+	\backend\modules\repayment\models\LoanSummary::updateLoanSummaryAmount($employerID,$loan_summary_id);
+		}
+	}
+	}	
     }
     
     

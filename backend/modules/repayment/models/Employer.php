@@ -162,6 +162,10 @@ class Employer extends \yii\db\ActiveRecord
   return $totalV;
  }
  
+ public static function getEmployerDetails($employerID){
+    return self::findBySql("SELECT * FROM  employer WHERE   employer_id='$employerID'")->one();
+}
+ 
     public function updateEmployerVerificationStatus($employerID,$actionID){
         Employer::updateAll(['verification_status' =>$actionID], 'employer_id ="'.$employerID.'"');
  }

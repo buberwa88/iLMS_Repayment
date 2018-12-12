@@ -29,6 +29,9 @@ class Disbursement extends \yii\db\ActiveRecord
      * @inheritdoc
      */
     public $institution_code;
+	public $employer_id;
+	public $applicant_id;
+	public $academic_year_id;
     public static function tableName()
     {
         return 'disbursement';

@@ -345,6 +345,17 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         return $LAF_to_pay;
         //return $value_LAF;
         }
+		public static function getVRFapplicantLoanTrhoughEmployer($applicantID){
+		  $details_VRF=EmployedBeneficiary::getVRFsettingApplicantThroughEmployer();
+          $VRF_rate=$details_VRF->rate;
+   $details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturnGivenThroughEmployer($applicantID,$VRF_rate);				
+        $VRF_to_pay=$details_disbursedAmount->disbursed_amount;        
+         if($VRF_to_pay < 0){
+		 $VRF_to_pay=0;
+		 }
+        return $VRF_to_pay;
+        //return $value_LAF;
+        }
 		
         
     public static function getOutstandingPrincipalLoan($applicantID){
@@ -519,6 +530,10 @@ return 	$totlaVRF;
 	$details_LAF = LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'rate',loan_repayment_setting.calculation_mode AS 'calculation_mode',loan_repayment_setting.loan_repayment_item_id AS 'loan_repayment_item_id' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_item.item_code='LAF' AND loan_repayment_setting.is_active='1'")->one();
     return $details_LAF;
 	}
+	public static function getVRFsettingApplicantThroughEmployer(){
+	$details_VRF = LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'rate',loan_repayment_setting.calculation_mode AS 'calculation_mode',loan_repayment_setting.loan_repayment_item_id AS 'loan_repayment_item_id' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_item.item_code='VRF' AND loan_repayment_setting.is_active='1' AND loan_repayment_setting.item_applicable_scope='EMPLOYER'")->one();
+    return $details_VRF;
+	}
     public static function getPNTsetting(){
 	$details_PNT = LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'rate',loan_repayment_setting.calculation_mode AS 'calculation_mode',loan_repayment_setting.loan_repayment_item_id AS 'loan_repayment_item_id' FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_item.item_code='PNT' AND loan_repayment_setting.is_active='1'")->one();
     return $details_PNT;
@@ -538,11 +553,15 @@ return 	$totlaVRF;
 		return $results;
  }
 	public static function getEmployerMontlyPenaltyRate(){
-	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type FROM employer_penalty_cycle  WHERE employer_penalty_cycle.is_active='1' AND employer_penalty_cycle.cycle_type='0'")->one();
+	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type,employer_penalty_cycle_id FROM employer_penalty_cycle  WHERE employer_penalty_cycle.is_active='1' AND employer_penalty_cycle.cycle_type='0'")->one();
+    return $details;
+	}
+	public static function getEmployerPenaltyCycleUsed($penaltyCycleID){
+	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type,employer_penalty_cycle_id FROM employer_penalty_cycle  WHERE employer_penalty_cycle.employer_penalty_cycle_id='$penaltyCycleID'")->one();
     return $details;
 	}
 	public static function getEmployerMontlyPenaltySpecificEmployer($employerID){
-	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type FROM employer_penalty_cycle  WHERE employer_penalty_cycle.is_active='1' AND employer_id='$employerID' AND employer_penalty_cycle.cycle_type='1'")->one();
+	$details = EmployerPenaltyCycle::findBySql("SELECT employer_penalty_cycle.penalty_rate*0.01 AS 'penalty',employer_penalty_cycle.repayment_deadline_day AS 'payment_deadline_day_per_month',duration,duration_type,employer_penalty_cycle_id FROM employer_penalty_cycle  WHERE employer_penalty_cycle.is_active='1' AND employer_id='$employerID' AND employer_penalty_cycle.cycle_type='1'")->one();
     return $details;
 	}
     public static function updateBeneficiaryFromOldEmployer($employerID,$applicantID,$newverificationStatus){

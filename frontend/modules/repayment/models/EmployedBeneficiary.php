@@ -44,6 +44,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
 	const SALARY_SOURCE_CENTRAL = 1;
 	const SALARY_SOURCE_OWN = 2;    
     const SALARY_SOURCE_BOTH = 3;
+	const MINIMUM_AMOUNT_FOR_SELF_BENEFICIARY=500;
 	 
     public static function tableName() {
         return 'employed_beneficiary';
@@ -450,7 +451,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
     public static function getIndividualEmployeesPrincipalLoan($applicantID) {
 		$allApplications=\common\models\LoanBeneficiary::getAllApplicantApplications($applicantID);
         $details_disbursedAmount = Disbursement::findBySql("SELECT SUM(disbursed_amount) AS disbursed_amount "
-                        . "FROM disbursement INNER JOIN application ON application.application_id=disbursement.application_id INNER JOIN disbursement_batch ON disbursement_batch.disbursement_batch_id=disbursement.disbursement_batch_id WHERE  disbursement.application_id IN($allApplications) AND disbursement.status='8' AND disbursement_batch.disbursement_batch_id=disbursement.disbursement_batch_id AND  disbursement_batch.is_approved='1'")->one();
+                        . "FROM disbursement INNER JOIN application ON application.application_id=disbursement.application_id INNER JOIN disbursement_batch ON disbursement_batch.disbursement_batch_id=disbursement.disbursement_batch_id WHERE  disbursement.application_id IN($allApplications) AND application.student_status<>'ONSTUDY' AND disbursement.status='8' AND disbursement_batch.disbursement_batch_id=disbursement.disbursement_batch_id AND  disbursement_batch.is_approved='1'")->one();
         $principal = $details_disbursedAmount->disbursed_amount;
 
         $value2 = (count($principal) == 0) ? '0' : $principal;
@@ -461,7 +462,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
         $itemCodePrincipal = "PRC";
         $principal_id = EmployedBeneficiary::getloanRepaymentItemID($itemCodePrincipal);
         $details_amount = LoanSummaryDetail::findBySql("SELECT SUM(amount) AS amount "
-                        . "FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='$principal_id' AND loan_summary_id='$loan_summary_id'")->one();
+                        . "FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='$principal_id' AND loan_summary_id='$loan_summary_id' AND loan_given_to='1'")->one();
         $principal = $details_amount->amount;
 
         $value2 = (count($principal) == 0) ? '0' : $principal;
@@ -579,17 +580,11 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
     public function getIndividualEmployeesPenaltyUnderBill($applicantID, $loan_summary_id) {
         $itemCodePNT = "PNT";
         $PNT_id = EmployedBeneficiary::getloanRepaymentItemID($itemCodePNT);
-//        $detailsAmountChargesPNT_3 = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount1 FROM loan_summary_detail A "
-//                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='".$PNT_id."'")->one();
-//        
-//        $detailsAmountChargesPNT_paid = LoanRepayment::findBySql("SELECT SUM(A.amount) AS amount1, C.amount AS amount FROM loan_repayment A INNER JOIN (select b.loan_repayment_id AS loan_repayment_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment D ON D.loan_repayment_id=b.loan_repayment_id WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='".$PNT_id."' AND D.payment_status='1' group by b.loan_repayment_id) C on A.loan_repayment_id = C.loan_repayment_id "
-//                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='".$PNT_id."'")->one();
-
 
         $detailsAmountChargesPNT_3_1 = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount1 FROM loan_summary_detail A "
-                        . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='" . $PNT_id . "'")->one();
+                        . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='" . $PNT_id . "' AND A.loan_given_to='1'")->one();
         $detailsAmountChargesPNT_paid_1 = LoanRepaymentDetail::findBySql("select b.loan_summary_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment D ON D.loan_repayment_id=b.loan_repayment_id "
-                        . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='" . $PNT_id . "' AND D.payment_status='1' group by b.loan_summary_id")->one();
+                        . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='" . $PNT_id . "' AND D.payment_status='1' AND b.loan_given_to='1' group by b.loan_summary_id")->one();
 
         $TotalChargesInBillPNT_3 = $detailsAmountChargesPNT_3_1->amount1;
         $TotalChargesPaidUnderBillPNT_3 = $detailsAmountChargesPNT_paid_1->amount;
@@ -698,9 +693,9 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
         $itemCodeLAF = "LAF";
         $LAF_id = EmployedBeneficiary::getloanRepaymentItemID($itemCodeLAF);
         $detailsAmountChargesLAF_3_1 = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount1 FROM loan_summary_detail A "
-                        . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='" . $LAF_id . "'")->one();
+                        . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='" . $LAF_id . "' AND A.loan_given_to='1'")->one();
         $detailsAmountChargesLAF_paid_1 = LoanRepaymentDetail::findBySql("select b.loan_summary_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment D ON D.loan_repayment_id=b.loan_repayment_id "
-                        . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='" . $LAF_id . "' AND D.payment_status='1' group by b.loan_summary_id")->one();
+                        . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='" . $LAF_id . "' AND D.payment_status='1' AND b.loan_given_to='1' group by b.loan_summary_id")->one();
 
         $TotalChargesInBillLAF_3 = $detailsAmountChargesLAF_3_1->amount1;
         $TotalChargesPaidUnderBillLAF_3 = $detailsAmountChargesLAF_paid_1->amount;
@@ -790,9 +785,9 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
 //        
 
         $detailsAmountChargesVRF_3_1 = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount1 FROM loan_summary_detail A "
-                        . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='" . $vrf_id . "'")->one();
+                        . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='" . $vrf_id . "' AND A.loan_given_to='1'")->one();
         $detailsAmountChargesVRF_paid_1 = LoanRepaymentDetail::findBySql("select b.loan_summary_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment D ON D.loan_repayment_id=b.loan_repayment_id "
-                        . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='" . $vrf_id . "' AND D.payment_status='1' group by b.loan_summary_id")->one();
+                        . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='" . $vrf_id . "' AND D.payment_status='1' AND b.loan_given_to='1' group by b.loan_summary_id")->one();
 
 
         $TotalChargesInBillVRF_3 = $detailsAmountChargesVRF_3_1->amount1;
@@ -948,7 +943,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
         $PRC_id = EmployedBeneficiary::getloanRepaymentItemID($principleCode);
         $details_paidLoan = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
                         . "FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                        . "WHERE  loan_repayment.payment_status='1' AND loan_repayment_detail.loan_repayment_item_id='$PRC_id' AND loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_summary_id='$loan_summary_id'")->one();
+                        . "WHERE  loan_repayment.payment_status='1' AND loan_repayment_detail.loan_repayment_item_id='$PRC_id' AND loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_summary_id='$loan_summary_id' AND loan_repayment_detail.loan_given_to='1'")->one();
         $paidAmount = $details_paidLoan->amount;
 
         $value = (count($paidAmount) == 0) ? '0' : $paidAmount;

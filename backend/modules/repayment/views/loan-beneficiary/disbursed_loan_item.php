@@ -38,17 +38,7 @@ use kartik\widgets\Select2;
         //'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],  
-            /*
-            [
-                     'attribute' => 'allocatedate',
-                        'label'=>"Date",
-                        //'width' => '200px',
-                        'value' => function ($model) {
-                            return date("d-m-Y",strtotime($model->status_date));
-                        },
-                    ],
-             * 
-             */
+            
               [
                      'attribute' => 'loan_item_id',
                         'label'=>"Item",
@@ -58,6 +48,17 @@ use kartik\widgets\Select2;
                             return $model->loanItem->item_name;
                         },
                     ],
+					
+            [
+                     //'attribute' => 'allocatedate',
+                        'label'=>"Date",
+                        //'width' => '200px',
+                        'value' => function ($model) {
+                            return date("d-m-Y",strtotime($model->status_date));
+                        },
+                    ],
+             
+             
                     [
                      'attribute' => 'disbursed_amount',
                          'label'=>"Amount",

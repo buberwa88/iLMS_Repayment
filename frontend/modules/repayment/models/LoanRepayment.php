@@ -466,6 +466,10 @@ public static function checkPaymentsEmployer($employerID,$firstDayPreviousMonth,
 	$details =  LoanRepayment::findBySql("SELECT * FROM loan_repayment WHERE  employer_id='$employerID' AND payment_status='1' AND payment_date >='$firstDayPreviousMonth' AND payment_date <='$deadlineDateOfMonth'")->count();
 	return $details;
 }
+public static function checkPaymentsEmployerAcruePenalty($employerID,$checkMonth){
+	$details =  LoanRepayment::findBySql("SELECT * FROM loan_repayment WHERE  employer_id='$employerID' AND payment_status='1' AND payment_date like '%$checkMonth%'")->count();
+	return $details;
+}
 public static function createAutomaticBills($payment_date,$employerID){
 	        $modelLoanRepaymentDetail=new LoanRepaymentDetailSearch();
 			$modelLoanRepayment = new LoanRepayment();

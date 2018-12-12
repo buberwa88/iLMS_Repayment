@@ -29,6 +29,7 @@ $this->params['breadcrumbs'][] = $this->title;
             //'employer_id',
             //'amount',
 			'penalty_date',
+			'created_at',
 			[
             'attribute'=>'amount',
             'format'=>'raw',    

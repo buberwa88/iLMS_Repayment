@@ -1067,4 +1067,41 @@ return $pdf->render();
             
         ]);
     }
+	public function actionCancelBillEmployer($id)
+    {
+		$modelLoanRepayment = new LoanRepayment();
+		$employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+		$results=$modelLoanRepayment->find()->where(['loan_repayment_id'=>$id])->one();
+		$results->payment_status=3;
+		$results->canceled_by=$loggedin;
+		$results->canceled_at =date("Y-m-d H:i:s");
+		$results->cancel_reason=Yii::$app->params['employer_cancelBillReason'];
+		$results->save();
+		
+	    $sms="Bill Cancelled";
+        Yii::$app->getSession()->setFlash('success', $sms);		
+		return $this->redirect(['index']);
+    }
+	public function actionCancelBillBeneficiary($id)
+    {
+		$this->layout="main_private_beneficiary";
+		$modelLoanRepayment = new LoanRepayment();
+		$employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+		$results=$modelLoanRepayment->find()->where(['loan_repayment_id'=>$id])->one();
+		$results->payment_status=3;
+		$results->canceled_by=$loggedin;
+		$results->canceled_at =date("Y-m-d H:i:s");
+		$results->cancel_reason=Yii::$app->params['cancelBillReason'];
+		$results->save();
+		
+	    $sms="Bill Cancelled";
+        Yii::$app->getSession()->setFlash('success', $sms);		
+		return $this->redirect(['index-beneficiary']);
+    }
 }

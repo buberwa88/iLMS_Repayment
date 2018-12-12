@@ -231,7 +231,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
        $LoanSummaryDetailModel=new LoanSummaryDetail();
        $i=0;
        $loanRepaymentDetails = LoanSummaryDetail::findBySql("SELECT  * FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF'")->all();
+                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF' AND loan_summary_detail.loan_given_to='1'")->all();
                     foreach ($loanRepaymentDetails as $loanRepaymentResults) {
                     $amount=$loanRepaymentResults->amount;
 					$vrf_accumulatedIndividual=$loanRepaymentResults->vrf_accumulated;
@@ -346,7 +346,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
        $LoanSummaryDetailModel=new LoanSummaryDetail();
        $i=0;
        $loanRepaymentDetails = LoanSummaryDetail::findBySql("SELECT  * FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF'")->all();
+                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF' AND loan_summary_detail.loan_given_to='1'")->all();
                     foreach ($loanRepaymentDetails as $loanRepaymentResults) {
                     $amount=$loanRepaymentResults->amount;
 					$vrf_accumulatedIndividual=$loanRepaymentResults->vrf_accumulated;

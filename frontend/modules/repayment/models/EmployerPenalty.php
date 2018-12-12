@@ -36,7 +36,7 @@ class EmployerPenalty extends \yii\db\ActiveRecord
 			[['cancel_reason'], 'required','on'=>'Cancell_employer_penalty2'],
             [['employer_id'], 'integer'],
             [['amount'], 'number'],
-            [['penalty_date', 'created_at','is_active','canceled_by','canceled_at','cancel_reason','amount','is_active'], 'safe'],
+            [['penalty_date', 'created_at','is_active','canceled_by','canceled_at','cancel_reason','amount','is_active','level','employer_penalty_cycle_id','penalty_id'], 'safe'],
             [['employer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Employer::className(), 'targetAttribute' => ['employer_id' => 'employer_id']],
         ];
     }
@@ -71,4 +71,7 @@ class EmployerPenalty extends \yii\db\ActiveRecord
     {
         return $this->hasMany(EmployerPenalty::className(), ['employer_id' => 'employer_penalty_id']);
     }
+public static function getActivePenalty(){	 
+	 return self::findBySql("SELECT  *  FROM employer_penalty WHERE  employer_penalty.is_active='1' AND level='1'")->all();
+}
 }

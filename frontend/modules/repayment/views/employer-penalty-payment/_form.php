@@ -49,6 +49,7 @@ $amountToPayDisplay=$outstandingAmount1;
 $amountSa=$outstandingAmount;		
 }
 frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer();
+frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployerIndividualMonths();
 /*
     $todate=date("Y-m-d");
 	$dateCreated=date_create($todate);
@@ -59,7 +60,15 @@ frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer()
 	$firstDayPreviousMonth1=date_format($dateCreated,"Y-m-d");
 	echo $firstDayPreviousMonth2=date("Y-m-d",strtotime($firstDayPreviousMonth1));
 	//echo $firstDayPreviousMonth=$firstDayPreviousMonth2."-01";
-*/	
+
+=========date difference=====	
+$date=date("Y-m-d");
+$payment_date="2018-10-01";
+$lastPaydate = date_create($payment_date);
+$todate = date_create($date);
+$interval = date_diff($lastPaydate, $todate);
+echo $dateDifferenceInDays=$interval->format('%a');
+*/
 ?>
 <script>
   function check_status() {

@@ -58,7 +58,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         return [
             [['loan_repayment_id', 'applicant_id', 'loan_summary_id'], 'required'],
             [['loan_repayment_id', 'applicant_id', 'loan_repayment_item_id', 'loan_summary_id'], 'integer'],
-            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id'], 'safe'],
+            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id','loan_given_to','updated_at','updated_by'], 'safe'],
             [['amount'], 'number','on' => 'adjustAmount'],
 			[['amount'], 'required', 'on' => 'adjustAmount'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
@@ -624,10 +624,10 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
 		   
 		   //here is about to finish paying loan
 		   if($loanStatus==0){	   
-		   $this->updateAll(['amount'=>$LAF], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'"');
-		   $this->updateAll(['amount'=>$penalty], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'"');
-		   $this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'"');
-		   $this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'"');
+		   $this->updateAll(['amount'=>$LAF], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'" AND loan_given_to="1"');
+		   $this->updateAll(['amount'=>$penalty], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'" AND loan_given_to="1"');
+		   $this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
+		   $this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="1"');
 		   //end about finishing paying loan
 		   }else{          
         //-----------here for LAF portion----
@@ -639,7 +639,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
 			 $LAF_v=0;		 
 		   }
         $amount_remained=$amount-$LAF_v;		   
-		$this->updateAll(['amount'=>$LAF_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'"');		
+		$this->updateAll(['amount'=>$LAF_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'" AND loan_given_to="1"');		
         //-----------------END FOR LAF----        
         //----here for penalty portion----
             $penalty_v = $amount_remained * $PNT_V;
@@ -687,28 +687,28 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         //---end---	
 		if($outstandingPrincipalLoan >= $amount_remained2){
 		if($penalty_v >=0){
-		$this->updateAll(['amount'=>$penalty_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'"');
+		$this->updateAll(['amount'=>$penalty_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'" AND loan_given_to="1"');
 		}
 		if($vrfTopay >=0){
-		$this->updateAll(['amount'=>$vrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'"');
+		$this->updateAll(['amount'=>$vrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
 		}
         //-----END for VRF---
         //--------------here for principal portion---
 		if($amount_remained2 >=0){
-		$this->updateAll(['amount'=>$amount_remained2], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'"');
+		$this->updateAll(['amount'=>$amount_remained2], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="1"');
 		}
         //---end---
 		}else{
 		//done to pay principal
-		$this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'"');		
+		$this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="1"');		
 		//end to pay principal
 		$amountToremain=$amount_remained2-$outstandingPrincipalLoan;
 		$finalVrfTopay=$vrfTopay + $amountToremain;
 		//$finalPenaltyTopay=$penalty_v + $amountToremain;
 		if($vrf > $finalVrfTopay){
-		$this->updateAll(['amount'=>$finalVrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'"');
+		$this->updateAll(['amount'=>$finalVrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
 		}else{
-		$this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'"');
+		$this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
 		}		
 		}
         }
@@ -1092,7 +1092,7 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         $CFBS="CFBS";
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
        $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(amount) AS amount "
-                . "FROM loan_repayment_detail  WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_id='$loan_repayment_id' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id'")->one();
+                . "FROM loan_repayment_detail  WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_id='$loan_repayment_id' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment_detail.loan_given_to='1'")->one();
         $amount=$details_amount->amount;
         $value = (count($amount) == 0) ? '0' : $amount;
         return $value;
@@ -1113,7 +1113,7 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         $CFBS="CFBS";
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
        $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
-                . "FROM loan_repayment_detail RIGHT JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.loan_summary_id='$LoanSummaryID' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment.payment_status='1' AND loan_repayment.receipt_date <='$date'")->one();
+                . "FROM loan_repayment_detail RIGHT JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.loan_summary_id='$LoanSummaryID' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment.payment_status='1' AND loan_repayment.receipt_date <='$date' AND loan_repayment_detail.loan_given_to='1'")->one();
         $amount=$details_amount->amount;
         $value = (count($amount) == 0) ? '0' : $amount;
         return $value;

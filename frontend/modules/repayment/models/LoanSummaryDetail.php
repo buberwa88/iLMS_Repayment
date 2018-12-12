@@ -55,7 +55,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
             [['loan_summary_id', 'applicant_id', 'loan_repayment_item_id', 'amount'], 'required'],
             [['loan_summary_id', 'applicant_id', 'loan_repayment_item_id', 'academic_year_id'], 'integer'],
             [['amount'], 'number'],
-            [['indexno', 'fullname','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amount1','vrf_accumulated','firstname','middlename','surname','f4indexno','paid'], 'safe'],
+            [['indexno', 'fullname','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amount1','vrf_accumulated','firstname','middlename','surname','f4indexno','paid','loan_given_to','employer_id','created_by','updated_at','updated_by'], 'safe'],
             [['academic_year_id'], 'exist', 'skipOnError' => true, 'targetClass' => \common\models\AcademicYear::className(), 'targetAttribute' => ['academic_year_id' => 'academic_year_id']],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
             [['loan_summary_id'], 'exist', 'skipOnError' => true, 'targetClass' => LoanSummary::className(), 'targetAttribute' => ['loan_summary_id' => 'loan_summary_id']],
@@ -246,7 +246,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         return $value2;
         }
     public function updateBeneficiaryVRFaccumulated($amountTotal,$accumulatedVRF,$applicantID,$loan_summary_id,$loan_repayment_item_id){
-        $this->updateAll(['amount' =>$amountTotal,'vrf_accumulated' =>$accumulatedVRF], 'applicant_id ="'.$applicantID.'" AND loan_summary_id ="'.$loan_summary_id.'" AND loan_repayment_item_id ="'.$loan_repayment_item_id.'"');
+        $this->updateAll(['amount' =>$amountTotal,'vrf_accumulated' =>$accumulatedVRF], 'applicant_id ="'.$applicantID.'" AND loan_summary_id ="'.$loan_summary_id.'" AND loan_repayment_item_id ="'.$loan_repayment_item_id.'" AND loan_given_to="1"');
  }
  public function getTotalLoanBeneficiaryOriginal($applicantID){
         $si=0;

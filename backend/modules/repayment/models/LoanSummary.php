@@ -5,6 +5,7 @@ namespace backend\modules\repayment\models;
 use Yii;
 use backend\modules\repayment\models\EmployedBeneficiary;
 use backend\modules\repayment\models\Employer;
+use backend\modules\repayment\models\LoanSummaryDetail;
 
 /**
  * This is the model class for table "loan_summary".
@@ -234,5 +235,10 @@ class LoanSummary extends \yii\db\ActiveRecord
         }
     public static function updateCeaseIndividualBeneficiaryLoanSummaryWhenEmployed($applicantID,$Recent_loan_summary_id){
        LoanSummary::updateAll(['status' =>'4'], 'applicant_id ="'.$applicantID.'" AND loan_summary_id<>"'.$Recent_loan_summary_id.'" AND (status<>"2" AND status<>"4" AND status<>"3")');
- }		
+ }
+public static function updateLoanSummaryAmount($employerID,$Recent_loan_summary_id){
+$totalAmount = LoanSummaryDetail::findBySql('SELECT SUM(amount) AS "amount" FROM loan_summary_detail WHERE  loan_summary_id="'.$Recent_loan_summary_id.'"')->one();
+$amount=$totalAmount->amount;
+       LoanSummary::updateAll(['amount' =>$amount], 'employer_id ="'.$employerID.'" AND loan_summary_id="'.$Recent_loan_summary_id.'"');
+ } 
 }

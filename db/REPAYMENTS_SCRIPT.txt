@@ -149,5 +149,14 @@ CREATE TABLE `loan_repayment_prepaid` (
   PRIMARY KEY (`prepaid_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+ALTER TABLE `employer_penalty` ADD `level` TINYINT(4) NULL DEFAULT '1' COMMENT '1: Original, 2: Acrued' AFTER `loan_summary_id`, ADD `employer_penalty_cycle_id` INT(11) NULL AFTER `level`;
+ALTER TABLE `employer_penalty` CHANGE `employer_penalty_cycle_id` `employer_penalty_cycle_id` INT(11) NOT NULL;
+ALTER TABLE `employer_penalty` ADD `penalty_id` INT(11) NULL DEFAULT NULL COMMENT 'To store the employer penalty id for acrued penalty' AFTER `employer_penalty_cycle_id`;
+ALTER TABLE `loan_summary_detail` ADD `loan_given_to` TINYINT(4) NOT NULL COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution' AFTER `vrf_accumulated`, ADD `employer_id` INT(11) NULL DEFAULT NULL COMMENT 'To be effected if the loan given to Applicant through Employer/Institution' AFTER `loan_given_to`;
+ALTER TABLE `loan_repayment_setting` CHANGE `rate` `rate` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_summary_detail` CHANGE `loan_given_to` `loan_given_to` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution';
+ALTER TABLE `loan_summary_detail` ADD `created_by` INT(11) NOT NULL AFTER `created_at`, ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `created_by`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
+ALTER TABLE `loan_repayment_detail` ADD `loan_given_to` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution' AFTER `prepaid_id`;
+ALTER TABLE `loan_repayment_detail` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `loan_given_to`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
 -----------------------------------------------------
 ======================================================

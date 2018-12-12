@@ -27,7 +27,7 @@ $date=date("Y-m-d");
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
 					$date=date("Y-m-d");
-				return backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($data->applicant_id,$date);
+				return (\backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($data->applicant_id,$date));
             }, $model),
             ],
 			[
@@ -51,7 +51,7 @@ $date=date("Y-m-d");
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
 					 $date=date("Y-m-d");
-                return backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($data->applicant_id,$date);
+                return (\backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($data->applicant_id,$date));
             }, $model),
             ],			
             [

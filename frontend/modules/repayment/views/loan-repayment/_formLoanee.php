@@ -45,7 +45,7 @@ use kartik\detail\DetailView;
 $results=LoanRepayment::getDetailsUsingRepaymentID($model->loan_repayment_id);
 $date=date("Y-m-d");
 $outstandingDebt=number_format(frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($results->applicant_id,$date),2);
-$amountApplicant=number_format(\frontend\modules\repayment\models\EmployedBeneficiary::getNonEmployedBeneficiaryPaymentSetting(),2);
+$amountApplicant=\frontend\modules\repayment\models\EmployedBeneficiary::MINIMUM_AMOUNT_FOR_SELF_BENEFICIARY;
 //echo $loan_repayment_id;
 
 
@@ -193,7 +193,7 @@ echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['lo
 		<div class="block" id="hidden"><?= Html::submitButton($model->isNewRecord ? 'Click here to confirm for payment' : 'Click here to confirm for payment', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-success','onclick'=>'return  check_status()']) ?></div>
 		</div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="block"></div>
 		<div class="block">
-       <div class="block" id="hidden2"><?php echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['loan-repayment/index-beneficiary'], ['class' => 'btn btn-warning']); ?></div>
+       <div class="block" id="hidden2"><?php echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['cancel-bill-beneficiary','id'=>$model->loan_repayment_id], ['class' => 'btn btn-warning']); ?></div>
     </div>
     </div>
     <?php ActiveForm::end(); ?>
