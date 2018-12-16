@@ -8,6 +8,8 @@ use yii\helpers\ArrayHelper;
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\LoanSummary */
 $this->title = "Beneficiaries";
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+$date=date("Y-m-d");
 ?>
 <div class="loan-summary-view">
 <div class="panel panel-info">
@@ -69,19 +71,22 @@ $this->title = "Beneficiaries";
 				'label'=>"Total Amount",
                 'hAlign' => 'right',
                 'format' => ['decimal', 2],
-                'value' => function ($model) {
+                'value' => function ($model) use($loan_given_to){
                 //return \backend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeeTotalLoan($model->applicant_id);
-				return $model->getIndividualEmployeesTotalLoan($model->applicant_id,$model->loan_summary_id);
+				//return $model->getIndividualEmployeesTotalLoan($model->applicant_id,$model->loan_summary_id,$loan_given_to);
+				//return \frontend\modules\repayment\models\LoanSummaryDetail::getIndividualEmployeesTotalLoan($model->applicant_id,$model->loan_summary_id,$loan_given_to);
+				return \backend\modules\repayment\models\LoanSummaryDetail::getLoaneeTotalLoanInLoanSummary($model->applicant_id,$model->loan_summary_id,$loan_given_to);
+				
         },
             ],
 			[
             'attribute'=>'outstandingDebt',
             'hAlign' => 'right',
             'format' => ['decimal', 2],    
-            'value' =>function($model)
+            'value' =>function($model) use($loan_given_to)
             {
                 //return $model->getIndividualEmployeesOutstandingDebt($model->applicant_id,$model->loan_summary_id);
-				return \backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($model->applicant_id,$model->loan_summary_id);
+				return \backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($model->applicant_id,$model->loan_summary_id,$loan_given_to);
             },
             //'format'=>['decimal',2],
         ],

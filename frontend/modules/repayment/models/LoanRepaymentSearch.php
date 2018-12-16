@@ -663,5 +663,51 @@ public function searchWaitingControlnumber($params)
             ->andFilterWhere(['like', 'pay_phone_number', $this->pay_phone_number]);
 
         return $dataProvider;
+    }
+public function searchIncompleteBillEmployerGeneral($params,$employerID,$loan_given_to)
+    {
+        $query = LoanRepaymentDetail::find()
+		                            ->select("loan_repayment.payment_date AS payment_date,loan_repayment.bill_number AS bill_number,loan_repayment.loan_repayment_id,loan_repayment.control_number AS control_number,loan_repayment.employer_id AS employer_id,loan_repayment.amount AS amount,loan_repayment.date_bill_generated AS date_bill_generated")
+                                    ->andwhere(['loan_repayment.employer_id'=>$employerID,'loan_repayment_detail.loan_given_to'=>$loan_given_to])
+                                    ->andWhere(['and',
+                                        ['payment_status'=>NULL],
+                                    ])
+									->groupBy("loan_repayment_detail.loan_repayment_id")
+                                    ->orderBy("loan_repayment.loan_repayment_id DESC");
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+		$query->joinWith("loanRepayment");
+        $query->andFilterWhere([
+            'loan_repayment_id' => $this->loan_repayment_id,
+            'employer_id' => $this->employer_id,
+            'applicant_id' => $this->applicant_id,
+            'amount' => $this->amount,
+            'pay_method_id' => $this->pay_method_id,
+            'date_bill_generated' => $this->date_bill_generated,
+            'date_control_received' => $this->date_control_received,
+            'date_receipt_received' => $this->date_receipt_received,
+        ]);
+
+        $query->andFilterWhere(['like', 'bill_number', $this->bill_number])
+            ->andFilterWhere(['like', 'control_number', $this->control_number])
+			->andFilterWhere(['like', 'payment_date', $this->payment_date])
+            ->andFilterWhere(['like', 'receipt_number', $this->receipt_number])
+            ->andFilterWhere(['like', 'pay_phone_number', $this->pay_phone_number]);
+
+        return $dataProvider;
     }	
 }

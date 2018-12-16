@@ -48,6 +48,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 	public $surname;
 	public $f4indexno;
 	public $paid;
+	public $reference_number;
+	public $status;
     
     public function rules()
     {
@@ -55,7 +57,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
             [['loan_summary_id', 'applicant_id', 'loan_repayment_item_id', 'amount'], 'required'],
             [['loan_summary_id', 'applicant_id', 'loan_repayment_item_id', 'academic_year_id'], 'integer'],
             [['amount'], 'number'],
-            [['indexno', 'fullname','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amount1','vrf_accumulated','firstname','middlename','surname','f4indexno','paid','loan_given_to','employer_id','created_by','updated_at','updated_by'], 'safe'],
+            [['indexno', 'fullname','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amount1','vrf_accumulated','firstname','middlename','surname','f4indexno','paid','loan_given_to','employer_id','created_by','updated_at','updated_by','vrf_before_repayment','is_full_paid'], 'safe'],
             [['academic_year_id'], 'exist', 'skipOnError' => true, 'targetClass' => \common\models\AcademicYear::className(), 'targetAttribute' => ['academic_year_id' => 'academic_year_id']],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
             [['loan_summary_id'], 'exist', 'skipOnError' => true, 'targetClass' => LoanSummary::className(), 'targetAttribute' => ['loan_summary_id' => 'loan_summary_id']],
@@ -192,44 +194,44 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         }
         }
         
-        public function getIndividualEmployeesPrincipalLoan($applicantID,$billID){
-        $details_amount = $this->findBySql("SELECT SUM(amount) AS amount "
-                . "FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='PRC'")->one();
+        public static function getIndividualEmployeesPrincipalLoan($applicantID,$billID,$loan_given_to){
+        $details_amount = self::findBySql("SELECT SUM(A.amount) AS amount "
+                . "FROM loan_summary_detail A INNER JOIN loan_summary C ON C.loan_summary_id=A.loan_summary_id INNER JOIN loan_repayment_item B ON B.loan_repayment_item_id=A.loan_repayment_item_id "
+                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$billID' AND B.item_code='PRC' AND A.loan_given_to='$loan_given_to'")->one();
         $principal=$details_amount->amount;
          
         $value2 = (count($principal) == 0) ? '0' : $principal;
         return $value2;
         }
-    public function getIndividualEmployeesPenalty($applicantID,$billID){
-        $details_penalty = $this->findBySql("SELECT SUM(amount) AS amount "
-                . "FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='PNT'")->one();
+    public static function getIndividualEmployeesPenalty($applicantID,$billID,$loan_given_to){
+        $details_penalty = self::findBySql("SELECT SUM(A.amount) AS amount "
+                . "FROM loan_summary_detail A INNER JOIN loan_summary C ON C.loan_summary_id=A.loan_summary_id INNER JOIN loan_repayment_item B ON B.loan_repayment_item_id=A.loan_repayment_item_id "
+                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$billID' AND B.item_code='PNT' AND A.loan_given_to='$loan_given_to'")->one();
         $penalty=$details_penalty->amount;
          
         $value2 = (count($penalty) == 0) ? '0' : $penalty;
         return $value2;
         }
-    public function getIndividualEmployeesLAF($applicantID,$billID){
-        $details_LAF = $this->findBySql("SELECT SUM(amount) AS amount "
-                . "FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='LAF'")->one();
+    public static function getIndividualEmployeesLAF($applicantID,$billID,$loan_given_to){
+        $details_LAF = self::findBySql("SELECT SUM(A.amount) AS amount "
+                . "FROM loan_summary_detail A INNER JOIN loan_summary C ON C.loan_summary_id=A.loan_summary_id INNER JOIN loan_repayment_item B ON B.loan_repayment_item_id=A.loan_repayment_item_id "
+                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$billID' AND B.item_code='LAF' AND A.loan_given_to='$loan_given_to'")->one();
         $LAF=$details_LAF->amount;
          
         $value2 = (count($LAF) == 0) ? '0' : $LAF;
         return $value2;
         } 
-    public function getIndividualEmployeesVRF($applicantID,$billID){
-        $details_VRF = $this->findBySql("SELECT SUM(amount) AS amount "
-                . "FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF'")->one();
+    public static function getIndividualEmployeesVRF($applicantID,$billID,$loan_given_to){
+        $details_VRF = self::findBySql("SELECT SUM(A.amount) AS amount "
+                . "FROM loan_summary_detail A INNER JOIN loan_summary C ON C.loan_summary_id=A.loan_summary_id INNER JOIN loan_repayment_item B ON B.loan_repayment_item_id=A.loan_repayment_item_id "
+                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$billID' AND B.item_code='VRF' AND A.loan_given_to='$loan_given_to'")->one();
         $VRF=$details_VRF->amount;
          
         $value2 = (count($VRF) == 0) ? '0' : $VRF;
         return $value2;
         }
-    public function getIndividualEmployeesTotalLoan($applicantID,$billID){
-        $details_totalLoan = $this->getIndividualEmployeesPrincipalLoan($applicantID,$billID) + $this->getIndividualEmployeesPenalty($applicantID,$billID) + $this->getIndividualEmployeesLAF($applicantID,$billID) + $this->getIndividualEmployeesVRF($applicantID,$billID);
+    public static function getIndividualEmployeesTotalLoan($applicantID,$billID,$loan_given_to){
+        $details_totalLoan = self::getIndividualEmployeesPrincipalLoan($applicantID,$billID,$loan_given_to) + self::getIndividualEmployeesPenalty($applicantID,$billID,$loan_given_to) + self::getIndividualEmployeesLAF($applicantID,$billID,$loan_given_to) + self::getIndividualEmployeesVRF($applicantID,$billID,$loan_given_to);
         $totalLoan=$details_totalLoan;
          
         $value2 = (count($totalLoan) == 0) ? '0' : $totalLoan;
@@ -245,8 +247,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $value2 = (count($outstandingDebt) == 0) ? '0' : $outstandingDebt;
         return $value2;
         }
-    public function updateBeneficiaryVRFaccumulated($amountTotal,$accumulatedVRF,$applicantID,$loan_summary_id,$loan_repayment_item_id){
-        $this->updateAll(['amount' =>$amountTotal,'vrf_accumulated' =>$accumulatedVRF], 'applicant_id ="'.$applicantID.'" AND loan_summary_id ="'.$loan_summary_id.'" AND loan_repayment_item_id ="'.$loan_repayment_item_id.'" AND loan_given_to="1"');
+    public function updateBeneficiaryVRFaccumulated($amountTotal,$accumulatedVRF,$applicantID,$loan_summary_id,$loan_repayment_item_id,$loan_given_to){
+        $this->updateAll(['amount' =>$amountTotal,'vrf_accumulated' =>$accumulatedVRF], 'applicant_id ="'.$applicantID.'" AND loan_summary_id ="'.$loan_summary_id.'" AND loan_repayment_item_id ="'.$loan_repayment_item_id.'" AND loan_given_to="'.$loan_given_to.'"');
  }
  public function getTotalLoanBeneficiaryOriginal($applicantID){
         $si=0;
@@ -292,12 +294,12 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
        $value = (count($totalAmountOfBill) == '0') ? '0' : $totalAmountOfBill;
        return $value;
         }
-	public static function getTotalAmountUnderBillSummary($loanSummaryID){
+	public static function getTotalAmountUnderBillSummary($loanSummaryID,$date,$loan_given_to){
 		$detailsLoanSummary = self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id "
-                . "WHERE loan_summary_detail.loan_summary_id='$loanSummaryID'")->one();
+                . "WHERE loan_summary_detail.loan_summary_id='$loanSummaryID' AND loan_summary_detail.loan_given_to='$loan_given_to'")->one();
 		return $detailsLoanSummary->amount;		
 	}
-    public static function getOustandingAmountUnderLoanSummary($loanSummaryID,$date){
-		return self::getTotalAmountUnderBillSummary($loanSummaryID) - LoanRepaymentDetail::getAmountTotalPaidunderBill($loanSummaryID,$date);
+    public static function getOustandingAmountUnderLoanSummary($loanSummaryID,$date,$loan_given_to){
+		return self::getTotalAmountUnderBillSummary($loanSummaryID,$date,$loan_given_to) - LoanRepaymentDetail::getAmountTotalPaidunderBill($loanSummaryID,$date,$loan_given_to);
 	}	
 }

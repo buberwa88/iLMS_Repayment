@@ -42,11 +42,12 @@ use kartik\tabs\TabsX;
 use kartik\widgets\ActiveForm;
 use yii\bootstrap\Modal;
 
-$outstandingDebt=number_format(\backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($model->applicant_id,$model->loan_summary_id),2);
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+$outstandingDebt=number_format(\backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($model->applicant_id,$model->loan_summary_id,$loan_given_to),2);
 //$amountRequiredForPayment=number_format($model->getAmountRequiredForPaymentIndividualLoanee($model->applicant_id,$model->loan_repayment_id),2);
-$amountRequiredForPaymentq=number_format($model->getAmountRequiredTobepaidPermonth($model->applicant_id,$model->loan_summary_id),2);	
+$amountRequiredForPaymentq=number_format($model->getAmountRequiredTobepaidPermonth($model->applicant_id,$model->loan_summary_id,$loan_given_to),2);	
 $amount1=$amountRequiredForPaymentq;
-$amountx1=number_format(\frontend\modules\repayment\models\EmployerPenaltyPayment::getAmountTobePaidemployedBeneficiary($model->loan_summary_id,$model->applicant_id),2);
+$amountx1=number_format(\frontend\modules\repayment\models\EmployerPenaltyPayment::getAmountTobePaidemployedBeneficiary($model->loan_summary_id,$model->applicant_id,$loan_given_to),2);
 $loan_summary_id=$model->loan_summary_id;
 $loan_repayment_id=$model->loan_repayment_id;
 $applicantID=$model->applicant_id;

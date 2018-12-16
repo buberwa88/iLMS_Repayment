@@ -50,6 +50,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
     public $employer_code;
     public $short_name;
     public $payment_date;
+	public $receipt_date;
     public function rules()
     {
         return [
@@ -302,9 +303,9 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         return $value;
         }
         
-    public function getItemsPaidAmountInBill($applicantID,$loan_summary_id,$itemID){
+    public function getItemsPaidAmountInBill($applicantID,$loan_summary_id,$itemID,$loan_given_to){
         $results =LoanRepaymentDetail::findBySql("SELECT b.loan_summary_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment D ON D.loan_repayment_id=b.loan_repayment_id "
-                . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='".$itemID."' AND D.payment_status='1' group by b.loan_summary_id")->one();
+                . "WHERE b.applicant_id='$applicantID' AND b.loan_summary_id='$loan_summary_id' AND b.loan_repayment_item_id='".$itemID."' AND D.payment_status='1' AND b.loan_given_to='$loan_given_to' group by b.loan_summary_id")->one();
         return $results;
         }
 public static function getAmountTotalPaidLoanee($applicantID){
@@ -378,9 +379,9 @@ public static function getAmountTotalPaidLoaneeUnderLoanSummaryEmployerOnly($app
     public static function getBeneficiaryRepayment($applicantID){
 	return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,employer_id,bill_number,control_number,receipt_number,receipt_date,payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE applicant_id='$applicantID' AND loan_repayment.payment_status=1 ORDER BY loan_repayment_detail_id ASC")->one();
 }
-public static function getBeneficiaryRepaymentByDate($applicantID,$date){
+public static function getBeneficiaryRepaymentByDate($applicantID,$date,$loan_given_to){
 	$date=date("Y-m-d 23:59:59",strtotime($date));
-	return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.receipt_number,loan_repayment.receipt_date,loan_repayment.payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment.receipt_date <='".$date."' ORDER BY loan_repayment_detail_id ASC")->one();
+	return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.receipt_number,loan_repayment.receipt_date,loan_repayment.payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.receipt_date <='".$date."' ORDER BY loan_repayment_detail_id ASC")->one();
 }
 public static function getPaidItemUnderActiveLoanSummaryPerBeneficiary($applicantID,$loanSummaryID,$itemCode_id){
 	return self::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_repayment_detail.loan_summary_id WHERE applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment_detail.loan_summary_id='$loanSummaryID' AND loan_repayment_detail.loan_repayment_item_id='$itemCode_id' ORDER BY loan_repayment_detail_id ASC")->one();

@@ -12,6 +12,7 @@ $this->title = "Loan Summary";
 //$this->params['breadcrumbs'][] = ['label' => 'Loan Repayment', 'url' => ['index']];
 //$this->params['breadcrumbs'][] = $this->title;
 //$dataProvider=new LoanSummaryDetailSearch();
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 ?>
 <div class="loan-summary-view">
 <div class="panel panel-info">
@@ -35,19 +36,23 @@ $this->title = "Loan Summary";
             }, $model),
             ],
 			*/
-            [
+			[
                 'attribute'=>'amount',
                 'label'=>'Total Amount',
-                'value'=>$model->amount,
+                'value'=>call_user_func(function ($data) use($loan_given_to) {
+					$date=date("Y-m-d");
+                    //return $data->getTotalPaidunderBill($data->loan_summary_id,$date);
+                return   \frontend\modules\repayment\models\LoanSummaryDetail::getTotalAmountUnderBillSummary($data->loan_summary_id,$date,$loan_given_to);
+            }, $model),
                 'format'=>['decimal',2],
             ],
             [
                 'attribute'=>'paid',
                 'label'=>'Paid',
-                'value'=>call_user_func(function ($data) {
+                'value'=>call_user_func(function ($data) use($loan_given_to) {
 					$date=date("Y-m-d");
                     //return $data->getTotalPaidunderBill($data->loan_summary_id,$date);
-					return \frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidunderBill($data->loan_summary_id,$date);
+					return \frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidunderBill($data->loan_summary_id,$date,$loan_given_to);
             }, $model),
                 'format'=>['decimal',2],
             ],
@@ -66,9 +71,9 @@ $this->title = "Loan Summary";
             [
                 'attribute'=>'outstanding',
                 'label'=>'Outstanding(TZS)',
-                'value'=>call_user_func(function ($data) {
+                'value'=>call_user_func(function ($data) use($loan_given_to) {
 					$date=date("Y-m-d");
-                    return   \frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($data->loan_summary_id,$date);
+                    return   \frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($data->loan_summary_id,$date,$loan_given_to);
             }, $model),
                 'format'=>['decimal',2],
             ], 
@@ -111,11 +116,13 @@ $this->title = "Loan Summary";
                 }
             }, $model),                
             ],
+			/*
             [
                 'attribute'=>'description',
                 'label'=>'Note',
                 'value'=>$model->description,
-            ],        
+            ],
+*/			
         ],
     ]) ?>            
 </div>

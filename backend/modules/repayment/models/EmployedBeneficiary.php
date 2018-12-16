@@ -301,26 +301,91 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         }
     public static function getIndividualEmployeesPenalty($applicantID,$date){
 		//---checking grace period---
-		$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID);		
+		$penalty_to_payFinal=0;
+		//get all applications of applicant
+		$resultsApplications=\frontend\modules\application\models\Application::findBySql("SELECT application_id  FROM application WHERE  applicant_id='{$applicantID}' AND student_status<>'ONSTUDY' ORDER BY application_id ASC")->all();
+		foreach($resultsApplications AS $Applications){
+		$application_id=$Applications->application_id;
+		$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID,$application_id);
+		
+        if($dateGraduated !=0){		
         $todateTNew1=strtotime($date);
 		$periodPendingUnpaid=round(($todateTNew1-strtotime($dateGraduated))/(60*60*24));
 		$gracePeriod=EmployedBeneficiary::getGracePeriodSetting($dateGraduated);
 		//---end for grace period----
+		$gracePeriod.=$gracePeriod;
+		if($gracePeriod > 0){			
 		if($gracePeriod >=$periodPendingUnpaid){
 		$penalty_to_pay=0;	
 		}else{
         	$details_pnt=EmployedBeneficiary::getPNTsetting();
 		$PNT=$details_pnt->rate;
-        $loan_repayment_item_id=$details_pnt->loan_repayment_item_id;
         ////////////
-		$details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturn($applicantID,$PNT);
-        $penalty_to_pay=$details_disbursedAmount->disbursed_amount;
+		//$details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturn($applicantID,$PNT);
+		$penaltyValue=\common\models\LoanBeneficiary::getTotalLoanNoReturnPerApplication($application_id,$PNT);
+        $penalty_to_pay=$penaltyValue->disbursed_amount;
         if($penalty_to_pay < 0){
 		$penalty_to_pay=0;	
 		}	
 		}
+		}else{
+		$penalty_to_pay=0;	
+		}
+		}else{
+		$penalty_to_pay=0;	
+		}
+        $penalty_to_payFinal +=$penalty_to_pay;
+        		
+		}
 		/////////////
-        return $penalty_to_pay;
+        return $penalty_to_payFinal;
+        }
+		
+		public static function getIndividualEmployeesPenaltyPerApplication($applicantID,$date){
+		//---checking grace period---
+		$penalty_to_payFinal=0;
+		$created_at=date("Y-m-d H:i:s");
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+		$loggedin=Yii::$app->user->identity->user_id;
+		$itemCodePNT="PNT";
+        $PNT_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePNT);
+		//get all applications of applicant
+		$resultsApplications=\frontend\modules\application\models\Application::findBySql("SELECT application_id  FROM application WHERE  applicant_id='{$applicantID}' AND student_status<>'ONSTUDY' ORDER BY application_id ASC")->all();
+		foreach($resultsApplications AS $Applications){
+		$application_id=$Applications->application_id;
+		$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID,$application_id);
+		
+        if($dateGraduated !=0){		
+        $todateTNew1=strtotime($date);
+		$periodPendingUnpaid=round(($todateTNew1-strtotime($dateGraduated))/(60*60*24));
+		$gracePeriod=EmployedBeneficiary::getGracePeriodSetting($dateGraduated);
+		//---end for grace period----
+		$gracePeriod.=$gracePeriod;
+		if($gracePeriod > 0){			
+		if($gracePeriod >=$periodPendingUnpaid){
+		$penalty_to_pay=0;	
+		}else{
+        	$details_pnt=EmployedBeneficiary::getPNTsetting();
+		$PNT=$details_pnt->rate;
+        ////////////
+		//$details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturn($applicantID,$PNT);
+		$penaltyValue=\common\models\LoanBeneficiary::getTotalLoanNoReturnPerApplication($application_id,$PNT);
+        $penalty_to_pay=$penaltyValue->disbursed_amount;
+        if($penalty_to_pay < 0){
+		$penalty_to_pay=0;	
+		}	
+		}
+		}else{
+		$penalty_to_pay=0;	
+		}
+		}else{
+		$penalty_to_pay=0;	
+		}
+		if($penalty_to_pay > 0){
+        Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$PNT_id','$penalty_to_pay','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();	
+        }		
+		}
+		/////////////        
         }
 		
         public static function getIndividualEmployeePaidPrincipalLoan($applicantID){
@@ -344,6 +409,31 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 		 }
         return $LAF_to_pay;
         //return $value_LAF;
+        }
+		public static function getIndividualEmployeesLAFPerApplication($applicantID){
+		$created_at=date("Y-m-d H:i:s");
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+		$loggedin=Yii::$app->user->identity->user_id;
+		$itemCodeLAF="LAF";
+        $LAF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeLAF);
+		//get all applications of applicant
+		$resultsApplications=\frontend\modules\application\models\Application::findBySql("SELECT application_id  FROM application WHERE  applicant_id='{$applicantID}' AND student_status<>'ONSTUDY' ORDER BY application_id ASC")->all();
+		foreach($resultsApplications AS $Applications){
+		$application_id=$Applications->application_id;
+
+       	$details_LAF=EmployedBeneficiary::getLAFsetting();
+          $LAF=$details_LAF->rate;
+        ////////////
+		//$details_disbursedAmount=\common\models\LoanBeneficiary::getTotalLoanNoReturn($applicantID,$PNT);
+		$lafValue=\common\models\LoanBeneficiary::getTotalLoanNoReturnPerApplication($application_id,$LAF);
+        $LAF_to_pay=$lafValue->disbursed_amount;
+        if($LAF_to_pay < 0){
+		$LAF_to_pay=0;	
+		}	
+		if($LAF_to_pay > 0){
+        Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$LAF_id','$LAF_to_pay','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();		
+		}
+		}
         }
 		public static function getVRFapplicantLoanTrhoughEmployer($applicantID){
 		  $details_VRF=EmployedBeneficiary::getVRFsettingApplicantThroughEmployer();
@@ -374,6 +464,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 	   
 	      foreach ($pricipalLoan1qaws as $resultsApp) {
 					$pricipalLoan=$resultsApp->disbursed_amount;
+					$application_id=$resultsApp->application_id;
 					                    $academicYearEndate=$resultsApp->disbursementBatch->academicYear->end_date;
                                         $dateLoanDisbursed=date("Y-m-d",strtotime($resultsApp->status_date)); 
                                         $formula_stage_level=\common\models\LoanBeneficiary::getVrFBeforeRepayment($dateLoanDisbursed);
@@ -390,10 +481,13 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
                                             //here for after graduation
 											switch($formula_stage_level->formula_stage_level){
 												case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_GRADUATION:
-												$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID) ;
+												$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID,$application_id) ;
                                             //---checking grace period---
-                                                   
+                                                    if($dateGraduated != 0){
                                                     $periodPendingUnpaid=round(($date-strtotime($dateGraduated))/(60*60*24));
+											}else{
+												$periodPendingUnpaid=0;
+											}
                                                     if(($periodPendingUnpaid-$formula_stage_level->grace_period) > 0){
                                                     $totalNumberOfDays=$periodPendingUnpaid-$formula_stage_level->grace_period;
                                                     }else{
@@ -423,6 +517,85 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 		$totlaVRF=0;	
 		}
 return 	$totlaVRF;				
+		}
+		
+		public static function getIndividualEmployeesVRFperApplication($applicantID,$date){
+		$date=strtotime($date);	
+		//CALCULATE VRF BEFORE ANY REPAYMENT
+	//Get Disbursement per beneficiary
+	    $created_at=date("Y-m-d H:i:s");
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+		$loggedin=Yii::$app->user->identity->user_id;
+		$itemCodeVRF="VRF";
+        $vrf_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
+	  $numberOfDaysPerYear=\backend\modules\repayment\models\EmployedBeneficiary::getTotaDaysPerYearSetting();	  
+	  $resultsApplications=\frontend\modules\application\models\Application::findBySql("SELECT application_id  FROM application WHERE  applicant_id='{$applicantID}' AND student_status<>'ONSTUDY' ORDER BY application_id ASC")->all();
+		foreach($resultsApplications AS $Applications){
+		$application_id=$Applications->application_id;	  
+	  $pricipalLoan1qaws=\common\models\LoanBeneficiary::getAmountNoReturnedperApplication($application_id);
+	  ///looiping among all the disbursed_amount
+	   $totlaVRF=0;
+	      foreach ($pricipalLoan1qaws as $resultsApp) {
+					$pricipalLoan=$resultsApp->disbursed_amount;
+					$application_id=$resultsApp->application_id;
+					                    $academicYearEndate=$resultsApp->disbursementBatch->academicYear->end_date;
+                                        $dateLoanDisbursed=date("Y-m-d",strtotime($resultsApp->status_date)); 
+                                        $formula_stage_level=\common\models\LoanBeneficiary::getVrFBeforeRepayment($dateLoanDisbursed);
+                                        //var_dump($formula_stage_level);
+                                        $VRF_Rate=$formula_stage_level->rate;
+					     			switch($formula_stage_level->formula_stage_level){
+										case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DISBUSRMENT:
+										 //formula_stage_level==1 for From Disbursement date
+                                        $totalNumberOfDays=round(($date-strtotime($dateLoanDisbursed))/(60*60*24));
+										break;
+																		
+										case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN:
+										//formula_stage_level==2 for Due Loan 
+                                            //here for after graduation
+											switch($formula_stage_level->formula_stage_level){
+												case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_GRADUATION:
+												$dateGraduated=\common\models\LoanBeneficiary::getGraduationDate($applicantID,$application_id) ;
+                                            //---checking grace period---
+                                                    if($dateGraduated != 0){
+                                                    $periodPendingUnpaid=round(($date-strtotime($dateGraduated))/(60*60*24));
+											}else{
+												$periodPendingUnpaid=0;
+											}
+                                                    if(($periodPendingUnpaid-$formula_stage_level->grace_period) > 0){
+                                                    $totalNumberOfDays=$periodPendingUnpaid-$formula_stage_level->grace_period;
+                                                    }else{
+                                                      $totalNumberOfDays=0;              
+                                                    }
+												break;
+												
+												case LoanRepaymentSetting::FORMULA_STAGE_LEVEL_DUE_LOAN_AFTER_ACADEMIC_YEAR:
+												 // here for after academic year 
+                                                   if((round(($date-strtotime($academicYearEndate))/(60*60*24))) > 0){
+                                                    $totalNumberOfDays=round(($date-strtotime($academicYearEndate))/(60*60*24));   
+                                                    }else{
+                                                     $totalNumberOfDays=0;   
+                                                     }
+												break;
+												
+											}
+																					
+										break;
+										
+									}
+									$item_fomula=$formula_stage_level->item_formula;  //=PRC*R*T
+									
+                                 $totlaVRF +=($pricipalLoan*$VRF_Rate*$totalNumberOfDays)/$numberOfDaysPerYear;
+                    }
+					if($totlaVRF > 0){
+					Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$vrf_id','$totlaVRF','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();
+		}	
+		}
+		/*
+					if($totlaVRF < 0){
+		$totlaVRF=0;	
+		}
+return 	$totlaVRF;
+*/				
 		}
         
     public static function getIndividualEmployeeTotalLoan($applicantID){
@@ -508,9 +681,21 @@ return 	$totlaVRF;
         return $value;
         }
 	public  static function getGracePeriodSetting($graduationDate){
+		$finalGracePeriod=0;
 	    $details_gracePeriod = SystemSetting::findBySql("SELECT setting_value FROM system_setting WHERE  setting_code='LRGPD' AND is_active='1' AND graduated_from <= '$graduationDate' AND graduated_to >= '$graduationDate'")->one();
         $gracePeriod=$details_gracePeriod->setting_value;
-		return $gracePeriod;
+		if($gracePeriod !=''){
+			$finalGracePeriod=$gracePeriod;
+		}else{
+		$details_gracePeriod2 = SystemSetting::findBySql("SELECT setting_value FROM system_setting WHERE  setting_code='LRGPD' AND is_active='1' AND graduated_from <= '$graduationDate'")->one();
+        $gracePeriod2=$details_gracePeriod2->setting_value;
+        if($gracePeriod2 !=''){
+		$finalGracePeriod=$gracePeriod2;	
+		}else{
+		$finalGracePeriod=0;	
+		}		
+		}
+		return $finalGracePeriod;
 	}    
     public static function getEmployedBeneficiaryPaymentSetting(){
 	    $value = SystemSetting::findBySql("SELECT system_setting.setting_value*0.01 AS 'setting_value' FROM system_setting WHERE  setting_code='EMLRP' AND is_active='1'")->one();

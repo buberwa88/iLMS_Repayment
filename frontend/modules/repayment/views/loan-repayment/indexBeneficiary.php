@@ -10,12 +10,12 @@
 use yii\helpers\Html;
 use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
-
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 //create loan summary
-		\frontend\modules\repayment\models\LoanSummary::createLoanSummaryIndividual($applicantID);
+		\frontend\modules\repayment\models\LoanSummary::createLoanSummaryIndividual($applicantID,$loan_given_to);
 		//end
 $this->title = 'Bill';
 $this->params['breadcrumbs'][] = $this->title;           
@@ -23,17 +23,17 @@ $this->params['breadcrumbs'][] = $this->title;
             $results_bill_number=(count($results1) == 0) ? '0' : $results1->loan_repayment_id;
             $control_number=$results1->control_number;
             $payment_status=(count($results1) == 0) ? '0' : $results1->payment_status;
-            $ActiveBill=$modelBill->getActiveBillLoanee($applicantID);
+            $ActiveBill=$modelBill->getActiveBillLoanee($applicantID,$loan_given_to);
             $billID=(count($ActiveBill) == 0) ? '0' : $ActiveBill->loan_summary_id;
             $loan_summary_id=$billID;
             $totalAmount=number_format($results1->amount,2);
 			
-			$outstanding_debt=\backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($applicantID,$ActiveBill->loan_summary_id);			
+			$outstanding_debt=\backend\modules\repayment\models\LoanSummaryDetail::getLoaneeOutstandingDebtUnderLoanSummary($applicantID,$ActiveBill->loan_summary_id,$loan_given_to);			
 			//$amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummary::getLoanSummaryBalance($ActiveBill->loan_summary_id);
 			$date=date("Y-m-d");
-            $amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date);
+            $amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date,$loan_given_to);
 			if($amountRemainedUnpaid < 1){
-			frontend\modules\repayment\models\LoanSummary::updateCompletePaidLoanSummary($ActiveBill->loan_summary_id);
+			frontend\modules\repayment\models\LoanSummary::updateCompletePaidLoanSummary($ActiveBill->loan_summary_id,$loan_given_to);
 			}
 ?>
 <div class="loan-repayment-index">

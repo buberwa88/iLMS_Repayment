@@ -55,7 +55,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         return [
             [['loan_summary_id', 'applicant_id', 'loan_repayment_item_id', 'amount'], 'required'],
             [['loan_summary_id', 'applicant_id', 'loan_repayment_item_id', 'academic_year_id'], 'integer'],
-            [['indexno', 'fullname','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amount1','firstname','middlename','surname','f4indexno','paid','loan_given_to','employer_id','created_by','updated_at','updated_by'], 'safe'],
+            [['indexno', 'fullname','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amount1','firstname','middlename','surname','f4indexno','paid','loan_given_to','employer_id','created_by','updated_at','updated_by','vrf_before_repayment','is_full_paid'], 'safe'],
             [['amount'], 'number'],
             [['academic_year_id'], 'exist', 'skipOnError' => true, 'targetClass' => \common\models\AcademicYear::className(), 'targetAttribute' => ['academic_year_id' => 'academic_year_id']],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
@@ -127,6 +127,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
     
     public static function insertAllBeneficiariesUnderBill($employerID,$loan_summary_id){
 		$loggedin=Yii::$app->user->identity->user_id;
+		$created_at=date("Y-m-d H:i:s");
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
         $details_applicantID =EmployedBeneficiary::getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreation($employerID);
         $si=0;
 		$dateToday=date("Y-m-d");
@@ -140,11 +142,11 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $principal_id=$moder->getloanRepaymentItemID($itemCodePrincipal);
         
         //check if exists in any bill before 
-        $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday);
+        $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday,$loan_given_to);
         $individualApplicantBillID=$details_applicantID_result->loan_summary_id;
 		$applicantBillResults_2=0;
 		if($individualApplicantBillID > 0){
-        $details_applicantID = self::getItemExistInBillBefore($applicantID,$principal_id);
+        $details_applicantID = self::getItemExistInBillBefore($applicantID,$principal_id,$loan_given_to);
         $individualApplicantBillID_2=$details_applicantID->loan_summary_id;
         $applicantBillResults_2 = (count($individualApplicantBillID_2) == '0') ? '0' : $individualApplicantBillID_2;
 		}
@@ -157,9 +159,11 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     $academicYearID=$resultsApp->disbursementBatch->academic_year_id; 
 					$pricipalLoanwettggg=\common\models\LoanBeneficiary::getAmountSubtotalPerAccademicYNoReturned($applicantID,$academicYearID);
                     $pricipalLoan=$pricipalLoanwettggg->disbursed_amount;
+					$loan_number=$pricipalLoanwettggg->application_id;
                     if($pricipalLoan==''){
                        $pricipalLoan=0; 
-                    }        
+                    }
+/*					
         Yii::$app->db->createCommand()
         ->insert('loan_summary_detail', [
         'loan_summary_id' =>$loan_summary_id,
@@ -167,22 +171,27 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         'loan_repayment_item_id' =>$principal_id,
         'academic_year_id' =>$academicYearID,
         'amount' =>$pricipalLoan,
-        'created_at'=>date("Y-m-d H:i:s"),
+        'created_at'=>$created_at,
         'created_by'=>$loggedin,		
         ])->execute();
+		*/
+Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_summary_detail(loan_summary_id,applicant_id,loan_repayment_item_id,academic_year_id,amount,created_at,created_by) VALUES('$loan_summary_id','$applicantID','$principal_id','$academicYearID','$pricipalLoan','$created_at','$loggedin')")->execute();		
+//INSERT INTO loan table toget the acumulated loan of beneficiary based on loan number/application id	
+Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$loan_number','$principal_id','$academicYearID','$pricipalLoan','$created_at','$created_at','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+//end
                     }
         ++$si;
         }else{  		
-		$detailsAmountPrincipalBill=LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id);		
+		$detailsAmountPrincipalBill=LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);		
         $PrincipleInBill_2=$detailsAmountPrincipalBill->amount;
-		$detailsAmountPrincipalPaid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id);
+		$detailsAmountPrincipalPaid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);
         $principalPaidUnderBill_2=$detailsAmountPrincipalPaid->amount;
         $outstandingPrinciple_2=$PrincipleInBill_2-$principalPaidUnderBill_2;
         $pricipalLoan1_2=$outstandingPrinciple_2;
         if($pricipalLoan1_2 ==''){
           $pricipalLoan1_2=0;  
         }
-        
+        /*
         Yii::$app->db->createCommand()
         ->insert('loan_summary_detail', [
         'loan_summary_id' =>$loan_summary_id,
@@ -193,6 +202,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         'created_at'=>date("Y-m-d H:i:s"),
         'created_by'=>$loggedin,		
         ])->execute();
+		*/
+		Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_summary_detail(loan_summary_id,applicant_id,loan_repayment_item_id,amount,created_at,created_by) VALUES('$loan_summary_id','$applicantID','$principal_id','$pricipalLoan1_2','$created_at','$loggedin')")->execute();
             
         }
         }
@@ -209,15 +220,15 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $itemCodePNT="PNT";
         $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
         
-		$details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday);
+		$details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday,$loan_given_to);
         $individualApplicantBillID=$details_applicantID_result->loan_summary_id;
 		$applicantVRF=0;$applicantBillLAF=0;$applicantBillPNT=0;
 		if($individualApplicantBillID > 0){
-		$details_vrf_3 = self::getItemExistInBillBefore($applicantID,$vrf_id);
+		$details_vrf_3 = self::getItemExistInBillBefore($applicantID,$vrf_id,$loan_given_to);
         $individualApplicantVRF_3=$details_vrf_3->loan_summary_id;
-		$details_LAF_3 = self::getItemExistInBillBefore($applicantID,$LAF_id);
+		$details_LAF_3 = self::getItemExistInBillBefore($applicantID,$LAF_id,$loan_given_to);
         $individualApplicantLAF_3=$details_LAF_3->loan_summary_id;
-		$details_PNT_3 = self::getItemExistInBillBefore($applicantID,$PNT_id);
+		$details_PNT_3 = self::getItemExistInBillBefore($applicantID,$PNT_id,$loan_given_to);
         $individualApplicantPNT_3=$details_PNT_3->loan_summary_id;
         $applicantVRF = (count($individualApplicantVRF_3) == '0') ? '0' : $individualApplicantVRF_3;
 		$applicantBillLAF = (count($individualApplicantLAF_3) == '0') ? '0' : $individualApplicantLAF_3;
@@ -225,13 +236,13 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 		}
         //end check if exists in any bill before
         if($applicantVRF=='0' && $applicantBillLAF=='0' && $applicantBillPNT=='0'){
-           $vrf=self::getTotalVRFOriginal($applicantID,$dateToday);
+           $vrf=self::getTotalVRFOriginal($applicantID,$dateToday,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-           $LAF=self::getTotalLAFOriginal($applicantID,$dateToday);
+           $LAF=self::getTotalLAFOriginal($applicantID,$dateToday,$loan_given_to);
            $itemCodeLAF="LAF";
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-		   $penalty=self::getTotalPenaltyOriginal($applicantID,$dateToday);
+		   $penalty=self::getTotalPenaltyOriginal($applicantID,$dateToday,$loan_given_to);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
             
@@ -265,7 +276,10 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         'amount' =>$penalty,
         'created_at'=>date("Y-m-d H:i:s"),
         'created_by'=>$loggedin,		
-        ])->execute();
+        ])->execute();		
+        $moder->getIndividualEmployeesPenaltyPerApplication($applicantID,$dateToday);
+		$moder->getIndividualEmployeesLAFPerApplication($applicantID);
+		$moder->getIndividualEmployeesVRFperApplication($applicantID,$dateToday);
         }else{
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
@@ -273,25 +287,25 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
-        $detailsAmountChargesVRF_check2_bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id);		
+        $detailsAmountChargesVRF_check2_bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);		
         $TotalChargesInBillVRF_3=$detailsAmountChargesVRF_check2_bill->amount;
-		$detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id);
+		$detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);
         $TotalChargesPaidUnderBillVRF_3=$detailsAmountChargesVRF_check2_paid->amount;
         $vrf_3=$TotalChargesInBillVRF_3-$TotalChargesPaidUnderBillVRF_3;
 		if($vrf_3==''){
 		$vrf_3=0;
 		}
-		$detailsAmountChargesLAF_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id);		 
+		$detailsAmountChargesLAF_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);		 
         $TotalChargesInBillLAF_3=$detailsAmountChargesLAF_check2Bill->amount;		
-		$detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id);
+		$detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);
         $TotalChargesPaidUnderBillLAF_3=$detailsAmountChargesLAF_check2Paid->amount;
         $LAF_3=$TotalChargesInBillLAF_3-$TotalChargesPaidUnderBillLAF_3;
 		if($LAF_3==''){
 		$LAF_3=0;
 		}
-         $detailsAmountChargesPNT_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id);		 
+         $detailsAmountChargesPNT_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);		 
         $TotalChargesInBillPNT_3=$detailsAmountChargesPNT_check2Bill->amount;
-		$detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id);
+		$detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);
         $TotalChargesPaidUnderBillPNT_3=$detailsAmountChargesPNT_check2Paid->amount;
         $penalty_3=$TotalChargesInBillPNT_3-$TotalChargesPaidUnderBillPNT_3;
 		if($penalty_3==''){
@@ -391,7 +405,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     }
         ++$si;
         }else{  		
-		$detailsAmountPrincipalBill=LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id);		
+		$detailsAmountPrincipalBill=LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);		
         $PrincipleInBill_2=$detailsAmountPrincipalBill->amount;
 		$detailsAmountPrincipalPaid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id);
         $principalPaidUnderBill_2=$detailsAmountPrincipalPaid->amount;
@@ -488,7 +502,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
-        $detailsAmountChargesVRF_check2_bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id);		
+        $detailsAmountChargesVRF_check2_bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);		
         $TotalChargesInBillVRF_3=$detailsAmountChargesVRF_check2_bill->amount;
 		$detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id);
         $TotalChargesPaidUnderBillVRF_3=$detailsAmountChargesVRF_check2_paid->amount;
@@ -496,7 +510,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 		if($vrf_3==''){
 		$vrf_3=0;
 		}
-		$detailsAmountChargesLAF_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id);		 
+		$detailsAmountChargesLAF_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);		 
         $TotalChargesInBillLAF_3=$detailsAmountChargesLAF_check2Bill->amount;		
 		$detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id);
         $TotalChargesPaidUnderBillLAF_3=$detailsAmountChargesLAF_check2Paid->amount;
@@ -504,7 +518,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 		if($LAF_3==''){
 		$LAF_3=0;
 		}
-         $detailsAmountChargesPNT_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id);		 
+         $detailsAmountChargesPNT_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);		 
         $TotalChargesInBillPNT_3=$detailsAmountChargesPNT_check2Bill->amount;
 		$detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id);
         $TotalChargesPaidUnderBillPNT_3=$detailsAmountChargesPNT_check2Paid->amount;
@@ -553,8 +567,10 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         EmployedBeneficiary::updateAll(['loan_summary_id' =>$loan_summary_id], 'employer_id ="'.$employerID.'" AND (applicant_id IS NOT NULL OR applicant_id >=1) AND verification_status="1" AND employment_status="ONPOST"  AND loan_summary_id IS NULL');		
         }
         
-        public function insertLoaneeBillDetail($applicantID,$loan_summary_id){
-		$loggedin=Yii::$app->user->identity->user_id;	
+        public function insertLoaneeBillDetail($applicantID,$loan_summary_id,$loan_given_to){
+		$loggedin=Yii::$app->user->identity->user_id;
+        $created_at=date("Y-m-d H:i:s");
+        $dateToday=date("Y-m-d");		
         $si=0;
         $moder=new EmployedBeneficiary();
         $billDetailModel=new LoanRepaymentDetail();
@@ -562,7 +578,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $itemCodePrincipal="PRC";
         $principal_id=$moder->getloanRepaymentItemID($itemCodePrincipal);        
         //check if exists in any bill before    
-        $details_applicantID = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$principal_id."' ORDER BY loan_summary_detail_id DESC")->one();
+        $details_applicantID = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='".$principal_id."' AND loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary_detail.loan_summary_detail_id DESC")->one();
         $individualApplicantBillID_2=$details_applicantID->loan_summary_id;
         $applicantBillResults_2 = (count($individualApplicantBillID_2) == '0') ? '0' : $individualApplicantBillID_2;
         //end check if exists in any bill before
@@ -574,6 +590,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     $academicYearID=$resultsApp->disbursementBatch->academic_year_id; 
 					$pricipalLoanwettggg=\common\models\LoanBeneficiary::getAmountSubtotalPerAccademicYNoReturned($applicantID,$academicYearID);
                     $pricipalLoan=$pricipalLoanwettggg->disbursed_amount; 
+					$loan_number=$pricipalLoanwettggg->application_id;
 		
 		/*
         $getDistinctAccademicYrPerApplicant = Application::findBySql("SELECT DISTINCT academic_year_id AS 'academic_year_id' FROM application WHERE  applicant_id='$applicantID'")->all();
@@ -595,12 +612,16 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         'created_at'=>date("Y-m-d H:i:s"),
         'created_by'=>$loggedin,		
         ])->execute();
+		
+		//INSERT INTO loan table toget the acumulated loan of beneficiary based on loan number/application id	
+Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$loan_number','$principal_id','$academicYearID','$pricipalLoan','$created_at','$created_at','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+//end
                     }
         ++$si;
         }else{            
-        $detailsAmountPrincipal_2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id);
+        $detailsAmountPrincipal_2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);
         $PrincipleInBill_2=$detailsAmountPrincipal_2Bill->amount;
-        $detailsAmountPrincipal_2Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id);
+        $detailsAmountPrincipal_2Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);
         $principalPaidUnderBill_2=$detailsAmountPrincipal_2Paid->amount;
         $outstandingPrinciple_2=$PrincipleInBill_2-$principalPaidUnderBill_2;
         $pricipalLoan1_2=$outstandingPrinciple_2;
@@ -627,24 +648,24 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
         $itemCodePNT="PNT";
         $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);		   
-        $details_vrf_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$vrf_id."' ORDER BY loan_summary_detail_id DESC")->one();
+        $details_vrf_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$vrf_id."' AND loan_given_to='$loan_given_to' ORDER BY loan_summary_detail_id DESC")->one();
         $individualApplicantVRF_3=$details_vrf_3->loan_summary_id;
-		$details_LAF_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$LAF_id."' ORDER BY loan_summary_detail_id DESC")->one();
+		$details_LAF_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$LAF_id."' AND loan_given_to='$loan_given_to' ORDER BY loan_summary_detail_id DESC")->one();
         $individualApplicantLAF_3=$details_LAF_3->loan_summary_id;
-		$details_PNT_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$PNT_id."' ORDER BY loan_summary_detail_id DESC")->one();
+		$details_PNT_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$PNT_id."' AND loan_given_to='$loan_given_to' ORDER BY loan_summary_detail_id DESC")->one();
         $individualApplicantPNT_3=$details_PNT_3->loan_summary_id;
         $applicantVRF = (count($individualApplicantVRF_3) == '0') ? '0' : $individualApplicantVRF_3;
 		$applicantBillLAF = (count($individualApplicantLAF_3) == '0') ? '0' : $individualApplicantLAF_3;
 		$applicantBillPNT = (count($individualApplicantPNT_3) == '0') ? '0' : $individualApplicantPNT_3;
         //end check if exists in any bill before
         if($applicantVRF=='0' && $applicantBillLAF=='0' && $applicantBillPNT=='0'){
-           $vrf=$moder->getIndividualEmployeesVRF($applicantID);
+           $vrf=$moder->getIndividualEmployeesVRF($applicantID,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-           $LAF=$moder->getIndividualEmployeesLAF($applicantID);
+           $LAF=$moder->getIndividualEmployeesLAF($applicantID,$loan_given_to);
            $itemCodeLAF="LAF";
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-           $penalty=$moder->getIndividualEmployeesPenalty($applicantID);
+           $penalty=$moder->getIndividualEmployeesPenalty($applicantID,$loan_given_to);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
             
@@ -679,6 +700,10 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         'created_at'=>date("Y-m-d H:i:s"),
         'created_by'=>$loggedin,		
         ])->execute();
+		
+		$moder->getIndividualEmployeesPenaltyPerApplication($applicantID,$dateToday);
+		$moder->getIndividualEmployeesLAFPerApplication($applicantID);
+		$moder->getIndividualEmployeesVRFperApplication($applicantID,$dateToday);
         }else{
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
@@ -688,8 +713,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
 
 
-        $detailsAmountChargesVRF_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id);
-        $detailsAmountChargesVRF_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id);
+        $detailsAmountChargesVRF_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);
+        $detailsAmountChargesVRF_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);
         $TotalChargesInBillVRF_3=$detailsAmountChargesVRF_3Bill->amount;
         $TotalChargesPaidUnderBillVRF_3=$detailsAmountChargesVRF_3Paid->amount;
         $vrf_3=$TotalChargesInBillVRF_3-$TotalChargesPaidUnderBillVRF_3;
@@ -697,8 +722,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 		$vrf_3=0;
 		}
 
-        $detailsAmountChargesLAF_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id);
-        $detailsAmountChargesLAF_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id);         
+        $detailsAmountChargesLAF_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);
+        $detailsAmountChargesLAF_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);         
         $TotalChargesInBillLAF_3=$detailsAmountChargesLAF_3Bill->amount;
         $TotalChargesPaidUnderBillLAF_3=$detailsAmountChargesLAF_3Paid->amount;
         $LAF_3=$TotalChargesInBillLAF_3-$TotalChargesPaidUnderBillLAF_3;
@@ -706,8 +731,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 		$LAF_3=0;
 		}
 
-        $detailsAmountChargesPNT_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id);
-        $detailsAmountChargesPNT_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id);
+        $detailsAmountChargesPNT_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);
+        $detailsAmountChargesPNT_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);
         $TotalChargesInBillPNT_3=$detailsAmountChargesPNT_3Bill->amount;
         $TotalChargesPaidUnderBillPNT_3=$detailsAmountChargesPNT_3Paid->amount;
         $penalty_3=$TotalChargesInBillPNT_3-$TotalChargesPaidUnderBillPNT_3;
@@ -792,7 +817,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         }else{
 		$tresultsApplicant=\backend\modules\repayment\models\LoanRepaymentDetail::getLastBeneficiaryRepaymentByDate($applicantID,$dateToday);	
 		$applicantBillResults=$tresultsApplicant->loan_summary_id;
-		$detailsAmountPrincipalBill=self::getItemsAmountInBill($applicantID,$applicantBillResults,$principal_id);
+		$detailsAmountPrincipalBill=self::getItemsAmountInBill($applicantID,$applicantBillResults,$principal_id,$loan_given_to);
         $PrincipleInBill_1=$detailsAmountPrincipalBill->amount;
 		$detailsAmountPrincipalPaid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults,$principal_id);
         $principalPaidUnderBill_1=$detailsAmountPrincipalPaid->amount;
@@ -802,7 +827,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         }
         //if there there at least one bill exist
         if($loan_summary_idBenef > '0'){
-        $detailsAmountBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$principal_id);
+        $detailsAmountBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$principal_id,$loan_given_to);
         $PrincipleInBill=$detailsAmountBill->amount;
 		$detailsAmountPaid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$principal_id);
         $principalPaidUnderBill=$detailsAmountPaid->amount;
@@ -850,7 +875,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
 		$tresultsApplicant=\backend\modules\repayment\models\LoanRepaymentDetail::getLastBeneficiaryRepaymentByDate($applicantID,$dateToday);	
 		$applicantBillResults_check2=$tresultsApplicant->loan_summary_id;		
 	    //-----------------VRF-----------------
-		$detailsAmountChargesVRF_check2_bill = self::getItemsAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id);				
+		$detailsAmountChargesVRF_check2_bill = self::getItemsAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id,$loan_given_to);				
         $TotalChargesInBillVRF_check2=$detailsAmountChargesVRF_check2_bill->amount;
 		
 		$detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id);
@@ -859,7 +884,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $totalChargesGeneralVRF_check2 +=$outstandingTotalChargeVRF_check2;
 		 
 		//------------------LAF-----------------------
-		$detailsAmountChargesLAF_check2Bill = self::getItemsAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id);		
+		$detailsAmountChargesLAF_check2Bill = self::getItemsAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id,$loan_given_to);		
         $TotalChargesInBillLAF_check2=$detailsAmountChargesLAF_check2Bill->amount;
 		
 		$detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id);
@@ -867,7 +892,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $outstandingTotalChargeLAF_check2=$TotalChargesInBillLAF_check2-$TotalChargesPaidUnderBillLAF_check2;
          $totalChargesGeneralLAF_check2 +=$outstandingTotalChargeLAF_check2;		
 		//---------------------PNT-----------------------         
-         $detailsAmountChargesPNT_check2Bill =self::getItemsAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id);
+         $detailsAmountChargesPNT_check2Bill =self::getItemsAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id,$loan_given_to);
         $TotalChargesInBillPNT_check2=$detailsAmountChargesPNT_check2Bill->amount;
 		
 		$detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id);		
@@ -887,7 +912,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
 		   
-		$detailsAmountChargesVRFBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id);           
+		$detailsAmountChargesVRFBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id,$loan_given_to);           
         $TotalChargesInBillVRF=$detailsAmountChargesVRFBill->amount;
 		$detailsAmountChargesVRFPaid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id);
         $TotalChargesPaidUnderBillVRF=$detailsAmountChargesVRFPaid->amount;
@@ -895,14 +920,14 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
          $totalChargesGeneralVRF +=$outstandingTotalChargeVRF;
 
 				
-	    $detailsAmountChargesLAFBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id);         
+	    $detailsAmountChargesLAFBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id,$loan_given_to);         
         $TotalChargesInBillLAF=$detailsAmountChargesLAFBill->amount;
 		$detailsAmountChargesLAFPaid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id);
         $TotalChargesPaidUnderBillLAF=$detailsAmountChargesLAFPaid->amount;
         $outstandingTotalChargeLAF=$TotalChargesInBillLAF-$TotalChargesPaidUnderBillLAF;
          $totalChargesGeneralLAF +=$outstandingTotalChargeLAF;         
 
-        $detailsAmountChargesPNTBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id);         
+        $detailsAmountChargesPNTBill = self::getItemsAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id,$loan_given_to);         
         $TotalChargesInBillPNT=$detailsAmountChargesPNTBill->amount;
 		$detailsAmountChargesPNTBillPaid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id);
         $TotalChargesPaidUnderBillPNT=$detailsAmountChargesPNTBillPaid->amount;
@@ -1122,7 +1147,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $pricipalLoan1 +=$details_disbursedAmount->disbursed_amount;        
                     //}
         }else{
-		$detailsAmountPrincipalBill=$this->getItemsAmountInBill($applicantID,$applicantBillResults,$principal_id);
+		$detailsAmountPrincipalBill=$this->getItemsAmountInBill($applicantID,$applicantBillResults,$principal_id,$loan_given_to);
         $PrincipleInBill_1=$detailsAmountPrincipalBill->amount;
 		$detailsAmountPrincipalPaid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults,$principal_id);
         $principalPaidUnderBill_1=$detailsAmountPrincipalPaid->amount;
@@ -1132,7 +1157,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         }
         //if there there at least one bill exist
         if($loan_summary_idBenef > '0'){
-        $detailsAmountBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$principal_id);
+        $detailsAmountBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$principal_id,$loan_given_to);
         $PrincipleInBill=$detailsAmountBill->amount;
 		$detailsAmountPaid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$principal_id);
         $principalPaidUnderBill=$detailsAmountPaid->amount;
@@ -1178,7 +1203,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $itemCodePNT="PNT";
         $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
 	    //-----------------VRF-----------------
-		$detailsAmountChargesVRF_check2_bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id);				
+		$detailsAmountChargesVRF_check2_bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id,$loan_given_to);				
         $TotalChargesInBillVRF_check2=$detailsAmountChargesVRF_check2_bill->amount;
 		
 		$detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id);
@@ -1187,7 +1212,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $totalChargesGeneralVRF_check2 +=$outstandingTotalChargeVRF_check2;
 		 
 		//------------------LAF-----------------------
-		$detailsAmountChargesLAF_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id);		
+		$detailsAmountChargesLAF_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id,$loan_given_to);		
         $TotalChargesInBillLAF_check2=$detailsAmountChargesLAF_check2Bill->amount;
 		
 		$detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id);
@@ -1195,7 +1220,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $outstandingTotalChargeLAF_check2=$TotalChargesInBillLAF_check2-$TotalChargesPaidUnderBillLAF_check2;
          $totalChargesGeneralLAF_check2 +=$outstandingTotalChargeLAF_check2;		
 		//---------------------PNT-----------------------         
-         $detailsAmountChargesPNT_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id);
+         $detailsAmountChargesPNT_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id,$loan_given_to);
         $TotalChargesInBillPNT_check2=$detailsAmountChargesPNT_check2Bill->amount;
 		
 		$detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id);		
@@ -1215,7 +1240,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
 		   
-		$detailsAmountChargesVRFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id);           
+		$detailsAmountChargesVRFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id,$loan_given_to);           
         $TotalChargesInBillVRF=$detailsAmountChargesVRFBill->amount;
 		$detailsAmountChargesVRFPaid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id);
         $TotalChargesPaidUnderBillVRF=$detailsAmountChargesVRFPaid->amount;
@@ -1223,14 +1248,14 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
          $totalChargesGeneralVRF +=$outstandingTotalChargeVRF;
 
 				
-	    $detailsAmountChargesLAFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id);         
+	    $detailsAmountChargesLAFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id,$loan_given_to);         
         $TotalChargesInBillLAF=$detailsAmountChargesLAFBill->amount;
 		$detailsAmountChargesLAFPaid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id);
         $TotalChargesPaidUnderBillLAF=$detailsAmountChargesLAFPaid->amount;
         $outstandingTotalChargeLAF=$TotalChargesInBillLAF-$TotalChargesPaidUnderBillLAF;
          $totalChargesGeneralLAF +=$outstandingTotalChargeLAF;         
 
-        $detailsAmountChargesPNTBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id);         
+        $detailsAmountChargesPNTBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id,$loan_given_to);         
         $TotalChargesInBillPNT=$detailsAmountChargesPNTBill->amount;
 		$detailsAmountChargesPNTBillPaid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id);
         $TotalChargesPaidUnderBillPNT=$detailsAmountChargesPNTBillPaid->amount;
@@ -1299,7 +1324,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $pricipalLoan1 +=$details_disbursedAmount->disbursed_amount; 		
                     //}
         }else{
-        $detailsAmountPrincipalBill =$this->getItemsAmountInBill($applicantID,$applicantBillResults,$principal_id);
+        $detailsAmountPrincipalBill =$this->getItemsAmountInBill($applicantID,$applicantBillResults,$principal_id,$loan_given_to);
         $PrincipleInBill_1=$detailsAmountPrincipalBill->amount;        
         $detailsAmountPrincipalPaid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults,$principal_id);               
         $principalPaidUnderBill_1=$detailsAmountPrincipalPaid->amount;
@@ -1309,7 +1334,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         }
         //if there there at least one bill exist
         if($loan_summary_idBenef > '0'){
-         $detailsAmountBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$principal_id);
+         $detailsAmountBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$principal_id,$loan_given_to);
         $detailsAmountPaid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$principal_id);   
         $PrincipleInBill=$detailsAmountBill->amount;
         $principalPaidUnderBill=$detailsAmountPaid->amount;
@@ -1357,7 +1382,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT); 
         
         //-----------------VRF-----------------
-        $detailsAmountChargesVRF_check2_bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id);
+        $detailsAmountChargesVRF_check2_bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id,$loan_given_to);
         $TotalChargesInBillVRF_check2=$detailsAmountChargesVRF_check2_bill->amount;        
         
         $detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$vrf_id);
@@ -1366,7 +1391,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
          $totalChargesGeneralVRF_check2 +=$outstandingTotalChargeVRF_check2;
          //------------------LAF-----------------------
          
-         $detailsAmountChargesLAF_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id);
+         $detailsAmountChargesLAF_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id,$loan_given_to);
          $TotalChargesInBillLAF_check2=$detailsAmountChargesLAF_check2Bill->amount;
         
         $detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$LAF_id);
@@ -1375,7 +1400,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
          $totalChargesGeneralLAF_check2 +=$outstandingTotalChargeLAF_check2;
          //---------------------PNT-----------------------
          
-         $detailsAmountChargesPNT_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id);
+         $detailsAmountChargesPNT_check2Bill = $this->getItemsAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id,$loan_given_to);
          $TotalChargesInBillPNT_check2=$detailsAmountChargesPNT_check2Bill->amount;        
         
         $detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_check2,$PNT_id);
@@ -1396,7 +1421,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
 
-        $detailsAmountChargesVRFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id);           
+        $detailsAmountChargesVRFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id,$loan_given_to);           
         $TotalChargesInBillVRF=$detailsAmountChargesVRFBill->amount;
         $detailsAmountChargesVRFPaid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$vrf_id);
         $TotalChargesPaidUnderBillVRF=$detailsAmountChargesVRFPaid->amount;
@@ -1404,14 +1429,14 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
          $totalChargesGeneralVRF +=$outstandingTotalChargeVRF;
          
 
-        $detailsAmountChargesLAFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id);
+        $detailsAmountChargesLAFBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id,$loan_given_to);
         $TotalChargesInBillLAF=$detailsAmountChargesLAFBill->amount;
         $detailsAmountChargesLAFPaid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$LAF_id);
         $TotalChargesPaidUnderBillLAF=$detailsAmountChargesLAFPaid->amount;
         $outstandingTotalChargeLAF=$TotalChargesInBillLAF-$TotalChargesPaidUnderBillLAF;
          $totalChargesGeneralLAF +=$outstandingTotalChargeLAF;
 
-         $detailsAmountChargesPNTBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id);
+         $detailsAmountChargesPNTBill = $this->getItemsAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id,$loan_given_to);
         $TotalChargesInBillPNT=$detailsAmountChargesPNTBill->amount;
         $detailsAmountChargesPNTBillPaid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$loan_summary_idBenef,$PNT_id);
         $TotalChargesPaidUnderBillPNT=$detailsAmountChargesPNTBillPaid->amount;
@@ -1487,16 +1512,16 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         return $value2;
         }
         
-    public static function getItemsAmountInBill($applicantID,$loan_summary_id,$itemID){
-        $results = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount FROM loan_summary_detail A "
-                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='".$itemID."'")->one();
+    public static function getItemsAmountInBill($applicantID,$loan_summary_id,$itemID,$loan_given_to){
+        $results = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount FROM loan_summary_detail A  INNER JOIN loan_summary B ON B.loan_summary_id=A.loan_summary_id"
+                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='".$itemID."' AND A.loan_given_to='$loan_given_to'")->one();
 
         return $results;
         }
-    public static function getLoaneeTotalLoanInLoanSummary($applicantID,$loan_summary_id){
-        $results_amount = LoanSummaryDetail::findBySql("SELECT SUM(amount) AS amount "
-                . "FROM loan_summary_detail "
-                . "WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$loan_summary_id'")->one();
+    public static function getLoaneeTotalLoanInLoanSummary($applicantID,$loan_summary_id,$loan_given_to){
+        $results_amount = LoanSummaryDetail::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount "
+                . "FROM loan_summary_detail  INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id"
+                . " WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$loan_summary_id' AND loan_summary_detail.loan_given_to='$loan_given_to'")->one();
 				if(count($results_amount)>0){
 				$totalLoanInLoanSummary=$results_amount->amount;
 				}else{
@@ -1505,9 +1530,9 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         return $totalLoanInLoanSummary;
         }
 
-    public static function getLoaneeOutstandingDebtUnderLoanSummary($applicant_id,$loan_summary_id){
-        $alreadyPaid=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidunderBillIndividualEmployee($applicant_id,$loan_summary_id);
-        $details_outstandingDebt = LoanSummaryDetail::getLoaneeTotalLoanInLoanSummary($applicant_id,$loan_summary_id)-$alreadyPaid;
+    public static function getLoaneeOutstandingDebtUnderLoanSummary($applicant_id,$loan_summary_id,$loan_given_to){
+        $alreadyPaid=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidunderBillIndividualEmployee($applicant_id,$loan_summary_id,$loan_given_to);
+        $details_outstandingDebt = LoanSummaryDetail::getLoaneeTotalLoanInLoanSummary($applicant_id,$loan_summary_id,$loan_given_to)-$alreadyPaid;
 		if($details_outstandingDebt < 0.00){
 		$details_outstandingDebt1=0;
 		}else{
@@ -1515,29 +1540,29 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
 		}
         return $details_outstandingDebt1;
         }	
-public static function getTotalLoanBeneficiaryOriginal($applicantID,$date){
-$totalLoan=LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID,$date) + LoanSummaryDetail::getTotalPenaltyOriginal($applicantID,$date) + LoanSummaryDetail::getTotalLAFOriginal($applicantID,$date) + LoanSummaryDetail::getTotalVRFOriginal($applicantID,$date);
+public static function getTotalLoanBeneficiaryOriginal($applicantID,$date,$loan_given_to){
+$totalLoan=LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID,$date,$loan_given_to) + LoanSummaryDetail::getTotalPenaltyOriginal($applicantID,$date,$loan_given_to) + LoanSummaryDetail::getTotalLAFOriginal($applicantID,$date,$loan_given_to) + LoanSummaryDetail::getTotalVRFOriginal($applicantID,$date,$loan_given_to);
 
 return $totalLoan;
 }	
 
 		
 //This method/function returns the total beneficiary VRF date		
-public static function getTotalVRFOriginal($applicantID,$date){
+public static function getTotalVRFOriginal($applicantID,$date,$loan_given_to){
 	$date1=strtotime($date);
 	$totlaVRF=0;
 	//check for benefiacy repayment
-	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)),$loan_given_to);
 	if($repayment){
 		//Caliculate VRF On Repayment
 	    //get the active loan summary
-        $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+        $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID,$loan_given_to);
 	    $activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
 		
 		
 		$itemCodeVRF="VRF";
         $vrf_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
-		$loanVRF = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.amount AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$activeLoanSummary_id' AND loan_summary_detail.loan_repayment_item_id='$vrf_id'")->one();
+		$loanVRF = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.amount AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$activeLoanSummary_id' AND loan_summary_detail.loan_repayment_item_id='$vrf_id' AND loan_summary_detail.loan_given_to='$loan_given_to'")->one();
 		$totalAmountVRF=$loanVRF->amount;
 		//getting accumulated VRF
 		/*
@@ -1563,20 +1588,20 @@ public static function getTotalVRFOriginal($applicantID,$date){
    return  $totlaVRF;
 }
 //get vrf for loan of applicant given through employer/institution
-public static function getTotalVRFOriginalGivenToApplicantTrhEmployer($applicantID,$date){
+public static function getTotalVRFOriginalGivenToApplicantTrhEmployer($applicantID,$date,$loan_given_to){
 	$date1=strtotime($date);
 	$totlaVRF=0;
 	//check for benefiacy repayment
-	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)),$loan_given_to);
 	if($repayment){
 		//Caliculate VRF On Repayment
 	    //get the active loan summary
-        $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+        $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID,$loan_given_to);
 	    $activeLoanSummary_id=$activeLoanSummary->loan_summary_id;		
 		
 		$itemCodeVRF="VRF";
         $vrf_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
-		$loanVRF = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.amount AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$activeLoanSummary_id' AND loan_summary_detail.loan_repayment_item_id='$vrf_id' AND loan_given_to='2'")->one();
+		$loanVRF = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.amount AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_summary_id='$activeLoanSummary_id' AND loan_summary_detail.loan_repayment_item_id='$vrf_id' AND loan_given_to='$loan_given_to'")->one();
 		$totalAmountVRF=$loanVRF->amount;
 		$totlaVRF=$totalAmountVRF;
 	}else{
@@ -1589,12 +1614,12 @@ public static function getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant
    return  $totlaVRF;
 }
 //This method/function returns the total beneficiary PENALTY BY date
-public static function getTotalPenaltyOriginal($applicantID,$date){
+public static function getTotalPenaltyOriginal($applicantID,$date,$loan_given_to){
 	//check for benefiacy repayment
-	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)),$loan_given_to);
 	if($repayment){
 	//calculate total penalty on repayment
-	    $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	    $activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID,$loan_given_to);
 	    $activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
         $itemCodePNT="PNT";
         $PNT_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePNT);
@@ -1613,15 +1638,15 @@ public static function getTotalPenaltyOriginal($applicantID,$date){
 	
 	
 //This method/function returns the total beneficiary LAF BY date	
-public static function getTotalLAFOriginal($applicantID,$date){	
+public static function getTotalLAFOriginal($applicantID,$date,$loan_given_to){	
 	//check for benefiacy repayment
-	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)),$loan_given_to);
 	if($repayment){
-	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID,$loan_given_to);
 	$activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
     $itemCodeLAF="LAF";
     $LAF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeLAF);
-	$loanLAF = LoanSummaryDetail::findBySql("SELECT amount FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$LAF_id'")->one();
+	$loanLAF = LoanSummaryDetail::findBySql("SELECT amount FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$LAF_id' AND loan_summary_detail.loan_given_to='$loan_given_to'")->one();
 	$totalAmountLAF=$loanLAF->amount;
 	}else{
 	$totalAmountLAF=\backend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeesLAF($applicantID);		
@@ -1632,15 +1657,15 @@ public static function getTotalLAFOriginal($applicantID,$date){
 return $totalAmountLAF;
         }
 //This method/function returns the total beneficiary PRINCIPLE BY date		
-public static function getTotalPrincipleLoanOriginal($applicantID,$date){	
+public static function getTotalPrincipleLoanOriginal($applicantID,$date,$loan_given_to){	
 	     //check for benefiacy repayment
-	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
+	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)),$loan_given_to);
 	if($repayment){
-	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID,$loan_given_to);
 	$activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
 	$itemCodePrincipal="PRC";
     $principal_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePrincipal);
-	$loanPrincipal = LoanSummaryDetail::findBySql("SELECT SUM(amount) AS 'amount' FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$principal_id'")->one();
+	$loanPrincipal = LoanSummaryDetail::findBySql("SELECT SUM(amount) AS 'amount' FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_summary_id='$activeLoanSummary_id' AND loan_repayment_item_id='$principal_id' AND loan_summary_detail.loan_given_to='$loan_given_to'")->one();
 	$totalAmountPrincipal=$loanPrincipal->amount;		
 	$totalLoanPrincipal=$totalAmountPrincipal;
 	}else{
@@ -1668,7 +1693,7 @@ public static function getTotalPrincipleLoanOriginalThroughEmployerToApplicant($
 		 $pricipalLoanTrhogEmployer=0;
 	$repayment=LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,date("Y-m-d 23:59:59",strtotime($date)));
 	if($repayment){
-	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID);
+	$activeLoanSummary=self::getActiveLoanSummaryOfBeneficiary($applicantID,$loan_given_to);
 	$activeLoanSummary_id=$activeLoanSummary->loan_summary_id;
 	$itemCodePrincipal="PRC";
     $principal_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePrincipal);
@@ -1696,14 +1721,14 @@ $resultsAcademicTrendLoanThrEmployer=\common\models\LoanBeneficiary::getAcademic
        return $totalLoanPrincipal;
 }		
 		
-public static function getActiveLoanSummaryOfBeneficiary($applicantID){
-return self::findBySql("SELECT loan_summary_detail.loan_summary_id,loan_summary_detail.academic_year_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
+public static function getActiveLoanSummaryOfBeneficiary($applicantID,$loan_given_to){
+return self::findBySql("SELECT loan_summary_detail.loan_summary_id,loan_summary_detail.academic_year_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' AND loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
 }
 public static function getActiveLoanSummaryOfBeneficiaryDetails($applicantID,$loanSummary_id,$itemCode_id){
 return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS 'amount' FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND  loan_summary_detail.is_active='1' AND loan_summary_detail.loan_summary_id='$loanSummary_id' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id'  ORDER BY loan_summary_detail.loan_summary_id DESC")->one();	
 }
-public static function getItemExistInBillBefore($applicantID,$itemID){
-return self::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='".$itemID."' ORDER BY loan_summary_detail.loan_summary_detail_id DESC")->one();	
+public static function getItemExistInBillBefore($applicantID,$itemID,$loan_given_to){
+return self::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_given_to='$loan_given_to' AND loan_summary_detail.loan_repayment_item_id='".$itemID."' ORDER BY loan_summary_detail.loan_summary_detail_id DESC")->one();	
 }
 public static function getTotalAmountInFirstLoanSummary($applicantID,$itemCode_id){
 return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='$itemCode_id' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id ASC")->one();	
@@ -1756,13 +1781,14 @@ public static function getTotalAmountUnderLastLoanSummary($lastLoanSummaryID){
 return self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount,SUM(loan_summary_detail.vrf_accumulated) AS vrf_accumulated FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.loan_summary_id='$lastLoanSummaryID' AND  loan_summary_detail.is_active='1' ORDER BY loan_summary_detail.loan_summary_id DESC")->one();	
 }
 
-public static function insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicantID,$academicYearID,$itemCategory,$amount){
+public static function insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicantID,$academicYearID,$itemCategory,$amount,$application_id){
 	$loggedin=Yii::$app->user->identity->user_id;
+	$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
 	$todate=date("Y-m-d H:i:s");
 		if($itemCategory=='PRC'){
 			$principal_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCategory);
 			//check if exists in loan summary
-			$results=\backend\modules\repayment\models\LoanSummaryDetail::find()->where(['loan_summary_id'=>$loan_summary_id,'loan_given_to'=>2,'employer_id'=>$employerID,'academic_year_id'=>$academicYearID,'loan_repayment_item_id'=>$principal_id,'applicant_id'=>$applicantID])->one();
+			$results=\backend\modules\repayment\models\LoanSummaryDetail::find()->where(['loan_summary_id'=>$loan_summary_id,'loan_given_to'=>$loan_given_to,'employer_id'=>$employerID,'academic_year_id'=>$academicYearID,'loan_repayment_item_id'=>$principal_id,'applicant_id'=>$applicantID])->one();
 			//end	
          if(count($results)==0){			
         Yii::$app->db->createCommand()
@@ -1772,17 +1798,18 @@ public static function insertBeneficiariesLoanThroughEmployer($employerID,$loan_
         'loan_repayment_item_id' =>$principal_id,
         'academic_year_id' =>$academicYearID,
         'amount' =>$amount,
-        'loan_given_to'=>2,	
+        'loan_given_to'=>$loan_given_to,	
         'employer_id'=>$employerID,
         'created_at'=>$todate,
         'created_by'=>$loggedin,		
         ])->execute();
+		Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$principal_id','$academicYearID','$amount','$todate','$todate','0','$loan_given_to','$loggedin','$loggedin')")->execute();
 		}           
 }
         if($itemCategory=='VRF'){
         $vrf_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCategory); 
         //check if exists in loan summary
-			$results=\backend\modules\repayment\models\LoanSummaryDetail::find()->where(['loan_summary_id'=>$loan_summary_id,'loan_given_to'=>2,'employer_id'=>$employerID,'loan_repayment_item_id'=>$vrf_id,'applicant_id'=>$applicantID])->one();
+			$results=\backend\modules\repayment\models\LoanSummaryDetail::find()->where(['loan_summary_id'=>$loan_summary_id,'loan_given_to'=>$loan_given_to,'employer_id'=>$employerID,'loan_repayment_item_id'=>$vrf_id,'applicant_id'=>$applicantID])->one();
 			//end	
          if(count($results)==0){			
         Yii::$app->db->createCommand()
@@ -1793,12 +1820,20 @@ public static function insertBeneficiariesLoanThroughEmployer($employerID,$loan_
         'academic_year_id' =>'',
         'amount' =>$amount,
         'vrf_accumulated' =>'0',
-        'loan_given_to'=>2,
+        'loan_given_to'=>$loan_given_to,
         'employer_id'=>$employerID,	
         'created_at'=>$todate,
         'created_by'=>$loggedin,		
-        ])->execute();		
+        ])->execute();
+        Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$vrf_id','$amount','$todate','$todate','0','$loan_given_to','$loggedin','$loggedin')")->execute();		
         }
 		}
 }
+public static function getTotalAmountForLoanSummary($loan_summary_id,$loan_given_to){
+       $details_amount = self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount "
+                . "FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id  WHERE  loan_summary_detail.loan_summary_id='$loan_summary_id'  AND loan_summary_detail.loan_given_to='$loan_given_to'")->one();
+        $amount=$details_amount->amount;
+        $value = (count($amount) == 0) ? '0' : $amount;
+        return $value;
+        }
 }

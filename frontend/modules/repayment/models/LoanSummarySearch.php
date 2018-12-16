@@ -75,9 +75,11 @@ class LoanSummarySearch extends LoanSummary
     
     public function getBillUnderEmployer($params,$employerID)
     {
-        $query = LoanSummary::find()
-                                    ->where(['employer_id'=>$employerID])
-                                    ->orderBy('loan_summary_id DESC');
+        $query = LoanSummaryDetail::find()
+		                            ->select('loan_summary.loan_summary_id,loan_summary.reference_number,loan_summary.status,loan_summary.amount')
+                                    ->where(['loan_summary.employer_id'=>$employerID,'loan_summary_detail.loan_given_to'=>1])
+									->groupBy('loan_summary_detail.loan_summary_id')
+                                    ->orderBy('loan_summary.loan_summary_id DESC'); 
 
         // add conditions that should always apply here
 
@@ -94,6 +96,7 @@ class LoanSummarySearch extends LoanSummary
         }
 
         // grid filtering conditions
+		$query->joinWith("loanSummary");
         $query->andFilterWhere([
             'loan_summary_id' => $this->loan_summary_id,
             'employer_id' => $this->employer_id,
@@ -107,6 +110,7 @@ class LoanSummarySearch extends LoanSummary
 
         return $dataProvider;
     }
+	
     public function getBillLoanee($params,$applicantID)
     {
 	    /*

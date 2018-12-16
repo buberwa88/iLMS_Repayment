@@ -12,11 +12,11 @@ use frontend\modules\repayment\models\LoanRepayment;
 $this->title = 'Loan Payments';
 $this->params['breadcrumbs'][] = $this->title;
 $model = new LoanRepayment();
-
+/*
 $controlNumber = '82';
 $amount = '100000.00';
 $model->updatePaymentAfterGePGconfirmPaymentDone($controlNumber, $amount);
-
+*/
 ?>
 <div class="loan-repayment-index">
 

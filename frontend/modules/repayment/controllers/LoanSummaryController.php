@@ -44,6 +44,7 @@ class LoanSummaryController extends Controller
      */
     public function actionIndex()
     {
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
         $user_loged_in=Yii::$app->user->identity->login_type;
         if($user_loged_in==5){
            $this->layout="main_private"; 
@@ -57,7 +58,7 @@ class LoanSummaryController extends Controller
         $employer2=$employerModel->getEmployer($loggedin);
         $employerID=$employer2->employer_id;
         $dataProvider = $searchModel->getBillUnderEmployer(Yii::$app->request->queryParams,$employerID);
-        $LoanSummaryModel->getActiveBillToUpdateVRFofEmployees($employerID);
+        $LoanSummaryModel->getActiveBillToUpdateVRFofEmployees($employerID,$loan_given_to);
 		//echo $results1q;
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -325,6 +326,67 @@ class LoanSummaryController extends Controller
         $dataProvider = $searchModel->loaneesUnderBill(Yii::$app->request->queryParams,$loan_summary_id);
         return $this->render('viewLoaneesInLoanSummaryApproved', [
             'model' => $this->findModel($id),
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+	public function actionIndexScholarship()
+    {
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
+        $user_loged_in=Yii::$app->user->identity->login_type;
+        $searchModel = new \frontend\modules\repayment\models\LoanSummaryDetailSearch();
+		$searchLoanRepayment = new \frontend\modules\repayment\models\LoanRepaymentSearch();
+        $employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+		$is_fullPaid=0;
+        $dataProvider = $searchModel->getBillUnderEmployerScholarShip(Yii::$app->request->queryParams,$employerID,$is_fullPaid);
+		$dataProviderBill=$searchLoanRepayment->searchPaymentsForSpecificEmployer(Yii::$app->request->queryParams,$employerID);
+		//echo $results1q;
+        return $this->render('indexScholarship', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+			'searchModelBill' => $searchLoanRepayment,
+            'dataProviderBill' => $dataProviderBill,
+        ]);
+    }
+	public function actionIndexScholarshipnotpaid()
+    {
+		$this->layout="default_main";
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
+        $user_loged_in=Yii::$app->user->identity->login_type;
+        $searchModel = new \frontend\modules\repayment\models\LoanSummaryDetailSearch();
+		$searchLoanRepayment = new \frontend\modules\repayment\models\LoanRepaymentSearch();
+        $employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+		$is_fullPaid=0;
+        $dataProvider = $searchModel->getBillUnderEmployerScholarShip(Yii::$app->request->queryParams,$employerID,$is_fullPaid);
+		$dataProviderBill=$searchLoanRepayment->searchIncompleteBillEmployerGeneral(Yii::$app->request->queryParams,$employerID,$loan_given_to);
+		//echo $results1q;
+        return $this->render('indexScholarshipnotpaid', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+			'searchModelBill' => $searchLoanRepayment,
+            'dataProviderBill' => $dataProviderBill,
+        ]);
+    }
+	public function actionIndexScholarshippaid()
+    {
+		$this->layout="default_main";
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+        $user_loged_in=Yii::$app->user->identity->login_type;
+        $searchModel = new \frontend\modules\repayment\models\LoanSummaryDetailSearch();
+        $employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+		$is_fullPaid=1;
+        $dataProvider = $searchModel->getBillUnderEmployerScholarShip(Yii::$app->request->queryParams,$employerID,$is_fullPaid);
+		//echo $results1q;
+        return $this->render('indexScholarshippaid', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);

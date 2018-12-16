@@ -373,7 +373,7 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
 	}
 	public static function getAmountSubtotalPerAccademicYNoReturned($applicant_id,$academic_yearIDQR){
 		$allApplications=\common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
-	$amountSubTotalPerAcDemicNoReturned=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT SUM(disbursed_amount) AS 'disbursed_amount', disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id' FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id"
+	$amountSubTotalPerAcDemicNoReturned=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT SUM(disbursed_amount) AS 'disbursed_amount', disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id',disbursement.application_id FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id"
                         . "  WHERE disbursement.status='8' AND disbursement_batch.academic_year_id='$academic_yearIDQR' AND disbursement.application_id IN($allApplications) AND  disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL GROUP BY disbursement_batch.academic_year_id ORDER BY disbursement.disbursement_id ASC")->one();
 	return $amountSubTotalPerAcDemicNoReturned;					
 	}
@@ -454,8 +454,8 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
 		}
 		return $valuesXcF;
 	}
-	public static function getGraduationDate($applicantID){
-		$results=\frontend\modules\application\models\Application::findBySql("SELECT date_graduated  FROM application WHERE  applicant_id='{$applicantID}' AND student_status<>'ONSTUDY' ORDER BY application_id DESC")->asArray()->one();
+	public static function getGraduationDate($applicantID,$application_id){
+		$results=\frontend\modules\application\models\Application::findBySql("SELECT date_graduated  FROM application WHERE  applicant_id='{$applicantID}' AND student_status<>'ONSTUDY' AND application.application_id='{$application_id}' ORDER BY application_id ASC")->asArray()->one();
         $valuesXcF=$results['date_graduated'];
 		if($valuesXcF !=''){
 		$valuesXcF=$valuesXcF;	
@@ -472,7 +472,7 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
 	}
         public static function getAmountNoReturned($applicant_id){
 		$allApplications=\common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
-	$amountNoReturned=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT disbursed_amount, disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id',disbursement.status_date,academic_year.end_date FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id"
+	$amountNoReturned=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT disbursed_amount, disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id',disbursement.status_date,academic_year.end_date,disbursement.application_id FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id"
                         . "  WHERE disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id AND disbursement.status='8' AND disbursement.application_id IN($allApplications) AND  disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL ORDER BY disbursement.disbursement_id ASC")->all();
 	return $amountNoReturned;					
 	}
@@ -498,6 +498,18 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
              $vrfApplicableFormula = \backend\modules\repayment\models\LoanRepaymentSetting::findBySql("SELECT loan_repayment_setting.rate*0.01 AS 'rate',loan_repayment_setting.calculation_mode AS 'calculation_mode',loan_repayment_setting.loan_repayment_item_id AS 'loan_repayment_item_id',loan_repayment_setting.formula_stage_level,loan_repayment_setting.formula_stage_level_condition,loan_repayment_setting.grace_period  FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id AND loan_repayment_item.item_code='VRF' AND loan_repayment_setting.is_active='1' AND loan_repayment_setting.formula_stage='1'")->one(); 
             }		
     return $vrfApplicableFormula;					
+	}
+	public static function getTotalLoanNoReturnPerApplication($application_id,$loanRepaymentItemRate){
+		$allApplications=\common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
+	$totalLoanNoreturn=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT SUM('$loanRepaymentItemRate'*disbursed_amount) AS 'disbursed_amount', disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id' FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id "
+                        . "  WHERE disbursement.application_id ='$application_id' AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL")->one();
+	return $totalLoanNoreturn;					
+	}
+	public static function getAmountNoReturnedperApplication($application_id){
+		//$allApplications=\common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
+	$amountNoReturned=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT disbursed_amount, disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id',disbursement.status_date,academic_year.end_date,disbursement.application_id FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id"
+                        . "  WHERE disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id AND disbursement.status='8' AND disbursement.application_id='$application_id' AND  disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL ORDER BY disbursement.disbursement_id ASC")->all();
+	return $amountNoReturned;					
 	}
 	 
 }

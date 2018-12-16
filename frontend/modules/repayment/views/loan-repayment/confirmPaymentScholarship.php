@@ -11,7 +11,7 @@ use yii\bootstrap\Modal;
 $this->title = 'Pay Bill';
 
 $totalEmployees=$model->getAllEmployeesUnderBillunderEmployer($model->loan_repayment_id);
-$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
 ?>
 <div class="loan-repayment-index">
 
@@ -20,7 +20,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 					  <?= Html::encode($this->title) ?>
                         </div>
                         <div class="panel-body">
-            <?= $this->render('_form', [
+            <?= $this->render('_formScholarship', [
                 'model' => $model,'totalEmployees'=>$totalEmployees,'employerSalarySource'=>$employerSalarySource
                 ])            
                     ?>
@@ -73,6 +73,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             ],
 			[
             'attribute'=>'amount',
+			'label'=>'Amount',
 			'hAlign' => 'right',
             'format'=>'raw',    
             'value' =>function($model) use ($loan_given_to)
@@ -81,6 +82,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             },
             'format'=>['decimal',2],
         ],
+		/*
              [
             'header' => 'Actions',  
             'format'=>'raw',
@@ -89,7 +91,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                 );
                 }
         ],
-          			
+         */ 			
         ],
     ]); ?>
 	<div class="block" id="hiddenAdjust_employedBeneficiary">

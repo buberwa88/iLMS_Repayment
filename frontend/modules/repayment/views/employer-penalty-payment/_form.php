@@ -48,8 +48,9 @@ $amountSa=$amountPendingUnconfirmedPayment;
 $amountToPayDisplay=$outstandingAmount1;
 $amountSa=$outstandingAmount;		
 }
-frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer();
-frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployerIndividualMonths();
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer($loan_given_to);
+frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployerIndividualMonths($loan_given_to);
 /*
     $todate=date("Y-m-d");
 	$dateCreated=date_create($todate);

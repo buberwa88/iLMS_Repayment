@@ -27,6 +27,8 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+	 const LOAN_GIVEN_TO_LOANEE=1;
+	 const LOAN_GIVEN_TO_EMPLOYER=2;
     public static function tableName()
     {
         return 'loan_repayment_detail';
@@ -53,12 +55,14 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
     public $payment_status;
     public $receipt_number;
 	public $payment_date;
+	public $receipt_date;
+	public $bill_number;
     public function rules()
     {
         return [
             [['loan_repayment_id', 'applicant_id', 'loan_summary_id'], 'required'],
             [['loan_repayment_id', 'applicant_id', 'loan_repayment_item_id', 'loan_summary_id'], 'integer'],
-            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id','loan_given_to','updated_at','updated_by'], 'safe'],
+            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id','loan_given_to','updated_at','updated_by','receipt_date'], 'safe'],
             [['amount'], 'number','on' => 'adjustAmount'],
 			[['amount'], 'required', 'on' => 'adjustAmount'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
@@ -137,7 +141,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
     {
         return $this->hasOne(TreasuryPayment::className(), ['treasury_payment_id' => 'treasury_payment_id']);
     }
-    public function insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id){
+    public function insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id,$loan_given_to){
         $details_applicant = EmployedBeneficiary::getBeneficiariesForPaymentProcess($loan_summary_id);
         $si=0;
         $moder=new EmployedBeneficiary();
@@ -152,7 +156,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         foreach ($details_applicant as $paymentCalculation) { 
            $applicantID=$paymentCalculation->applicant_id;
            $amount1=$MLREB*$paymentCalculation->basic_salary;           
-           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            if($totalOutstandingAmount >= $amount1){
               $amount=$amount1; 
               $loanStatus=1;			  
@@ -162,19 +166,19 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
            }
            // check if amount is greater than 0
 		   if($totalOutstandingAmount > 0){
-           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id);
+           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id);
+           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeLAF="LAF";
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id);
+           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
            $itemCodePRC="PRC";
            $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);
            
-           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id);
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
 		   
 		   
 		   //here is about to finish paying loan
@@ -361,7 +365,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
 		}
         }
 		
-		public function insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id){
+		public function insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id,$loan_given_to){
         $details_applicant = EmployedBeneficiary::getBeneficiariesForPaymentProcessSalarySourceBases($loan_summary_id);
         $si=0;
         $moder=new EmployedBeneficiary();
@@ -376,7 +380,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         foreach ($details_applicant as $paymentCalculation) { 
            $applicantID=$paymentCalculation->applicant_id;
            $amount1=$MLREB*$paymentCalculation->basic_salary;           
-           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            if($totalOutstandingAmount >= $amount1){
               $amount=$amount1; 
               $loanStatus=1;			  
@@ -386,19 +390,19 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
            }
            // check if amount is greater than 0
 		   if($totalOutstandingAmount > 0){
-           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id);
+           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id);
+           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeLAF="LAF";
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id);
+           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
            $itemCodePRC="PRC";
            $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);
            
-           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id);
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
 		   
 		   
 		   //here is about to finish paying loan
@@ -585,7 +589,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
 		}
         }
 		
-		public function updateNewAmountOnAdjustmentOfPaymentEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$amounUpdated,$applicantID){
+		public function updateNewAmountOnAdjustmentOfPaymentEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$amounUpdated,$applicantID,$loan_given_to){
         $details_applicant = $this->findBySql("SELECT * FROM loan_repayment_detail WHERE  loan_summary_id='$loan_summary_id' AND applicant_id='$applicantID'")->all();
         $si=0;
         $moder=new EmployedBeneficiary();
@@ -600,7 +604,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         //foreach ($details_applicant as $paymentCalculation) { 
            //$applicantID=$paymentCalculation->applicant_id;
            $amount1=$amounUpdated;           
-           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            if($totalOutstandingAmount > $amount1){
               $amount=$amount1;
               $loanStatus=1;			  
@@ -609,25 +613,25 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
               $amount=$totalOutstandingAmount;
               $loanStatus=0;			  
            }
-		   $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id);
+		   $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id);
+           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeLAF="LAF";
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id);
+           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
            $itemCodePRC="PRC";
            $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);           
-           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id);
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
 		   
 		   //here is about to finish paying loan
 		   if($loanStatus==0){	   
-		   $this->updateAll(['amount'=>$LAF], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'" AND loan_given_to="1"');
-		   $this->updateAll(['amount'=>$penalty], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'" AND loan_given_to="1"');
-		   $this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
-		   $this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="1"');
+		   $this->updateAll(['amount'=>$LAF], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'" AND loan_given_to="'.$loan_given_to.'"');
+		   $this->updateAll(['amount'=>$penalty], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'" AND loan_given_to="'.$loan_given_to.'"');
+		   $this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="'.$loan_given_to.'"');
+		   $this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="'.$loan_given_to.'"');
 		   //end about finishing paying loan
 		   }else{          
         //-----------here for LAF portion----
@@ -639,7 +643,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
 			 $LAF_v=0;		 
 		   }
         $amount_remained=$amount-$LAF_v;		   
-		$this->updateAll(['amount'=>$LAF_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'" AND loan_given_to="1"');		
+		$this->updateAll(['amount'=>$LAF_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'" AND loan_given_to="'.$loan_given_to.'"');		
         //-----------------END FOR LAF----        
         //----here for penalty portion----
             $penalty_v = $amount_remained * $PNT_V;
@@ -687,34 +691,34 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         //---end---	
 		if($outstandingPrincipalLoan >= $amount_remained2){
 		if($penalty_v >=0){
-		$this->updateAll(['amount'=>$penalty_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'" AND loan_given_to="1"');
+		$this->updateAll(['amount'=>$penalty_v], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PNT_id.'" AND loan_given_to="'.$loan_given_to.'"');
 		}
 		if($vrfTopay >=0){
-		$this->updateAll(['amount'=>$vrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
+		$this->updateAll(['amount'=>$vrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="'.$loan_given_to.'"');
 		}
         //-----END for VRF---
         //--------------here for principal portion---
 		if($amount_remained2 >=0){
-		$this->updateAll(['amount'=>$amount_remained2], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="1"');
+		$this->updateAll(['amount'=>$amount_remained2], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="'.$loan_given_to.'"');
 		}
         //---end---
 		}else{
 		//done to pay principal
-		$this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="1"');		
+		$this->updateAll(['amount'=>$outstandingPrincipalLoan], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$PRC_id.'" AND loan_given_to="'.$loan_given_to.'"');		
 		//end to pay principal
 		$amountToremain=$amount_remained2-$outstandingPrincipalLoan;
 		$finalVrfTopay=$vrfTopay + $amountToremain;
 		//$finalPenaltyTopay=$penalty_v + $amountToremain;
 		if($vrf > $finalVrfTopay){
-		$this->updateAll(['amount'=>$finalVrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
+		$this->updateAll(['amount'=>$finalVrfTopay], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="'.$loan_given_to.'"');
 		}else{
-		$this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="1"');
+		$this->updateAll(['amount'=>$vrf], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$vrf_id.'" AND loan_given_to="'.$loan_given_to.'"');
 		}		
 		}
         }
 		//}
         }
-public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$applicantID){
+public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to){
         $si=0;
         $moder=new EmployedBeneficiary();
 		$Amount=$moder->getNonEmployedBeneficiaryPaymentSetting();
@@ -737,7 +741,7 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         $CalculatedBasicSalaryCode="CFBS";
         $CFBS_id=$moder->getloanRepaymentItemID($CalculatedBasicSalaryCode);
         ++$si;           
-           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            if($totalOutstandingAmount > $amount1){
               $amount=$amount1;
               $loanStatus=1;			  
@@ -746,19 +750,19 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
               $loanStatus=0;			  
            }
            
-           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id);
+           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id);
+           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeLAF="LAF";
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id);
+           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
            $itemCodePRC="PRC";
            $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);
            
-           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id);
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
 		   
 		   //here is about to finish paying loan
 		   if($loanStatus==0){
@@ -1087,12 +1091,12 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         //}
         }
         
-    public function getAmountRequiredForPaymentIndividualLoanee($applicantID,$loan_repayment_id){
+    public function getAmountRequiredForPaymentIndividualLoanee($applicantID,$loan_repayment_id,$loan_given_to){
         $moder=new EmployedBeneficiary();
         $CFBS="CFBS";
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
-       $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(amount) AS amount "
-                . "FROM loan_repayment_detail  WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_id='$loan_repayment_id' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment_detail.loan_given_to='1'")->one();
+       $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
+                . "FROM loan_repayment_detail  INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_id='$loan_repayment_id' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->one();
         $amount=$details_amount->amount;
         $value = (count($amount) == 0) ? '0' : $amount;
         return $value;
@@ -1107,13 +1111,13 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         $value = (count($amount) == 0) ? '0' : $amount;
         return $value;
         }
-    public static function getAmountTotalPaidunderBill($LoanSummaryID,$date){
+    public static function getAmountTotalPaidunderBill($LoanSummaryID,$date,$loan_given_to){
 		$date=date("Y-m-d 23:59:59",strtotime($date));
         $moder=new EmployedBeneficiary();
         $CFBS="CFBS";
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
        $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
-                . "FROM loan_repayment_detail RIGHT JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.loan_summary_id='$LoanSummaryID' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment.payment_status='1' AND loan_repayment.receipt_date <='$date' AND loan_repayment_detail.loan_given_to='1'")->one();
+                . "FROM loan_repayment_detail RIGHT JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.loan_summary_id='$LoanSummaryID' AND loan_repayment_detail.loan_repayment_item_id<>'$CFBS_id' AND loan_repayment.payment_status='1' AND loan_repayment.receipt_date <='$date' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->one();
         $amount=$details_amount->amount;
         $value = (count($amount) == 0) ? '0' : $amount;
         return $value;
@@ -1141,13 +1145,13 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
 		}		
         return $amount;
         }
-    public static function getAmountTotalPaidLoanee($applicantID,$date){
+    public static function getAmountTotalPaidLoanee($applicantID,$date,$loan_given_to){
         $moder=new EmployedBeneficiary();
         $CFBS="CFBS";
 		$date=date("Y-m-d 23:59:59",strtotime($date));
         $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
         $results = LoanRepaymentDetail::findBySql("SELECT b.loan_repayment_id, sum(b.amount) as amount from loan_repayment_detail b INNER JOIN loan_repayment A ON A.loan_repayment_id = b.loan_repayment_id "
-                . "WHERE b.applicant_id='$applicantID' AND b.loan_repayment_item_id<>'".$CFBS_id."' AND A.payment_status='1' AND A.receipt_date<='$date'")->one();
+                . "WHERE b.applicant_id='$applicantID' AND b.loan_repayment_item_id<>'".$CFBS_id."' AND A.payment_status='1' AND A.receipt_date<='$date' AND b.loan_given_to='$loan_given_to'")->one();
         $amount_paid=$results->amount;
         $value = (count($amount_paid) == 0) ? '0' : $amount_paid;
         return $value;
@@ -1188,9 +1192,9 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         $value2 = (count($VRF) == 0) ? '0' : $VRF;
         return $value2;
         }
-    public static function getOutstandingOriginalLoan($applicantID,$date){
-            $totalPaid=LoanRepaymentDetail::getAmountTotalPaidLoanee($applicantID,$date);
-			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date);
+    public static function getOutstandingOriginalLoan($applicantID,$date,$loan_given_to){
+            $totalPaid=LoanRepaymentDetail::getAmountTotalPaidLoanee($applicantID,$date,$loan_given_to);
+			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date,$loan_given_to);
 			$pendingLoan=$totalLoan-$totalPaid;
 			if($pendingLoan < 0.00){
 			$pendingLoan1=0;
@@ -1200,12 +1204,12 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         return $pendingLoan1;
         }
      
-    public function getAmountRequiredTobepaidPermonth($applicantID,$loan_summary_id){
+    public function getAmountRequiredTobepaidPermonth($applicantID,$loan_summary_id,$loan_given_to){
 	     $moder=new EmployedBeneficiary();
 	     $details_applicant = EmployedBeneficiary::findBySql("SELECT basic_salary FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND applicant_id='$applicantID'")->one();
 		 $MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
            $amount1=$MLREB*$details_applicant->basic_salary;           
-           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            if($totalOutstandingAmount >= $amount1){
               $amount=$amount1;  
            }else{
@@ -1484,5 +1488,103 @@ public static function insertAllPaymentsofAllLoaneesUnderPrepaidMonthly($loan_su
 		}
 		}
 		LoanRepayment::updateMonthlyDeductionStatus($payment_date,$employer_id);
-        }		
+        }
+public static function updateLoanBalanceToBeneficiaryAfterEveryPayment($loansummaryID,$applicantID,$loan_given_to,$loanRepaymentId,$loan_repayment_item_id){
+   $loanBalance=\frontend\modules\repayment\models\EmployedBeneficiary::getIndividualEmployeeTotalLoanUnderBill($applicantID,$loansummaryID,$loan_given_to);   
+self::updateAll(['loan_balance' => $loanBalance],'loan_repayment_id = "'.$loanRepaymentId.'" AND loan_given_to = "'.$loan_given_to.'" AND applicant_id="'.$applicantID.'" AND loan_summary_id="'.$loansummaryID.'" AND loan_repayment_item_id="'.$loan_repayment_item_id.'"');      
 }
+public static function updateAcruedVRFToBeneficiaryOnEveryPayment($loansummaryID,$applicantID,$loan_given_to,$loanRepaymentId,$Currentpayment_date,$Previousrepayment_date){
+	$totalOutstandingPrincipal=\frontend\modules\repayment\models\EmployedBeneficiary::getOutstandingPrincipalLoanUnderBill($applicantID,$loansummaryID,$loan_given_to);
+			$itemCodeVRF="VRF";
+	        $VRF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
+			$resultsVRFRepaymentRate=\backend\modules\repayment\models\LoanRepaymentSetting::getLoanRepaymentRateVRF($VRF_id);
+	        $vrfRepaymentRate=$resultsVRFRepaymentRate->loan_repayment_rate*0.01;
+			$numberOfDaysPerYear=\backend\modules\repayment\models\EmployedBeneficiary::getTotaDaysPerYearSetting();
+	
+			$totalNumberOfDays=round((strtotime($Currentpayment_date)-strtotime($Previousrepayment_date))/(60*60*24));
+			$totalAcruedVRF=$totalOutstandingPrincipal*$vrfRepaymentRate*$totalNumberOfDays/$numberOfDaysPerYear;
+   
+self::updateAll(['vrf_accumulated' => $totalAcruedVRF],'loan_repayment_id = "'.$loanRepaymentId.'" AND loan_given_to = "'.$loan_given_to.'" AND applicant_id="'.$applicantID.'" AND loan_summary_id="'.$loansummaryID.'" AND loan_repayment_item_id="'.$VRF_id.'" AND vrf_accumulated IS NULL');      
+}
+public static function updateVRFBeforeRepayment($loansummaryID,$applicantID,$loan_given_to){
+        $itemCodeVRF = "VRF";
+        $vrf_id = \backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
+        $detailsAmountChargesVRF_3_1 = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount1 FROM loan_summary_detail A  INNER JOIN loan_summary B ON B.loan_summary_id=A.loan_summary_id"
+                        . " WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loansummaryID' AND A.loan_repayment_item_id='" . $vrf_id . "' AND A.loan_given_to='$loan_given_to'")->one();
+        $TotalVRFbeforeRepayment = $detailsAmountChargesVRF_3_1->amount1;
+		
+ LoanSummaryDetail::updateAll(['vrf_before_repayment' =>$TotalVRFbeforeRepayment],'loan_given_to = "'.$loan_given_to.'" AND applicant_id="'.$applicantID.'" AND loan_summary_id="'.$loansummaryID.'" AND loan_repayment_item_id="'.$vrf_id.'"');      
+}
+public static function insertPaymentOfScholarshipBeneficiaries($loan_summary_id,$loan_repayment_id,$loan_given_to){
+        $details_applicant = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.applicant_id from loan_summary_detail WHERE loan_summary_detail.loan_summary_id='$loan_summary_id' AND loan_summary_detail.loan_given_to='$loan_given_to' GROUP BY loan_summary_detail.applicant_id")->all();
+
+        $si=0;
+        $moder=new EmployedBeneficiary();
+        if(count($details_applicant) > 0){
+		foreach ($details_applicant as $paymentCalculation) { 
+           $applicantID=$paymentCalculation->applicant_id;           
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           if($totalOutstandingAmount > 0){
+              $amount=$totalOutstandingAmount; 
+           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodeVRF="VRF";
+           $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);           
+           $itemCodePRC="PRC";
+           $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);           
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+		   //here is about to finish paying loan		   
+		//-------------VRF-----------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrf,
+        'loan_summary_id' =>$loan_summary_id, 
+        'loan_given_to'=>$loan_given_to,	
+        ])->execute();
+		//-----------------PRC-------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$outstandingPrincipalLoan,
+        'loan_summary_id' =>$loan_summary_id,
+        'loan_given_to'=>$loan_given_to,		
+        ])->execute();		
+		   //end about finishing paying loan
+		}
+		   }
+}
+		}
+		public static function getAmountPaidByIndividualLoaneeUnderLoanRepayment($applicantID,$loan_repayment_id){ 
+       $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
+                . "FROM loan_repayment_detail  INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_id='$loan_repayment_id'")->one();
+        $amount=$details_amount->amount;
+        $value = (count($amount) == 0) ? '0' : $amount;
+        return $value;
+        }
+		public static function checkFullPaidBeneficiaries($loan_given_to){ 
+		
+		$details_allBeneficiariesInLoanSummary = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.applicant_id,loan_summary_detail.loan_summary_id "
+                . "FROM loan_summary_detail  INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE   loan_summary_detail.loan_given_to='$loan_given_to' AND loan_summary_detail.is_full_paid='0' AND (loan_summary.status='0' OR loan_summary.status='1') GROUP BY loan_summary_detail.applicant_id")->all();
+		foreach($details_allBeneficiariesInLoanSummary AS $resultLoanS){
+			$applicantID=$resultLoanS->applicant_id;
+			$loan_summary_id=$resultLoanS->loan_summary_id;
+       $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
+                . "FROM loan_repayment_detail  INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment.payment_status='1' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->one();
+        $amountPaid=$details_amount->amount;
+		
+		$details_amountLoan = \backend\modules\repayment\models\Loan::findBySql("SELECT SUM(loan.amount) AS amount "
+                . "FROM loan  WHERE  loan.applicant_id='$applicantID' AND loan.loan_given_to='$loan_given_to'")->one();
+        $amountLoan=$details_amountLoan->amount;
+		//echo $amountLoan."total-loan---paid loan".$amountPaid;exit;
+        if($amountLoan == $amountPaid){
+		\backend\modules\repayment\models\Loan::updateAll(['is_full_paid' =>1],'applicant_id = "'.$applicantID.'" AND loan_given_to="'.$loan_given_to.'" AND is_full_paid="0"'); 
+       \backend\modules\repayment\models\LoanSummaryDetail::updateAll(['is_full_paid' =>1],'applicant_id = "'.$applicantID.'" AND loan_given_to="'.$loan_given_to.'" AND is_full_paid="0" AND loan_summary_id="'.$loan_summary_id.'"');		
+		}
+		}
+        }
+       	
+}		

@@ -12,7 +12,7 @@ use kartik\tabs\TabsX;
 $this->title = "Loan Payments";
 $this->params['breadcrumbs'][] = ['label' => 'Loan Payments', 'url' => ['bills-payments']];
 $this->params['breadcrumbs'][] = $this->title;
-
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 $resultsBatch=$modelBatch->getLoanRepayment($loan_repayment_id);
 if($resultsBatch->payment_status==0){
  $status="Pending";   

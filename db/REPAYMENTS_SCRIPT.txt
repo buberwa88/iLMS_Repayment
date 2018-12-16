@@ -158,5 +158,15 @@ ALTER TABLE `loan_summary_detail` CHANGE `loan_given_to` `loan_given_to` TINYINT
 ALTER TABLE `loan_summary_detail` ADD `created_by` INT(11) NOT NULL AFTER `created_at`, ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `created_by`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
 ALTER TABLE `loan_repayment_detail` ADD `loan_given_to` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution' AFTER `prepaid_id`;
 ALTER TABLE `loan_repayment_detail` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `loan_given_to`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
+
+ALTER TABLE `loan` ADD `loan_given_to` TINYINT(4) NOT NULL COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution' AFTER `is_full_paid`;
+ALTER TABLE `loan` CHANGE `is_full_paid` `is_full_paid` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes';
+ALTER TABLE `loan` ADD `created_by` INT(11) NOT NULL AFTER `loan_given_to`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `created_by`;
+ALTER TABLE `loan` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan` CHANGE `loan_repayment_item_id` `loan_repayment_item_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan` ADD `vrf_accumulated` DECIMAL(15,4) NULL DEFAULT NULL AFTER `amount`;
+ALTER TABLE `loan` CHANGE `is_full_paid` `is_full_paid` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes, 2: Confirmed';
+ALTER TABLE `loan_summary` CHANGE `updated_by` `updated_by` INT NULL DEFAULT NULL;
+ALTER TABLE `loan_summary_detail` ADD `is_full_paid` TINYINT(4) NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `is_active`;
 -----------------------------------------------------
 ======================================================

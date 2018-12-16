@@ -216,7 +216,8 @@ class EmployerController extends Controller
 		if($model1->save()){
 			 #################create employer role #########
                                     $date=strtotime(date("Y-m-d"));
-   Yii::$app->db->createCommand("INSERT  INTO auth_assignment(item_name,user_id,created_at) VALUES('Repayment',$model2->user_id,$date)")->execute();
+   //Yii::$app->db->createCommand("INSERT  INTO auth_assignment(item_name,user_id,created_at) VALUES('Repayment',$model2->user_id,$date)")->execute();
+   Yii::$app->db->createCommand("INSERT IGNORE INTO  auth_assignment(item_name,user_id,created_at) VALUES('Repayment',$model2->user_id,$date)")->execute();
                 //end
 		   //end authentication insert
    //create contact person

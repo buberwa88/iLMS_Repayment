@@ -121,4 +121,48 @@ class LoanSummaryDetailSearch extends LoanSummaryDetail
 
         return $dataProvider;
     }
+	
+	public function getBillUnderEmployerScholarShip($params,$employerID,$is_fullPaid)
+    {
+        $query = LoanSummaryDetail::find()
+                                   ->select('loan_summary_detail.loan_summary_id,loan_summary_detail.amount,loan_summary_detail.applicant_id,loan_summary.status')
+                                    ->where(['loan_summary.employer_id'=>$employerID,'loan_summary_detail.loan_given_to'=>2,'loan_summary.status'=>[0,1],'is_full_paid'=>$is_fullPaid])
+									->groupBy('loan_summary_detail.applicant_id');
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+		$query->joinWith("loanSummary");
+		$query->joinWith("applicant");
+         $query->joinwith(["applicant","applicant.user"]);
+		
+        $query->andFilterWhere([
+            'loan_summary_detail_id' => $this->loan_summary_detail_id,
+            'loan_summary_id' => $this->loan_summary_id,
+            'applicant_id' => $this->applicant_id,
+            'loan_repayment_item_id' => $this->loan_repayment_item_id,
+            'academic_year_id' => $this->academic_year_id,
+            'amount' => $this->amount,
+        ]);
+		
+		$query->andFilterWhere(['like', 'applicant_id', $this->applicant_id])
+			->andFilterWhere(['like', 'user.firstname', $this->firstname])
+			->andFilterWhere(['like', 'user.middlename', $this->middlename])
+            ->andFilterWhere(['like', 'user.surname', $this->surname])
+			->andFilterWhere(['like', 'applicant.f4indexno', $this->f4indexno]);
+
+        return $dataProvider;
+    }
 }

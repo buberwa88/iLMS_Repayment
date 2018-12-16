@@ -6,7 +6,7 @@ use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
 use kartik\tabs\TabsX;
 use frontend\modules\repayment\models\LoanRepayment;
-
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -21,9 +21,9 @@ $model->updatePaymentAfterGePGconfirmPaymentDone($controlNumber,$amount);
 
  
           
-            $results1=$batchDetailModel->getAmountTotalPaidLoanee($applicantID,$date);
+            $results1=$batchDetailModel->getAmountTotalPaidLoanee($applicantID,$date,$loan_given_to);
             //$totalLoan=$BillDetailModel->getTotalLoanBeneficiaryOriginal($applicantID);
-			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date);
+			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date,$loan_given_to);
             
  $total_loan=$totalLoan;
  //$total_loan='2000000';

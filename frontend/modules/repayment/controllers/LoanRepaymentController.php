@@ -52,6 +52,7 @@ class LoanRepaymentController extends Controller
     }
     public function actionIndex()
     {
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
         $model = new LoanRepayment();
         $modelBill = new LoanSummary();
         $searchModel = new LoanRepaymentSearch();
@@ -68,13 +69,13 @@ class LoanRepaymentController extends Controller
 		$loan_repayment_id=0;
 		}	
         //redirect to genarate bill
-		    $results1=$model->checkControlNumberStatus($employerID);
+		    $results1=$model->checkControlNumberStatus($employerID,$loan_given_to);
 			$results_bill_number=(count($results1) == 0) ? '0' : $results1->loan_repayment_id;
-            $ActiveBill=$modelBill->getActiveBill($employerID);
+            $ActiveBill=$modelBill->getActiveBill($employerID,$loan_given_to);
             $billID=$ActiveBill->loan_summary_id;			
 			//$amountRemainedUnpaid=$modelBill->getLoanSummaryBalance($billID);
 			$date=date("Y-m-d");
-            $amountRemainedUnpaid=\frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date);
+            $amountRemainedUnpaid=\frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date,$loan_given_to);
 			if($amountRemainedUnpaid < 1){
 			$modelBill->updateCompletePaidLoanSummary($billID);
 			}			
@@ -155,6 +156,7 @@ class LoanRepaymentController extends Controller
 	public function actionGenerateBill()
     {
         $searchModel = new LoanRepaymentDetailSearch();
+		$loan_given_to=LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
         $model2 = new LoanRepayment();
         $modelBill = new LoanSummary();
         $employerModel = new EmployerSearch();
@@ -177,7 +179,7 @@ class LoanRepaymentController extends Controller
         if($model2->save()){
 		
           //reference no to send to GePG  
-            $ActiveBill=$modelBill->getActiveBill($employerID);
+            $ActiveBill=$modelBill->getActiveBill($employerID,$loan_given_to);
             $billID=$ActiveBill->loan_summary_id;
             $loan_summary_id=$billID;
             //$totalAmount1=$model2->getAmountRequiredForPayment($loan_summary_id);          
@@ -185,12 +187,12 @@ class LoanRepaymentController extends Controller
             $loan_repayment_id=$model2->loan_repayment_id;
             //$model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$controlNumber);
             if($salarySource==2){
-			$searchModel->insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id,$salarySource);	
+			$searchModel->insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id,$salarySource,$loan_given_to);	
 			}else{
-			$searchModel->insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id);
+			$searchModel->insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id,$loan_given_to);
 			}
             
-            $totalAmount1=$model2->getAmountRequiredForPayment($loan_repayment_id);
+            $totalAmount1=$model2->getAmountRequiredForPayment($loan_repayment_id,$loan_given_to);
             $model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$loan_repayment_id);			
 			return $this->redirect(['confirm-payment', 'id' => $model2->loan_repayment_id]);            
         }
@@ -510,6 +512,7 @@ class LoanRepaymentController extends Controller
     }
 	public function actionGenerateBillbeneficiary()
     {
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 	    $this->layout="main_private_beneficiary";
         $searchModel = new LoanRepaymentDetailSearch();
         $model2 = new LoanRepayment();
@@ -524,7 +527,7 @@ class LoanRepaymentController extends Controller
         $model2->payment_date=date('Y-m-d');
         if($applicantID >0){			
         if($model2->save()){
-            $ActiveBill=$modelBill->getActiveBillLoanee($applicantID);
+            $ActiveBill=$modelBill->getActiveBillLoanee($applicantID,$loan_given_to);
             $billID=$ActiveBill->loan_summary_id;
             $loan_summary_id=$billID; 
             $beneficiaryCode="BEN";			
@@ -532,7 +535,7 @@ class LoanRepaymentController extends Controller
             $loan_repayment_id=$model2->loan_repayment_id;
 			
             
-            $searchModel->insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$applicantID);
+            $searchModel->insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to);
             $totalAmount1=$model2->getAmountRequiredForPaymentSelfBeneficiary($loan_repayment_id,$applicantID);
             $model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$loan_repayment_id);
 		   return $this->redirect(['confirm-paymentbeneficiary', 'id' => $model2->loan_repayment_id]);
@@ -596,69 +599,10 @@ class LoanRepaymentController extends Controller
             ]);
         }
     }
-	/*
-	public function actionConfirmPaymentbeneficiary($id)
-    {
-	    $this->layout="main_private_beneficiary";
-        $model = $this->findModel($id);		
-		$searchModel = new LoanRepaymentDetailSearch();
-        $modelBill = new LoanSummary();
-		$ModelLoanRepaymentDetail = new LoanRepaymentDetail();
-		$employerModel = new EmployerSearch();
-		$model->scenario='paymentAdjustmentLoanee';
-		
-        $loggedin=Yii::$app->user->identity->user_id;
-        $applicant=$employerModel->getApplicant($loggedin);
-        $applicantID=$applicant->applicant_id;
-
-        if ($model->load(Yii::$app->request->post())) {
-		
-		   $loan_repayment_id=$model->repaymentID;		
-            //requesting control number
-            //this is for temporaly test
-            $controlNumber=mt_rand (10,100);
-            //end for temporaly test
-          //end
-            // if amount is changed
-			$loan_summary_id=$model->loan_summary_id;
-			$amounUpdated=$model->amount;
-			//$minimumAmount='50000';
-			$minimumAmount=$model->amountApplicant;
-			
-			$outstandingDebt=str_replace(",","",$model->outstandingDebt);
-			if($model->amount > $outstandingDebt){
-			$sms="Operation Fail,Pay amount must be equal or less than outstanding debt!";
-			Yii::$app->getSession()->setFlash('error', $sms);
-			return $this->redirect(['confirm-paymentbeneficiary','id'=>$model->loan_repayment_id]);
-			}
-			if($model->amount < $minimumAmount){
-			$sms="Operation Fail,Pay amount must not be less than ".number_format($minimumAmount,2);
-			Yii::$app->getSession()->setFlash('error', $sms);
-			return $this->redirect(['confirm-paymentbeneficiary','id'=>$model->loan_repayment_id]);
-			}
-			if($model->save()){
-			$model->updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber);
-            if(($model->amount != $model->amountApplicant)){
-			$model->resetTheOldAmountOnPaymentAdjustmentAccepted($loan_repayment_id,$applicantID);			
-			$ModelLoanRepaymentDetail->updateNewAmountOnAdjustmentOfPaymentEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$amounUpdated,$applicantID);			
-            $totalAmount1=$model->getAmountRequiredForPayment($loan_repayment_id);			
-            $model->updateNewTotaAmountAfterPaymentAdjustment($totalAmount1,$loan_repayment_id);
-			}
-			//end if amount changed
-			
-		   $sms="Kindly use the below control number for payment!";
-           Yii::$app->getSession()->setFlash('success', $sms);
-            return $this->redirect(['viewconfirmed-paymentbeneficiary', 'id' => $model->loan_repayment_id]);
-			}
-        } else {
-            return $this->render('confirmPaymentbeneficiary', [
-                'model' => $model,
-            ]);
-        }
-    }
-	*/
+	
 	public function actionAdjustAmountBeneficiary()
     {
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
         $model = new LoanRepayment();	
 		$searchModel = new LoanRepaymentDetailSearch();
         $modelBill = new LoanSummary();
@@ -694,8 +638,8 @@ class LoanRepaymentController extends Controller
 			$model->updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber=NULL);
             //if(($amount != $model->amountApplicant)){
 			$model->resetTheOldAmountOnPaymentAdjustmentAccepted($loan_repayment_id,$applicantID);			
-			$ModelLoanRepaymentDetail->updateNewAmountOnAdjustmentOfPaymentEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$amount,$applicantID);			
-            $totalAmount1=$model->getAmountRequiredForPayment($loan_repayment_id);			
+			$ModelLoanRepaymentDetail->updateNewAmountOnAdjustmentOfPaymentEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$amount,$applicantID,$loan_given_to);			
+            $totalAmount1=$model->getAmountRequiredForPayment($loan_repayment_id,$loan_given_to);			
             $model->updateNewTotaAmountAfterPaymentAdjustment($totalAmount1,$loan_repayment_id);
 			//}	
 			}
@@ -1103,5 +1047,130 @@ return $pdf->render();
 	    $sms="Bill Cancelled";
         Yii::$app->getSession()->setFlash('success', $sms);		
 		return $this->redirect(['index-beneficiary']);
+    }
+	public function actionGenerateBillscholarship()
+    {
+        $searchModel = new LoanRepaymentDetailSearch();
+		$loan_given_to=LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
+        $model2 = new LoanRepayment();
+        $modelBill = new LoanSummary();
+        $employerModel = new EmployerSearch();
+		$searchLoanRepayment = new LoanRepaymentSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+        $model2->employer_id=$employerID;
+		$model2->scenario='billGeneration';
+        //$model2->repayment_reference_number=$employer2->employer_code;
+        $model2->amount=0;
+        //$model2->pay_method_id=4;
+        //$model2->pay_method_id=$model2->getPaymentMethod();
+        //generating payment reference number
+        //end generating
+        $model2->payment_date=date('Y-m-d');
+        if($employerID >0){			
+        if($model2->save()){
+		
+          //reference no to send to GePG  
+            $ActiveBill=$modelBill->getActiveBill($employerID,$loan_given_to);
+            $billID=$ActiveBill->loan_summary_id;
+            $loan_summary_id=$billID;
+            //$totalAmount1=$model2->getAmountRequiredForPayment($loan_summary_id);          
+            $repaymnet_reference_number=$employer2->employer_code."-".$model2->loan_repayment_id;
+            $loan_repayment_id=$model2->loan_repayment_id;
+            //$model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$controlNumber);
+			
+			$searchModel->insertPaymentOfScholarshipBeneficiaries($loan_summary_id,$loan_repayment_id,$loan_given_to);
+            
+            $totalAmount1=$model2->getAmountRequiredForPayment($loan_repayment_id,$loan_given_to);
+            $model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$loan_repayment_id);			
+			return $this->redirect(['confirm-payment-scholarship', 'id' => $model2->loan_repayment_id]);            
+        }
+        //end requesting number
+        
+        }
+        $dataProviderBills=$searchLoanRepayment->searchPaymentsForSpecificEmployer(Yii::$app->request->queryParams,$employerID);		
+        return $this->render('generateBill', [
+            'model' => $model2,'dataProviderBills'=>$dataProviderBills,'searchLoanRepayment' => $searchLoanRepayment,
+            
+        ]);
+		
+    }
+	public function actionConfirmPaymentScholarship($id)
+    {    
+	    $this->layout="default_main";
+	    $model = $this->findModel($id);
+		$loan_repayment_id=$id;
+        //$model2 = new LoanRepayment();
+        $employerModel = new EmployerSearch();
+        $loggedin = Yii::$app->user->identity->user_id;
+        $employer2 = $employerModel->getEmployer($loggedin);
+        $employerID = $employer2->employer_id;                
+        $employerSalarySource=$employerModel->getEmployerSalarySource2($employerID);
+        $searchModel = new LoanRepaymentDetailSearch();
+        $modelBill = new LoanSummary();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams,$loan_repayment_id);
+		if ($model->load(Yii::$app->request->post())) {
+		if($model->save()){
+        //$dataProvider = $searchModel->search(Yii::$app->request->queryParams,$loan_repayment_id);
+        if($loan_repayment_id >0){
+            //requesting control number
+            //this is for temporaly test
+            if($employerSalarySource==0){
+            $controlNumber=mt_rand (10,100);
+            }else{
+            $controlNumber='';    
+            }
+            //end for temporaly test
+          //end
+            $model->updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber);
+        //end requesting number
+		if($employerSalarySource==0){
+		   $sms="Kindly use the below control number for payment!";
+                }else{
+                  $sms="Bill successful confirmed!";  
+                }
+           Yii::$app->getSession()->setFlash('success', $sms);
+           return $this->redirect(['viewconfirmed-paymentscholarship', 'id' => $model->loan_repayment_id]);
+                
+        }
+		}
+		}else {
+            return $this->render('confirmPaymentScholarship', [
+                'model' => $model,'employerSalarySource'=>$employerSalarySource,'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            ]);
+        }
+    }
+	public function actionViewconfirmedPaymentscholarship($id)
+    {
+	    $this->layout="default_main";
+        $employerModel = new EmployerSearch();
+        $loggedin = Yii::$app->user->identity->user_id;
+        $employer2 = $employerModel->getEmployer($loggedin);
+        $employerID = $employer2->employer_id;                
+        $employerSalarySource=$employerModel->getEmployerSalarySource2($employerID);
+        return $this->render('viewconfirmedPaymentscholarship', [
+            'model' => $this->findModel($id),'employerSalarySource'=>$employerSalarySource
+        ]);
+    }
+	public function actionCancelBillEmployerscholsp($id)
+    {
+		$this->layout="default_main";
+		$modelLoanRepayment = new LoanRepayment();
+		$employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+		$results=$modelLoanRepayment->find()->where(['loan_repayment_id'=>$id])->one();
+		$results->payment_status=3;
+		$results->canceled_by=$loggedin;
+		$results->canceled_at =date("Y-m-d H:i:s");
+		$results->cancel_reason=Yii::$app->params['employer_cancelBillReason'];
+		$results->save();
+		
+	    $sms="Bill Cancelled";
+        Yii::$app->getSession()->setFlash('success', $sms);		
+		return $this->redirect(['loan-summary/index-scholarshipnotpaid']);
     }
 }

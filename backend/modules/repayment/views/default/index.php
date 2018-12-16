@@ -5,7 +5,8 @@ use yii\helpers\Html;
 $this->title = "Home | iLMS";
 
 //update VRF
-\frontend\modules\repayment\models\LoanSummary::updateVRFaccumulatedGeneral();
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+\frontend\modules\repayment\models\LoanSummary::updateVRFaccumulatedGeneral($loan_given_to);
 //END update VRF
 ?>
 <style type="text/css">

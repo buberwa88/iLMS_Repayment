@@ -9,6 +9,7 @@ use yii\helpers\ArrayHelper;
 /* @var $model frontend\modules\repayment\models\LoanSummary */
 $this->title = 'Beneficiaries';
 $this->params['breadcrumbs'][] = $this->title;
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 ?>
 <div class="loan-summary-view">
 <div class="panel panel-info">
@@ -80,7 +81,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'format'=>'raw',    
             'value' =>function($model)
             {
-                 return $model->getAmountRequiredForPaymentIndividualLoanee($model->applicant_id,$model->loan_repayment_id);
+                 //return $model->getAmountRequiredForPaymentIndividualLoanee($model->applicant_id,$model->loan_repayment_id,$loan_given_to);
+				 return $model->getAmountPaidByIndividualLoaneeUnderLoanRepayment($model->applicant_id,$model->loan_repayment_id);
             },
             'format'=>['decimal',2],
         ],			

@@ -42,16 +42,17 @@ use kartik\detail\DetailView;
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\LoanRepayment */
 /* @var $form yii\widgets\ActiveForm */
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 $results=LoanRepayment::getDetailsUsingRepaymentID($model->loan_repayment_id);
 $date=date("Y-m-d");
-$outstandingDebt=number_format(frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($results->applicant_id,$date),2);
+$outstandingDebt=number_format(frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($results->applicant_id,$date,$loan_given_to),2);
 $amountApplicant=\frontend\modules\repayment\models\EmployedBeneficiary::MINIMUM_AMOUNT_FOR_SELF_BENEFICIARY;
 //echo $loan_repayment_id;
 
 
 $bill_number=$model->bill_number;
 $outstandingDebt=$outstandingDebt;
-$outstandingDebt22=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($results->applicant_id,$date);
+$outstandingDebt22=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($results->applicant_id,$date,$loan_given_to);
 $controlNumber=mt_rand (10,100);
 $date=date("Y-m-d H:i:s");
 

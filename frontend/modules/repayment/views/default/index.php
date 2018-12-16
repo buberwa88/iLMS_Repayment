@@ -15,10 +15,11 @@ $employerSalarySource = \frontend\modules\repayment\models\Employer::getEmployer
 ?>
 <?php 
 //update VRF
-frontend\modules\repayment\models\LoanSummary::updateVRFaccumulatedGeneral();
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+frontend\modules\repayment\models\LoanSummary::updateVRFaccumulatedGeneral($loan_given_to);
 //END update VRF
 //employer penalty
-frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer();
+frontend\modules\repayment\models\EmployerPenaltyPayment::getPenaltyToEmployer($loan_given_to);
 //end employer penalty
 ?>
 <style type="text/css">

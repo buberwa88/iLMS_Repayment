@@ -222,7 +222,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	 }
 	 }
 	 */
-	 public static function getPenaltyToEmployerIndividualMonths(){
+	 public static function getPenaltyToEmployerIndividualMonths($loan_given_to){
 	
 	//check employer has active loan summary
 	$todate=date("Y-m-d");
@@ -278,7 +278,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	}
     $checkMonth=$firstDayPreviousMonth2;
 	$checkCurrentMonth=date("Y-m",strtotime($todate));
-	$resultsCheck=\frontend\modules\repayment\models\LoanRepayment::checkPaymentsEmployerAcruePenalty($employerID,$checkMonth);
+	$resultsCheck=\frontend\modules\repayment\models\LoanRepayment::checkPaymentsEmployerAcruePenalty($employerID,$checkMonth,$loan_given_to);
 	                if($resultsCheck==0){
 					$penaltyCountCheckAcruedExist=self::checklastPenaltyEmployerAcrued($employerID,$penaltyDateOrgn,$checkCurrentMonth);
 					if($penaltyCountCheckAcruedExist ==0){
@@ -301,7 +301,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	 }
 	 return true;
 	 }
-	 public static function getPenaltyToEmployer(){
+	 public static function getPenaltyToEmployer($loan_given_to){
 	
 	//check employer has active loan summary
 	$todate=date("Y-m-d");
@@ -313,7 +313,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	if($todate > $CurrentdeadlineDateOfMonth){
 	
 	
-	$loanSummaryDetailsEmployer = \frontend\modules\repayment\models\LoanSummary::employerDetailsForPenalty();
+	$loanSummaryDetailsEmployer = \frontend\modules\repayment\models\LoanSummary::employerDetailsForPenalty($loan_given_to);
 	if((count($loanSummaryDetailsEmployer) > 0)){
     foreach ($loanSummaryDetailsEmployer as $loanSummaryDetailsResults) {
     $employerID=$loanSummaryDetailsResults->employer_id; 
@@ -368,11 +368,11 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	}
 	
 	
-	$resultsLoanRepaymentCheck=\frontend\modules\repayment\models\LoanRepayment::checkPaymentsEmployer($employerID,$firstDayPreviousMonth,$deadlineDateOfMonth);
+	$resultsLoanRepaymentCheck=\frontend\modules\repayment\models\LoanRepayment::checkPaymentsEmployer($employerID,$firstDayPreviousMonth,$deadlineDateOfMonth,$loan_given_to);
 	if($resultsLoanRepaymentCheck == 0){
 					$penaltyCountCheck=self::checklastPenaltyEmployer($employerID,$penaltyDate);
 					if($penaltyCountCheck==0){
-				    $amount=EmployerPenaltyPayment::getAmountRequiredForMonthlyPaymentToEmployedBeneficiaryPerEmployer($employerID,$loan_summary_id);		
+				    $amount=EmployerPenaltyPayment::getAmountRequiredForMonthlyPaymentToEmployedBeneficiaryPerEmployer($employerID,$loan_summary_id,$loan_given_to);		
                     if($percent !='' OR $percent > 0){
 					$penaltyAmount=$amount * $percent;
 					}else{
@@ -437,7 +437,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	 }
 	 return true;
 	 }
-	 public static function getAmountRequiredForMonthlyPaymentToEmployedBeneficiaryPerEmployer($employerID,$loan_summary_id){	 
+	 public static function getAmountRequiredForMonthlyPaymentToEmployedBeneficiaryPerEmployer($employerID,$loan_summary_id,$loan_given_to){	 
 	 $details_applicant = EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1' AND salary_source IN(2,3)")->all();
         $moder=new EmployedBeneficiary();
 		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
@@ -445,7 +445,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
         foreach ($details_applicant as $paymentCalculation) { 
            $applicantID=$paymentCalculation->applicant_id;
            $amount1=$MLREB*$paymentCalculation->basic_salary;           
-           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            if($totalOutstandingAmount >= $amount1){
               $amount=$amount1;  
            }else{
@@ -504,14 +504,14 @@ public static function checklastPenaltyEmployerAcrued($employerID,$penaltyDate,$
 	$penaltyCheckCount=EmployerPenalty::findBySql("SELECT  *  FROM  employer_penalty WHERE  employer_id='$employerID' AND penalty_date='$penaltyDate' AND level='2' AND created_at like '$checkCurrentMonth%'")->count();
     return $penaltyCheckCount;
 }
-public static function getAmountTobePaidemployedBeneficiary($loan_summary_id,$applicantID){	 
+public static function getAmountTobePaidemployedBeneficiary($loan_summary_id,$applicantID,$loan_given_to){	 
 	 $details_applicant = EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND applicant_id='$applicantID' AND employment_status='ONPOST' AND verification_status='1' AND salary_source IN(2,3)")->one();
         $moder=new EmployedBeneficiary();
 		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
         $totalAmount=0; 
            $applicantID=$details_applicant->applicant_id;
            $amount1=$MLREB*$details_applicant->basic_salary;           
-           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            if($totalOutstandingAmount >= $amount1){
               $amount=$amount1;  
            }else{

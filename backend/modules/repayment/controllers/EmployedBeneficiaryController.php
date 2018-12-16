@@ -581,6 +581,7 @@ public function actionList_beneficiaries($id) {
     public function actionVerifyBeneficiariesInBulk()
     {
 	    $this->layout="default_main";
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
         $searchModel = new EmployedBeneficiarySearch();
         $employedBeneficiary = new EmployedBeneficiary();
 		//$action=Yii::$app->request->post('action');
@@ -621,12 +622,12 @@ public function actionList_beneficiaries($id) {
         $billNumber=$employeesLoanSumResults->employer_code."-".date("Y")."-".$LoanSummaryModel->getLastBillID($employer_id);
         $tracedBy=Yii::$app->user->identity->firstname." ".Yii::$app->user->identity->middlename." ".Yii::$app->user->identity->surname;
         //$totalEmployees=$employedBeneficiary->getAllEmployeesUnderBillunderEmployer($employer_id);
-        $totalAcculatedLoan=$employedBeneficiary->getTotalLoanInBill($employer_id);
+        //$totalAcculatedLoan=$employedBeneficiary->getTotalLoanInBill($employer_id);
         //$billNote="Due to Value Retention Fee(VRF) which is charged daily, the total loan amount will be changing accordingly.";
 		$billNote='';
         
         
-        $LoanSummaryModel->amount = $totalAcculatedLoan;
+        $LoanSummaryModel->amount = '0';
         $LoanSummaryModel->created_by=Yii::$app->user->identity->user_id;
         $LoanSummaryModel->created_at=date("Y-m-d H:i:s");
         $employerID=$LoanSummaryModel->employer_id;
@@ -637,7 +638,7 @@ public function actionList_beneficiaries($id) {
         $LoanSummaryModel->description=$billNote;
         $LoanSummaryModel->traced_by="Employer Submission";  
         //check if employer has a loan_summary and it is on payment
-        $employeesLoanSummaryExist = \backend\modules\repayment\models\LoanSummary::findBySql('SELECT loan_summary_id  FROM loan_summary WHERE employer_id="'.$employer_id.'" AND (status=1 OR status=0) ORDER BY loan_summary_id DESC')->one();
+        $employeesLoanSummaryExist = \backend\modules\repayment\models\LoanSummary::findBySql('SELECT loan_summary_detail.loan_summary_id  FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE loan_summary.employer_id="'.$employer_id.'" AND (loan_summary.status=1 OR loan_summary.status=0) AND loan_summary_detail.loan_given_to="'.$loan_given_to.'" ORDER BY loan_summary.loan_summary_id DESC')->one();
         //end check
         if(count($employeesLoanSummaryExist)==0){
           $LoanSummaryModel->save(); 
@@ -648,20 +649,23 @@ public function actionList_beneficiaries($id) {
         //$Recent_loan_summary_id=$LoanSummaryModel->loan_summary_id;
         //$LoanSummaryModel->updateCeasedAllPreviousActiveBillUnderEmployer($employer_id,$Recent_loan_summary_id);
         }else{
+			/*
          $totalAcculatedLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalBillAmount($employer_id);   
          $LoanSummaryModelUpdate=new LoanSummary();
          $amountLoanSummary=\backend\modules\repayment\models\LoanSummary::findOne(['loan_summary_id'=>$employeesLoanSummaryExist->loan_summary_id]);
          $amountLoanSummary->amount +=$totalAcculatedLoan;
          $amountLoanSummary->updated_at=date("Y-m-d H:i:s");
          $amountLoanSummary->save();
-         
-        $loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;        
+         */
         $loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;            
         $LoanSummaryDetailModel->insertAllBeneficiariesUnderBill($employer_id,$loan_summary_id);        
         $LoanSummaryModel->updateCeasedBill($employer_id);
         //$Recent_loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;
         //$LoanSummaryModel->updateCeasedAllPreviousActiveBillUnderEmployer($employer_id,$Recent_loan_summary_id);
-        }              
+        }
+		
+     $totalAmount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountForLoanSummary($loan_summary_id,$loan_given_to);
+     \backend\modules\repayment\models\LoanSummary::updateNewTotalAmountLoanSummary($loan_summary_id,$totalAmount); 
     }   
 	        if($doubleEmployed==0){
                         //END CREATE LOAN SUMMARY                          
@@ -1018,6 +1022,7 @@ public function actionList_beneficiaries($id) {
 		$employerModel = new Employer();
 		$disbursed_amount=0;
 		$date=date("Y-m-d");
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
                         //CREATE LOAN SUMMARY
         $getAllEmployers=\backend\modules\repayment\models\Employer::find()->all();
 		if(count($getAllEmployers) > 0){
@@ -1030,6 +1035,7 @@ public function actionList_beneficiaries($id) {
 		$disbursed_amount=$employeesLoanSumResults->disbursed_amount;
 		$academic_year_id=$employeesLoanSumResults->academic_year_id;
 		$applicant_id=$employeesLoanSumResults->applicant_id;
+		$application_id=$employeesLoanSumResults->application_id;
         $LoanSummaryModel=new LoanSummary();
         $LoanSummaryDetailModel = new \backend\modules\repayment\models\LoanSummaryDetail();
         $resultsEmployerDetails=$employerModel->getEmployerDetails($employer_id);
@@ -1052,27 +1058,27 @@ public function actionList_beneficiaries($id) {
         $LoanSummaryModel->description=$billNote;
         $LoanSummaryModel->traced_by="";  
         //check if employer has a loan_summary and it is on payment
-        $employeesLoanSummaryExist = \backend\modules\repayment\models\LoanSummary::findBySql('SELECT loan_summary_id  FROM loan_summary WHERE employer_id="'.$employer_id.'" AND (status=1 OR status=0) ORDER BY loan_summary_id DESC')->one();
+		$employeesLoanSummaryExist = \backend\modules\repayment\models\LoanSummary::findBySql('SELECT loan_summary_detail.loan_summary_id  FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE loan_summary.employer_id="'.$employer_id.'" AND (loan_summary.status=1 OR loan_summary.status=0) AND loan_summary_detail.loan_given_to="'.$loan_given_to.'" ORDER BY loan_summary.loan_summary_id DESC')->one();
         //end check
         if(count($employeesLoanSummaryExist)==0){
           $LoanSummaryModel->save(); 
           
         $loan_summary_id=$LoanSummaryModel->loan_summary_id;
 		$itemCategory="PRC";
-		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$disbursed_amount);
-		$totalVRF=$LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id,$date);
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$disbursed_amount,$application_id);
+		$totalVRF=$LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id,$date,$loan_given_to);
 		if($totalVRF > 0){
 		$itemCategory="VRF";	
-		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$totalVRF);	
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$totalVRF,$application_id);	
 		}
         }else{
         $loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;			
 		$itemCategory="PRC";
-		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$disbursed_amount);	
-		$totalVRF=$LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id,$date);
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$disbursed_amount,$application_id);	
+		$totalVRF=$LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id,$date,$loan_given_to);
 		if($totalVRF > 0){
 		$itemCategory="VRF";	
-		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$totalVRF);	
+		$LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID,$loan_summary_id,$applicant_id,$academic_year_id,$itemCategory,$totalVRF,$application_id);	
 		}
         //$Recent_loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;
         //$LoanSummaryModel->updateCeasedAllPreviousActiveBillUnderEmployer($employer_id,$Recent_loan_summary_id);

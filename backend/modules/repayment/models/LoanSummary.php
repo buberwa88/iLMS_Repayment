@@ -240,5 +240,10 @@ public static function updateLoanSummaryAmount($employerID,$Recent_loan_summary_
 $totalAmount = LoanSummaryDetail::findBySql('SELECT SUM(amount) AS "amount" FROM loan_summary_detail WHERE  loan_summary_id="'.$Recent_loan_summary_id.'"')->one();
 $amount=$totalAmount->amount;
        LoanSummary::updateAll(['amount' =>$amount], 'employer_id ="'.$employerID.'" AND loan_summary_id="'.$Recent_loan_summary_id.'"');
- } 
+ }
+public static function updateNewTotalAmountLoanSummary($loan_summary_id,$amount) {
+	   $updated_at=date("Y-m-d H:i:s");
+	   $updated_by=Yii::$app->user->identity->user_id;
+       self::updateAll(['amount' =>$amount,'updated_at'=>$updated_at,'updated_by'=>$updated_by], 'loan_summary_id="'.$loan_summary_id.'"');
+} 
 }

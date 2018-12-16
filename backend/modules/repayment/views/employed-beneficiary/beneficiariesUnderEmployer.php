@@ -10,6 +10,7 @@ use yii\helpers\ArrayHelper;
 
 $this->title = 'Beneficiaries';
 $this->params['breadcrumbs'][] = $this->title;
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 ?>
 <div class="employed-beneficiary-index">
 
@@ -76,9 +77,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'totalLoan',
                 'hAlign' => 'right',
                 'format' => ['decimal', 2],
-                'value' => function ($model) {
+                'value' => function ($model) use($loan_given_to) {
 					$date=date("Y-m-d");
-                return backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($model->applicant_id,$date);
+                return backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($model->applicant_id,$date,$loan_given_to);
         },
             ],
             [

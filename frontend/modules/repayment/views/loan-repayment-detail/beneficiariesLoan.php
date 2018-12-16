@@ -13,16 +13,16 @@ use frontend\modules\repayment\models\LoanRepayment;
 $date=date("Y-m-d");
 $this->title = 'My Loan';
 $this->params['breadcrumbs'][] = $this->title;
-         
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;         
             //$results1=$batchDetailModel->getAmountTotalPaidLoanee($applicantID);
             //$totalLoan=$BillDetailModel->getTotalLoanBeneficiaryOriginal($applicantID);
-			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date);
+			$totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date,$loan_given_to);
             
 $total_loan=$totalLoan;
-$principal=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID,$date);
-$penalty=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicantID,$date);
-$LAF=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicantID,$date);
-$vrf=\backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicantID,$date);
+$principal=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicantID,$date,$loan_given_to);
+$penalty=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicantID,$date,$loan_given_to);
+$LAF=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicantID,$date,$loan_given_to);
+$vrf=\backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicantID,$date,$loan_given_to);
 $model = new LoanRepayment();
 ?>
 <div class="loan-repayment-index">

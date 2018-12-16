@@ -178,14 +178,14 @@ class LoanSummary extends \yii\db\ActiveRecord
         return $bill_new;
         }
         
-    public static function getActiveBill($employerID){
-      $details_bill = loanSummary::findBySql("SELECT * FROM loan_summary WHERE  employer_id='$employerID' AND (status='0' OR status='1') ORDER BY loan_summary_id DESC")->one();
+    public static function getActiveBill($employerID,$loan_given_to){
+      $details_bill = loanSummary::findBySql("SELECT loan_summary.loan_summary_id FROM loan_summary INNER JOIN loan_summary_detail ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary.employer_id='$employerID' AND (loan_summary.status='0' OR loan_summary.status='1') AND  loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary_id DESC")->one();
       $bill=$details_bill->loan_summary_id;     
       $billValue = (count($bill) == 0) ? '0' : $details_bill;
         return $billValue;
         }
-    public function getActiveBillLoanee($applicantID){
-      $details_bill = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary_detail.loan_summary_id=loan_summary.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND (loan_summary.status='0' OR loan_summary.status='1') ORDER BY loan_summary.loan_summary_id DESC")->one();
+    public function getActiveBillLoanee($applicantID,$loan_given_to){
+      $details_bill = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary_detail.loan_summary_id=loan_summary.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND (loan_summary.status='0' OR loan_summary.status='1') AND loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary.loan_summary_id DESC")->one();
         return $details_bill;
         }
     public function updateEmployerBillReply($employerID){
@@ -204,8 +204,8 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
  $value = (count($amount) == 0) ? '0' : $amount;
  return $value;
  }
- public static function getActiveBillToUpdateVRFofEmployees($employerID){	 
-      $details_bill = LoanSummary::findBySql("SELECT * FROM loan_summary WHERE  employer_id='$employerID' AND (status='0' OR status='1') ORDER BY loan_summary_id DESC")->one();
+ public static function getActiveBillToUpdateVRFofEmployees($employerID,$loan_given_to){	 
+      $details_bill = LoanSummary::findBySql("SELECT loan_summary.loan_summary_id,loan_summary.vrf_accumulated,loan_summary.vrf_last_date_calculated FROM loan_summary INNER JOIN loan_summary_detail ON loan_summary_detail.loan_summary_id=loan_summary.loan_summary_id  WHERE  loan_summary.employer_id='$employerID' AND (loan_summary.status='0' OR loan_summary.status='1') AND loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary.loan_summary_id DESC")->one();
       $billID=$details_bill->loan_summary_id;     
       //$billValue = (count($billID) == 0) ? '0' : $billID;
 	  if(count($details_bill) > 0){
@@ -231,7 +231,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
        $LoanSummaryDetailModel=new LoanSummaryDetail();
        $i=0;
        $loanRepaymentDetails = LoanSummaryDetail::findBySql("SELECT  * FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF' AND loan_summary_detail.loan_given_to='1'")->all();
+                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF' AND loan_summary_detail.loan_given_to='$loan_given_to'")->all();
                     foreach ($loanRepaymentDetails as $loanRepaymentResults) {
                     $amount=$loanRepaymentResults->amount;
 					$vrf_accumulatedIndividual=$loanRepaymentResults->vrf_accumulated;
@@ -239,7 +239,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
                     $loan_repayment_item_id=$loanRepaymentResults->loan_repayment_item_id;
                     $loan_summary_id=$loanRepaymentResults->loan_summary_id;
                     //$outstandingPrincipalLoan=$employedBeneficiary->getOutstandingPrincipalLoan($applicantID);
-					$outstandingPrincipalLoan=EmployedBeneficiary::getOutstandingPrincipalLoanUnderBill($applicantID, $loan_summary_id);
+					$outstandingPrincipalLoan=EmployedBeneficiary::getOutstandingPrincipalLoanUnderBill($applicantID, $loan_summary_id,$loan_given_to);
 
                     if($outstandingPrincipalLoan > 0){
 					 $details_VRF=$employedBeneficiary->getVRFsetting();
@@ -248,13 +248,15 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
                      $accumulatedVRF=($totalDays * $VRF * $outstandingPrincipalLoan)/$totalDaysPerYear;
                      $amountTotal=$amount + $accumulatedVRF;
 					 $vrf_accumulatedIndividualTotal=$vrf_accumulatedIndividual + $accumulatedVRF;
-                     $LoanSummaryDetailModel->updateBeneficiaryVRFaccumulated($amountTotal,$vrf_accumulatedIndividualTotal,$applicantID,$loan_summary_id,$loan_repayment_item_id);
+                     $LoanSummaryDetailModel->updateBeneficiaryVRFaccumulated($amountTotal,$vrf_accumulatedIndividualTotal,$applicantID,$loan_summary_id,$loan_repayment_item_id,$loan_given_to);
                      $vrf_accumulated +=$accumulatedVRF;
                     }
                     
                     ++$i;
                     }
         LoanSummary::updateAll(['vrf_last_date_calculated' =>$todate,'vrf_accumulated' =>$vrf_accumulated], 'loan_summary_id ="'.$billID.'"');
+		$totalAmount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountForLoanSummary($billID,$loan_given_to);
+        \backend\modules\repayment\models\LoanSummary::updateNewTotalAmountLoanSummary($billID,$totalAmount);
        }
 	   return true;
       }
@@ -319,7 +321,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
  $remainedUnpaid=$loanSumAmount-$amount;
  return $remainedUnpaid;
  }
-    public static function getActiveBillToUpdateVRFofSelfBeneficiary($applicantID){
+    public static function getActiveBillToUpdateVRFofSelfBeneficiary($applicantID,$loan_given_to){
       $details_bill = LoanSummary::findBySql("SELECT * FROM loan_summary WHERE  applicant_id='$applicantID' AND (status='0' OR status='1') ORDER BY loan_summary_id DESC")->one();
       $billID=$details_bill->loan_summary_id;     
       //$billValue = (count($billID) == 0) ? '0' : $billID;
@@ -346,7 +348,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
        $LoanSummaryDetailModel=new LoanSummaryDetail();
        $i=0;
        $loanRepaymentDetails = LoanSummaryDetail::findBySql("SELECT  * FROM loan_summary_detail INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_summary_detail.loan_repayment_item_id "
-                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF' AND loan_summary_detail.loan_given_to='1'")->all();
+                . "WHERE  loan_summary_detail.loan_summary_id='$billID' AND loan_repayment_item.item_code='VRF' AND loan_summary_detail.loan_given_to='$loan_given_to'")->all();
                     foreach ($loanRepaymentDetails as $loanRepaymentResults) {
                     $amount=$loanRepaymentResults->amount;
 					$vrf_accumulatedIndividual=$loanRepaymentResults->vrf_accumulated;
@@ -354,7 +356,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
                     $loan_repayment_item_id=$loanRepaymentResults->loan_repayment_item_id;
                     $loan_summary_id=$loanRepaymentResults->loan_summary_id;
                     //$outstandingPrincipalLoan=$employedBeneficiary->getOutstandingPrincipalLoan($applicantID);
-					$outstandingPrincipalLoan=EmployedBeneficiary::getOutstandingPrincipalLoanUnderBill($applicantID, $loan_summary_id);
+					$outstandingPrincipalLoan=EmployedBeneficiary::getOutstandingPrincipalLoanUnderBill($applicantID, $loan_summary_id,$loan_given_to);
 
                     if($outstandingPrincipalLoan > 0){
 					 $details_VRF=$employedBeneficiary->getVRFsetting();
@@ -363,36 +365,38 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
                      $accumulatedVRF=($totalDays * $VRF * $outstandingPrincipalLoan)/$totalDaysPerYear;
                      $amountTotal=$amount + $accumulatedVRF;
 					 $vrf_accumulatedIndividualTotal=$vrf_accumulatedIndividual + $accumulatedVRF;
-                     $LoanSummaryDetailModel->updateBeneficiaryVRFaccumulated($amountTotal,$vrf_accumulatedIndividualTotal,$applicantID,$loan_summary_id,$loan_repayment_item_id);
+                     $LoanSummaryDetailModel->updateBeneficiaryVRFaccumulated($amountTotal,$vrf_accumulatedIndividualTotal,$applicantID,$loan_summary_id,$loan_repayment_item_id,$loan_given_to);
                      $vrf_accumulated +=$accumulatedVRF;
                     }
                     
                     ++$i;
                     }
         LoanSummary::updateAll(['vrf_last_date_calculated' =>$todate,'vrf_accumulated' =>$vrf_accumulated], 'loan_summary_id ="'.$billID.'"');
+		$totalAmount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountForLoanSummary($billID,$loan_given_to);
+        \backend\modules\repayment\models\LoanSummary::updateNewTotalAmountLoanSummary($billID,$totalAmount);
        }
       }
         }
-    public static function updateVRFaccumulatedGeneral(){
+    public static function updateVRFaccumulatedGeneral($loan_given_to){
 				$loanSummaryDetailsEmployer = LoanSummary::findBySql("SELECT DISTINCT employer_id FROM loan_summary WHERE  status='0' OR status='1' ORDER BY loan_summary_id DESC")->all();
 				    if((count($loanSummaryDetailsEmployer) > 0)){
                     foreach ($loanSummaryDetailsEmployer as $loanSummaryDetailsResults) {
                     $employerID=$loanSummaryDetailsResults->employer_id;                   
-					LoanSummary::getActiveBillToUpdateVRFofEmployees($employerID);
+					LoanSummary::getActiveBillToUpdateVRFofEmployees($employerID,$loan_given_to);
 					}
 					}
 					$loanSummaryDetailsApplicant = LoanSummary::findBySql("SELECT DISTINCT applicant_id FROM loan_summary WHERE  status='0' OR status='1' ORDER BY loan_summary_id DESC")->all();
 					if((count($loanSummaryDetailsApplicant) > 0)){
                     foreach ($loanSummaryDetailsApplicant as $loanSummaryDetailsResultsApplicant) {
                     $applicantID=$loanSummaryDetailsResultsApplicant->applicant_id;                   
-					LoanSummary::getActiveBillToUpdateVRFofSelfBeneficiary($applicantID);
+					LoanSummary::getActiveBillToUpdateVRFofSelfBeneficiary($applicantID,$loan_given_to);
 					}
 					}
 	}
-    public static function checkForActiveEmployees($employerID){
+    public static function checkForActiveEmployees($employerID,$loan_given_to){
 	
-		$resultsLoanSummary=LoanSummary::findBySql("SELECT loan_summary.loan_summary_id as loan_summary_id From loan_summary INNER JOIN employer ON employer.employer_id=loan_summary.employer_id INNER JOIN employed_beneficiary ON employed_beneficiary.employer_id=employer.employer_id
-		WHERE employer.employer_id='".$employerID."' AND employed_beneficiary.employment_status='ONPOST' AND employed_beneficiary.verification_status='1'")->one();
+		$resultsLoanSummary=LoanSummary::findBySql("SELECT loan_summary.loan_summary_id as loan_summary_id From loan_summary INNER JOIN employer ON employer.employer_id=loan_summary.employer_id INNER JOIN employed_beneficiary ON employed_beneficiary.employer_id=employer.employer_id INNER JOIN loan_summary_detail ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id
+		WHERE employer.employer_id='".$employerID."' AND employed_beneficiary.employment_status='ONPOST' AND employed_beneficiary.verification_status='1' AND loan_summary_detail.loan_given_to='$loan_given_to'")->one();
 		if((count($resultsLoanSummary) > 0)){
 		$result=1;
 		}else{
@@ -400,7 +404,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
 		}
 		return $result;
  }
-    public static function createLoanSummaryIndividual($applicantID) {		
+    public static function createLoanSummaryIndividual($applicantID,$loan_given_to) {		
 		$model = new LoanSummary();
         $employerModel = new EmployerSearch();
         $created_by=Yii::$app->user->identity->user_id;
@@ -413,7 +417,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
         $billNum=$model->getLastBillIDApplicant($applicantID);
         $bill_number="BEN".$applicantID."-".date("Y")."-".$billNum;
 		
-		$employeesLoanSummary = \frontend\modules\repayment\models\LoanSummaryDetail::findBySql('SELECT loan_summary_detail.loan_summary_id  FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id AND loan_summary.status IN(0,1,2) AND loan_summary_detail.applicant_id="'.$applicantID.'"')->one();
+		$employeesLoanSummary = \frontend\modules\repayment\models\LoanSummaryDetail::findBySql('SELECT loan_summary_detail.loan_summary_id  FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id AND loan_summary.status IN(0,1,2) AND loan_summary_detail.applicant_id="'.$applicantID.'" AND loan_summary_detail.loan_given_to="'.$loan_given_to.'"')->one();
 		
 		if($employeesLoanSummary->loan_summary_id ==''){		//$model->insertBillRequestApplicant($bill_status,$applicantID,$bill_number,$created_by,$created_at,$amount);	
 		$description='';
@@ -436,8 +440,8 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
 		}
         return true;
     }
-public static function employerDetailsForPenalty(){
-	$details=LoanSummary::findBySql("SELECT loan_summary.loan_summary_id,loan_summary.created_at,loan_summary.employer_id FROM loan_summary INNER JOIN employer ON employer.employer_id=loan_summary.employer_id WHERE employer.employer_id=loan_summary.employer_id AND  (loan_summary.status='0' OR loan_summary.status='1') AND (loan_summary.employer_id IS NOT NULL OR loan_summary.employer_id <>'') AND (employer.salary_source IS NULL OR employer.salary_source='3' OR employer.salary_source='2') ORDER BY loan_summary.loan_summary_id DESC")->all();
+public static function employerDetailsForPenalty($loan_given_to){
+	$details=LoanSummary::findBySql("SELECT loan_summary.loan_summary_id,loan_summary.created_at,loan_summary.employer_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id INNER JOIN employer ON employer.employer_id=loan_summary.employer_id WHERE employer.employer_id=loan_summary.employer_id AND  (loan_summary.status='0' OR loan_summary.status='1') AND (loan_summary.employer_id IS NOT NULL OR loan_summary.employer_id <>'') AND (employer.salary_source IS NULL OR employer.salary_source='3' OR employer.salary_source='2') AND loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary.loan_summary_id DESC")->all();
 	return $details;
 }	
 }
