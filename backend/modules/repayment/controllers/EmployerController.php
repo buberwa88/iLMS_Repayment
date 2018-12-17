@@ -198,7 +198,7 @@ class EmployerController extends Controller
 
         return $this->redirect(['index']);
     }
-    
+   /* 
     public function actionWardName() {
         $out = [];
         if (isset($_POST['depdrop_parents'])) {
@@ -206,6 +206,19 @@ class EmployerController extends Controller
             if ($parents != null) {
                 $districtId = $parents[0];
                 $out = Ward::getWardName($districtId);
+                echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
+                return;
+            }
+        }
+    }
+	*/
+	public function actionWardName() {
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $districtId = $parents[0];
+                $out = \frontend\modules\repayment\models\Employer::getWardName($districtId);
                 echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
                 return;
             }
@@ -389,7 +402,8 @@ class EmployerController extends Controller
 		if($userID !=0){
 		if($results->status==0){
 		   //generate employer code for accepted employer
-		       $employer_code_format="000000";
+		       //$employer_code_format="000000";
+			   $employer_code_format=\frontend\modules\repayment\models\Employer::EMPLOYER_CODE_FORMAT;
                $employerIdLength=strlen($employerID);
                $remained=substr($employer_code_format,$employerIdLength);
                 $employerCode=$remained.$employerID;
@@ -475,6 +489,112 @@ class EmployerController extends Controller
             return $this->render('cancelPenalty', [
                 'model' => $model
             ]);
+        }
+    }
+	
+	public function actionCreateEmployerheslb()
+    {
+        $model1 = new \frontend\modules\repayment\models\Employer();
+        $model2 = new \frontend\modules\repayment\models\User();
+        $model2->scenario = 'employer_registration';
+        $model1->scenario = 'employer_details';
+        $model1->created_at=date("Y-m-d H:i:s");
+        $model2->created_at=date("Y-m-d H:i:s");  
+        $model2->last_login_date=date("Y-m-d H:i:s");
+        if($model1->load(Yii::$app->request->post()) && $model2->load(Yii::$app->request->post())){		
+        $model2->username=$model2->email_address; 
+		$employerName=$model1->employerName;
+		$model1->verification_status=1;
+        $loggedin=Yii::$app->user->identity->user_id;        
+		$model1->employer_type_id=$model2->employer_type_id;
+               
+                if($model1->sector !=''){
+                 $model1->nature_of_work_id=$model1->sector;   
+                }
+                if($model1->industry !=''){
+                 $model1->nature_of_work_id=$model1->industry;   
+                }
+		$model1->TIN=$model2->TIN;
+		$model1->employer_name = preg_replace('/\s+/', ' ',$employerName);        
+
+		//check if employer exist
+		$results=$model1->checkEmployerExists($model1->employer_name);
+		if($results>0){
+		$sms = "<p>Sorry!<br/>
+                   The employer exist, kindly login or contact HESLB. </p>";
+            Yii::$app->getSession()->setFlash('error', $sms);	
+            return $this->redirect(['/application/default/home-page']);
+		//return $this->redirect(['view-employer-success', 'id' =>$results,'employer_status' =>2]);
+		}
+		//end check
+        $password=$model2->password;        
+        $model2->password_hash=Yii::$app->security->generatePasswordHash($password);
+        $model2->auth_key = Yii::$app->security->generateRandomString();
+        $model2->status=10;
+        $model2->login_type=2; 
+        $model2->created_by=$loggedin;		
+        
+        } 
+        if ($model2->load(Yii::$app->request->post()) && $model2->save()) {
+            $model1->user_id=$model2->user_id;
+			//$model1->email_verification_code=589;
+			$model1->email_verification_code=mt_rand(10,1000);
+            if($model1->load(Yii::$app->request->post())){
+             $model1->created_by=$loggedin;
+		if($model1->save()){
+			 #################create employer role #########
+                                    $date=strtotime(date("Y-m-d"));
+   //Yii::$app->db->createCommand("INSERT  INTO auth_assignment(item_name,user_id,created_at) VALUES('Repayment',$model2->user_id,$date)")->execute();
+   Yii::$app->db->createCommand("INSERT IGNORE INTO  auth_assignment(item_name,user_id,created_at) VALUES('Repayment',$model2->user_id,$date)")->execute();
+                //end
+		   //end authentication insert
+		   
+		   $employerID=$model1->employer_id;
+		   $employer_code_format=\frontend\modules\repayment\models\Employer::EMPLOYER_CODE_FORMAT;
+               $employerIdLength=strlen($employerID);
+               $remained=substr($employer_code_format,$employerIdLength);
+                $employerCode=$remained.$employerID;
+                \backend\modules\repayment\models\Employer::updateEmployerCode($employerID,$employerCode);
+				$userID=\common\models\LoanBeneficiary::getUserIDFromEmployer($employerID);
+				$userDetails=\common\models\LoanBeneficiary::getUserDetailsFromUserID($userID->user_id);
+		   //end 
+		   $verification_status=1;		   
+           \common\models\LoanBeneficiary::updateEmployerVerifiedEmail($employerID,$verification_status);
+		   \common\models\LoanBeneficiary::updateUserActivateAccount($userID->user_id);
+           \common\models\LoanBeneficiary::updateUserVerifyEmail($userID->user_id);
+		   
+   //create contact person
+   $modelEmployerContactPerson = new \frontend\modules\repayment\models\EmployerContactPerson();
+   $modelEmployerContactPerson->employer_id=$model1->employer_id;
+   $modelEmployerContactPerson->user_id=$model2->user_id;
+   $modelEmployerContactPerson->role=\frontend\modules\repayment\models\EmployerContactPerson::ROLE_PRIMARY;
+   $modelEmployerContactPerson->created_by=$model2->user_id;
+   $modelEmployerContactPerson->created_at=$model1->created_at;
+   $modelEmployerContactPerson->save();
+
+                        
+		    $sms = "<p>Employer Registration Successful!</p>";
+            Yii::$app->getSession()->setFlash('success', $sms);	
+            return $this->redirect(['index']);
+		  }
+            //return $this->redirect(['view-employer-success', 'id' => $model1->employer_id]);			
+            }            
+        } else {
+            return $this->render('createEmployerheslb', [
+                'model1' => $model1,'model2' => $model2,
+            ]);
+        }
+    }
+	public function actionDistrictName() {
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $RegionId = $parents[0];
+                $out = \frontend\modules\repayment\models\Employer::getDistrictName($RegionId);
+                echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
+                return;
+            }
         }
     }
 		  

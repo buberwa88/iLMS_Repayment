@@ -163,7 +163,8 @@ echo Form::widget([ // fields with labels
             ],
         'NID'=>['label'=>'National Identification Number:', 'options'=>['placeholder'=>'National Identification Number']], 			
         'employee_id'=>['label'=>'Employee ID:', 'options'=>['placeholder'=>'Employee ID']],        
-        'basic_salary'=>['label'=>'Basic Salary(TZS):', 'options'=>['placeholder'=>'Basic Salary']],		
+        'basic_salary'=>['label'=>'Basic Salary(TZS):', 'options'=>['placeholder'=>'Basic Salary']],
+        'salary_source'=>['label'=>'Salary Source:', 'options'=>['placeholder'=>'Salary Source']],		
     ]
 ]);	
 ?>

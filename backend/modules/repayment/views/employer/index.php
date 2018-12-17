@@ -18,7 +18,9 @@ $this->params['breadcrumbs'][] = $this->title;
 						<?= Html::encode($this->title) ?>
                         </div>
                         <div class="panel-body">
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+						<p>
+    <?= Html::a('Create Employer', ['create-employerheslb'], ['class' => 'btn btn-success']) ?>
+	</p>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,

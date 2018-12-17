@@ -168,5 +168,6 @@ ALTER TABLE `loan` ADD `vrf_accumulated` DECIMAL(15,4) NULL DEFAULT NULL AFTER `
 ALTER TABLE `loan` CHANGE `is_full_paid` `is_full_paid` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes, 2: Confirmed';
 ALTER TABLE `loan_summary` CHANGE `updated_by` `updated_by` INT NULL DEFAULT NULL;
 ALTER TABLE `loan_summary_detail` ADD `is_full_paid` TINYINT(4) NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `is_active`;
+ALTER TABLE `employer` ADD `created_by` INT(11) NULL DEFAULT NULL AFTER `created_at`;
 -----------------------------------------------------
 ======================================================

@@ -36,6 +36,7 @@ $style5DataS='style="text-align: right;font-size: 8pt;"';
 $style5DataEmpC='style="text-align: right;font-size: 8pt;"';
 $style5DataPayD='style="text-align: right;font-size: 8pt;"';
 $style5DataAmount='style="text-align: right;font-size: 8pt;"';
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 
 $subtitalAcc=0;
 $subtitalAccq=0;
@@ -46,13 +47,8 @@ $duration_type="months";
 $loanee = frontend\modules\application\models\Applicant::find()
 	                                                           ->where(['applicant_id'=>$applicant_id])->one();
 $getProgramme = frontend\modules\application\models\application::findBySql("SELECT applicant.sex,applicant.f4indexno,programme.programme_name,learning_institution.institution_code FROM application INNER JOIN applicant ON applicant.applicant_id=application.applicant_id INNER JOIN disbursement ON disbursement.application_id=application.application_id INNER JOIN programme ON programme.programme_id=disbursement.programme_id INNER JOIN learning_institution ON learning_institution.learning_institution_id=programme.learning_institution_id WHERE application.applicant_id=:applicant_id",[':applicant_id'=>$applicant_id])->one();
-/*
-                ->joinWith(['disbursements','disbursements'])->groupBy(['disbursement.application_id'])
-                ->joinWith(['disbursements','disbursements.programme'])
-                ->joinWith(['disbursements','disbursements.programme','disbursements.programme.learningInstitution'])
-	        ->where(['applicant_id'=>$applicant_id])->one();
- * 
- */
+
+$programmeResultd=\common\models\LoanBeneficiary::getAllProgrammeStudiedGeneral($applicant_id);
  ?>
  <table witdth='100%'><tr>
          <td <?php echo $style2; ?>>FULL NAME:&nbsp;&nbsp;&nbsp;</td>
@@ -70,15 +66,15 @@ $getProgramme = frontend\modules\application\models\application::findBySql("SELE
              <td <?php echo $style4; ?>></td></tr>
          <tr>
              <td <?php echo $style2; ?>>INSTITUTION(S):&nbsp;&nbsp;&nbsp;</td>
-             <td <?php echo $style3; ?>><?php echo $getProgramme->institution_code; ?></td>
+             <td <?php echo $style3; ?>><?php echo $programmeResultd->institution_code; ?></td>
              <td <?php 
-             $balance=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($applicant_id,$date);
+             $balance=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($applicant_id,$date,$loan_given_to);
              echo $style1; ?>></td>
              <td <?php echo $style4; ?>></td>
          </tr></table>
 <?php
 
-$getPaymentsOfLoanee = \backend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount,loan_repayment.payment_date,employer.employer_code,employer.short_name,loan_repayment_detail.applicant_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id LEFT JOIN employer ON employer.employer_id=loan_repayment.employer_id LEFT JOIN applicant ON applicant.applicant_id=loan_repayment.applicant_id WHERE loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id AND loan_repayment_detail.applicant_id=:applicant_id GROUP BY loan_repayment.payment_date ORDER BY loan_repayment.payment_date ASC",[':applicant_id'=>$applicant_id])->all();
+$getPaymentsOfLoanee = \backend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount,loan_repayment.payment_date,employer.employer_code,employer.short_name,loan_repayment_detail.applicant_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id LEFT JOIN employer ON employer.employer_id=loan_repayment.employer_id LEFT JOIN applicant ON applicant.applicant_id=loan_repayment.applicant_id WHERE loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' AND loan_repayment_detail.applicant_id=:applicant_id GROUP BY loan_repayment.payment_date ORDER BY loan_repayment.payment_date ASC",[':applicant_id'=>$applicant_id])->all();
 $sno=1;
 ?>
 <br/><br/>
@@ -119,7 +115,7 @@ $factor=1;//the possible payment loop
 //end check if employed
 
 //check the last payment of beneficiary
-$paymentLoanRepayment = \frontend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT  loan_repayment.payment_date  FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.applicant_id='$applicant_id' AND loan_repayment.payment_status='1'")->orderBy(['loan_repayment_detail'=>SORT_DESC])->one();
+$paymentLoanRepayment = \frontend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT  loan_repayment.payment_date  FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.applicant_id='$applicant_id' AND loan_repayment.payment_status='1' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->orderBy(['loan_repayment_detail'=>SORT_DESC])->one();
 $lastPaydate = date_create($paymentLoanRepayment->payment_date);
 $todate = date_create($date);
 $interval = date_diff($lastPaydate, $todate);
@@ -143,10 +139,10 @@ $totalMonths=$balance/$amount1;
         $constantPaymentDate=date("Y-m-d",strtotime($payment_date));
 		
 //check ORIGINAL AMOUNT PER Items
-$totalPrincipalORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicant_id,$date);
-$totalVRFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id,$date);
-$totalPNTORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicant_id,$date);
-$totalLAFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicant_id,$date);
+$totalPrincipalORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicant_id,$date,$loan_given_to);
+$totalVRFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id,$date,$loan_given_to);
+$totalPNTORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicant_id,$date,$loan_given_to);
+$totalLAFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicant_id,$date,$loan_given_to);
 //end check amount per item		
 //check loan repayment item balances
 //-------------Items ID------
@@ -160,13 +156,13 @@ $totalLAFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOri
 	$PRC_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePRC);
 //------------end items ID------------
 
-    $AmountPaidPerItemTotalLAF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$LAF_id);
+    $AmountPaidPerItemTotalLAF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$LAF_id,$loan_given_to);
 	$totalAmountAlreadyPaidLAF=$AmountPaidPerItemTotalLAF->amount;
-	$AmountPaidPerItemTotalPNT=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PNT_id);
+	$AmountPaidPerItemTotalPNT=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PNT_id,$loan_given_to);
 	$totalAmountAlreadyPaidPNT=$AmountPaidPerItemTotalPNT->amount;
-	$AmountPaidPerItemTotalVRF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$VRF_id);
+	$AmountPaidPerItemTotalVRF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$VRF_id,$loan_given_to);
 	$totalAmountAlreadyPaidVRF=$AmountPaidPerItemTotalVRF->amount;
-	$AmountPaidPerItemTotalPRC=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PRC_id);
+	$AmountPaidPerItemTotalPRC=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PRC_id,$loan_given_to);
 	$totalAmountAlreadyPaidPRC=$AmountPaidPerItemTotalPRC->amount;
 	$balanceLAF=$totalLAFORGN-$totalAmountAlreadyPaidLAF;
 	$balancePNT=$totalPNTORGN-$totalAmountAlreadyPaidPNT;

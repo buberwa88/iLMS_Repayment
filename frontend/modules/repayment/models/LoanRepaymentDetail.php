@@ -1259,10 +1259,10 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
     public static function updateAllGovernmentEmployersBillMultSelected($treasury_payment_id,$loan_repayment_id,$user_id){
         	LoanRepaymentDetail::updateAll(['treasury_payment_id' => $treasury_payment_id,'treasury_user_id'=>$user_id],'loan_repayment_id = "'.$loan_repayment_id.'"');   
         }
-	public static function getAmountPaidPerItemtoBeneficiary($applicantID,$itemId){
+	public static function getAmountPaidPerItemtoBeneficiary($applicantID,$itemId,$loan_given_to){
         $details = self::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
                 . "FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_item_id='$itemId'")->one();
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_repayment_item_id='$itemId' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1'")->one();
         return $details;
         }
 public static function insertAllPaymentsofAllLoaneesUnderPrepaidMonthly($loan_summary_id,$loan_repayment_id,$payment_date,$employer_id){

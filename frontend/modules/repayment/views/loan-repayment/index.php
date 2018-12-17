@@ -9,24 +9,24 @@ use kartik\tabs\TabsX;
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
-
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 $this->title = 'Bill';
 $this->params['breadcrumbs'][] = $this->title;
 
             //$resultsAfterCheck=$model->checkWaitingConfirmationFromGePG($employerID);            
-            $results1=$model->checkControlNumberStatus($employerID);
+            $results1=$model->checkControlNumberStatus($employerID,$loan_given_to);
 			$results_bill_number=(count($results1) == 0) ? '0' : $results1->loan_repayment_id;
-            $ActiveBill=$modelBill->getActiveBill($employerID);
+            $ActiveBill=$modelBill->getActiveBill($employerID,$loan_given_to);
             $billID=$ActiveBill->loan_summary_id;
             $loan_summary_id=$billID;
             $totalAmount=number_format($results1->amount,2);
             //$loan_repayment_id=$results1->loan_repayment_id;
-            $totalEmployees=$model->getAllEmployeesUnderBillunderEmployer($loan_repayment_id);
+            $totalEmployees=$model->getAllEmployeesUnderBillunderEmployer($loan_repayment_id,$loan_given_to);
 			//$amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummary::getLoanSummaryBalance($billID);
 			$date=date("Y-m-d");
-            $amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date);
+            $amountRemainedUnpaid=frontend\modules\repayment\models\LoanSummaryDetail::getOustandingAmountUnderLoanSummary($billID,$date,$loan_given_to);
 			if($amountRemainedUnpaid < 1){
-			frontend\modules\repayment\models\LoanSummary::updateCompletePaidLoanSummary($billID);
+			frontend\modules\repayment\models\LoanSummary::updateCompletePaidLoanSummary($billID,$loan_given_to);
 			}
 ?>
 <div class="loan-repayment-index">

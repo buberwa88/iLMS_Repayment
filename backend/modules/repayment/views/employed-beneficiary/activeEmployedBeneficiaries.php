@@ -39,7 +39,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                     'class' => 'kv-state-enable',
                 ],
                 ],
-				/*
+				
             [
                      'attribute' => 'employerName',
                         'label'=>"Employer",
@@ -47,7 +47,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                             return $model->employer->employer_name;
                         },
             ],
-			*/
+			
 			[
                      'attribute' => 'firstname',
                         'label'=>"First Name",

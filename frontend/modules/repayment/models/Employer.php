@@ -33,6 +33,7 @@ class Employer extends \yii\db\ActiveRecord
     const EMPLOYER_TYPE_PRIVATE = 1;
     const EMPLOYER_TYPE_GOVERNMENT = 2;
     const EMPLOYER_TYPE_FOREIGN = 3;
+	const EMPLOYER_CODE_FORMAT = "000000";
     
     /**
      * @inheritdoc

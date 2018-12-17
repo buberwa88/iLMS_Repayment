@@ -79,7 +79,7 @@ class EmployerSearch extends Employer
 	public function searchEmployerConfirmedEmail($params)
     {
         $query = Employer::find()
-		                    ->where(['verification_status'=>[0,2]])
+		                    ->where(['verification_status'=>[0,1,2]])
                             ->orderBy(['employer_id' => SORT_DESC]);
         // add conditions that should always apply here
 

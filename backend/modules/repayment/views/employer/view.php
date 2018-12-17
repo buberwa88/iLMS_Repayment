@@ -13,7 +13,10 @@ $this->title ="Employer";
 		<?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-           
+   <p>
+    <?php echo Html::a('Add New Employee', ['create'], ['class' => 'btn btn-info']) ?>             
+    <?= Html::a('Upload New Employees', ['index-upload-employees'], ['class' => 'btn btn-warning']) ?> 
+	</p>        
 <?php
 $employerDetails= $this->render('viewEmployerDetails', [
                                 'model' => $model,
