@@ -16,9 +16,11 @@ $applicant_id=$model->applicant_id;
 }
 $checkApproved=0;
 if($checkApproved==0){
-$labeltittle="Provisional Loan Statement";	
+//$labeltittle="Provisional Loan Statement";
+$labeltittle="Customer Statement as of ".date("d-m-Y");	
 }else{
-$labeltittle="Verified Loan Statement";
+//$labeltittle="Verified Loan Statement";
+$labeltittle="Customer Statement as of ".date("d-m-Y");	
 }
 $subtitalAcc=0;
 $subtitalAccq=0;

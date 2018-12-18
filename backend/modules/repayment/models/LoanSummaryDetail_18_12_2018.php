@@ -125,25 +125,231 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         return $this->hasOne(\backend\modules\repayment\models\LoanRepaymentItem::className(), ['loan_repayment_item_id' => 'loan_repayment_item_id']);
     }
     
-    public static function insertAllBeneficiariesUnderBill($employerID,$loan_summary_id,$category=null){
+    public static function insertAllBeneficiariesUnderBill($employerID,$loan_summary_id){
 		$loggedin=Yii::$app->user->identity->user_id;
 		$created_at=date("Y-m-d H:i:s");
 		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
-		if($category=='Decease'){
-		$details_applicantID =EmployedBeneficiary::getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreationDecease($employerID);	
-		}else{
-		$details_applicantID =EmployedBeneficiary::getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreation($employerID);	
-		}        
+        $details_applicantID =EmployedBeneficiary::getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreation($employerID);
+        $si=0;
+		$dateToday=date("Y-m-d");
+        $moder=new EmployedBeneficiary();
+        $billDetailModel=new LoanRepaymentDetail();
         //checking for principal
         foreach ($details_applicantID as $value_applicant_id) { 
-        $applicantID=$value_applicant_id->applicant_id;        
-        self::insertLoaneeBillDetailGeneral($applicantID,$loan_summary_id,$loan_given_to);
+        $applicantID=$value_applicant_id->applicant_id;
+        
+        $itemCodePrincipal="PRC";
+        $principal_id=$moder->getloanRepaymentItemID($itemCodePrincipal);
+        
+        //check if exists in any bill before 
+        $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday,$loan_given_to);
+        $individualApplicantBillID=$details_applicantID_result->loan_summary_id;
+		$applicantBillResults_2=0;
+		if($individualApplicantBillID > 0){
+        $details_applicantID = self::getItemExistInBillBefore($applicantID,$principal_id,$loan_given_to);
+        $individualApplicantBillID_2=$details_applicantID->loan_summary_id;
+        $applicantBillResults_2 = (count($individualApplicantBillID_2) == '0') ? '0' : $individualApplicantBillID_2;
+		}
+        //end check if exists in any bill before
+        
+        if($applicantBillResults_2=='0'){
+		
+		$getDistinctAccademicYrPerApplicant =\common\models\LoanBeneficiary::getAcademicYearTrend($applicantID);
+                    foreach ($getDistinctAccademicYrPerApplicant as $resultsApp) {
+                    $academicYearID=$resultsApp->disbursementBatch->academic_year_id; 
+					$pricipalLoanwettggg=\common\models\LoanBeneficiary::getAmountSubtotalPerAccademicYNoReturned($applicantID,$academicYearID);
+                    $pricipalLoan=$pricipalLoanwettggg->disbursed_amount;
+					$loan_number=$pricipalLoanwettggg->application_id;
+                    if($pricipalLoan==''){
+                       $pricipalLoan=0; 
+                    }
+/*					
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$principal_id,
+        'academic_year_id' =>$academicYearID,
+        'amount' =>$pricipalLoan,
+        'created_at'=>$created_at,
+        'created_by'=>$loggedin,		
+        ])->execute();
+		*/
+Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_summary_detail(loan_summary_id,applicant_id,loan_repayment_item_id,academic_year_id,amount,created_at,created_by) VALUES('$loan_summary_id','$applicantID','$principal_id','$academicYearID','$pricipalLoan','$created_at','$loggedin')")->execute();		
+//INSERT INTO loan table toget the acumulated loan of beneficiary based on loan number/application id	
+Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$loan_number','$principal_id','$academicYearID','$pricipalLoan','$created_at','$created_at','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+//end
+                    }
+        ++$si;
+        }else{  		
+		$detailsAmountPrincipalBill=LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);		
+        $PrincipleInBill_2=$detailsAmountPrincipalBill->amount;
+		$detailsAmountPrincipalPaid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);
+        $principalPaidUnderBill_2=$detailsAmountPrincipalPaid->amount;
+        $outstandingPrinciple_2=$PrincipleInBill_2-$principalPaidUnderBill_2;
+        $pricipalLoan1_2=$outstandingPrinciple_2;
+        if($pricipalLoan1_2 ==''){
+          $pricipalLoan1_2=0;  
+        }
+        /*
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$principal_id,
+        'academic_year_id' =>'',
+        'amount' =>$pricipalLoan1_2,
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();
+		*/
+		Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_summary_detail(loan_summary_id,applicant_id,loan_repayment_item_id,amount,created_at,created_by) VALUES('$loan_summary_id','$applicantID','$principal_id','$pricipalLoan1_2','$created_at','$loggedin')")->execute();
+            
+        }
+        }
+        // end checking for principal
+        $details_applicantID = EmployedBeneficiary::getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreation($employerID);
+        foreach ($details_applicantID as $value_applicant_id) { 
+           $applicantID=$value_applicant_id->applicant_id;
+           
+           //check if exists in any bill before  
+        $itemCodeVRF="VRF";
+        $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
+        $itemCodeLAF="LAF";
+        $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
+        $itemCodePNT="PNT";
+        $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
+        
+		$details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday,$loan_given_to);
+        $individualApplicantBillID=$details_applicantID_result->loan_summary_id;
+		$applicantVRF=0;$applicantBillLAF=0;$applicantBillPNT=0;
+		if($individualApplicantBillID > 0){
+		$details_vrf_3 = self::getItemExistInBillBefore($applicantID,$vrf_id,$loan_given_to);
+        $individualApplicantVRF_3=$details_vrf_3->loan_summary_id;
+		$details_LAF_3 = self::getItemExistInBillBefore($applicantID,$LAF_id,$loan_given_to);
+        $individualApplicantLAF_3=$details_LAF_3->loan_summary_id;
+		$details_PNT_3 = self::getItemExistInBillBefore($applicantID,$PNT_id,$loan_given_to);
+        $individualApplicantPNT_3=$details_PNT_3->loan_summary_id;
+        $applicantVRF = (count($individualApplicantVRF_3) == '0') ? '0' : $individualApplicantVRF_3;
+		$applicantBillLAF = (count($individualApplicantLAF_3) == '0') ? '0' : $individualApplicantLAF_3;
+		$applicantBillPNT = (count($individualApplicantPNT_3) == '0') ? '0' : $individualApplicantPNT_3;
+		}
+        //end check if exists in any bill before
+        if($applicantVRF=='0' && $applicantBillLAF=='0' && $applicantBillPNT=='0'){
+           $vrf=self::getTotalVRFOriginal($applicantID,$dateToday,$loan_given_to);
+           $itemCodeVRF="VRF";
+           $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
+           $LAF=self::getTotalLAFOriginal($applicantID,$dateToday,$loan_given_to);
+           $itemCodeLAF="LAF";
+           $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
+		   $penalty=self::getTotalPenaltyOriginal($applicantID,$dateToday,$loan_given_to);
+           $itemCodePNT="PNT";
+           $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
+            
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'academic_year_id' =>'',
+        'amount' =>$vrf,
+        'vrf_accumulated' =>'0', 
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'academic_year_id' =>'',
+        'amount' =>$LAF, 
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'academic_year_id' =>'',
+        'amount' =>$penalty,
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();		
+        $moder->getIndividualEmployeesPenaltyPerApplication($applicantID,$dateToday);
+		$moder->getIndividualEmployeesLAFPerApplication($applicantID);
+		$moder->getIndividualEmployeesVRFperApplication($applicantID,$dateToday);
+        }else{
+           $itemCodeVRF="VRF";
+           $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
+           $itemCodeLAF="LAF";
+           $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
+           $itemCodePNT="PNT";
+           $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
+        $detailsAmountChargesVRF_check2_bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);		
+        $TotalChargesInBillVRF_3=$detailsAmountChargesVRF_check2_bill->amount;
+		$detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);
+        $TotalChargesPaidUnderBillVRF_3=$detailsAmountChargesVRF_check2_paid->amount;
+        $vrf_3=$TotalChargesInBillVRF_3-$TotalChargesPaidUnderBillVRF_3;
+		if($vrf_3==''){
+		$vrf_3=0;
+		}
+		$detailsAmountChargesLAF_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);		 
+        $TotalChargesInBillLAF_3=$detailsAmountChargesLAF_check2Bill->amount;		
+		$detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);
+        $TotalChargesPaidUnderBillLAF_3=$detailsAmountChargesLAF_check2Paid->amount;
+        $LAF_3=$TotalChargesInBillLAF_3-$TotalChargesPaidUnderBillLAF_3;
+		if($LAF_3==''){
+		$LAF_3=0;
+		}
+         $detailsAmountChargesPNT_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);		 
+        $TotalChargesInBillPNT_3=$detailsAmountChargesPNT_check2Bill->amount;
+		$detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);
+        $TotalChargesPaidUnderBillPNT_3=$detailsAmountChargesPNT_check2Paid->amount;
+        $penalty_3=$TotalChargesInBillPNT_3-$TotalChargesPaidUnderBillPNT_3;
+		if($penalty_3==''){
+		$penalty_3=0;
+		}
+         //$totalChargesGeneralPNT +=$outstandingTotalChargePNT;          
+            
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'academic_year_id' =>'',
+        'amount' =>$vrf_3,
+		'created_at'=>date("Y-m-d H:i:s"),
+		'created_by'=>$loggedin,
+        ])->execute();
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'academic_year_id' =>'',
+        'amount' =>$LAF_3, 
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'academic_year_id' =>'',
+        'amount' =>$penalty_3,
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();   
+        }
 		LoanSummary::updateCeaseIndividualBeneficiaryLoanSummaryWhenEmployed($applicantID,$loan_summary_id);
 		$newverificationStatus=5;
-		EmployedBeneficiary::updateBeneficiaryFromOldEmployer($employerID,$applicantID,$newverificationStatus); 
-        EmployedBeneficiary::updateAll(['loan_summary_id' =>$loan_summary_id], 'employer_id ="'.$employerID.'" AND (applicant_id IS NOT NULL OR applicant_id >=1) AND verification_status="1" AND employment_status="ONPOST" AND applicant_id="'.$applicantID.'"');       	
-   }       
-}
+		EmployedBeneficiary::updateBeneficiaryFromOldEmployer($employerID,$applicantID,$newverificationStatus);
+        }
+        EmployedBeneficiary::updateAll(['loan_summary_id' =>$loan_summary_id], 'employer_id ="'.$employerID.'" AND (applicant_id IS NOT NULL OR applicant_id >=1) AND verification_status="1" AND employment_status="ONPOST"  AND loan_summary_id IS NULL');		
+        }
         
         public static function insertAllBeneficiariesUnderBillAfterDeceased($employerID,$loan_summary_id){
 		$loggedin=Yii::$app->user->identity->user_id;	
@@ -1308,7 +1514,7 @@ $details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetai
         
     public static function getItemsAmountInBill($applicantID,$loan_summary_id,$itemID,$loan_given_to){
         $results = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount FROM loan_summary_detail A  INNER JOIN loan_summary B ON B.loan_summary_id=A.loan_summary_id"
-                . " WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='".$itemID."' AND A.loan_given_to='$loan_given_to'")->one();
+                . "WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loan_summary_id' AND A.loan_repayment_item_id='".$itemID."' AND A.loan_given_to='$loan_given_to'")->one();
 
         return $results;
         }
@@ -1634,7 +1840,7 @@ public static function getTotalAmountForLoanSummary($loan_summary_id,$loan_given
 		
 		
 		
-		public static function insertLoaneeBillDetailGeneral($applicantID,$loan_summary_id,$loan_given_to){
+		public function insertLoaneeBillDetailGeneral($applicantID,$loan_summary_id,$loan_given_to){
 		$loggedin=Yii::$app->user->identity->user_id;
         $created_at=date("Y-m-d H:i:s");
         $dateToday=date("Y-m-d");		
@@ -1644,15 +1850,10 @@ public static function getTotalAmountForLoanSummary($loan_summary_id,$loan_given
 
         $itemCodePrincipal="PRC";
         $principal_id=$moder->getloanRepaymentItemID($itemCodePrincipal);        
-        //check if exists in any bill before  
-		$details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday,$loan_given_to);
-        $individualApplicantBillID=$details_applicantID_result->loan_summary_id;
-		$applicantBillResults_2=0;
-		if($individualApplicantBillID > 0){
-        $details_applicantID = self::getItemExistInBillBefore($applicantID,$principal_id,$loan_given_to);
+        //check if exists in any bill before    
+        $details_applicantID = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.loan_summary_id FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE  loan_summary_detail.applicant_id='$applicantID' AND loan_summary_detail.loan_repayment_item_id='".$principal_id."' AND loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary_detail.loan_summary_detail_id DESC")->one();
         $individualApplicantBillID_2=$details_applicantID->loan_summary_id;
         $applicantBillResults_2 = (count($individualApplicantBillID_2) == '0') ? '0' : $individualApplicantBillID_2;
-		}
         //end check if exists in any bill before
         
         if($applicantBillResults_2=='0'){	
@@ -1663,24 +1864,52 @@ public static function getTotalAmountForLoanSummary($loan_summary_id,$loan_given
 					$pricipalLoanwettggg=\common\models\LoanBeneficiary::getAmountSubtotalPerAccademicYNoReturned($applicantID,$academicYearID);
                     $pricipalLoan=$pricipalLoanwettggg->disbursed_amount; 
 					$loan_number=$pricipalLoanwettggg->application_id;
-	
-Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_summary_detail(loan_summary_id,applicant_id,loan_repayment_item_id,academic_year_id,amount,created_at,created_by) VALUES('$loan_summary_id','$applicantID','$principal_id','$academicYearID','$pricipalLoan','$created_at','$loggedin')")->execute();		
-//INSERT INTO loan table toget the acumulated loan of beneficiary based on loan number/application id	
+		
+		/*
+        $getDistinctAccademicYrPerApplicant = Application::findBySql("SELECT DISTINCT academic_year_id AS 'academic_year_id' FROM application WHERE  applicant_id='$applicantID'")->all();
+                    foreach ($getDistinctAccademicYrPerApplicant as $resultsApp) {
+                    $academicYearID=$resultsApp->academic_year_id; 
+                    $pricipalLoan=$moder->getIndividualEmployeesPrincipalLoanPerAccademicYR($applicantID,$academicYearID);
+					
+					*/
+					
+					
+					
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$principal_id,
+        'academic_year_id' =>$academicYearID,
+        'amount' =>$pricipalLoan,  
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();
+		
+		//INSERT INTO loan table toget the acumulated loan of beneficiary based on loan number/application id	
 Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$loan_number','$principal_id','$academicYearID','$pricipalLoan','$created_at','$created_at','0','$loan_given_to','$loggedin','$loggedin')")->execute();
 //end
                     }
         ++$si;
         }else{            
-        $detailsAmountPrincipalBill=LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);		
-        $PrincipleInBill_2=$detailsAmountPrincipalBill->amount;
-		$detailsAmountPrincipalPaid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);
-        $principalPaidUnderBill_2=$detailsAmountPrincipalPaid->amount;
+        $detailsAmountPrincipal_2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);
+        $PrincipleInBill_2=$detailsAmountPrincipal_2Bill->amount;
+        $detailsAmountPrincipal_2Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$applicantBillResults_2,$principal_id,$loan_given_to);
+        $principalPaidUnderBill_2=$detailsAmountPrincipal_2Paid->amount;
         $outstandingPrinciple_2=$PrincipleInBill_2-$principalPaidUnderBill_2;
         $pricipalLoan1_2=$outstandingPrinciple_2;
-        if($pricipalLoan1_2 ==''){
-          $pricipalLoan1_2=0;  
-        }
-		Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_summary_detail(loan_summary_id,applicant_id,loan_repayment_item_id,amount,created_at,created_by) VALUES('$loan_summary_id','$applicantID','$principal_id','$pricipalLoan1_2','$created_at','$loggedin')")->execute();  
+        
+        Yii::$app->db->createCommand()
+        ->insert('loan_summary_detail', [
+        'loan_summary_id' =>$loan_summary_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$principal_id,
+        'academic_year_id' =>'',
+        'amount' =>$pricipalLoan1_2,
+        'created_at'=>date("Y-m-d H:i:s"),
+        'created_by'=>$loggedin,		
+        ])->execute();
+           
         }
         //}
         // end checking for principal
@@ -1691,31 +1920,25 @@ Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,
         $itemCodeLAF="LAF";
         $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
         $itemCodePNT="PNT";
-        $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);	   
-
-		$details_applicantID_result=\backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicantID,$dateToday,$loan_given_to);
-        $individualApplicantBillID=$details_applicantID_result->loan_summary_id;
-		$applicantVRF=0;$applicantBillLAF=0;$applicantBillPNT=0;
-		if($individualApplicantBillID > 0){
-		$details_vrf_3 = self::getItemExistInBillBefore($applicantID,$vrf_id,$loan_given_to);
+        $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);		   
+        $details_vrf_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$vrf_id."' AND loan_given_to='$loan_given_to' ORDER BY loan_summary_detail_id DESC")->one();
         $individualApplicantVRF_3=$details_vrf_3->loan_summary_id;
-		$details_LAF_3 = self::getItemExistInBillBefore($applicantID,$LAF_id,$loan_given_to);
+		$details_LAF_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$LAF_id."' AND loan_given_to='$loan_given_to' ORDER BY loan_summary_detail_id DESC")->one();
         $individualApplicantLAF_3=$details_LAF_3->loan_summary_id;
-		$details_PNT_3 = self::getItemExistInBillBefore($applicantID,$PNT_id,$loan_given_to);
+		$details_PNT_3 = LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  applicant_id='$applicantID' AND loan_repayment_item_id='".$PNT_id."' AND loan_given_to='$loan_given_to' ORDER BY loan_summary_detail_id DESC")->one();
         $individualApplicantPNT_3=$details_PNT_3->loan_summary_id;
         $applicantVRF = (count($individualApplicantVRF_3) == '0') ? '0' : $individualApplicantVRF_3;
 		$applicantBillLAF = (count($individualApplicantLAF_3) == '0') ? '0' : $individualApplicantLAF_3;
 		$applicantBillPNT = (count($individualApplicantPNT_3) == '0') ? '0' : $individualApplicantPNT_3;
-		}
         //end check if exists in any bill before
         if($applicantVRF=='0' && $applicantBillLAF=='0' && $applicantBillPNT=='0'){
-           $vrf=self::getTotalVRFOriginal($applicantID,$dateToday,$loan_given_to);
+           $vrf=$moder->getIndividualEmployeesVRF($applicantID,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
-           $LAF=self::getTotalLAFOriginal($applicantID,$dateToday,$loan_given_to);
+           $LAF=$moder->getIndividualEmployeesLAF($applicantID,$loan_given_to);
            $itemCodeLAF="LAF";
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
-		   $penalty=self::getTotalPenaltyOriginal($applicantID,$dateToday,$loan_given_to);
+           $penalty=$moder->getIndividualEmployeesPenalty($applicantID,$loan_given_to);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
             
@@ -1736,7 +1959,7 @@ Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$LAF_id,
         'academic_year_id' =>'',
-        'amount' =>$LAF, 
+        'amount' =>$LAF,  
         'created_at'=>date("Y-m-d H:i:s"),
         'created_by'=>$loggedin,		
         ])->execute();
@@ -1749,8 +1972,9 @@ Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,
         'amount' =>$penalty,
         'created_at'=>date("Y-m-d H:i:s"),
         'created_by'=>$loggedin,		
-        ])->execute();		
-        $moder->getIndividualEmployeesPenaltyPerApplication($applicantID,$dateToday);
+        ])->execute();
+		
+		$moder->getIndividualEmployeesPenaltyPerApplication($applicantID,$dateToday);
 		$moder->getIndividualEmployeesLAFPerApplication($applicantID);
 		$moder->getIndividualEmployeesVRFperApplication($applicantID,$dateToday);
         }else{
@@ -1760,31 +1984,36 @@ Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,
            $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
            $itemCodePNT="PNT";
            $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
-        $detailsAmountChargesVRF_check2_bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);		
-        $TotalChargesInBillVRF_3=$detailsAmountChargesVRF_check2_bill->amount;
-		$detailsAmountChargesVRF_check2_paid =$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);
-        $TotalChargesPaidUnderBillVRF_3=$detailsAmountChargesVRF_check2_paid->amount;
+
+
+        $detailsAmountChargesVRF_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);
+        $detailsAmountChargesVRF_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantVRF_3,$vrf_id,$loan_given_to);
+        $TotalChargesInBillVRF_3=$detailsAmountChargesVRF_3Bill->amount;
+        $TotalChargesPaidUnderBillVRF_3=$detailsAmountChargesVRF_3Paid->amount;
         $vrf_3=$TotalChargesInBillVRF_3-$TotalChargesPaidUnderBillVRF_3;
 		if($vrf_3==''){
 		$vrf_3=0;
 		}
-		$detailsAmountChargesLAF_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);		 
-        $TotalChargesInBillLAF_3=$detailsAmountChargesLAF_check2Bill->amount;		
-		$detailsAmountChargesLAF_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);
-        $TotalChargesPaidUnderBillLAF_3=$detailsAmountChargesLAF_check2Paid->amount;
+
+        $detailsAmountChargesLAF_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);
+        $detailsAmountChargesLAF_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantLAF_3,$LAF_id,$loan_given_to);         
+        $TotalChargesInBillLAF_3=$detailsAmountChargesLAF_3Bill->amount;
+        $TotalChargesPaidUnderBillLAF_3=$detailsAmountChargesLAF_3Paid->amount;
         $LAF_3=$TotalChargesInBillLAF_3-$TotalChargesPaidUnderBillLAF_3;
 		if($LAF_3==''){
 		$LAF_3=0;
 		}
-         $detailsAmountChargesPNT_check2Bill = LoanSummaryDetail::getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);		 
-        $TotalChargesInBillPNT_3=$detailsAmountChargesPNT_check2Bill->amount;
-		$detailsAmountChargesPNT_check2Paid = $billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);
-        $TotalChargesPaidUnderBillPNT_3=$detailsAmountChargesPNT_check2Paid->amount;
+
+        $detailsAmountChargesPNT_3Bill = $this->getItemsAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);
+        $detailsAmountChargesPNT_3Paid=$billDetailModel->getItemsPaidAmountInBill($applicantID,$individualApplicantPNT_3,$PNT_id,$loan_given_to);
+        $TotalChargesInBillPNT_3=$detailsAmountChargesPNT_3Bill->amount;
+        $TotalChargesPaidUnderBillPNT_3=$detailsAmountChargesPNT_3Paid->amount;
         $penalty_3=$TotalChargesInBillPNT_3-$TotalChargesPaidUnderBillPNT_3;
 		if($penalty_3==''){
 		$penalty_3=0;
 		}
-         //$totalChargesGeneralPNT +=$outstandingTotalChargePNT;          
+         //$totalChargesGeneralPNT +=$outstandingTotalChargePNT;
+           
             
         Yii::$app->db->createCommand()
         ->insert('loan_summary_detail', [
@@ -1812,7 +2041,7 @@ Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$PNT_id,
         'academic_year_id' =>'',
-        'amount' =>$penalty_3,
+        'amount' =>$penalty_3, 
         'created_at'=>date("Y-m-d H:i:s"),
         'created_by'=>$loggedin,		
         ])->execute();   

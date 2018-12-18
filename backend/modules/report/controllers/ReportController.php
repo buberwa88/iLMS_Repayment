@@ -627,7 +627,7 @@ class ReportController extends Controller {
 			 $custtomerState="<hr>
          <strong>CUSTOMER STATEMENT</strong>
            <hr>"; 
-             $pritedOnside="Loan Correction Acounts:<br/>".$desc."<br/>".$printed_on;	
+             $pritedOnside="Loan Collection Acounts:<br/>".$desc."<br/>".$printed_on;	
 			}
             if($modelReportTemplate->printing_mode ==1){
                      $reportLabel = "report_" . date("Y_m_d_h_m_s");
@@ -904,7 +904,7 @@ class ReportController extends Controller {
              $custtomerState="<hr>
          <strong>CUSTOMER STATEMENT</strong>
            <hr>"; 
-             $pritedOnside="Loan Correction Acounts:<br/>".$desc."<br/>".$printed_on;
+             $pritedOnside="Loan Collection Acounts:<br/>".$desc."<br/>".$printed_on;
             }
             if($modelReportTemplate->printing_mode ==1){
                      $reportLabel = "report_" . date("Y_m_d_h_m_s");

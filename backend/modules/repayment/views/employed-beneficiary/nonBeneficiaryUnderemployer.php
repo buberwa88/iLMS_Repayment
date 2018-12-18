@@ -8,7 +8,7 @@ use yii\helpers\ArrayHelper;
 /* @var $searchModel frontend\modules\repayment\models\EmployedBeneficiarySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Unverified Beneficiaries';
+$this->title = 'Non Beneficiaries';
 $this->params['breadcrumbs'][] = $this->title;
 $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
 ?>
@@ -19,15 +19,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                       <?= Html::encode($this->title) ?>
                         </div>
                         <div class="panel-body">
-                           <?php 
-                            
-                            if($totalUnverifiedEmployees > 0){ ?>
-                            <p >
-		<?=Html::beginForm(['employed-beneficiary/confirm-beneficiaries-employer'],'post');?>
-        <?=Html::submitButton('Verify selected beneficiaries', ['class' => 'btn btn-success',]);?>
-                
-    </p>
-                            <?php } ?>
+    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
             
 
     <?= GridView::widget([
@@ -35,52 +27,29 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
         'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
-			[
-                'class' => 'kartik\grid\ExpandRowColumn',
-                'value' => function ($model, $key, $index, $column) {
-                    return GridView::ROW_COLLAPSED;
-                },
-                'allowBatchToggle' => true,
-                'detail' => function ($model) {
-                  return $this->render('viewLoanNonConfirmedBeneficiaries',['model'=>$model]);
-                  //return $this->render('viewLoanStatement',['model'=>$model]);				  
-                },
-                'detailOptions' => [
-                    'class' => 'kv-state-enable',
-                ],
-                ],
-				
-				/*
+			
             [
-                     'attribute' => 'employerName',
-                        'label'=>"Employer",
-                        'value' => function ($model) {
-                            return $model->employer->employer_name;
-                        },
-            ],
-			*/
-			[
                      'attribute' => 'firstname',
                         'label'=>"First Name",
                         //'vAlign' => 'middle',
                         'value' => function ($model) {
-                            return $model->applicant->user->firstname;
+                            return $model->firstname;
                         },
             ],
-			/*
+			
             [
                      'attribute' => 'middlename',
                         'label'=>"Middle Name",
                         'value' => function ($model) {
-                            return $model->applicant->user->middlename;
+                            return $model->middlename;
                         },
             ],
-			*/
+			
 		    [
                      'attribute' => 'surname',
                         'label'=>"Last Name",
                         'value' => function ($model) {
-                            return $model->applicant->user->surname;
+                            return $model->surname;
                         },
             ],  
             [
@@ -91,15 +60,6 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                         },
             ],			
             [
-                'attribute' => 'totalLoan',
-                'hAlign' => 'right',
-                'format' => ['decimal', 2],
-                'value' => function ($model) use($loan_given_to) {
-					$date=date("Y-m-d");
-                return backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($model->applicant_id,$date,$loan_given_to);
-        },
-            ],
-            [
                 'attribute' => 'basic_salary',
                 //'label' => "Basic Salary",
                 'hAlign' => 'right',
@@ -107,14 +67,10 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                 'value' => function ($model) {
                 return $model->basic_salary;
         },
-            ],
-            ['class' => 'yii\grid\CheckboxColumn'],			
+            ],			
                                
         ],
     ]); ?>
-	<?php if($totalUnverifiedEmployees > 0){ ?>
-	<?= Html::endForm();?>
-	<?php } ?>
 </div>
        </div>
 </div>

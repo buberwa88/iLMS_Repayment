@@ -431,12 +431,10 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
         $model->vrf_accumulated=0;	
         $model->description=$description;		
         $model->save();			
-        \backend\modules\repayment\models\LoanSummaryDetail::insertLoaneeBillDetail($applicantID,$model->loan_summary_id);
-        $loanSummaryAmount = \frontend\modules\repayment\models\LoanSummaryDetail::findBySql('SELECT SUM(loan_summary_detail.amount) as "amount"  FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id WHERE loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id AND loan_summary_detail.loan_summary_id="'.$model->loan_summary_id.'"')->one();
-        $newLoanSummaryAmount=$loanSummaryAmount->amount;
-        $loanSummaryNewAmountUpdate=\frontend\modules\repayment\models\LoanSummary::findOne(['loan_summary_id'=>$model->loan_summary_id]);
-        $loanSummaryNewAmountUpdate->amount=$newLoanSummaryAmount;
-        $loanSummaryNewAmountUpdate->save();		
+        //\backend\modules\repayment\models\LoanSummaryDetail::insertLoaneeBillDetail($applicantID,$model->loan_summary_id,$loan_given_to);
+\backend\modules\repayment\models\LoanSummaryDetail::insertLoaneeBillDetailGeneral($applicantID,$model->loan_summary_id,$loan_given_to);
+$totalAmount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountForLoanSummary($model->loan_summary_id,$loan_given_to);
+\backend\modules\repayment\models\LoanSummary::updateNewTotalAmountLoanSummary($model->loan_summary_id,$totalAmount);		
 		}
         return true;
     }

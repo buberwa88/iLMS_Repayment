@@ -141,17 +141,227 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
     {
         return $this->hasOne(TreasuryPayment::className(), ['treasury_payment_id' => 'treasury_payment_id']);
     }
-    
-	 public function insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id,$loan_given_to){
+    public function insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id,$loan_given_to){
         $details_applicant = EmployedBeneficiary::getBeneficiariesForPaymentProcess($loan_summary_id);
         $si=0;
         $moder=new EmployedBeneficiary();
 		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
+		
+		$details_PNT=$moder->getPNTsetting();
+		$PNT_V=$details_PNT->rate; 
+		
+        $details_VRF=$moder->getVRFsetting();
+        $VRF_V=$details_VRF->rate;
         
         foreach ($details_applicant as $paymentCalculation) { 
            $applicantID=$paymentCalculation->applicant_id;
-           $amount1=$MLREB*$paymentCalculation->basic_salary;
-           self::insertAllPaymentsGeneral($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$amount1);
+           $amount1=$MLREB*$paymentCalculation->basic_salary;           
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           if($totalOutstandingAmount >= $amount1){
+              $amount=$amount1; 
+              $loanStatus=1;			  
+           }else{
+              $amount=$totalOutstandingAmount;  
+			  $loanStatus=0;
+           }
+           // check if amount is greater than 0
+		   if($totalOutstandingAmount > 0){
+           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodeVRF="VRF";
+           $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
+           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodeLAF="LAF";
+           $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
+           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodePNT="PNT";
+           $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
+           $itemCodePRC="PRC";
+           $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);
+           
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+		   
+		   
+		   //here is about to finish paying loan
+		   if($loanStatus==0){
+		   
+		//--------------LAF----------------------   
+		   Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'amount' =>$LAF,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//----------------PNT--------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'amount' =>$penalty,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//-------------VRF-----------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrf,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//-----------------PRC-------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$outstandingPrincipalLoan,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();		
+		   //end about finishing paying loan
+		   }else{
+		   
+        //-----------here for LAF portion----		   
+		   if(($LAF >= $amount) && $LAF > 0){
+            $LAF_v = $amount;
+           }else if(($LAF < $amount) && $LAF > 0){
+             $LAF_v=$LAF; 
+           }else{
+			 $LAF_v=0;		 
+		   }
+        $amount_remained=$amount-$LAF_v;
+		   
+		   
+		   if($LAF_v >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'amount' =>$LAF_v,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //-----------------END FOR LAF----        
+        //----here for penalty portion----	
+         $penalty_v = $amount_remained * $PNT_V;
+            if(($penalty >= $penalty_v) && $penalty > 0){
+             $penalty_v=$penalty_v;   
+            }else if((($penalty < $penalty_v) && $penalty > 0)){
+             $penalty_v=$penalty;   
+            }else{
+             $penalty_v=0;   
+            }
+            $amount_remained1=$amount_remained-$penalty_v;
+			
+        //---end for penalty----
+        //-----here for VRF portion----
+        if($outstandingPrincipalLoan > 0){
+         $vrf_portion=$amount_remained1 * $VRF_V; 
+         if($vrf >=$vrf_portion){
+         $vrfTopay=$vrf_portion; 
+         $amount_remained2=$amount_remained1-$vrfTopay;
+         }else{
+         $vrfTopay=$vrf; 
+         $amount_remained2=$amount_remained1-$vrfTopay;
+         }         
+        }else{
+            if($vrf >=$amount_remained1){
+         $vrfTopay=$amount_remained1;
+         $amount_remained2=0; 
+         }else{
+         $vrfTopay=$vrf; 
+         $amount_remained2=0;
+         }
+        }
+		
+        //check if principal amount exceed
+        if($outstandingPrincipalLoan >= $amount_remained2){
+        $amount_remained2=$amount_remained2;    
+        }else if($outstandingPrincipalLoan < $amount_remained2 && $outstandingPrincipalLoan >'0'){
+        $amount_remained2=$outstandingPrincipalLoan;    
+        }else{
+        $amount_remained2='0';    
+        }
+        // end check principle amount exceed
+		
+		
+		if($outstandingPrincipalLoan >= $amount_remained2){
+		if($penalty_v >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'amount' =>$penalty_v,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		if($vrfTopay >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrfTopay,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //-----END for VRF---
+        //--------------here for principal portion---
+		if($amount_remained2 >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$amount_remained2,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //---end---
+		}else{
+		//done to pay principal
+		if($amount_remained2 >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$outstandingPrincipalLoan,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		//end to pay principal
+		$amountToremain=$amount_remained2-$outstandingPrincipalLoan;
+		$finalVrfTopay=$vrfTopay + $amountToremain;
+		//$finalPenaltyTopay=$penalty_v + $amountToremain;
+		if($vrf > $finalVrfTopay && $applicantID !=''){
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$finalVrfTopay,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}else{
+		if($applicantID !=''){
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrf,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		}
+		}
+        }
+		}
 		}
         }
 		
@@ -161,10 +371,221 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         $moder=new EmployedBeneficiary();
 		$MLREB=$moder->getEmployedBeneficiaryPaymentSetting();
 		
-		foreach ($details_applicant as $paymentCalculation) { 
+		$details_PNT=$moder->getPNTsetting();
+		$PNT_V=$details_PNT->rate; 
+		
+        $details_VRF=$moder->getVRFsetting();
+        $VRF_V=$details_VRF->rate;
+        
+        foreach ($details_applicant as $paymentCalculation) { 
            $applicantID=$paymentCalculation->applicant_id;
-           $amount1=$MLREB*$paymentCalculation->basic_salary;
-           self::insertAllPaymentsGeneral($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$amount1);
+           $amount1=$MLREB*$paymentCalculation->basic_salary;           
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           if($totalOutstandingAmount >= $amount1){
+              $amount=$amount1; 
+              $loanStatus=1;			  
+           }else{
+              $amount=$totalOutstandingAmount;  
+			  $loanStatus=0;
+           }
+           // check if amount is greater than 0
+		   if($totalOutstandingAmount > 0){
+           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodeVRF="VRF";
+           $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
+           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodeLAF="LAF";
+           $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
+           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodePNT="PNT";
+           $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
+           $itemCodePRC="PRC";
+           $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);
+           
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+		   
+		   
+		   //here is about to finish paying loan
+		   if($loanStatus==0){
+		   
+		//--------------LAF----------------------   
+		   Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'amount' =>$LAF,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//----------------PNT--------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'amount' =>$penalty,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//-------------VRF-----------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrf,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//-----------------PRC-------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$outstandingPrincipalLoan,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();		
+		   //end about finishing paying loan
+		   }else{
+		   
+        //-----------here for LAF portion----		   
+		   if(($LAF >= $amount) && $LAF > 0){
+            $LAF_v = $amount;
+           }else if(($LAF < $amount) && $LAF > 0){
+             $LAF_v=$LAF; 
+           }else{
+			 $LAF_v=0;		 
+		   }
+        $amount_remained=$amount-$LAF_v;
+		   
+		   
+		   if($LAF_v >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'amount' =>$LAF_v,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //-----------------END FOR LAF----        
+        //----here for penalty portion----	
+         $penalty_v = $amount_remained * $PNT_V;
+            if(($penalty >= $penalty_v) && $penalty > 0){
+             $penalty_v=$penalty_v;   
+            }else if((($penalty < $penalty_v) && $penalty > 0)){
+             $penalty_v=$penalty;   
+            }else{
+             $penalty_v=0;   
+            }
+            $amount_remained1=$amount_remained-$penalty_v;
+			
+        //---end for penalty----
+        //-----here for VRF portion----
+        if($outstandingPrincipalLoan > 0){
+         $vrf_portion=$amount_remained1 * $VRF_V; 
+         if($vrf >=$vrf_portion){
+         $vrfTopay=$vrf_portion; 
+         $amount_remained2=$amount_remained1-$vrfTopay;
+         }else{
+         $vrfTopay=$vrf; 
+         $amount_remained2=$amount_remained1-$vrfTopay;
+         }         
+        }else{
+            if($vrf >=$amount_remained1){
+         $vrfTopay=$amount_remained1;
+         $amount_remained2=0; 
+         }else{
+         $vrfTopay=$vrf; 
+         $amount_remained2=0;
+         }
+        }
+		
+        //check if principal amount exceed
+        if($outstandingPrincipalLoan >= $amount_remained2){
+        $amount_remained2=$amount_remained2;    
+        }else if($outstandingPrincipalLoan < $amount_remained2 && $outstandingPrincipalLoan >'0'){
+        $amount_remained2=$outstandingPrincipalLoan;    
+        }else{
+        $amount_remained2='0';    
+        }
+        // end check principle amount exceed
+		
+		
+		if($outstandingPrincipalLoan >= $amount_remained2){
+		if($penalty_v >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'amount' =>$penalty_v,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		if($vrfTopay >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrfTopay,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //-----END for VRF---
+        //--------------here for principal portion---
+		if($amount_remained2 >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$amount_remained2,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //---end---
+		}else{
+		//done to pay principal
+		if($amount_remained2 >=0 && $applicantID !=''){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$outstandingPrincipalLoan,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		//end to pay principal
+		$amountToremain=$amount_remained2-$outstandingPrincipalLoan;
+		$finalVrfTopay=$vrfTopay + $amountToremain;
+		//$finalPenaltyTopay=$penalty_v + $amountToremain;
+		if($vrf > $finalVrfTopay && $applicantID !=''){
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$finalVrfTopay,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}else{
+		if($applicantID !=''){
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrf,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		}
+		}
+        }
+		}
 		}
         }
 		
@@ -300,9 +721,226 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
 public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to){
         $si=0;
         $moder=new EmployedBeneficiary();
-		$Amount=$moder->getNonEmployedBeneficiaryPaymentSetting();		
-		self::insertAllPaymentsGeneral($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$Amount);
-}
+		$Amount=$moder->getNonEmployedBeneficiaryPaymentSetting();
+		$details_PNT=$moder->getPNTsetting();
+		$PNT_V=$details_PNT->rate; 
+		
+        $details_VRF=$moder->getVRFsetting();
+        $VRF_V=$details_VRF->rate; 
+        $amount1=$Amount;
+		/*
+        $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+        if($totalOutstandingAmount > $amount1){
+          $amount=$amount1;
+          $loanStatus=1;		  
+        }else{
+          $amount=$totalOutstandingAmount; 
+          $loanStatus=0;		  
+        }
+		*/
+        $CalculatedBasicSalaryCode="CFBS";
+        $CFBS_id=$moder->getloanRepaymentItemID($CalculatedBasicSalaryCode);
+        ++$si;           
+           $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           if($totalOutstandingAmount > $amount1){
+              $amount=$amount1;
+              $loanStatus=1;			  
+           }else{
+              $amount=$totalOutstandingAmount;
+              $loanStatus=0;			  
+           }
+           
+           $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodeVRF="VRF";
+           $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
+           $LAF=$moder->getIndividualEmployeesLAFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodeLAF="LAF";
+           $LAF_id=$moder->getloanRepaymentItemID($itemCodeLAF);
+           $penalty=$moder->getIndividualEmployeesPenaltyUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+           $itemCodePNT="PNT";
+           $PNT_id=$moder->getloanRepaymentItemID($itemCodePNT);
+           $itemCodePRC="PRC";
+           $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);
+           
+           $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
+		   
+		   //here is about to finish paying loan
+		   if($loanStatus==0){
+		   
+		//--------------LAF----------------------   
+		   Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'amount' =>$LAF,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//----------------PNT--------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'amount' =>$penalty,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//-------------VRF-----------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrf,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		//-----------------PRC-------------------
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$outstandingPrincipalLoan,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();		
+		   //end about finishing paying loan
+		   }else{		   
+        //-----------here for LAF portion---- 
+
+		   if(($LAF >= $amount) && $LAF > 0){
+            $LAF_v = $amount;
+           }else if(($LAF < $amount) && $LAF > 0){
+             $LAF_v=$LAF; 
+           }else{
+			 $LAF_v=0;		 
+		   }
+        $amount_remained=$amount-$LAF_v;
+		   
+		   if($LAF_v >=0){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$LAF_id,
+        'amount' =>$LAF_v,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //-----------------END FOR LAF----        
+        //----here for penalty portion----
+
+			$penalty_v = $amount_remained * $PNT_V;
+            if(($penalty >= $penalty_v) && $penalty > 0){
+             $penalty_v=$penalty_v;   
+            }else if((($penalty < $penalty_v) && $penalty > 0)){
+             $penalty_v=$penalty;   
+            }else{
+             $penalty_v=0;   
+            }
+            $amount_remained1=$amount_remained-$penalty_v;
+        //---end for penalty----
+        //-----here for VRF portion----
+        if($outstandingPrincipalLoan > 0){
+         $vrf_portion=$amount_remained1 * $VRF_V; 
+         if($vrf >=$vrf_portion){
+         $vrfTopay=$vrf_portion; 
+         $amount_remained2=$amount_remained1-$vrfTopay;
+         }else{
+         $vrfTopay=$vrf; 
+         $amount_remained2=$amount_remained1-$vrfTopay;
+         }         
+        }else{
+            if($vrf >=$amount_remained1){
+         $vrfTopay=$amount_remained1;
+         $amount_remained2=0; 
+         }else{
+         $vrfTopay=$vrf; 
+         $amount_remained2=0;
+         }
+        }
+		
+        //check if principal amount exceed
+        if($outstandingPrincipalLoan >= $amount_remained2){
+        $amount_remained2=$amount_remained2;    
+        }else if($outstandingPrincipalLoan < $amount_remained2 && $outstandingPrincipalLoan >'0'){
+        $amount_remained2=$outstandingPrincipalLoan;    
+        }else{
+        $amount_remained2='0';    
+        }
+        // end check principle amount exceed
+		
+    if($outstandingPrincipalLoan >= $amount_remained2){
+		if($penalty_v >=0){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PNT_id,
+        'amount' =>$penalty_v,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		if($vrfTopay >=0){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrfTopay,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //-----END for VRF---
+        //--------------here for principal portion---
+		if($amount_remained2 >=0){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$amount_remained2,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+        //---end---
+		}else{
+		//done to pay principal
+		if($amount_remained2 >=0){
+        Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$PRC_id,
+        'amount' =>$outstandingPrincipalLoan,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		//end to pay principal
+		$amountToremain=$amount_remained2-$outstandingPrincipalLoan;
+		$finalVrfTopay=$vrfTopay + $amountToremain;
+		//$finalPenaltyTopay=$penalty_v + $amountToremain;
+		if($vrf > $finalVrfTopay){
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$finalVrfTopay,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}else{
+		Yii::$app->db->createCommand()
+        ->insert('loan_repayment_detail', [
+        'loan_repayment_id' =>$loan_repayment_id,
+        'applicant_id' =>$applicantID,
+        'loan_repayment_item_id' =>$vrf_id,
+        'amount' =>$vrf,
+        'loan_summary_id' =>$loan_summary_id,    
+        ])->execute();
+		}
+		}		
+        }
+        }
         public function updateLoaneeWhenAdjustedPaymentAmount($totalAmount1,$loan_repayment_id,$applicantID){
         $si=0;
         $moder=new EmployedBeneficiary(); 
@@ -949,17 +1587,32 @@ public static function insertPaymentOfScholarshipBeneficiaries($loan_summary_id,
 		}
         }
 		
-public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$Amount){
+public function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to){
+        $si=0;
         $moder=new EmployedBeneficiary();
+		$Amount=$moder->getNonEmployedBeneficiaryPaymentSetting();
 		$details_PNT=$moder->getPNTsetting();
 		$PNT_V=$details_PNT->rate; 
 		
         $details_VRF=$moder->getVRFsetting();
         $VRF_V=$details_VRF->rate; 
-         $amount=$Amount; 
+        $amount1=$Amount;
+		/*
+        $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
+        if($totalOutstandingAmount > $amount1){
+          $amount=$amount1;
+          $loanStatus=1;		  
+        }else{
+          $amount=$totalOutstandingAmount; 
+          $loanStatus=0;		  
+        }
+		*/
+        $CalculatedBasicSalaryCode="CFBS";
+        $CFBS_id=$moder->getloanRepaymentItemID($CalculatedBasicSalaryCode);
+        ++$si;           
            $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
-           if($totalOutstandingAmount > $amount){
-              $amount=$amount;
+           if($totalOutstandingAmount > $amount1){
+              $amount=$amount1;
               $loanStatus=1;			  
            }else{
               $amount=$totalOutstandingAmount;
@@ -1156,5 +1809,6 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
 		}
 		}		
         }
-        }       	
+        }
+       	
 }		

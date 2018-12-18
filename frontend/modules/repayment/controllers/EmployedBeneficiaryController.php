@@ -881,8 +881,11 @@ class EmployedBeneficiaryController extends Controller {
         if ($model->load(Yii::$app->request->post())) {
             $datime=date("Y_m_d_H_i_s");
             $model->support_document = UploadedFile::getInstance($model, 'support_document');
-            $model->support_document->saveAs('../../beneficiary_document/employment_status_support_document_'.$model->employed_beneficiary_id.'_'.$datime.'.'.$model->support_document->extension);
-            $model->support_document = 'beneficiary_document/employment_status_support_document_'.$model->employed_beneficiary_id.'_'.$datime.'.'.$model->support_document->extension;
+            //$model->support_document->saveAs('../../beneficiary_document/employment_status_support_document_'.$model->employed_beneficiary_id.'_'.$datime.'.'.$model->support_document->extension);
+            //$model->support_document = 'beneficiary_document/employment_status_support_document_'.$model->employed_beneficiary_id.'_'.$datime.'.'.$model->support_document->extension;
+			$model->support_document->saveAs(Yii::$app->params['beneficiaryDocument'].'employment_status_support_document_'.$model->employed_beneficiary_id.'_'.$datime.'.'. $model->support_document->extension);
+            $model->support_document = Yii::$app->params['beneficiaryDocument'].'employment_status_support_document_'.$model->employed_beneficiary_id.'_'.$datime.'.'.$model->support_document->extension;
+			
             $model->employment_end_date=date("Y-m-d");
             $model->verification_status=5;
             $model->employment_status=$model->employmentStatus2;            

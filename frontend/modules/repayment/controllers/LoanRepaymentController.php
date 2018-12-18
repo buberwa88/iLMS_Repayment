@@ -187,7 +187,7 @@ class LoanRepaymentController extends Controller
             $loan_repayment_id=$model2->loan_repayment_id;
             //$model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$controlNumber);
             if($salarySource==2){
-			$searchModel->insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id,$salarySource,$loan_given_to);	
+			$searchModel->insertAllPaymentsofAllLoaneesUnderBillSalarySourceBases($loan_summary_id,$loan_repayment_id,$loan_given_to);	
 			}else{
 			$searchModel->insertAllPaymentsofAllLoaneesUnderBill($loan_summary_id,$loan_repayment_id,$loan_given_to);
 			}

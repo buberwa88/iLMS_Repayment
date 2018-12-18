@@ -765,6 +765,9 @@ public static function getActiveNewBeneficiariesDuringLoanSummaryCreation(){
 public static function getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreation($employerID){
 	return  self::findBySql("SELECT * FROM employed_beneficiary WHERE  employer_id='$employerID'  AND applicant_id IS NOT NULL  AND employment_status='ONPOST' AND verification_status='1' AND (loan_summary_id IS NULL OR loan_summary_id='')")->all();
 }
+public static function getActiveBeneficiariesUnderEmployerDuringLoanSummaryCreationDecease($employerID){
+	return  self::findBySql("SELECT * FROM employed_beneficiary WHERE  employer_id='$employerID'  AND applicant_id IS NOT NULL  AND employment_status='ONPOST' AND verification_status='1' AND loan_summary_id > '0'")->all();
+}
 public static function getIndividualLAFReprocessLoan($amount){
 		  $details_LAF=EmployedBeneficiary::getLAFsetting();
           $LAF=$details_LAF->rate;				

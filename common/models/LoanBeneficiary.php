@@ -494,21 +494,26 @@ class LoanBeneficiary extends \yii\db\ActiveRecord
         public static function getNewLoanSummaryAfterDeceasedBeneficiary($LoanSummaryID, $employerID){
             $LoanSummaryModel = new \frontend\modules\repayment\models\LoanSummary();
 	    $LoanSummaryModel->ceaseBillIfEmployedBeneficiaryDisabled($LoanSummaryID, $employerID);
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
                         // start generating loan summary  getTotalLoanInBillAfterDecease
-                        $totalAcculatedLoan = \backend\modules\repayment\models\EmployedBeneficiary::getTotalLoanInBillAfterDecease($employerID);
+                        //$totalAcculatedLoan = \backend\modules\repayment\models\EmployedBeneficiary::getTotalLoanInBillAfterDecease($employerID);
+						$totalAcculatedLoan =0;
                         $resultsEmployer = \backend\modules\repayment\models\LoanSummary::getEmployerDetails($employerID);
                         $billNumber = $resultsEmployer->employer_code . "-" . date("Y") . "-" . \backend\modules\repayment\models\LoanSummary::getLastBillID($employerID);
                         $status = 0;
-                        $description = "Due to Value Retention Fee(VRF) which is charged daily, the total loan amount will be changing accordingly.";
+						$category="Decease";
+                        $description = "";
                         $created_by = Yii::$app->user->identity->user_id;
                         $created_at = date("Y-m-d H:i:s");
                         $vrf_accumulated = 0.00;
                         $vrf_last_date_calculated = $created_at;
                         \backend\modules\repayment\models\LoanSummary::insertNewValuesAfterTermination($employerID, $totalAcculatedLoan, $billNumber, $status, $description, $created_by, $created_at, $vrf_accumulated, $vrf_last_date_calculated);
                         $New_loan_summary_id = \backend\modules\repayment\models\LoanSummary::getLastLoanSummaryID($employerID);
-                        \backend\modules\repayment\models\LoanSummaryDetail::insertAllBeneficiariesUnderBillAfterDeceased($employerID, $New_loan_summary_id);
+                        //\backend\modules\repayment\models\LoanSummaryDetail::insertAllBeneficiariesUnderBillAfterDeceased($employerID, $New_loan_summary_id);
+						\backend\modules\repayment\models\LoanSummaryDetail::insertAllBeneficiariesUnderBill($employerID,$New_loan_summary_id,$category);
                         \backend\modules\repayment\models\LoanSummary::updateCeasedBill($employerID);
-                        \backend\modules\repayment\models\EmployedBeneficiary::updateAll(['loan_summary_id' =>$New_loan_summary_id], 'employer_id="'.$employerID.'" AND verification_status=1 AND employment_status="ONPOST"');
+                        $totalAmount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountForLoanSummary($New_loan_summary_id,$loan_given_to);
+                        \backend\modules\repayment\models\LoanSummary::updateNewTotalAmountLoanSummary($New_loan_summary_id,$totalAmount);
                         //here end generate new loan summary
                         return true;
 	}

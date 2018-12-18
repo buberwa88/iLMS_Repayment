@@ -7,4 +7,5 @@ return [
 	'daysSinceLoanSummaryCreatedCheck' =>28,
 	'deadlineDayForEmployerPenaltyEachMonth' =>15,
 	'cancelBillReason'=>'Unconfirmed Bill',
+	'beneficiaryDocument' =>'beneficiary_document/',
 ];

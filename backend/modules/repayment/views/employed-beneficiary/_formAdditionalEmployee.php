@@ -24,9 +24,6 @@ if (!$model->isNewRecord && $model->place_of_birth > 0) {
     $model->region = $modelr->region_id;
 }
 
-    $loggedin = Yii::$app->user->identity->user_id;
-        $employer2 = EmployerSearch::getEmployer($loggedin);
-        $employerID = $employer2->employer_id;
 
 $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL]);
 ?>
@@ -187,7 +184,7 @@ echo Form::widget([ // fields with labels
   
 <?php
 echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/employed-beneficiary/index-view-beneficiary'], ['class' => 'btn btn-warning']);
+echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['employer/view','id'=>$employerID], ['class' => 'btn btn-warning']);
 
 ActiveForm::end();
 ?>
