@@ -10,16 +10,15 @@ use backend\modules\repayment\models\LoanSummaryDetail;
 /**
  * LoanSummaryDetailSearch represents the model behind the search form about `frontend\modules\repayment\models\LoanSummaryDetail`.
  */
-class LoanSummaryDetailSearch extends LoanSummaryDetail
-{
+class LoanSummaryDetailSearch extends LoanSummaryDetail {
+
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
+    public function rules() {
         return [
             [['loan_summary_detail_id', 'applicant_id', 'loan_summary_id', 'loan_repayment_item_id', 'academic_year_id', 'indexno'], 'integer'],
-            [['firstname','surname','middlename','f4indexno','paid','outstandingDebt','totalLoan'], 'safe'],
+            [['firstname', 'surname', 'middlename', 'f4indexno', 'paid', 'outstandingDebt', 'totalLoan'], 'safe'],
             [['amount'], 'number'],
         ];
     }
@@ -27,8 +26,7 @@ class LoanSummaryDetailSearch extends LoanSummaryDetail
     /**
      * @inheritdoc
      */
-    public function scenarios()
-    {
+    public function scenarios() {
         // bypass scenarios() implementation in the parent class
         return Model::scenarios();
     }
@@ -40,8 +38,7 @@ class LoanSummaryDetailSearch extends LoanSummaryDetail
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
-    {
+    public function search($params) {
         $query = LoanSummaryDetail::find();
 
         // add conditions that should always apply here
@@ -59,9 +56,9 @@ class LoanSummaryDetailSearch extends LoanSummaryDetail
         }
 
         // grid filtering conditions
-		$query->joinWith("applicant");
-         $query->joinwith(["applicant","applicant.user"]);
-		 
+        $query->joinWith("applicant");
+        $query->joinwith(["applicant", "applicant.user"]);
+
         $query->andFilterWhere([
             'loan_summary_detail_id' => $this->loan_summary_detail_id,
             'loan_summary_id' => $this->loan_summary_id,
@@ -70,20 +67,19 @@ class LoanSummaryDetailSearch extends LoanSummaryDetail
             'academic_year_id' => $this->academic_year_id,
             'amount' => $this->amount,
         ]);
-		
-		$query->andFilterWhere(['like', 'applicant_id', $this->applicant_id])
-			->andFilterWhere(['like', 'user.firstname', $this->firstname])
-			->andFilterWhere(['like', 'user.middlename', $this->middlename])
-            ->andFilterWhere(['like', 'user.surname', $this->surname])
-			->andFilterWhere(['like', 'applicant.f4indexno', $this->f4indexno]);
+
+        $query->andFilterWhere(['like', 'applicant_id', $this->applicant_id])
+                ->andFilterWhere(['like', 'user.firstname', $this->firstname])
+                ->andFilterWhere(['like', 'user.middlename', $this->middlename])
+                ->andFilterWhere(['like', 'user.surname', $this->surname])
+                ->andFilterWhere(['like', 'applicant.f4indexno', $this->f4indexno]);
 
         return $dataProvider;
     }
-    
-    public function loaneesUnderBill($params,$loan_summary_id)
-    {
+
+    public function loaneesUnderBill($params, $loan_summary_id) {
         $query = LoanSummaryDetail::find()
-                ->where(['loan_summary_id'=>$loan_summary_id])
+                ->where(['loan_summary_id' => $loan_summary_id])
                 ->groupBy('applicant_id')
                 ->orderBy('loan_summary_detail_id DESC');
 
@@ -100,10 +96,10 @@ class LoanSummaryDetailSearch extends LoanSummaryDetail
             // $query->where('0=1');
             return $dataProvider;
         }
-        
+
         // grid filtering conditions
-		 $query->joinWith("applicant");
-         $query->joinwith(["applicant","applicant.user"]);
+        $query->joinWith("applicant");
+        $query->joinwith(["applicant", "applicant.user"]);
         $query->andFilterWhere([
             'loan_summary_detail_id' => $this->loan_summary_detail_id,
             'loan_summary_id' => $this->loan_summary_id,
@@ -113,10 +109,10 @@ class LoanSummaryDetailSearch extends LoanSummaryDetail
             'amount' => $this->amount,
         ]);
         $query->andFilterWhere(['like', 'applicant_id', $this->applicant_id])
-			->andFilterWhere(['like', 'user.firstname', $this->firstname])
-			->andFilterWhere(['like', 'user.middlename', $this->middlename])
-            ->andFilterWhere(['like', 'user.surname', $this->surname])
-			->andFilterWhere(['like', 'applicant.f4indexno', $this->f4indexno]);
+                ->andFilterWhere(['like', 'user.firstname', $this->firstname])
+                ->andFilterWhere(['like', 'user.middlename', $this->middlename])
+                ->andFilterWhere(['like', 'user.surname', $this->surname])
+                ->andFilterWhere(['like', 'applicant.f4indexno', $this->f4indexno]);
         return $dataProvider;
     }
 }
