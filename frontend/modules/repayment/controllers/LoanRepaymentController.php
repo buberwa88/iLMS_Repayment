@@ -176,6 +176,15 @@ class LoanRepaymentController extends Controller
         if($employerID >0){
 			$salarySource=$model2->salarySource;
         // requesting control number from GePG
+		//check if all beneficiaries have Gross salaries
+		$getGrossSalaryStatus=\frontend\modules\repayment\models\EmployedBeneficiary::getBeneficiaryGrossSalaryStatus($employerID);
+		if($getGrossSalaryStatus >0){
+		$sms="Error: Please set GROSS SALARY to all beneficiaries! Thanks!";
+        Yii::$app->getSession()->setFlash('error', $sms);	
+		return $this->redirect(['generate-bill']);	
+		}else{
+		//end check
+		
         if($model2->save()){
 		
           //reference no to send to GePG  
@@ -196,6 +205,7 @@ class LoanRepaymentController extends Controller
             $model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$loan_repayment_id);			
 			return $this->redirect(['confirm-payment', 'id' => $model2->loan_repayment_id]);            
         }
+		}
         //end requesting number
         }
         }

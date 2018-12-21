@@ -1162,5 +1162,8 @@ public static function getApplicantDetailsUsingNonUniqueIdentifiers3($regNo,$f4C
 		
 		return $details2;
 		
-    }	
+    }
+public static function getBeneficiaryGrossSalaryStatus($employerID){
+return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.employer_id='$employerID' AND employment_status='ONPOST' AND verification_status='1' AND (basic_salary IS NULL OR basic_salary <='0') AND loan_summary_id > '0'")->count();	
+}	
 }
