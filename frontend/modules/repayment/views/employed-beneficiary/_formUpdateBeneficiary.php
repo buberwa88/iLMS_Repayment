@@ -48,7 +48,7 @@ echo Form::widget([ // fields with labels
         'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Telephone Number']],
         'NID'=>['label'=>'National Identification Number:', 'options'=>['placeholder'=>'National Identification Number']], 			
         'employee_id'=>['label'=>'Employee ID:', 'options'=>['placeholder'=>'Employee ID']],        
-        'basic_salary'=>['label'=>'Basic Salary(TZS):', 'options'=>['placeholder'=>'Basic Salary']],	
+        'basic_salary'=>['label'=>'Gross Salary(TZS):', 'options'=>['placeholder'=>'Gross Salary']],	
     ]
 ]);	
 ?>

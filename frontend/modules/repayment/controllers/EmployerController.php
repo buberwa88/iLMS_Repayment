@@ -550,4 +550,16 @@ class EmployerController extends Controller
             ]);
         }
     }
+public function actionProgrammeName() {
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $InstitutionId = $parents[0];
+                $out = \frontend\modules\repayment\models\Employer::getProgrammes($InstitutionId);
+                echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
+                return;
+            }
+        }
+    }
 }

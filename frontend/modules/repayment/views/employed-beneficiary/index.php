@@ -18,9 +18,9 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                         <div class="panel-body">
             <p><?php echo Html::a('Download Template', ['download'], ['class' => 'btn btn-warning']) ?>
-               <?php echo Html::a('Institutions Codes', ['learning-institutions-codes'], ['class' => 'btn btn-success']) ?>
+               <?php //echo Html::a('Institutions Codes', ['learning-institutions-codes'], ['class' => 'btn btn-success']) ?>
                <?php //echo Html::a('Study Level', ['study-level'], ['class' => 'btn btn-default']) ?>
-               <?php echo Html::a('Programmes', ['programme'], ['class' => 'btn btn-primary']) ?>
+               <?php //echo Html::a('Programmes', ['programme'], ['class' => 'btn btn-primary']) ?>
             </p>
             <br/>
             <?=

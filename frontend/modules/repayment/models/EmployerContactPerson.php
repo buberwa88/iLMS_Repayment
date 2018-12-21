@@ -30,6 +30,12 @@ class EmployerContactPerson extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+	 public $salary_source;
+	 public $employer_name;
+	 public $short_name;
+	 public $employer_code;
+	 public $email_verification_code;
+	 
     public function rules()
     {
         return [
@@ -42,7 +48,7 @@ class EmployerContactPerson extends \yii\db\ActiveRecord
 
     /**
      * @inheritdoc
-     */
+     */	 
     public function attributeLabels()
     {
         return [
@@ -57,5 +63,9 @@ class EmployerContactPerson extends \yii\db\ActiveRecord
     public function getUser()
     {
         return $this->hasOne(\common\models\User::className(), ['user_id' => 'user_id']);
+    }
+	public function getEmployer()
+    {
+        return $this->hasOne(\frontend\modules\repayment\models\Employer::className(), ['employer_id' => 'employer_id']);
     }
 }

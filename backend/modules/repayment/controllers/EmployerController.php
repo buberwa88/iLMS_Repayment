@@ -597,5 +597,129 @@ class EmployerController extends Controller
             }
         }
     }
+public function actionAddContactPerson($employer_id=NULL){
+        $modelUser = new \frontend\modules\repayment\models\User();	
+	$modelUser->scenario = 'employer_contact_person';	
+	$loggedin=Yii::$app->user->identity->user_id;
+        if ($modelUser->load(Yii::$app->request->post()) && $modelUser->validate()){
+	    $modelUser->username=$modelUser->email_address;		
+        $password=$modelUser->password;        
+        $modelUser->password_hash=Yii::$app->security->generatePasswordHash($password);
+        $modelUser->auth_key = Yii::$app->security->generateRandomString();
+        $modelUser->status=10;
+        $modelUser->login_type=2;
+		//$model->created_by =Yii::$app->user->identity->user_id;
+		$modelUser->created_at =strtotime(date("Y-m-d"));
+		$modelUser->updated_at =strtotime(date("Y-m-d"));
+		$modelUser->last_login_date =date("Y-m-d H:i:s");
+		$modelUser->date_password_changed=date("Y-m-d");
+        $modelUser->created_by=Yii::$app->user->identity->user_id;		
+            if($modelUser->save()) {
+                
+    //create contact person
+   $modelEmployerContactPerson = new \frontend\modules\repayment\models\EmployerContactPerson();
+   $modelEmployerContactPerson->employer_id=$employer_id;
+   $modelEmployerContactPerson->user_id=$modelUser->user_id;
+   $modelEmployerContactPerson->role=\frontend\modules\repayment\models\EmployerContactPerson::ROLE_SECONDARY;
+   $modelEmployerContactPerson->created_by=$modelUser->created_by =Yii::$app->user->identity->user_id;
+   $modelEmployerContactPerson->created_at=date("Y-m-d H:i:s");
+   $modelEmployerContactPerson->save();
+   //end create contact person
+                
+                #################create staff role #########
+                                    $date=strtotime(date("Y-m-d"));
+        Yii::$app->db->createCommand("INSERT  INTO auth_assignment(item_name,user_id,created_at) VALUES('Repayment',$modelUser->user_id,$date)")->execute();
+                //end
+				
+				// here for logs
+                        $old_data=\yii\helpers\Json::encode($modelUser->attributes);						
+						$new_data=\yii\helpers\Json::encode($modelUser->attributes);
+						$model_logs=\common\models\base\Logs::CreateLogall($modelUser->user_id,$old_data,$new_data,"user","CREATE",1);
+				//end for logs
+				
+		    $sms="<p>Information successful added</p>";
+            Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['view','id'=>$employer_id]);
+       }
+		} else {
+            return $this->render('addContactPerson', [
+                'model' => $modelUser,'employer_id'=>$employer_id,
+            ]);
+        }
+    }
+public function actionUpdateInformation($id)
+    {	
+	    $loggedin=Yii::$app->user->identity->user_id;
+	    
+        $employerModel = $this->findModel($id);
+		if($employerModel->load(Yii::$app->request->post()) && $employerModel->save()){
+		    $sms="Information Updated!";
+            Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['view', 'id' => $employerModel->employer_id]);
+	
+        } else {
+            return $this->render('updateInformation', [
+                'employerModel' => $employerModel,
+            ]);
+        }
+    }
+	
+	public function actionUpdateContactperson($id=null,$emploID=null)
+    {	
+
+        $userModel = \frontend\modules\repayment\models\User::findOne($id);
+		$userModel->scenario='update_contact_person';
+		if($userModel->load(Yii::$app->request->post()) && $userModel->validate()){
+			$userModel1 = \frontend\modules\repayment\models\User::findOne($id);
+			$userModel1->firstname=$userModel->firstname;
+			$userModel1->middlename=$userModel->middlename;
+			$userModel1->surname=$userModel->surname;
+			$userModel1->phone_number=$userModel->phone_number;
+			$userModel1->email_address=$userModel->email_address;
+			if($userModel1->save()){
+		    $sms="Information Updated!";
+            Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['view', 'id' => $emploID]);
+			}
+        } else {
+            return $this->render('updateContactperson', [
+                'model' => $userModel,'employer_id'=>$emploID
+            ]);
+        }
+    }
+	
+	public function actionChangePasswordContactp($id=null,$emploID=null)
+    {	
+	    
+        $userModel = \frontend\modules\repayment\models\User::findOne($id);
+		$userModel->scenario='change_pwd_contact_person';
+		if($userModel->load(Yii::$app->request->post()) && $userModel->validate()){			
+			$userModel1 = \frontend\modules\repayment\models\User::findOne($id);
+			$password=$userModel->password;        
+            $userModel1->password_hash=Yii::$app->security->generatePasswordHash($password);
+            $userModel1->auth_key = Yii::$app->security->generateRandomString();
+			if($userModel1->save()){			
+		    $sms="Information Updated!";
+            Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['view', 'id' => $emploID]);
+			}
+        } else {
+            return $this->render('changePasswordContactp', [
+                'model' => $userModel,'employer_id'=>$emploID
+            ]);
+        }
+    }
+	public function actionProgrammeName() {
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $InstitutionId = $parents[0];
+                $out = \frontend\modules\repayment\models\Employer::getProgrammes($InstitutionId);
+                echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
+                return;
+            }
+        }
+    }
 		  
 }

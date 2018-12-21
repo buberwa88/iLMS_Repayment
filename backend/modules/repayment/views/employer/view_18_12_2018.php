@@ -6,8 +6,6 @@ use kartik\tabs\TabsX;
 /* @var $model frontend\models\Fixedassets */
 
 $this->title ="Employer";
-$this->params['breadcrumbs'][] = ['label' => 'Employers', 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="employed-beneficiary-view">
 <div class="panel panel-info">

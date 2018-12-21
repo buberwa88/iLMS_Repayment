@@ -6,6 +6,7 @@ use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use frontend\modules\repayment\models\Employer;
+use frontend\modules\repayment\models\EmployerContactPerson;
 use frontend\modules\application\models\Applicant;
 
 /**
@@ -117,9 +118,7 @@ class EmployerSearch extends Employer
     }
     
     public static function getEmployer($loggedin){
-        $employerDetails = Employer::find()
-                            ->where(['user_id'=>$loggedin])
-                            ->limit(1)->one();
+        $employerDetails = EmployerContactPerson::findBySql("SELECT employer.employer_id,employer.salary_source,employer.employer_name,employer.short_name,employer.employer_code,employer.email_verification_code FROM employer_contact_person INNER JOIN employer ON employer.employer_id=employer_contact_person.employer_id WHERE employer_contact_person.user_id='$loggedin'")->limit(1)->one();
         return $employerDetails;
         }
 

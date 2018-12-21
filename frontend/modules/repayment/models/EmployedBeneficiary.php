@@ -86,6 +86,8 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
 	public $firstname1;
 	public $employmentStatus2;
 	public $salary_source_check;
+	public $STUDY_LEVEL4;
+	public $STUDY_LEVEL5;
 
 
     public function rules() {
@@ -93,9 +95,9 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
             [['employee_check_number', 'employee_mobile_phone_no', 'basic_salary', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_NAME_OF_INSTITUTION_OF_STUDY'], 'required', 'on' => 'Uploding_employed_beneficiaries'],
             [['support_document','employmentStatus2'], 'required', 'on'=>'deactivate_double_employed'],
             [['support_document'], 'file', 'extensions'=>['pdf']],
-			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','basic_salary', 'sex', 'learning_institution_id', 'district', 'place_of_birth', 'date_of_birth','region','programme_entry_year','programme_completion_year','programme','programme_level_of_study','salary_source'], 'required', 'on' => 'additionalEmployee'],
-			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','basic_salary', 'sex', 'learning_institution_id', 'place_of_birth', 'date_of_birth','programme_entry_year','programme_completion_year','programme','programme_level_of_study','salary_source'], 'required', 'on' => 'upload_employees'],
-            [['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','basic_salary', 'sex', 'learning_institution_id', 'place_of_birth', 'date_of_birth','programme_entry_year','programme_completion_year','programme','programme_level_of_study','salary_source'], 'required', 'on' => 'upload_employees2'],
+			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number', 'sex','salary_source','LOAN_BENEFICIARY_STATUS'], 'required', 'on' => 'additionalEmployee'],
+			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','sex','salary_source','LOAN_BENEFICIARY_STATUS'], 'required', 'on' => 'upload_employees'],
+            [['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','sex','salary_source','LOAN_BENEFICIARY_STATUS'], 'required', 'on' => 'upload_employees2'],
 			//['salary_source', 'required', 'when' => function ($model) {
     //return $model->salary_source_check == 3;
 //}, 'whenClient' => "function (attribute, value) {
@@ -117,7 +119,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
 	    ['phone_number', 'string', 'length' => [0, 12]],
             [['employment_status', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_YEAR_OF_COMPLETION_STUDIES', 'employee_ACADEMIC_AWARD', 'employee_NAME_OF_INSTITUTION_OF_STUDY'], 'string'],
             [['employer_id', 'employee_id', 'applicant_id', 'employment_status', 'created_at', 'created_by', 'created_at',
-            'employee_current_nameifchanged', 'NID', 'f4indexno', 'phone_number', 'loan_summary_id','principal','penalty','LAF','VRF','totalLoan','paid','outstanding', 'totalLoanees', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_YEAR_OF_COMPLETION_STUDIES', 'employee_ACADEMIC_AWARD', 'employee_NAME_OF_INSTITUTION_OF_STUDY', 'amount', 'verification_status' , 'employerName','district','place_of_birth','learning_institution_id','sex','firstname','middlename','surname','region','firstname1','employmentStatus2','employment_start_date','employment_end_date','upload_status','upload_error','programme_entry_year','programme_completion_year','programme','programme_level_of_study','employee_status','current_name','upload_status','uploaded_learning_institution_code','uploaded_level_of_study','uploaded_programme_studied','uploaded_place_of_birth','uploaded_sex','confirmed','mult_employed','support_document','vote_number','salary_source','salary_source_check','updated_by','updated_at'], 'safe'],
+            'employee_current_nameifchanged', 'NID', 'f4indexno', 'phone_number', 'loan_summary_id','principal','penalty','LAF','VRF','totalLoan','paid','outstanding', 'totalLoanees', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_YEAR_OF_COMPLETION_STUDIES', 'employee_ACADEMIC_AWARD', 'employee_NAME_OF_INSTITUTION_OF_STUDY', 'amount', 'verification_status' , 'employerName','district','place_of_birth','learning_institution_id','sex','firstname','middlename','surname','region','firstname1','employmentStatus2','employment_start_date','employment_end_date','upload_status','upload_error','programme_entry_year','programme_completion_year','programme','programme_level_of_study','employee_status','current_name','upload_status','uploaded_learning_institution_code','uploaded_level_of_study','uploaded_programme_studied','uploaded_place_of_birth','uploaded_sex','confirmed','mult_employed','support_document','vote_number','salary_source','salary_source_check','updated_by','updated_at','STUDY_LEVEL2','INSTITUTION_OF_STUDY2','PROGRAMME_STUDIED2','ENTRY_YEAR2','COMPLETION_YEAR2','STUDY_LEVEL3','INSTITUTION_OF_STUDY3','PROGRAMME_STUDIED3','ENTRY_YEAR3','COMPLETION_YEAR3','LOAN_BENEFICIARY_STATUS'], 'safe'],
             [['employeesFile'], 'file', 'skipOnEmpty' => false, 'extensions' => 'xlsx,xls', 'on' => 'upload_employees'],
             [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'xlsx,xls', 'on' => 'uploaded_files_employees'],
             [['employee_id'], 'string', 'max' => 20],
@@ -322,7 +324,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
             if ($value1 == 0) {
                 $details2 = \frontend\modules\application\models\Applicant::findBySql("SELECT applicant.applicant_id AS applicant_id FROM education INNER JOIN application ON education.application_id=application.application_id INNER JOIN applicant ON applicant.applicant_id=application.applicant_id  WHERE  education.registration_number='$regNo' AND education.completion_year='$f4CompletionYear' AND education.level='OLEVEL' ORDER BY applicant_id DESC")->one();
                 
-                $value2 = (count($details2) == 0) ? '0' : '1';
+                $value2 = (count($details2) == 0) ? '0' : count($details2);
                 if ($value2 == 0) {
                     $details3 = \frontend\modules\application\models\Applicant::findBySql("SELECT applicant.applicant_id AS applicant_id  FROM applicant  WHERE NID='$NIN' ORDER BY applicant_id DESC")->one();
                     $value3 = (count($details3) == 0) ? '0' : '1';
@@ -353,9 +355,9 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
     }
 	
 
-    public function getApplicantDetailsUsingNonUniqueIdentifiers($firstname, $middlename, $surname, $dateofbirth, $placeofbirth, $academicInstitution,$studyLevel,$programmeStudied,$EntryAcademicYear,$CompletionAcademicYear) {
-        $details_applicant = Applicant::findBySql("SELECT * FROM applicant INNER JOIN user ON user.user_id=applicant.user_id INNER JOIN application ON application.applicant_id=applicant.applicant_id INNER JOIN programme ON programme.programme_id=application.programme_id INNER JOIN education ON education.application_id=application.application_id "
-                        . "WHERE  user.firstname='$firstname' AND user.middlename='$middlename' AND user.surname='$surname' AND applicant.date_of_birth='$dateofbirth' AND applicant.place_of_birth='$placeofbirth' AND programme.learning_institution_id ='$academicInstitution' AND application.applicant_category_id='$studyLevel' AND application.programme_id ='$programmeStudied' AND application.application_study_year ='$EntryAcademicYear' AND application.current_study_year ='$CompletionAcademicYear' ORDER BY applicant.applicant_id DESC")->one();
+    public static function getApplicantDetailsUsingNonUniqueIdentifiers($firstname, $middlename, $surname,$academicInstitutionGeneral,$studyLevelGeneral, $programmeStudiedGeneral,$EntryAcademicYearGeneral,$CompletionAcademicYearGeneral) {
+        $details_applicant = Applicant::findBySql("SELECT applicant.applicant_id FROM applicant INNER JOIN user ON user.user_id=applicant.user_id INNER JOIN application ON application.applicant_id=applicant.applicant_id INNER JOIN programme ON programme.programme_id=application.programme_id INNER JOIN education ON education.application_id=application.application_id "
+                        . "WHERE  user.firstname='$firstname' AND user.middlename='$middlename' AND user.surname='$surname' AND programme.learning_institution_id IN($academicInstitutionGeneral) AND application.applicant_category_id IN($studyLevelGeneral) AND application.programme_id IN($programmeStudiedGeneral) AND application.application_study_year IN($EntryAcademicYearGeneral) AND application.current_study_year IN($CompletionAcademicYearGeneral) ORDER BY applicant.applicant_id DESC")->one();
         $applicant_idR = $details_applicant->applicant_id;
         $results = (count($applicant_idR) == 0) ? '0' : $details_applicant;
         return $results;
@@ -1009,7 +1011,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
 	return $wardID;
 	}
 	public function getLearningInstitutionID($institution_code){
-	$learning_institution_id=LearningInstitution::find()->where(['institution_code'=>$institution_code])->one();
+	$learning_institution_id=LearningInstitution::find()->where(['institution_name'=>$institution_code])->one();
 	if(count($learning_institution_id) >0){
 	$learning_institution_id=$learning_institution_id->learning_institution_id;
 	}else{
@@ -1138,5 +1140,27 @@ public static function getBeneficiariesForPaymentProcess($loan_summary_id){
 }
 public static function getBeneficiariesForPaymentProcessSalarySourceBases($loan_summary_id){
 	return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.loan_summary_id='$loan_summary_id' AND employment_status='ONPOST' AND verification_status='1' AND salary_source IN(2,3)")->all();
-}	
+}
+public static function checkCompletenessOfFields($STUDY_LEVEL,$INSTITUTION_OF_STUDY,$PROGRAMME_STUDIED,$ENTRY_YEAR,$COMPLETION_YEAR){
+if($STUDY_LEVEL !='' && ($INSTITUTION_OF_STUDY =='' || $PROGRAMME_STUDIED =='' || $ENTRY_YEAR =='' || $COMPLETION_YEAR =='')){
+	$fullFilled=0;
+}else if($INSTITUTION_OF_STUDY !='' && ($STUDY_LEVEL =='' || $PROGRAMME_STUDIED =='' || $ENTRY_YEAR =='' || $COMPLETION_YEAR =='')){
+	$fullFilled=0;
+}else if($PROGRAMME_STUDIED !='' && ($STUDY_LEVEL =='' || $INSTITUTION_OF_STUDY =='' || $ENTRY_YEAR =='' || $COMPLETION_YEAR =='')){
+	$fullFilled=0;
+}else if($ENTRY_YEAR !='' && ($STUDY_LEVEL =='' || $INSTITUTION_OF_STUDY =='' || $PROGRAMME_STUDIED =='' || $COMPLETION_YEAR =='')){
+	$fullFilled=0;
+}else if($COMPLETION_YEAR !='' && ($STUDY_LEVEL =='' || $INSTITUTION_OF_STUDY =='' || $PROGRAMME_STUDIED =='' || $ENTRY_YEAR =='')){
+	$fullFilled=0;
+}else{
+	$fullFilled=1;
+}
+return $fullFilled;	
+}
+public static function getApplicantDetailsUsingNonUniqueIdentifiers3($regNo,$f4CompletionYear,$firstname, $middlename, $surname,$academicInstitutionGeneral,$studyLevelGeneral, $programmeStudiedGeneral,$EntryAcademicYearGeneral,$CompletionAcademicYearGeneral) {
+		$details2 = \frontend\modules\application\models\Applicant::findBySql("SELECT applicant.applicant_id AS applicant_id FROM education INNER JOIN application ON education.application_id=application.application_id INNER JOIN applicant ON applicant.applicant_id=application.applicant_id INNER JOIN user ON user.user_id=applicant.user_id INNER JOIN programme ON programme.programme_id=application.programme_id WHERE  education.registration_number='$regNo' AND education.completion_year='$f4CompletionYear' AND education.level='OLEVEL' AND user.firstname='$firstname' AND user.middlename='$middlename' AND user.surname='$surname' AND programme.learning_institution_id IN($academicInstitutionGeneral) AND application.applicant_category_id IN($studyLevelGeneral) AND application.programme_id IN($programmeStudiedGeneral) AND application.application_study_year IN($EntryAcademicYearGeneral) AND application.current_study_year IN($CompletionAcademicYearGeneral) ORDER BY applicant_id DESC")->one();
+		
+		return $details2;
+		
+    }	
 }

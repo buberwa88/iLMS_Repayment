@@ -332,4 +332,51 @@ class LoanSummaryController extends Controller
             'dataProvider' => $dataProvider1,
         ]);
     }
+	public function actionFullPaidbeneficiary()
+    {
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
+        $user_loged_in=Yii::$app->user->identity->login_type;
+        $searchModel = new \frontend\modules\repayment\models\LoanSummaryDetailSearch();
+		$searchLoanRepayment = new \frontend\modules\repayment\models\LoanRepaymentSearch();
+        $employerModel = new EmployerSearch();
+        $loggedin=Yii::$app->user->identity->user_id;
+        $employer2=$employerModel->getEmployer($loggedin);
+        $employerID=$employer2->employer_id;
+		$is_fullPaid=0;
+        //$dataProvider = $searchModel->getBillUnderEmployerScholarShip(Yii::$app->request->queryParams,$employerID,$is_fullPaid);
+		//$dataProviderBill=$searchLoanRepayment->searchPaymentsForSpecificEmployer(Yii::$app->request->queryParams,$employerID);
+		//echo $results1q;
+        return $this->render('fullRepaidBeneficiary', [
+            //'searchModel' => $searchModel,
+           // 'dataProvider' => $dataProvider,
+			//'searchModelBill' => $searchLoanRepayment,
+            //'dataProviderBill' => $dataProviderBill,
+        ]);
+    }
+	public function actionFullPaidstudentloan()
+    {
+		$this->layout="default_main";		
+		$loan_given_tostudents=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+        $searchModel = new \backend\modules\repayment\models\LoanSearch();
+		$is_fullPaid=0;
+        $dataProvider = $searchModel->Loansearch(Yii::$app->request->queryParams,$loan_given_tostudents);
+		//echo $results1q;
+        return $this->render('fullPaidstudentloan', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+	public function actionFullPaidemployerloan()
+    {	
+		$this->layout="default_main";		
+		$loan_given_toemployer=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
+        $searchModel = new \backend\modules\repayment\models\LoanSearch();
+		$is_fullPaid=0;
+        $dataProvider = $searchModel->Loansearch(Yii::$app->request->queryParams,$loan_given_toemployer);
+		//echo $results1q;
+        return $this->render('fullPaidemployerloan', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
 }

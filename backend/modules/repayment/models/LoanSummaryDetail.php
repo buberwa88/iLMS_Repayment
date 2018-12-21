@@ -1819,4 +1819,15 @@ Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,
         }
         
     }
+public static function getTotalLoan($applicantID,$loan_given_to){
+        $results_amount = \backend\modules\repayment\models\Loan::findBySql("SELECT SUM(loan.amount) AS amount "
+                . "FROM loan "
+                . " WHERE  loan.applicant_id='$applicantID' AND loan.loan_given_to='$loan_given_to'")->one();
+				if(count($results_amount)>0){
+				$totalLoan=$results_amount->amount;
+				}else{
+				$totalLoan=0;
+				}
+        return $totalLoan;
+        }
 }

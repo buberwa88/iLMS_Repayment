@@ -6,8 +6,8 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\EmployedBeneficiary */
 
-$this->title = 'Add New Employee';
-$this->params['breadcrumbs'][] = ['label' => 'Employer', 'url' => ['employer/index']];
+$this->title = 'Add New Employee'."( Employer: ".\backend\modules\repayment\models\Employer::getEmployerDetails($employerID)->employer_name.")";
+$this->params['breadcrumbs'][] = ['label' => 'Employer', 'url' => ['employer/view','id'=>$employerID]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="employed-beneficiary-create">

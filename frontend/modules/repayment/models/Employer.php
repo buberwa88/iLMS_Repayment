@@ -311,4 +311,10 @@ static function getEmployerTypeValues() {
             self::EMPLOYER_TYPE_FOREIGN => 'Foreign',            
         ];
     }
+public static function getProgrammes($InstitutionId) {
+            $data2 = \backend\modules\allocation\models\Programme::findBySql(" SELECT programme_id AS id, programme_name AS name FROM programme WHERE learning_institution_id='$InstitutionId'")->asArray()->all();
+            $value2 = (count($data2) == 0) ? ['' => ''] : $data2;
+            return $value2;
+        
+    }
 }

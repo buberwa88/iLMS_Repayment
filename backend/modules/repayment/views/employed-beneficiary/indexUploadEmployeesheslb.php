@@ -7,8 +7,8 @@ use yii\grid\GridView;
 /* @var $searchModel frontend\modules\repayment\models\EmployedBeneficiarySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Upload Employees';
-$this->params['breadcrumbs'][] = ['label' => 'Employer', 'url' => ['employer/index']];
+$this->title = 'Upload Employees'."( Employer: ".\backend\modules\repayment\models\Employer::getEmployerDetails($employerID)->employer_name.")";
+$this->params['breadcrumbs'][] = ['label' => 'Employer', 'url' => ['employer/view','id'=>$employerID]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="employed-beneficiary-index">

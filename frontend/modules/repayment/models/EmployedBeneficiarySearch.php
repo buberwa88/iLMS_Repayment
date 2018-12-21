@@ -486,4 +486,58 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
 
         return $dataProvider;
     }
+	public function getEmployeesUnderEmployerNonBeneficiary($params,$employerID)
+    {
+        $query = EmployedBeneficiary::find()
+                                    ->where(['employed_beneficiary.employer_id'=>$employerID,'employed_beneficiary.verification_status'=>6])
+                                    ->orderBy('employed_beneficiary_id DESC');
+                                   // ->all();
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+		$query->joinWith("employer");
+		 $query->joinWith("applicant");
+         $query->joinwith(["applicant","applicant.user"]);
+        $query->andFilterWhere([
+            'employed_beneficiary_id' => $this->employed_beneficiary_id,
+            'employer_id' => $this->employer_id,
+            'applicant_id' => $this->applicant_id,
+            //'basic_salary' => $this->basic_salary,
+            'created_at' => $this->created_at,
+            'created_by' => $this->created_by,
+            'confirmed' => $this->confirmed,
+        ]);
+
+        $query->andFilterWhere(['like', 'employee_id', $this->employee_id])
+		    ->andFilterWhere(['like', 'employer.employer_name', $this->employerName])
+			->andFilterWhere(['like', 'user.firstname', $this->firstname])
+			->andFilterWhere(['like', 'user.middlename', $this->middlename])
+            ->andFilterWhere(['like', 'user.surname', $this->surname])
+            ->andFilterWhere(['like', 'f4indexno', $this->f4indexno])
+            ->andFilterWhere(['like', 'employment_status', $this->employment_status])                
+            ->andFilterWhere(['like', 'employee_check_number', $this->employee_check_number])
+            ->andFilterWhere(['like', 'employee_f4indexno', $this->employee_f4indexno])
+            ->andFilterWhere(['like', 'employee_mobile_phone_no', $this->employee_mobile_phone_no])
+            ->andFilterWhere(['like', 'employee_year_completion_studies', $this->employee_year_completion_studies])
+            ->andFilterWhere(['like', 'employee_academic_awarded', $this->employee_academic_awarded])
+            ->andFilterWhere(['like', 'employee_instituitions_studies', $this->employee_instituitions_studies])
+            ->andFilterWhere(['like', 'employee_NIN', $this->employee_NIN])
+			->andFilterWhere(['like', 'basic_salary', $this->basic_salary])
+            ->andFilterWhere(['like', 'employee_check_number', $this->employee_check_number]);
+
+        return $dataProvider;
+    }
 }

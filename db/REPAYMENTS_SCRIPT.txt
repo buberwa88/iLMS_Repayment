@@ -170,5 +170,13 @@ ALTER TABLE `loan_summary` CHANGE `updated_by` `updated_by` INT NULL DEFAULT NUL
 ALTER TABLE `loan_summary_detail` ADD `is_full_paid` TINYINT(4) NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `is_active`;
 ALTER TABLE `employer` ADD `created_by` INT(11) NULL DEFAULT NULL AFTER `created_at`;
 ALTER TABLE `employed_beneficiary` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `created_by`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
+
+ALTER TABLE `employed_beneficiary` ADD `STUDY_LEVEL2` VARCHAR(30) NULL DEFAULT NULL AFTER `vote_number`, ADD `INSTITUTION_OF_STUDY2` VARCHAR(100) NULL DEFAULT NULL AFTER `STUDY_LEVEL2`, ADD `PROGRAMME_STUDIED2` VARCHAR(100) NULL DEFAULT NULL AFTER `INSTITUTION_OF_STUDY2`, ADD `ENTRY_YEAR2` INT(11) NULL DEFAULT NULL AFTER `PROGRAMME_STUDIED2`, ADD `COMPLETION_YEAR2` INT(11) NULL DEFAULT NULL AFTER `ENTRY_YEAR2`, ADD `STUDY_LEVEL3` VARCHAR(30) NULL DEFAULT NULL AFTER `COMPLETION_YEAR2`, ADD `INSTITUTION_OF_STUDY3` VARCHAR(100) NULL DEFAULT NULL AFTER `STUDY_LEVEL3`;
+ALTER TABLE `employed_beneficiary` ADD `PROGRAMME_STUDIED3` VARCHAR(100) NULL DEFAULT NULL AFTER `INSTITUTION_OF_STUDY3`, ADD `ENTRY_YEAR3` INT(11) NULL DEFAULT NULL AFTER `PROGRAMME_STUDIED3`, ADD `COMPLETION_YEAR3` INT(11) NULL DEFAULT NULL AFTER `ENTRY_YEAR3`, ADD `LOAN_BENEFICIARY_STATUS` CHAR(10) NULL DEFAULT NULL AFTER `COMPLETION_YEAR3`;
+ALTER TABLE `employed_beneficiary` CHANGE `learning_institution_id` `learning_institution_id` VARCHAR(50) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `programme` `programme` VARCHAR(50) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `uploaded_learning_institution_code` `uploaded_learning_institution_code` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `uploaded_programme_studied` `uploaded_programme_studied` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `programme_level_of_study` `programme_level_of_study` VARCHAR(100) NULL DEFAULT NULL;
 -----------------------------------------------------
 ======================================================

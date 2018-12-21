@@ -78,6 +78,13 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                         'value' => function ($model) {
                             return $model->applicant->f4indexno;
                         },
+            ],
+            [
+                     'attribute' => 'basic_salary',
+                        'label'=>"Gross Salary",
+                        'value' => function ($model) {
+                            return $model->basic_salary;
+                        },
             ],			
             [
                 'attribute' => 'totalLoan',

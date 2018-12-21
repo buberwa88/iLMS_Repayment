@@ -100,6 +100,7 @@ class User extends ActiveRecord implements IdentityInterface
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
             [['user_id','sex','employer_id'], 'safe'],      
 			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'login_type', 'created_at'], 'required','on'=>'employer_registration'],
+			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'update_contact_person'],
 			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'employer_contact_person'],
 			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'password', 'confirm_password','phone_number','confirm_email','employer_type_id'], 'required', 'on'=>'employer_registration'],
 			[['firstname', 'surname', 'middlename', 'email_address','phone_number'], 'required', 'on'=>'employer_update_information'],
@@ -131,7 +132,7 @@ class User extends ActiveRecord implements IdentityInterface
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
 			[['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'user_id']],
 			['password','match','pattern' => '/^.*(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*$/', 'message' =>'Password must contain at least one lower and upper case character and a digit.'],
-            [['password','confirm_password'],'required'],
+            [['password','confirm_password'],'required','on'=>['employer_registration','employer_contact_person','change_pwd_contact_person']],
 			//[['password'], StrengthValidator::className(), 'min'=>8, 'digit'=>0, 'special'=>3]
         ];
     }

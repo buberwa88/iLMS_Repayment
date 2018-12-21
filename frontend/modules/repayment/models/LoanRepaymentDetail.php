@@ -1156,5 +1156,25 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
 		}
 		}		
         }
+        }
+public static function getAmountFullPaid($applicantID,$loan_given_to){
+        $moder=new EmployedBeneficiary();
+        $CFBS="CFBS";
+        $CFBS_id=$moder->getloanRepaymentItemID($CFBS); 
+       $details_amount = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
+                . "FROM loan_repayment_detail  INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.applicant_id='$applicantID'  AND loan_repayment.payment_status='1' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->one();
+		if(count($details_amount)>0){
+		$amount=$details_amount->amount;
+		}else{
+		$amount=0;
+		}		
+        return $amount;
+        }
+public static function getOutstandingFullPaid($applicantID,$loan_given_to){
+        $amount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoan($model->applicant_id,$loan_given_to)-\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountFullPaid($model->applicant_id,$loan_given_to);
+		if($amount<0){
+		$amount=0;
+		}		
+        return $amount;
         }       	
 }		
