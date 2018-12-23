@@ -180,3 +180,16 @@ ALTER TABLE `employed_beneficiary` CHANGE `uploaded_programme_studied` `uploaded
 ALTER TABLE `employed_beneficiary` CHANGE `programme_level_of_study` `programme_level_of_study` VARCHAR(100) NULL DEFAULT NULL;
 -----------------------------------------------------
 ======================================================
+
+##=====23/dec/2018 CHARLES MHOJA
+ALTER TABLE `loan_beneficiary` ADD `loan_confirmation_status` INT(1) NULL DEFAULT '0' COMMENT 'Shows whether the loan was confirmed or not, 0=nt confirmed,1=confirmed' AFTER `updated_by`, ADD INDEX `index_loan_confirmation_status` (`loan_confirmation_status`);
+ALTER TABLE `loan_beneficiary` ADD `date_confirmed` DATETIME NULL COMMENT 'Date the loan was confirmed for the first time' AFTER `loan_confirmation_status`, ADD `confirmed_by` INT(11) NULL COMMENT 'user who confirmed the loan' AFTER `date_confirmed`, ADD INDEX `index_confirmedby` (`confirmed_by`);
+ALTER TABLE `loan_beneficiary` ADD `liquidation_letter_status` INT NOT NULL DEFAULT '0' COMMENT 'Status of theBeneficiary Liquidation Later' AFTER `confirmed_by`, ADD `liquidation_date_issues` DATETIME NULL DEFAULT NULL COMMENT 'Date Liquidation letter was issues' AFTER `liquidation_letter_status`, ADD `liquidation_issued_by` INT NULL DEFAULT NULL COMMENT 'User who issued the liqudation' AFTER `liquidation_date_issues`, ADD INDEX `index_liquidation_letter` (`liquidation_letter_status`);
+ALTER TABLE `loan_beneficiary` CHANGE `f4indexno` `f4indexno` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `date_of_birth` `date_of_birth` DATE NULL, CHANGE `place_of_birth` `place_of_birth` INT(11) NULL, CHANGE `applicant_id` `applicant_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `postal_address` `postal_address` VARCHAR(30) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL, CHANGE `physical_address` `physical_address` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL, CHANGE `email_address` `email_address` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `learning_institution_id` `learning_institution_id` INT(11) NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `liquidation_date_issues` `liquidation_date_issued` DATETIME NULL DEFAULT NULL COMMENT 'Date Liquidation letter was issued';
+ALTER TABLE `loan_beneficiary` CHANGE `loan_confirmation_status` `loan_confirmation_status` INT(1) NOT NULL DEFAULT '0' COMMENT 'Shows whether the loan was confirmed or not, 0=nt confirmed,1=confirmed';
+
+
