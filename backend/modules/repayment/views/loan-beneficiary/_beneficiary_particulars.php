@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 ?>
+
 <?=
 
 DetailView::widget([
@@ -29,14 +30,15 @@ DetailView::widget([
         ['attribute' => 'phone_number',
             'value' => $model->applicant->user->phone_number
         ],
-//        ['attribute' => 'loan_confirmation_status',
-//            'label' => 'Loan Confirmation',
-//            'value' => $model->loan_confirmation_status
-//        ],
-//        ['attribute' => 'liquidation_letter_status',
-//            'label' => 'Liquidation Letter',
-//            'value' => $model->applicant->user->liquidation_latter_status
-//        ],
+        [
+            'attribute' => 'loan_confirmation_status',
+            'label' => 'Loan Confirmation',
+            'value' => common\models\LoanBeneficiary::getLoanConfirmationStatusNameByApplicantID($model->applicant->applicant_id)
+        ],
+        ['attribute' => 'liquidation_letter_status',
+            'label' => 'Liquidation Letter',
+            'value' => common\models\LoanBeneficiary::getLiqudationStatusNameByApplicantID($model->applicant->applicant_id)
+        ],
         [
             'attribute' => 'applicant_id',
             'label' => 'Status',
@@ -53,13 +55,6 @@ DetailView::widget([
     //'password',
     ],
 ]);
-
-
-
-$fullname = $model->applicant->user->firstname . ' ' . $model->applicant->user->middlename . ' ' . $model->applicant->user->surname;
-$application_id1 = $model->application_id;
-$released = $released;
-$verificationStatus1 = $verificationStatus;
 ?>  
 
 

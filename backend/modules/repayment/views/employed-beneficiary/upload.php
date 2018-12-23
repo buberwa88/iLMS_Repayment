@@ -1,4 +1,5 @@
 <?php
+
 use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use yii\helpers\Html;
@@ -12,54 +13,53 @@ use kartik\widgets\FileInput;
 ?>
 <br/>
 <?php
-$form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL,'options' => ['enctype' => 'multipart/form-data'],
-                'enableClientValidation' => TRUE,]);
+$form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL, 'options' => ['enctype' => 'multipart/form-data'],
+            'enableClientValidation' => TRUE,]);
 ?>
 <div class="employed-beneficiary-form">
-<div class="col-sm-8">
-<div class="profile-user-info profile-user-info-striped">
-<?php 
-/*
-$loggedin = Yii::$app->user->identity->user_id;
-$employer2 = \frontend\modules\repayment\models\EmployerSearch::getEmployer($loggedin);
-$employerID = $employer2->employer_id;
-*/
-$employerDetails=\frontend\modules\repayment\models\Employer::findOne(['employer_id'=>$employerID]);
-?>
-<div class="profile-info-row">		
-<div class="profile-info-name">
-          <label>Employees File:</label>
+    <div class="col-sm-8">
+        <div class="profile-user-info profile-user-info-striped">
+            <?php
+            /*
+              $loggedin = Yii::$app->user->identity->user_id;
+              $employer2 = \frontend\modules\repayment\models\EmployerSearch::getEmployer($loggedin);
+              $employerID = $employer2->employer_id;
+             */
+            $employerDetails = \frontend\modules\repayment\models\Employer::findOne(['employer_id' => $employerID]);
+            ?>
+            <div class="profile-info-row">		
+                <div class="profile-info-name">
+                    <label>Employees File:</label>
+                </div>
+                <div class="profile-info-value">
+                    <div class="col-sm-12">
+                        <?php
+                        echo Form::widget([
+                            'model' => $model,
+                            'form' => $form,
+                            'columns' => 1,
+                            'attributes' => [
+                                'employeesFile' => ['type' => Form::INPUT_FILE,
+                                    'label' => false,
+                                ],
+                            ],
+                        ]);
+                        ?>
+<?= $form->field($model, 'employer_id')->hiddenInput(['value' => $employerID])->label(false); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="text-right">
+                <?= Html::submitButton($model->isNewRecord ? 'Upload' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+
+                <?php
+                echo Html::resetButton('Reset', ['class' => 'btn btn-default']);
+                ?>
+                <?php echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['employer/view', 'id' => $employerID], ['class' => 'btn btn-warning']); ?>
+                <?php
+                ActiveForm::end();
+                ?>
+            </div>
         </div>
-		<div class="profile-info-value">
-    <div class="col-sm-12">
-    <?php				
-echo Form::widget([
-    'model'=>$model,
-    'form'=>$form,
-    'columns'=>1,
-    'attributes'=>[
-        'employeesFile'=>['type' => Form::INPUT_FILE,
-		 'label' => false,
-            ],
-        ],
-]);
-?>
-<?= $form->field($model, 'employer_id')->hiddenInput(['value'=>$employerID])->label(false); ?>
-</div>
     </div>
-        </div>
-  <div class="text-right">
-        <?= Html::submitButton($model->isNewRecord ? 'Upload' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
-  
-<?php
-echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-?>
-<?php echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['employer/view','id'=>$employerID], ['class' => 'btn btn-warning']); ?>
-      <?php
-ActiveForm::end();
-?>
 </div>
-</div>
-    </div>
-	</div>
-    
