@@ -178,5 +178,6 @@ ALTER TABLE `employed_beneficiary` CHANGE `programme` `programme` VARCHAR(50) NU
 ALTER TABLE `employed_beneficiary` CHANGE `uploaded_learning_institution_code` `uploaded_learning_institution_code` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `employed_beneficiary` CHANGE `uploaded_programme_studied` `uploaded_programme_studied` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `employed_beneficiary` CHANGE `programme_level_of_study` `programme_level_of_study` VARCHAR(100) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `basic_salary` `basic_salary` DECIMAL(15,4) NULL DEFAULT NULL;
 -----------------------------------------------------
 ======================================================
