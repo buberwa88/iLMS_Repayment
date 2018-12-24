@@ -192,6 +192,7 @@ class LoanBeneficiaryController extends Controller {
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id) {
+        $id = \yii\bootstrap\Html::encode($id);
         if (($model = LoanBeneficiary::findOne($id)) !== null) {
             return $model;
         } else {
@@ -502,7 +503,37 @@ class LoanBeneficiaryController extends Controller {
     }
 
     public function actionConfirmStatement($id) {
-        
+        $id = \yii\bootstrap\Html::encode($id);
+        $model = LoanBeneficiary::find()->where(['applicant_id' => $id])->one();
+        if (!$model) {
+            $applicant = \backend\modules\application\models\Applicant::find()->where(['applicant_id' => $id])->one();
+            if ($applicant) {
+                $model = new LoanBeneficiary;
+                $model->applicant_id = $applicant->applicant_id;
+                $model->firstname = $applicant->user->firstname;
+                $model->middlename = $applicant->user->middlename;
+                $model->surname = $applicant->user->surname;
+                $model->sex = $applicant->sex;
+                $model->f4indexno = $applicant->f4indexno;
+                $model->NID = $applicant->NID;
+                $model->physical_address = $applicant->physical_address;
+                $model->save();
+            }
+            if (!$model) {
+                $sms = 'Operation failed, No details available in the Beneficiary List';
+                Yii::$app->session->setFlash('failure', $sms);
+                return $this->redirect(['/repayment/loan-beneficiary/view-loanee-details', 'id' => $id]);
+            }
+        }
+
+        $model->loan_confirmation_status = LoanBeneficiary::LOAN_STATEMENT_CONFIRMED;
+        $model->date_confirmed = Date('Y-m-d H:i:s', time());
+        $model->confirmed_by = Yii::$app->user->id;
+        if (!$model->save()) {
+            $sms = 'Operation failed';
+        }
+        Yii::$app->session->setFlash('failure', $sms);
+        return $this->redirect(['/repayment/loan-beneficiary/view-loanee-details', 'id' => $id]);
     }
 
     public function actionRecalculateLoan($id) {
@@ -510,7 +541,22 @@ class LoanBeneficiaryController extends Controller {
     }
 
     public function actionIssueRiquidation($id) {
-        
+        $id = \yii\bootstrap\Html::encode($id);
+        $model = LoanBeneficiary::find()->where(['applicant_id' => $id])->one();
+        if (!$model) {
+            $sms = 'Operation failed, No details available in the Beneficiary List';
+            Yii::$app->session->setFlash('failure', $sms);
+            return $this->redirect(['/repayment/loan-beneficiary/view-loanee-details', 'id' => $id]);
+        }
+        $model->liquidation_letter_status =LoanBeneficiary::LOAN_LIQUIDATION_ISSUED;
+        $model->liquidation_date_issued = Date('Y-m-d H:i:s', time());
+        $model->liquidation_issued_by = Yii::$app->user->id;
+        if (!$model->save()) {
+            $sms = 'Operation failed';
+        }
+      
+        Yii::$app->session->setFlash('failure', $sms);
+        return $this->redirect(['/repayment/loan-beneficiary/view-loanee-details', 'id' => $id]);
     }
 
 }

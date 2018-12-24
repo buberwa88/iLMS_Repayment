@@ -24,11 +24,15 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="col-xs-7" style="margin-left: 0; padding: 0;">
                 <!--<div class="box box-primary">-->
                 <div class="col-xs-12">
+                    <?php if (Yii::$app->session->hasFlash('failure')) { ?>
+                        <div class="alert alert alert-warning" role="alert" style="padding: 3px;">
+                            <?php echo Yii::$app->session->getFlash('failure'); ?>
+                        </div>
+                    <?php } ?>
                     <?php
                     echo $this->render('_beneficiary_particulars', ['model' => $model]);
                     ?>
                 </div>
-
             </div>
 
             <div class="col-xs-5" style="margin: 0;padding: 0;">
@@ -49,13 +53,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         ?>
                     </div>
                 </div>
-                <div class="box box-primary col-xs-12" style="margin: 0%;margin-top: 2%;padding: 2%;height: 95px;width:97%;">
+                <div class="box box-primary col-xs-12" style="margin: 0%;height:auto;min-height:95px;width:97%;">
                     <?php
                     echo $this->render('_operation_menus', ['model' => $model]);
                     ?>
                 </div>
             </div>
-
             <div class="col-xs-12">
                 <?php
                 echo TabsX::widget([

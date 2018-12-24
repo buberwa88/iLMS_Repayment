@@ -32,6 +32,13 @@ use \common\models\User;
  */
 class LoanBeneficiary extends \yii\db\ActiveRecord {
 
+//loan confirmation status
+    const LOAN_STATEMENT_NOT_CONFIRMED = 0;
+    const LOAN_STATEMENT_CONFIRMED = 1;
+///liquidation letter status
+    const LOAN_LIQUIDATION_NOT_ISSUED = 0;
+    const LOAN_LIQUIDATION_ISSUED = 1;
+
     /**
      * @inheritdoc
      */
@@ -52,15 +59,13 @@ class LoanBeneficiary extends \yii\db\ActiveRecord {
     public $end_date;
     public $loan_no;
     public $name;
-    public $loan_confirmation_status;
-    public $liquidation_letter_status;
 
     public function rules() {
         return [
             [['firstname', 'middlename', 'surname', 'date_of_birth', 'place_of_birth', 'learning_institution_id', 'physical_address', 'phone_number', 'email_address', 'password', 'district', 'confirm_password', 'sex', 'region'], 'required', 'on' => 'loanee_registration'],
             [['start_date', 'end_date'], 'required', 'on' => 'reprocessloan'],
             ['password', 'string', 'length' => [8, 24]],
-            [['date_of_birth', 'created_at', 'updated_at', 'updated_by', 'sex', 'region', 'applicant_id', 'NID', 'ward_id', 'operation', 'check_search', 'start_date', 'end_date', 'name','loan_confirmation_status','liquidation_letter_status'], 'safe'],
+            [['date_of_birth', 'created_at', 'updated_at', 'updated_by', 'sex', 'region', 'applicant_id', 'NID', 'ward_id', 'operation', 'check_search', 'start_date', 'end_date', 'name', 'loan_confirmation_status', 'liquidation_letter_status'], 'safe'],
             [['place_of_birth', 'learning_institution_id', 'phone_number', 'applicant_id'], 'integer'],
             [['firstname', 'middlename', 'surname', 'f4indexno'], 'string', 'max' => 45],
             [['firstname', 'middlename', 'surname'], 'match', 'not' => true, 'pattern' => '/[^a-zA-Z_-]/', 'message' => 'Only Characters  Are Allowed...'],
@@ -653,6 +658,56 @@ class LoanBeneficiary extends \yii\db\ActiveRecord {
         return new \yii\data\ActiveDataProvider([
             'query' => $query,
         ]);
+    }
+
+    static function getLiqudationStatusNameByApplicantID($applicant_id) {
+        $data = self::find()->where(['applicant_id' => $applicant_id])->one();
+        if ($data) {
+            switch ($data->liquidation_letter_status) {
+
+                case self::LOAN_LIQUIDATION_NOT_ISSUED:
+                    return 'Not issued';
+                    break;
+
+                case self::LOAN_LIQUIDATION_ISSUED;
+                    return 'Issued/send to Beneficiary';
+                    break;
+            }
+        }
+        return NULL;
+    }
+
+    static function getLiqudationStatusByApplicantID($applicant_id) {
+        $data = self::find()->where(['applicant_id' => $applicant_id])->one();
+        if ($data) {
+            return $data->liquidation_letter_status;
+        }
+        return NULL;
+    }
+
+    static function getLoanConfirmationStatusByApplicantID($applicant_id) {
+        $data = self::find()->where(['applicant_id' => $applicant_id])->one();
+        if ($data) {
+            return $data->loan_confirmation_status;
+        }
+        return NULL;
+    }
+
+    static function getLoanConfirmationStatusNameByApplicantID($applicant_id) {
+        $data = self::find()->where(['applicant_id' => $applicant_id])->one();
+        if ($data) {
+            switch ($data->loan_confirmation_status) {
+
+                case self::LOAN_STATEMENT_NOT_CONFIRMED:
+                    return 'Not Confirmed';
+                    break;
+
+                case self::LOAN_STATEMENT_CONFIRMED;
+                    return 'Confirmed';
+                    break;
+            }
+        }
+        return NULL;
     }
 
 }
