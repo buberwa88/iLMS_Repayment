@@ -70,7 +70,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     return $model->firstname;
                 },
             ],
-			/*
+			
             [
                 'attribute' => 'middlename',
                 'label' => "Middle Name",
@@ -80,7 +80,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     return $model->middlename;
                 },
             ],
-			*/
+			
             [
                 'attribute' => 'surname',
                 'label' => "Last Name",

@@ -5,12 +5,12 @@ namespace backend\modules\repayment\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use backend\modules\repayment\models\EmployerType;
+use backend\modules\repayment\models\EmployerGroup;
 
 /**
- * EmployerTypeSearch represents the model behind the search form about `backend\modules\repayment\models\EmployerType`.
+ * EmployerGroupSearch represents the model behind the search form about `backend\modules\repayment\models\EmployerGroup`.
  */
-class EmployerTypeSearch extends EmployerType
+class EmployerGroupSearch extends EmployerGroup
 {
     /**
      * @inheritdoc
@@ -18,8 +18,8 @@ class EmployerTypeSearch extends EmployerType
     public function rules()
     {
         return [
-            [['employer_type_id', 'is_active','has_TIN'], 'integer'],
-            [['employer_type', 'created_at','employer_group_id'], 'safe'],
+            [['employer_group_id', 'created_by'], 'integer'],
+            [['group_name', 'created_at'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class EmployerTypeSearch extends EmployerType
      */
     public function search($params)
     {
-        $query = EmployerType::find();
+        $query = EmployerGroup::find();
 
         // add conditions that should always apply here
 
@@ -59,14 +59,12 @@ class EmployerTypeSearch extends EmployerType
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'employer_type_id' => $this->employer_type_id,
+            'employer_group_id' => $this->employer_group_id,
             'created_at' => $this->created_at,
-            'is_active' => $this->is_active,
-			'has_TIN'=> $this->has_TIN,
-			'employer_group_id'=> $this->employer_group_id,
+            'created_by' => $this->created_by,
         ]);
 
-        $query->andFilterWhere(['like', 'employer_type', $this->employer_type]);
+        $query->andFilterWhere(['like', 'group_name', $this->group_name]);
 
         return $dataProvider;
     }

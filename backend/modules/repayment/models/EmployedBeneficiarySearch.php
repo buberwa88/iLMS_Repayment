@@ -22,7 +22,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
         return [
             [['employed_beneficiary_id', 'applicant_id', 'created_by'], 'integer'],
             [['employee_id', 'employment_status', 'created_at','employee_check_number','employee_f4indexno','employee_firstname','employee_mobile_phone_no',
-                'employee_year_completion_studies','employee_academic_awarded','employee_instituitions_studies','employee_NIN','employee_check_number','firstname','surname','middlename','f4indexno','employerName','outstanding','mult_employed','phone_number','sex','employer_id','vote_number'], 'safe'],
+                'employee_year_completion_studies','employee_academic_awarded','employee_instituitions_studies','employee_NIN','employee_check_number','firstname','surname','middlename','f4indexno','employerName','outstanding','mult_employed','phone_number','sex','employer_id','vote_number','matching'], 'safe'],
             [['basic_salary','totalLoan'], 'number'],
         ];
     }
@@ -545,6 +545,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
             ->andFilterWhere(['like', 'employee_instituitions_studies', $this->employee_instituitions_studies])
             ->andFilterWhere(['like', 'employee_NIN', $this->employee_NIN])
 			->andFilterWhere(['like', 'totalLoan', $this->totalLoan])
+			->andFilterWhere(['like', 'matching', $this->matching])
 			->andFilterWhere(['like', 'basic_salary', $this->basic_salary])
             ->andFilterWhere(['like', 'employee_check_number', $this->employee_check_number]);
 

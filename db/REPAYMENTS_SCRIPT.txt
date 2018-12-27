@@ -179,6 +179,13 @@ ALTER TABLE `employed_beneficiary` CHANGE `uploaded_learning_institution_code` `
 ALTER TABLE `employed_beneficiary` CHANGE `uploaded_programme_studied` `uploaded_programme_studied` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `employed_beneficiary` CHANGE `programme_level_of_study` `programme_level_of_study` VARCHAR(100) NULL DEFAULT NULL;
 ALTER TABLE `employed_beneficiary` CHANGE `basic_salary` `basic_salary` DECIMAL(15,4) NULL DEFAULT NULL;
+
+ALTER TABLE `employer_type` ADD `employer_group_id` INT(11) NOT NULL AFTER `employer_type_id`;
+ALTER TABLE `employed_beneficiary` ADD `traced_by` INT(11) NULL DEFAULT NULL AFTER `LOAN_BENEFICIARY_STATUS`;
+ALTER TABLE `employed_beneficiary` ADD `salary_upload_status` INT NULL DEFAULT NULL AFTER `traced_by`, ADD `salary_upload_fail_reasson` VARCHAR(200) NULL DEFAULT NULL AFTER `salary_upload_status`;
+ALTER TABLE `employed_beneficiary` ADD `matching` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Used to indicate level of matching on upload/adding employee' AFTER `salary_upload_fail_reasson`;
+ALTER TABLE `employed_beneficiary` ADD `STUDY_LEVEL1` VARCHAR(30) NULL DEFAULT NULL AFTER `vote_number`, ADD `INSTITUTION_OF_STUDY1` VARCHAR(100) NULL DEFAULT NULL AFTER `STUDY_LEVEL1`, ADD `PROGRAMME_STUDIED1` VARCHAR(100) NULL DEFAULT NULL AFTER `INSTITUTION_OF_STUDY1`, ADD `ENTRY_YEAR1` INT(11) NULL DEFAULT NULL AFTER `PROGRAMME_STUDIED1`;
+ALTER TABLE `employed_beneficiary` ADD `COMPLETION_YEAR1` INT(11) NULL DEFAULT NULL AFTER `ENTRY_YEAR1`;
 -----------------------------------------------------
 ======================================================
 

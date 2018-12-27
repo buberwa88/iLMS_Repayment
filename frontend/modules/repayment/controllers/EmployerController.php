@@ -188,6 +188,8 @@ class EmployerController extends Controller
                 if($model1->industry !=''){
                  $model1->nature_of_work_id=$model1->industry;   
                 }
+		$model1->phone_number=$model2->phone_number_employer;
+        $model1->fax_number=$model2->fax_number;		
 		$model1->TIN=$model2->TIN;
 		$model1->employer_name = preg_replace('/\s+/', ' ',$employerName);        
 

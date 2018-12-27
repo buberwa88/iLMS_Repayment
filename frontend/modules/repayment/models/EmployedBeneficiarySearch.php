@@ -300,7 +300,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
 			->andFilterWhere(['like', 'user.firstname', $this->firstname])
 			->andFilterWhere(['like', 'user.middlename', $this->middlename])
             ->andFilterWhere(['like', 'user.surname', $this->surname])
-            ->andFilterWhere(['like', 'f4indexno', $this->f4indexno])
+            ->andFilterWhere(['like', 'applicant.f4indexno', $this->f4indexno])
             ->andFilterWhere(['like', 'employment_status', $this->employment_status])                
             ->andFilterWhere(['like', 'employee_check_number', $this->employee_check_number])
             ->andFilterWhere(['like', 'employee_f4indexno', $this->employee_f4indexno])

@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\EmployedBeneficiarySearch */
@@ -15,10 +16,13 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 <div class="employed-beneficiary-index">
 
 <div class="panel panel-info">
-                        <div class="panel-heading">
-                      <?= Html::encode($this->title) ?>
-                        </div>
-                        <div class="panel-body">            
+                        <div class="panel-body"> 
+<?= Html::a('Upload(Update) Salary', ['upload-salaries'], ['class' => 'btn btn-primary']) ?>
+<div class="text-right">
+                <?php 
+echo Html::a('Export Excel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp', Url::toRoute(['export-beneficiaries']));
+                ?>
+                </div>						
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
@@ -56,7 +60,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                             return $model->applicant->user->firstname;
                         },
             ],
-			/*
+			
             [
                      'attribute' => 'middlename',
                         'label'=>"Middle Name",
@@ -64,7 +68,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                             return $model->applicant->user->middlename;
                         },
             ],
-			*/
+			
 		    [
                      'attribute' => 'surname',
                         'label'=>"Last Name",
@@ -82,8 +86,14 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             [
                      'attribute' => 'basic_salary',
                         'label'=>"Gross Salary",
+						'hAlign' => 'right',
+                        'format' => ['decimal', 2],
                         'value' => function ($model) {
+							if($model->basic_salary > '0'){
                             return $model->basic_salary;
+						}else{
+							return '0';
+						}
                         },
             ],			
             [

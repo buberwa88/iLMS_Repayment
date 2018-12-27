@@ -67,7 +67,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                             return $model->applicant->user->firstname;
                         },
             ],
-			/*
+			
             [
                      'attribute' => 'middlename',
                         'label'=>"Middle Name",
@@ -75,7 +75,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                             return $model->applicant->user->middlename;
                         },
             ],
-			*/
+			
 		    [
                      'attribute' => 'surname',
                         'label'=>"Last Name",

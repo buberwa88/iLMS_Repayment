@@ -42,8 +42,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                 },
                 'allowBatchToggle' => true,
                 'detail' => function ($model) {
-                  return $this->render('view',['model'=>$model]); 
-                  //return $this->render('../../../../../frontend/modules/repayment/views/employed-beneficiary/viewLoanStatement',['model'=>$model]);				  
+                  return $this->render('viewNewBenefFound',['model'=>$model]);				  
                 },
                 'detailOptions' => [
                     'class' => 'kv-state-enable',
@@ -64,15 +63,15 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                             return $model->applicant->user->firstname;
                         },
             ],
-			/*
+			
             [
                      'attribute' => 'middlename',
-                        'label'=>"Middle Name",
+                        'label'=>"M. Name",
                         'value' => function ($model) {
                             return $model->applicant->user->middlename;
                         },
             ],
-			*/
+			
 		    [
                      'attribute' => 'surname',
                         'label'=>"Last Name",
@@ -85,7 +84,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                      'attribute' => 'f4indexno',
                         'label'=>"Index Number",
                         'value' => function ($model) {
-                            return $model->f4indexno;
+                            return $model->applicant->f4indexno;
                         },
             ],	
 			
@@ -127,6 +126,13 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                         'filterInputOptions' => ['placeholder' => 'Search'],
                         'format' => 'raw'
                     ],
+					[
+                     'attribute' => 'matching',
+                        'label'=>"Matching Status",
+                        'value' => function ($model) {
+                            return $model->matching;
+                        },
+            ],
             ['class' => 'yii\grid\CheckboxColumn'],			
                                
         ],

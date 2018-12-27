@@ -8,4 +8,5 @@ return [
 	'deadlineDayForEmployerPenaltyEachMonth' =>15,
 	'cancelBillReason'=>'Unconfirmed Bill',
 	'beneficiaryDocument' =>'beneficiary_document/',
+	'employerUpdateBeneficiariesSalaries' =>'frontend/web/uploads/',
 ];

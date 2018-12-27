@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use kartik\grid\GridView;
+use yii\helpers\ArrayHelper;
 
 /* @var $this yii\web\View */
 /* @var $searchModel backend\modules\repayment\models\EmployerTypeSearch */
@@ -27,6 +28,21 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],            
             'employer_type',
+			 [
+                     'attribute' => 'employer_group_id',
+                     'label'=>'Employer Group',
+                        'value' => function ($model) {
+                        return $model->employerGroup->group_name;                
+                        },
+                        'filterType' => GridView::FILTER_SELECT2,
+                        'filter' =>ArrayHelper::map(\backend\modules\repayment\models\EmployerGroup::findBySql('SELECT employer_group_id,group_name AS "Name" FROM `employer_group`')->asArray()->all(), 'employer_group_id', 'Name'),
+                        'filterWidgetOptions' => [
+                            'pluginOptions' => ['allowClear' => true],
+                        ],
+                        'filterInputOptions' => ['placeholder' => 'Search  '],
+                        'format' => 'raw'        
+                    ],
+			
 			[
                         'attribute' => 'has_TIN',
                         'vAlign' => 'middle',

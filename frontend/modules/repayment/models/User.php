@@ -73,7 +73,10 @@ class User extends ActiveRecord implements IdentityInterface
 	public $recover_password;
 	public $TIN;
 	public $employer_type_id;
-        public $employer_id;
+    public $employer_id;
+	public $phone_number_employer;
+	public $fax_number;
+	public $verifyCode;
 
     public static function tableName()
     {
@@ -99,7 +102,7 @@ class User extends ActiveRecord implements IdentityInterface
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
             [['user_id','sex','employer_id'], 'safe'],      
-			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'login_type', 'created_at'], 'required','on'=>'employer_registration'],
+			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'login_type', 'created_at','phone_number_employer'], 'required','on'=>'employer_registration'],
 			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'update_contact_person'],
 			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'employer_contact_person'],
 			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'password', 'confirm_password','phone_number','confirm_email','employer_type_id'], 'required', 'on'=>'employer_registration'],
@@ -121,7 +124,10 @@ class User extends ActiveRecord implements IdentityInterface
             [['username'], 'unique'],
             [['email_address'], 'unique'],
             ['email_address', 'email'],
+			['verifyCode', 'captcha'],
 			['phone_number', 'checkphonenumber'],
+			['phone_number_employer', 'checkphonenumberemployer'],
+			['fax_number', 'checkFaxNumber','skipOnEmpty' => true],
 			['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => 'employer_registration' ],
 			['confirm_email', 'compare', 'compareAttribute'=>'email_address', 'message'=>"Email must be retyped exactly", 'on' => 'employer_registration' ],
             ['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => 'employer_contact_person' ],
@@ -151,7 +157,7 @@ class User extends ActiveRecord implements IdentityInterface
             'security_answer' => 'Security Answer',
             'email_address' => 'Email Address',
             'passport_photo' => 'Passport Photo',
-            'phone_number' => 'Telephone No.',
+            'phone_number' => 'Mobile Phone No.',
             'is_default_password' => 'Is Default Password',
             'status' => 'Status',
             'status_comment' => 'Status Comment',
@@ -173,7 +179,9 @@ class User extends ActiveRecord implements IdentityInterface
 			'updated_by'=>'Updated by',
 			'TIN'=>'TIN',
 			'employer_type_id'=>'Employer Type',
-                        'employer_id'=>'employer_id',
+            'employer_id'=>'employer_id',
+			'phone_number_employer'=>'Work Phone No.',
+			'verifyCode'=>'Type below the blue characters:',
         ];
     }
 
@@ -474,9 +482,16 @@ class User extends ActiveRecord implements IdentityInterface
     }
 	public function checkphonenumber($attribute, $params)
 {
-    $phone=str_replace(",","",$this->phone_number);
+    $phone=str_replace(" ","",str_replace(",","",$this->phone_number));
 	 if (!preg_match('/^[0-9]*$/', $phone)) {
-    $this->addError('phone_number', 'Incorrect Telephone Number');
+    $this->addError('phone_number', 'Incorrect Mobile Phone No.');
+    } 
+}
+public function checkphonenumberemployer($attribute, $params)
+{
+    $phone=str_replace(" ","",str_replace(",","",$this->phone_number_employer));
+	 if (!preg_match('/^[0-9]*$/', $phone)) {
+    $this->addError('phone_number_employer', 'Incorrect Work Phone No.');
     } 
 }
 public function checkEmployerTypeTIN($attribute, $params)
@@ -496,5 +511,22 @@ public function checkEmployerTypeTIN($attribute, $params)
     $this->addError('TIN', 'TIN  exists');
 	}
     }
+	$employerType=\backend\modules\repayment\models\EmployerType::find()
+	->andWhere(['employer_type_id' =>$this->employer_type_id])
+	->andWhere(['has_TIN' =>1])
+	->one();
+	 if (count($employerType)>0 && $this->TIN !=''){
+		 $tinCount=strlen(str_replace("_","",str_replace("-","",$this->TIN)));
+		 if($tinCount < 9){
+    $this->addError('TIN', 'Incorrect TIN');
+		 }
+    }  
+}
+public function checkFaxNumber($attribute, $params)
+{
+    $phone=str_replace(" ","",str_replace(",","",$this->fax_number));
+	 if (!preg_match('/^[0-9]*$/', $phone)) {
+    $this->addError('fax_number', 'Incorrect Fax Number.');
+    } 
 }
 }

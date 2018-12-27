@@ -160,7 +160,7 @@ if($notificationFailedEmployee > 0){
 									"icon" => "users",
 									"url" => "#",
 								"items" => [
-                                ["label" => "Loan Beneficiary", "url" => Url::to(['/repayment/employed-beneficiary/index-view-beneficiary']), 'active' => ((Yii::$app->controller->id =='employed-beneficiary'||Yii::$app->controller->id =='employer')&&(Yii::$app->controller->action->id=='index-view-beneficiary'||Yii::$app->controller->action->id=='update-salarysource'||Yii::$app->controller->action->id=='learning-institutions-codes'||Yii::$app->controller->action->id=='create')), "icon" => "users"],
+                                ["label" => "Loan Beneficiary", "url" => Url::to(['/repayment/employed-beneficiary/index-view-beneficiary']), 'active' => ((Yii::$app->controller->id =='employed-beneficiary'||Yii::$app->controller->id =='employer')&&(Yii::$app->controller->action->id=='index-view-beneficiary'||Yii::$app->controller->action->id=='update-salarysource'||Yii::$app->controller->action->id=='learning-institutions-codes'||Yii::$app->controller->action->id=='create'||Yii::$app->controller->action->id=='index-upload-employees')), "icon" => "users"],
                                 ["label" => "Non Beneficiary", "url" => Url::to(['/repayment/employed-beneficiary/non-beneficiaries']), 'active' => (Yii::$app->controller->id =='employed-beneficiary' && Yii::$app->controller->action->id=='non-beneficiaries'), "icon" => "users"],								
                                 ],
                             ],

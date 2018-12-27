@@ -2,7 +2,6 @@
 use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use yii\helpers\Html;
-use yii\helpers\ArrayHelper;
 
 $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL]);
  ?>
@@ -11,22 +10,7 @@ echo Form::widget([ // fields with labels
     'model'=>$model,
     'form'=>$form,
     'columns'=>1,
-    'attributes'=>[	
-	    'employer_group_id' => ['type' => Form::INPUT_WIDGET,
-            'widgetClass' => \kartik\select2\Select2::className(),
-            'label' => 'Employer Group',
-            'options' => [
-                'data' => ArrayHelper::map(backend\modules\repayment\models\EmployerGroup::findBySql('SELECT employer_group_id,group_name FROM `employer_group`')->asArray()->all(), 'employer_group_id', 'group_name'),
-                'options' => [
-                    'prompt' => 'Select Group',
-                //'onchange'=>'ShowHideDivRepaymentItemType()',
-                //'id' => 'loan_repayment_item_id',
-                ],
-                'pluginOptions' => [
-                    'allowClear' => true
-                ],
-            ],
-        ],	
+    'attributes'=>[
          'employer_type'=>['label'=>'Employer Type', 'options'=>['placeholder'=>'Employer Type']],
          'has_TIN'=>['type' => Form::INPUT_WIDGET,
                 'widgetClass' => \kartik\select2\Select2::className(),

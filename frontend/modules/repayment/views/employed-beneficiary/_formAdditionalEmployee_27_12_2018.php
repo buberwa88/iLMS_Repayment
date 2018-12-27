@@ -113,6 +113,9 @@ echo Form::widget([ // fields with labels
                         'prompt' => 'Select Gender ',
                    
                     ],
+					'pluginOptions' => [
+                                                    'allowClear' => true
+                                                ],
                 ],
              ],		
 	    ]
@@ -125,7 +128,7 @@ echo Form::widget([ // fields with labels
     'form'=>$form,
     'columns'=>5,
     'attributes'=>[
-'programme_level_of_study'=>[
+'STUDY_LEVEL1'=>[
             'type'=>Form::INPUT_CHECKBOX,
             'label'=>'Diploma',			
             'value' => 0, 
@@ -181,7 +184,7 @@ echo Form::widget([ // fields with labels
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[
-		'learning_institution_id' => ['type' => Form::INPUT_WIDGET,
+		'INSTITUTION_OF_STUDY1' => ['type' => Form::INPUT_WIDGET,
                 'widgetClass' => \kartik\select2\Select2::className(),
                 'label' => 'Learning Institution:',
                 'options' => [
@@ -195,7 +198,7 @@ echo Form::widget([ // fields with labels
                                                 ],
                 ],
             ],
-		'programme' => ['type' => Form::INPUT_WIDGET,
+		'PROGRAMME_STUDIED1' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
             'label' => 'Programme Studied:',
             'widgetClass' => DepDrop::className(),
@@ -212,8 +215,8 @@ echo Form::widget([ // fields with labels
                 ],
             ],
         ],	        
-        'programme_entry_year'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_diploma_id']],
-        'programme_completion_year'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_diploma_id']],		
+        'ENTRY_YEAR1'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_diploma_id']],
+        'COMPLETION_YEAR1'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_diploma_id']],		
     ]
 ]);	
 ?>
@@ -226,7 +229,7 @@ echo Form::widget([ // fields with labels
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[
-		'learning_institution_id' => ['type' => Form::INPUT_WIDGET,
+		'INSTITUTION_OF_STUDY2' => ['type' => Form::INPUT_WIDGET,
                 'widgetClass' => \kartik\select2\Select2::className(),
                 'label' => 'Learning Institution:',
                 'options' => [
@@ -240,7 +243,7 @@ echo Form::widget([ // fields with labels
                                                 ],
                 ],
             ],
-		'programme' => ['type' => Form::INPUT_WIDGET,
+		'PROGRAMME_STUDIED2' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
             'label' => 'Programme Studied:',
             'widgetClass' => DepDrop::className(),
@@ -257,8 +260,8 @@ echo Form::widget([ // fields with labels
                 ],
             ],
         ],	        
-        'programme_entry_year'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_Bachelor_id']],
-        'programme_completion_year'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_Bachelor_id']],		
+        'ENTRY_YEAR2'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_Bachelor_id']],
+        'COMPLETION_YEAR2'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_Bachelor_id']],		
     ]
 ]);	
 ?>
@@ -271,7 +274,7 @@ echo Form::widget([ // fields with labels
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[
-		'learning_institution_id' => ['type' => Form::INPUT_WIDGET,
+		'INSTITUTION_OF_STUDY3' => ['type' => Form::INPUT_WIDGET,
                 'widgetClass' => \kartik\select2\Select2::className(),
                 'label' => 'Learning Institution:',
                 'options' => [
@@ -285,7 +288,7 @@ echo Form::widget([ // fields with labels
                                                 ],
                 ],
             ],
-		'programme' => ['type' => Form::INPUT_WIDGET,
+		'PROGRAMME_STUDIED3' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
             'label' => 'Programme Studied:',
             'widgetClass' => DepDrop::className(),
@@ -302,8 +305,8 @@ echo Form::widget([ // fields with labels
                 ],
             ],
         ],	        
-        'programme_entry_year'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_Masters_id']],
-        'programme_completion_year'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_Masters_id']],		
+        'ENTRY_YEAR3'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_Masters_id']],
+        'COMPLETION_YEAR3'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_Masters_id']],		
     ]
 ]);	
 ?>
@@ -433,9 +436,12 @@ echo Form::widget([ // fields with labels
                         'prompt' => 'Select Salary Source',
                    
                     ],
+					'pluginOptions' => [
+                        'allowClear' => true
+                        ],
                 ],
              ],
-        'traced_by' => ['type' => Form::INPUT_WIDGET,
+'traced_by' => ['type' => Form::INPUT_WIDGET,
                   'widgetClass' => \kartik\select2\Select2::className(),
                   'label' => 'Traced By:',
                   'options' => [
@@ -462,7 +468,7 @@ echo Form::widget([ // fields with labels
   
 <?php
 echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['employer/view','id'=>$employerID], ['class' => 'btn btn-warning']);
+echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/employed-beneficiary/index-view-beneficiary'], ['class' => 'btn btn-warning']);
 
 ActiveForm::end();
 ?>

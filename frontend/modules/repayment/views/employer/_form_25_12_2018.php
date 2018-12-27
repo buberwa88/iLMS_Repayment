@@ -66,7 +66,6 @@ echo Form::widget([ // fields with labels
     'attributes'=>[   
         'employer_type_id' => [
                 'type' => Form::INPUT_DROPDOWN_LIST,
-				'label'=>'Employer Type:',
                 'items' =>ArrayHelper::map(\backend\modules\repayment\models\EmployerType::find()->AsArray()->all(),'employer_type_id', 'employer_type'), 
                 'options' => [
                         'prompt' => 'Select Employer Type',
@@ -79,7 +78,7 @@ echo Form::widget([ // fields with labels
 ]);
 ?>
 <?=
-$form->field($model2, 'TIN')->label('TIN:')->widget(\yii\widgets\MaskedInput::className(), [
+$form->field($model2, 'TIN')->widget(\yii\widgets\MaskedInput::className(), [
     'mask' => '999-999-999'
 ]);
 ?>
@@ -112,7 +111,7 @@ echo Form::widget([ // fields with labels
 			'physical_address'=>['label'=>'Physical Address:', 'options'=>['placeholder'=>'Physical Address']],
         'region' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
-            'label' => 'Region:',
+            'label' => 'Region',
             'options' => [
                 'data' => ArrayHelper::map(\common\models\Region::find()->all(), 'region_id', 'region_name'),
                 'options' => [
@@ -123,7 +122,7 @@ echo Form::widget([ // fields with labels
         ],
         'district' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
-            'label' => 'District:',
+            'label' => 'District',
             'widgetClass' => DepDrop::className(),
             'options' => [
                 'data' => ArrayHelper::map(\common\models\District::find()->where(['region_id' => $model1->region])->all(), 'district_id', 'district_name'),
@@ -140,7 +139,7 @@ echo Form::widget([ // fields with labels
         ],
         'ward_id' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
-            'label' => 'Ward:',
+            'label' => 'Ward',
             'widgetClass' => DepDrop::className(),
             'options' => [
                 'data' => ArrayHelper::map(backend\modules\application\models\Ward::find()->where(['district_id' => $model1->district])->all(), 'ward_id', 'ward_name'),
@@ -195,7 +194,7 @@ echo Form::widget([ // fields with labels
 ]);
  ?>
 <hr>
-<i><strong><h1>Contact Person Details</h1></strong></i>
+<i><strong><h1>Contact Person Details(HR)</h1></strong></i>
 <?php
 echo Form::widget([ // fields with labels
     'model'=>$model2,
@@ -239,9 +238,10 @@ echo Form::widget([ // fields with labels
     ]
 ]);
 ?>
-<?= $form->field($model2, 'verifyCode')->widget(Captcha::className(), [
-                    'captchaAction'=>'/site/captcha','id'=>'captcha_block_id'
-                ]) ?>
+<?= $form->field($model3, 'verifyCode')->widget(Captcha::className(), [
+		                'captchaAction' => '/repayment/default/captcha',
+                        'template' => '<div class="row"><div class="col-lg-2">{image}</div><div class="col-lg-10">{input}</div></div>',						
+                    ]) ?>
 
   <div class="text-right">
        <?= Html::submitButton($model1->isNewRecord ? 'Sign Up' : 'Update', ['class' => $model1->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

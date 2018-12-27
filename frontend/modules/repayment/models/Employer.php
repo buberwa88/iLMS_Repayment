@@ -107,7 +107,7 @@ class Employer extends \yii\db\ActiveRecord
             'employer_code' => 'Employer Code',
             'employer_type_id' => 'Employer Type',
             'postal_address' => 'Postal Address',
-            'phone_number' => 'Office Telephone No.',
+            'phone_number' => 'Work Phone No.',
             'physical_address' => 'Physical Address',
             'ward_id' => 'Ward',
             'email_address' => 'Office Email Address',
@@ -252,14 +252,13 @@ class Employer extends \yii\db\ActiveRecord
         return $employer_idR;
     }
 	
-	public function checkphonenumber($attribute, $params)
+
+public function checkphonenumber($attribute, $params)
 {
-    $phone=str_replace(",","",$this->phone_number);
-    //Here you do your validation logic
-    if(!is_int($phone))
-    {
-        $this->addError('phone_number', 'Incorrect phone number');
-    }
+    $phone=trim(str_replace(",","",$this->phone_number));
+	 if (!preg_match('/^[0-9]*$/', $phone)) {
+    $this->addError('phone_number', 'Incorrect Telephone Number---');
+    } 
 }
     public function checkEmployerTypeTIN($attribute, $params)
 {

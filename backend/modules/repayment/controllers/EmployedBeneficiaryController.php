@@ -1408,5 +1408,15 @@ public function actionIndexUploadEmployees($id=null) {
             ]);
         }
     }
+	public function actionFailedUploadedEmployees($employerID) {
+        $this->layout="default_main";
+        $searchModel = new \frontend\modules\repayment\models\EmployedBeneficiarySearch();
+        $employerModel = new \frontend\modules\repayment\models\EmployerSearch();
+        $dataProvider = $searchModel->getFailedUploadedEmployees(Yii::$app->request->queryParams, $employerID);
+        return $this->render('failedUploadedEmployees', [
+                    'searchModel' => $searchModel,
+                    'dataProvider' => $dataProvider,
+        ]);
+    }
     
 }

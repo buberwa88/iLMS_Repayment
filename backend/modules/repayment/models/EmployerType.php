@@ -29,7 +29,7 @@ class EmployerType extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['employer_type', 'created_at','has_TIN'], 'required'],
+            [['employer_type', 'created_at','has_TIN','employer_group_id'], 'required'],
             [['created_at'], 'safe'],
             [['is_active'], 'integer'],
             [['employer_type'], 'string', 'max' => 50],
@@ -47,6 +47,11 @@ class EmployerType extends \yii\db\ActiveRecord
             'created_at' => 'Created At',
             'is_active' => 'Is Active',
 			'has_TIN'=>'Has TIN?',
+			'employer_group_id'=>'Employer Group',
         ];
+    }
+	public function getEmployerGroup()
+    {
+        return $this->hasOne(EmployerGroup::className(), ['employer_group_id' => 'employer_group_id']);
     }
 }
