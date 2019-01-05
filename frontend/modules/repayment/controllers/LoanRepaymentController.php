@@ -1278,10 +1278,12 @@ $si=0;
    $bill_number=\frontend\modules\repayment\models\LoanRepayment::TREAURY_BILL_FORMAT.$yearT."-".$resultsCount;
    $amountBill=0;
    $amount=0;
-   $control_number_date=date("Y-m-d H:i:s");
-   \frontend\modules\repayment\models\LoanRepayment::checkGePGlawsonBill($deduction_month,$bill_number,$amountBill,$control_number_date);   $paymentStatus=0;
+   $control_number_date=date("Y-m-d H:i:s");$created_at=date("Y-m-d H:i:s");
+   \frontend\modules\repayment\models\LawsonMonthlyDeduction::insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month);
+   \frontend\modules\repayment\models\LoanRepayment::checkGePGlawsonBill($deduction_month,$bill_number,$amountBill,$control_number_date,$CheckDate);   $paymentStatus=0;
    \frontend\modules\repayment\models\LoanRepayment::createBillPerEmployer($amount,$deduction_month,$Votecode,$VoteName,$CheckDate,$paymentStatus);
    \frontend\modules\repayment\models\LoanRepaymentDetail::insertRepaymentDetailsGSPP($DeductionAmount,$CheckNumber,$Votecode,$CheckDate);
+   \frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidGSPP($CheckDate);
   ++$si;  	
 }
 	}else{

@@ -241,6 +241,31 @@ CREATE TABLE `gvt_employee` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 ALTER TABLE `loan_repayment` ADD `gepg_lawson_id` INT(11) NULL DEFAULT NULL COMMENT 'for GVT employees' AFTER `Vote_name`;
 ALTER TABLE `loan_repayment` ADD `lowason_check_date` DATE NULL DEFAULT NULL AFTER `gepg_lawson_id`;
+ALTER TABLE `gepg_lawson` ADD `check_date` DATE NULL DEFAULT NULL AFTER `gepg_date`;
+DROP TABLE IF EXISTS `lawson_monthly_deduction`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lawson_monthly_deduction` (
+  `lawson_monthly_deduction_id` int(11) NOT NULL AUTO_INCREMENT,
+  `ActualBalanceAmount` decimal(38,2) DEFAULT NULL,
+  `CheckDate` date DEFAULT NULL,
+  `CheckNumber` varchar(100) DEFAULT NULL,
+  `DateHired` date DEFAULT NULL,
+  `DeductionAmount` decimal(38,2) DEFAULT NULL,
+  `DeductionCode` varchar(50) DEFAULT NULL,
+  `DeductionDesc` varchar(100) DEFAULT NULL,
+  `DeptName` varchar(100) DEFAULT NULL,
+  `FirstName` varchar(100) DEFAULT NULL,
+  `LastName` varchar(100) DEFAULT NULL,
+  `MiddleName` varchar(100) DEFAULT NULL,
+  `NationalId` varchar(100) DEFAULT NULL,
+  `Sex` char(4) DEFAULT NULL,
+  `VoteName` varchar(100) DEFAULT NULL,
+  `Votecode` varchar(50) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `deduction_month` date DEFAULT NULL,
+  PRIMARY KEY (`lawson_monthly_deduction_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 -----------------------------------------------------
 ======================================================
 

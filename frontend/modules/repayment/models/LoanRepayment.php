@@ -658,9 +658,9 @@ public static function createAutomaticBillsPrepaid(){
 	}	
 			return true;
 } 
-public static function checkGePGlawsonBill($deduction_month,$bill_number,$amount,$control_number_date){
-	if(\frontend\modules\repayment\models\GepgLawson::find()->where(['deduction_month'=>$deduction_month])->count()==0){
- Yii::$app->db->createCommand("INSERT IGNORE INTO  gepg_lawson(bill_number,amount,deduction_month,control_number_date) VALUES('$bill_number','$amount','$deduction_month','$control_number_date')")->execute();	
+public static function checkGePGlawsonBill($deduction_month,$bill_number,$amount,$control_number_date,$CheckDate){
+	if(\frontend\modules\repayment\models\GepgLawson::find()->where(['deduction_month'=>$deduction_month,'check_date'=>$CheckDate])->count()==0){
+ Yii::$app->db->createCommand("INSERT IGNORE INTO  gepg_lawson(bill_number,amount,deduction_month,control_number_date,check_date) VALUES('$bill_number','$amount','$deduction_month','$control_number_date','$CheckDate')")->execute();	
 }	
 	}
 public static function createBillPerEmployer($amount,$deduction_month,$Votecode,$VoteName,$CheckDate,$paymentStatus){

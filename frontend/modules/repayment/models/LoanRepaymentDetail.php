@@ -1382,5 +1382,12 @@ public static function getAmountPaidPerLoanRepayment($CheckDate){
 				$totalAmount1=$results->amount;	$loan_repayment_id=$results->loan_repayment_id;
 				\frontend\modules\repayment\models\LoanRepayment::updateTotalAmountUnderEmployerBillGSPP($totalAmount1,$loan_repayment_id);
 				}
-        }	
+        }
+public static function getAmountPaidGSPP($CheckDate){
+	   $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+       $details = LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount "
+                . "FROM loan_repayment_detail  INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.lawson_payment_date='$CheckDate' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->one();
+		$amount=$details->amount;
+		\frontend\modules\repayment\models\GepgLawson::updateAll(['amount'=>$amount], 'check_date="'.$CheckDate.'"');
+        }		
 }		

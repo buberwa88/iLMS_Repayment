@@ -33,7 +33,7 @@ class GepgLawson extends \yii\db\ActiveRecord
     {
         return [
             [['amount'], 'number'],
-            [['control_number_date', 'deduction_month', 'gepg_date'], 'safe'],
+            [['control_number_date', 'deduction_month', 'gepg_date','check_date'], 'safe'],
             [['status'], 'integer'],
             [['bill_number', 'control_number'], 'string', 'max' => 100],
         ];
@@ -53,6 +53,7 @@ class GepgLawson extends \yii\db\ActiveRecord
             'deduction_month' => 'Deduction Month',
             'status' => 'Status',
             'gepg_date' => 'Gepg Date',
+			'check_date'=>'check_date',
         ];
     }
 	public static function getBillTreasuryPerYear($year){
