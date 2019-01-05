@@ -19,20 +19,20 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                       <?= Html::encode($this->title) ?>
                         </div>
                         <div class="panel-body">
+						<?php  echo $this->render('_search_submit_bill', ['model' => $searchModel,'action'=>'new-employed-beneficiaries-found']); ?>
                            <?php 
                             
                             if($totalUnverifiedEmployees > 0){ ?>
-                            <p>        
-		<?=Html::beginForm(['employed-beneficiary/verify-beneficiaries-in-bulk'],'post');?>
+<p>							
+<?=Html::beginForm(['employed-beneficiary/verify-beneficiaries-in-bulk'],'post');?>
         <?=Html::submitButton('Submit selected beneficiaries', ['class' => 'btn btn-success',]);?>
-                
-    </p>
+		</p>
                             <?php } ?>
             
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
+        //'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
 			[
@@ -50,7 +50,8 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                 ],
             [
                      'attribute' => 'employerName',
-                        'label'=>"Employer",
+                        'label'=>"Employer",						
+						'format' => 'raw',
                         'value' => function ($model) {
                             return $model->employer->employer_name;
                         },
@@ -58,6 +59,8 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 			[
                      'attribute' => 'firstname',
                         'label'=>"First Name",
+						'width' => '100px',
+						'format' => 'raw',
                         //'vAlign' => 'middle',
                         'value' => function ($model) {
                             return $model->applicant->user->firstname;
@@ -67,6 +70,8 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             [
                      'attribute' => 'middlename',
                         'label'=>"M. Name",
+						'width' => '100px',
+						'format' => 'raw',
                         'value' => function ($model) {
                             return $model->applicant->user->middlename;
                         },
@@ -75,6 +80,8 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 		    [
                      'attribute' => 'surname',
                         'label'=>"Last Name",
+						'width' => '100px',
+						'format' => 'raw',
                         'value' => function ($model) {
                             return $model->applicant->user->surname;
                         },
@@ -83,6 +90,8 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             [
                      'attribute' => 'f4indexno',
                         'label'=>"Index Number",
+						'width' => '100px',
+						'format' => 'raw',
                         'value' => function ($model) {
                             return $model->applicant->f4indexno;
                         },
@@ -91,6 +100,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             [
                 'attribute' => 'totalLoan',
                 'hAlign' => 'right',
+				'width' => '100px',
                 'format' => ['decimal', 2],
                 'value' => function ($model) use($loan_given_to) {
 					$date=date("Y-m-d");
@@ -100,6 +110,7 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             [
                 'attribute' => 'basic_salary',
                 //'label' => "Basic Salary",
+				'width' => '100px',
                 'hAlign' => 'right',
                 'format' => ['decimal', 2],
                 'value' => function ($model) {
@@ -124,11 +135,12 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                             'pluginOptions' => ['allowClear' => true],
                         ],
                         'filterInputOptions' => ['placeholder' => 'Search'],
-                        'format' => 'raw'
+                        'format' => 'raw',
                     ],
 					[
                      'attribute' => 'matching',
                         'label'=>"Matching Status",
+						'format' => 'raw',
                         'value' => function ($model) {
                             return $model->matching;
                         },

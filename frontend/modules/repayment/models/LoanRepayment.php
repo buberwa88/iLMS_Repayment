@@ -37,6 +37,9 @@ class LoanRepayment extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+	 const DEDUCTION_DATE_REQUEST=26;
+	 const TREAURY_BILL_FORMAT="TRES";
+	 
     public static function tableName()
     {
         return 'loan_repayment';
@@ -77,7 +80,8 @@ class LoanRepayment extends \yii\db\ActiveRecord
 		[['control_number','amount','payCategory'], 'required','on'=>'gepgPayment'],
             [['employerId_bulk'], 'required','on'=>'bulkBillTreasury'],
             [['payment_date'], 'required','on'=>'billConfirmationTreasury'],
-            [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource','receipt_date'], 'safe'],
+			[['payment_date'], 'required','on'=>'gspp_monthly_deduction_request'],
+            [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource','receipt_date','vote_number','Vote_name','gepg_lawson_id','lowason_check_date'], 'safe'],
             [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 20],
             [['pay_phone_number'], 'string', 'max' => 13],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
@@ -654,4 +658,24 @@ public static function createAutomaticBillsPrepaid(){
 	}	
 			return true;
 } 
+public static function checkGePGlawsonBill($deduction_month,$bill_number,$amount,$control_number_date){
+	if(\frontend\modules\repayment\models\GepgLawson::find()->where(['deduction_month'=>$deduction_month])->count()==0){
+ Yii::$app->db->createCommand("INSERT IGNORE INTO  gepg_lawson(bill_number,amount,deduction_month,control_number_date) VALUES('$bill_number','$amount','$deduction_month','$control_number_date')")->execute();	
+}	
+	}
+public static function createBillPerEmployer($amount,$deduction_month,$Votecode,$VoteName,$CheckDate,$paymentStatus){
+	if(self::find()->where(['lowason_check_date'=>$CheckDate,'vote_number'=>$Votecode])->count()==0){
+	$getEmployerID=\frontend\modules\repayment\models\Employer::find()->where(['vote_number'=>$Votecode])->one();
+	$getEmployerIDx=$getEmployerID->employer_id;
+	$getBillDetails=\frontend\modules\repayment\models\GepgLawson::find()->where(['deduction_month'=>$deduction_month])->one();
+	$gepg_lawson_id=$getBillDetails->gepg_lawson_id;
+	$bill_number=$getBillDetails->bill_number;
+	$date_bill_generated=$getBillDetails->control_number_date;
+ Yii::$app->db->createCommand("INSERT INTO  loan_repayment(employer_id,bill_number,amount,payment_date,date_bill_generated,vote_number,Vote_name,gepg_lawson_id,lowason_check_date,payment_status) VALUES('$getEmployerIDx','$bill_number','$amount','$deduction_month','$date_bill_generated','$Votecode','$VoteName','$gepg_lawson_id','$CheckDate','$paymentStatus')")->execute();	
+}	
+	}
+public static function updateTotalAmountUnderEmployerBillGSPP($totalAmount1,$loan_repayment_id){
+        self::updateAll(['amount'=>$totalAmount1], 'loan_repayment_id ="'.$loan_repayment_id.'"'); 
+    }
+	
 }

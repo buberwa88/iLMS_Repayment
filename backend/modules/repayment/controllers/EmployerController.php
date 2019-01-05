@@ -496,13 +496,18 @@ class EmployerController extends Controller
     {
         $model1 = new \frontend\modules\repayment\models\Employer();
         $model2 = new \frontend\modules\repayment\models\User();
-        $model2->scenario = 'employer_registration';
+        $model2->scenario = 'heslb_employer_registration';
         $model1->scenario = 'employer_details';
         $model1->created_at=date("Y-m-d H:i:s");
         $model2->created_at=date("Y-m-d H:i:s");  
         $model2->last_login_date=date("Y-m-d H:i:s");
-        if($model1->load(Yii::$app->request->post()) && $model2->load(Yii::$app->request->post())){		
-        $model2->username=$model2->email_address; 
+        if($model1->load(Yii::$app->request->post()) && $model2->load(Yii::$app->request->post())){
+			if($model2->email_address !=''){
+			$model2->username=$model2->email_address;	
+			}else{
+			$model2->username=$model2->firstname;
+			}
+         
 		$employerName=$model1->employerName;
 		$model1->verification_status=1;
         $loggedin=Yii::$app->user->identity->user_id;        
@@ -514,8 +519,12 @@ class EmployerController extends Controller
                 if($model1->industry !=''){
                  $model1->nature_of_work_id=$model1->industry;   
                 }
+		$model1->phone_number=$model2->phone_number_employer;	
 		$model1->TIN=$model2->TIN;
-		$model1->employer_name = preg_replace('/\s+/', ' ',$employerName);        
+		$model1->employer_name = preg_replace('/\s+/', ' ',$employerName); 
+        $model1->region=$model2->region;
+        $model1->district=$model2->district;
+        $model1->ward_id=$model2->ward_id;		
 
 		//check if employer exist
 		$results=$model1->checkEmployerExists($model1->employer_name);
@@ -534,7 +543,28 @@ class EmployerController extends Controller
         $model2->login_type=2; 
         $model2->created_by=$loggedin;		
         
-        } 
+		
+		/*
+		$model2->validate();
+                            $reason1 = '';
+                            if ($model2->hasErrors()) {
+                                $errors = $model2->errors;
+                                foreach ($errors as $key => $value) {
+                                    $reason1 = $reason1 . $value[0] . '  ';
+                                }
+							}
+		$model1->validate();
+                            $reason = '';
+                            if ($model1->hasErrors()) {
+                                $errors = $model1->errors;
+                                foreach ($errors as $key => $value) {
+                                    $reason = $reason . $value[0] . '  ';
+                                }
+							}
+            echo $reason1."<br/>".$reason;exit;
+			*/
+        }
+        		
         if ($model2->load(Yii::$app->request->post()) && $model2->save()) {
             $model1->user_id=$model2->user_id;
 			//$model1->email_verification_code=589;

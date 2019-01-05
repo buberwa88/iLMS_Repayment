@@ -65,7 +65,7 @@ class LoanBeneficiary extends \yii\db\ActiveRecord {
             [['firstname', 'middlename', 'surname', 'date_of_birth', 'place_of_birth', 'learning_institution_id', 'physical_address', 'phone_number', 'email_address', 'password', 'district', 'confirm_password', 'sex', 'region'], 'required', 'on' => 'loanee_registration'],
             [['start_date', 'end_date'], 'required', 'on' => 'reprocessloan'],
             ['password', 'string', 'length' => [8, 24]],
-            [['date_of_birth', 'created_at', 'updated_at', 'updated_by', 'sex', 'region', 'applicant_id', 'NID', 'ward_id', 'operation', 'check_search', 'start_date', 'end_date', 'name', 'loan_confirmation_status', 'liquidation_letter_status'], 'safe'],
+            [['date_of_birth', 'created_at', 'updated_at', 'updated_by', 'sex', 'region', 'applicant_id', 'NID', 'ward_id', 'operation', 'check_search', 'start_date', 'end_date', 'name', 'loan_confirmation_status', 'liquidation_letter_status','schedule_principal_amount','schedule_penalty','schedule_laf','schedule_vrf','schedule_total_loan_amount','schedule_start_date','schedule_end_date','monthly_installment'], 'safe'],
             [['place_of_birth', 'learning_institution_id', 'phone_number', 'applicant_id'], 'integer'],
             [['firstname', 'middlename', 'surname', 'f4indexno'], 'string', 'max' => 45],
             [['firstname', 'middlename', 'surname'], 'match', 'not' => true, 'pattern' => '/[^a-zA-Z_-]/', 'message' => 'Only Characters  Are Allowed...'],
@@ -708,6 +708,371 @@ class LoanBeneficiary extends \yii\db\ActiveRecord {
             }
         }
         return NULL;
+    }
+public static function getLoanRepaymentSchedule($applicant_id){
+
+ini_set('memory_limit', '10000M');
+set_time_limit(0);
+$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+
+$subtitalAcc=0;
+$subtitalAccq=0;
+$date=date("Y-m-d");
+$duration_type="months";
+?>
+ <?php 
+$loanee = \frontend\modules\application\models\Applicant::find()
+	                                                           ->where(['applicant_id'=>$applicant_id])->one();
+$getProgramme = \frontend\modules\application\models\Application::findBySql("SELECT applicant.sex,applicant.f4indexno,programme.programme_name,learning_institution.institution_code FROM application INNER JOIN applicant ON applicant.applicant_id=application.applicant_id INNER JOIN disbursement ON disbursement.application_id=application.application_id INNER JOIN programme ON programme.programme_id=disbursement.programme_id INNER JOIN learning_institution ON learning_institution.learning_institution_id=programme.learning_institution_id WHERE application.applicant_id=:applicant_id",[':applicant_id'=>$applicant_id])->one();
+
+$programmeResultd=\common\models\LoanBeneficiary::getAllProgrammeStudiedGeneral($applicant_id);
+
+$balance=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($applicant_id,$date,$loan_given_to);
+
+$getPaymentsOfLoanee = \backend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT SUM(loan_repayment_detail.amount) AS amount,loan_repayment.payment_date,employer.employer_code,employer.short_name,loan_repayment_detail.applicant_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id LEFT JOIN employer ON employer.employer_id=loan_repayment.employer_id LEFT JOIN applicant ON applicant.applicant_id=loan_repayment.applicant_id WHERE loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' AND loan_repayment_detail.applicant_id=:applicant_id GROUP BY loan_repayment.payment_date ORDER BY loan_repayment.payment_date ASC",[':applicant_id'=>$applicant_id])->all();
+$sno=1;
+
+$amountPTotal=0;
+$amountPTotalAccumulated=0;
+$totalLAFLoop=0;
+$totalPNTLoop=0;
+$totalVRFLoop=0;
+$totalPRCLoop=0;
+$totalPrinciplePaid=0;
+$totalAcruedVRF=0;
+$totalAcruedVRFfirst=0;
+$totalAcruedVRF1First=0;
+$acruedVRFBefore=0;
+$amountPerMonth=0;
+
+$TotalamountPerMonth =0;
+$amountPerMonthLAF =0;
+$amountPerMonthPNT =0;
+$amountPerMonthVRF =0;
+$amountPerMonthPRC =0;
+$totalAcruedVRF =0;
+$TotalPRCGeneral =0;
+
+$factor=2;//the possible payment loop
+//check if employed
+     $MLREB=\frontend\modules\repayment\models\EmployedBeneficiary::getEmployedBeneficiaryPaymentSetting();	
+	 $paymentCalculation = \frontend\modules\repayment\models\EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.applicant_id='$applicant_id' AND employment_status='ONPOST' AND verification_status='1' AND loan_summary_id >'0'")->one();
+	 if($paymentCalculation->applicant_id > 0){
+	$amount1=$MLREB*$paymentCalculation->basic_salary;	 
+	 }else{
+	$amount1=\frontend\modules\repayment\models\EmployedBeneficiary::getNonEmployedBeneficiaryPaymentSetting();
+	 }	 
+//end check if employed
+
+//check the last payment of beneficiary
+$paymentLoanRepayment = \frontend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT  loan_repayment.payment_date  FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.applicant_id='$applicant_id' AND loan_repayment.payment_status='1' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->orderBy(['loan_repayment_detail'=>SORT_DESC])->one();
+$lastPaydate = date_create($paymentLoanRepayment->payment_date);
+$todate = date_create($date);
+$interval = date_diff($lastPaydate, $todate);
+$dateDifferenceInMonth=$interval->format('%m');
+
+if($paymentLoanRepayment->payment_date !=''){
+	if($dateDifferenceInMonth > 0){
+$payment_date=date("Y-m-d");
+	}else{
+				$payment_date=$paymentLoanRepayment->payment_date;
+	}
+}else{
+$payment_date=date("Y-m-d");	
+}
+//end last payment
+
+//get total intervals of payment
+$totalMonths=$balance/$amount1;
+//end get total intervals of payment
+        $totalAmount=0; 
+        $constantPaymentDate=date("Y-m-d",strtotime($payment_date));
+		
+//check ORIGINAL AMOUNT PER Items
+$totalPrincipalORGN=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPrincipleLoanOriginal($applicant_id,$date,$loan_given_to);
+$totalVRFORGN=\backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id,$date,$loan_given_to);
+$totalPNTORGN=\backend\modules\repayment\models\LoanSummaryDetail::getTotalPenaltyOriginal($applicant_id,$date,$loan_given_to);
+$totalLAFORGN=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOriginal($applicant_id,$date,$loan_given_to);
+//end check amount per item		
+//check loan repayment item balances
+//-------------Items ID------
+    $itemCodeLAF="LAF";
+	$LAF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeLAF);
+	$itemCodePNT="PNT";
+	$PNT_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePNT);
+	$itemCodeVRF="VRF";
+	$VRF_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
+	$itemCodePRC="PRC";
+	$PRC_id=\backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodePRC);
+//------------end items ID------------
+
+    $AmountPaidPerItemTotalLAF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$LAF_id,$loan_given_to);
+	$totalAmountAlreadyPaidLAF=$AmountPaidPerItemTotalLAF->amount;
+	$AmountPaidPerItemTotalPNT=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PNT_id,$loan_given_to);
+	$totalAmountAlreadyPaidPNT=$AmountPaidPerItemTotalPNT->amount;
+	$AmountPaidPerItemTotalVRF=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$VRF_id,$loan_given_to);
+	$totalAmountAlreadyPaidVRF=$AmountPaidPerItemTotalVRF->amount;
+	$AmountPaidPerItemTotalPRC=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerItemtoBeneficiary($applicant_id,$PRC_id,$loan_given_to);
+	$totalAmountAlreadyPaidPRC=$AmountPaidPerItemTotalPRC->amount;
+	$balanceLAF=$totalLAFORGN-$totalAmountAlreadyPaidLAF;
+	$balancePNT=$totalPNTORGN-$totalAmountAlreadyPaidPNT;
+	$balanceVRF=$totalVRFORGN-$totalAmountAlreadyPaidVRF;
+	$balancePRC=$totalPrincipalORGN-$totalAmountAlreadyPaidPRC;
+	if($balanceLAF > 0){$balanceLAF=$balanceLAF;$balanceLAFfirst=$balanceLAF;}else{$balanceLAF=0;$balanceLAFfirst=0;}
+	if($balancePNT > 0){$balancePNT=$balancePNT;$balancePNTFirst=$balancePNT;}else{$balancePNT=0;$balancePNTFirst=0;}
+	if($balanceVRF > 0){$balanceVRF=$balanceVRF;$balanceVRFfirst=$balanceVRF;}else{$balanceVRF=0;$balanceVRFfirst=0;}
+	if($balancePRC > 0){$balancePRC=$balancePRC;$balancePRCFirst=$balancePRC;}else{$balancePRC=0;$balancePRCFirst=0;}
+	$resultsVRFRepaymentRate=\backend\modules\repayment\models\LoanRepaymentSetting::getLoanRepaymentRateVRF($VRF_id);
+	$vrfRepaymentRate=$resultsVRFRepaymentRate->loan_repayment_rate*0.01;
+	$resultsLAFRepaymentRate=\backend\modules\repayment\models\LoanRepaymentSetting::getLoanRepaymentRateOtherItems($LAF_id);
+	$LAFRepaymentRate=$resultsLAFRepaymentRate->loan_repayment_rate*0.01;
+	$resultsPNTRepaymentRate=\backend\modules\repayment\models\LoanRepaymentSetting::getLoanRepaymentRateOtherItems($PNT_id);
+	$PNTRepaymentRate=$resultsPNTRepaymentRate->loan_repayment_rate*0.01;
+	$numberOfDaysPerYear=\backend\modules\repayment\models\EmployedBeneficiary::getTotaDaysPerYearSetting();
+//end  check loan repayment item balances       
+//get VRF before schedule
+			    $dateConstantForPaymentbe=$constantPaymentDate;
+				$dateCreatedqqbe=date_create($dateConstantForPaymentbe);
+				$dateDurationAndTypeqqbe="1"." ".$duration_type;
+				date_add($dateCreatedqqbe,date_interval_create_from_date_string($dateDurationAndTypeqqbe));
+				$payment_dateBe=date_format($dateCreatedqqbe,"Y-m-d");
+				$totalNumberOfDaysBe=round((strtotime($payment_dateBe)-strtotime($date))/(60*60*24));
+				$acruedVRFBefore=$balancePRC*$vrfRepaymentRate*$totalNumberOfDaysBe/$numberOfDaysPerYear;
+//end get VRF before schedule        		
+        //foreach ($details_applicant as $paymentCalculation) { 			   
+           $totalOutstandingAmount=$balance;
+		   if($totalOutstandingAmount > 0){
+			$countForPaymentDate=1;
+			$countForPaymentDateFirst=1;
+			$countForPaymentDate1First=1;
+			
+			$totalMonths=((($balancePRC + $balanceLAF + $balancePNT + $balanceVRF)/$amount1)*$factor);
+			$totalOutstandingAmount=($balancePRC + $balanceLAF + $balancePNT + $balanceVRF);
+			$balanceVRF +=$acruedVRFBefore;
+        for($countP=1;$countP <= $totalMonths; ++$countP){
+			$amountPTotal +=$amount1;
+			//if($totalOutstandingAmount >= $amountPTotal){
+				if(($balanceVRF >=$overallVRFinPayment) OR ($balancePRC >= $totalPrinciplePaid)){
+			//get payment date
+			    $dateConstantForPayment=$constantPaymentDate;
+				$dateCreatedqq=date_create($dateConstantForPayment);
+				$dateDurationAndTypeqq=$countForPaymentDate." ".$duration_type;
+				date_add($dateCreatedqq,date_interval_create_from_date_string($dateDurationAndTypeqq));
+				$payment_date=date_format($dateCreatedqq,"Y-m-d");
+				//end	
+			$amountPTotalAccumulated=$amountPTotal;
+			$payment_dateLast=$payment_date;
+			$mnc=0;
+			//distribute amount in respective item according to the repayment rate
+			//----here for LAF portion----
+			if($balanceLAF > 0){
+				if($amount1 >=$balanceLAF ){
+				$LAFportion=$balanceLAF;
+                $remainingAmount=$amount1-$balanceLAF;			
+				}else{
+				$LAFportion=$amount1;
+                $remainingAmount=0;				
+				}
+			}else{
+			$remainingAmount=$amount1;	
+			}
+			
+			$totalLAFPaymentTotal=$totalLAFLoop;
+			$totalLAFLoop +=$LAFportion;
+			if($balanceLAF >= $totalLAFLoop){$LAFportion=$LAFportion;}else{
+				$LAFportion1=$balanceLAF - $totalLAFPaymentTotal;
+				if($LAFportion1 > 0){
+				$LAFportion=$LAFportion1;	
+				}else{
+					$LAFportion=0;
+				}
+				}
+			
+			$amount_remained=$amount1-$LAFportion;
+			
+			//----here for penalty portion----	
+         $penalty_portion = $amount_remained * $PNTRepaymentRate;
+            if(($balancePNT >= $penalty_portion) && $balancePNT > 0){
+             $penalty_portion=$penalty_portion;   
+            }else if((($balancePNT < $penalty_portion) && $balancePNT > 0)){
+             $penalty_portion=$balancePNT;   
+            }else{
+             $penalty_portion=0;   
+            }
+		 
+			$totalPNTPaymentTotal=$totalPNTLoop;
+			$totalPNTLoop +=$penalty_portion;
+			if($balancePNT >= $totalPNTLoop){$penalty_portion=$penalty_portion;}else{
+				$penalty_portion1=$balancePNT - $totalPNTPaymentTotal;
+				if($penalty_portion1 > 0){
+				$penalty_portion=$penalty_portion1;	
+				}else{
+					$penalty_portion=0;
+				}
+				}
+		$amount_remained1=$amount_remained-$penalty_portion;		
+        //---end for penalty----
+		$totalPRCPaymentTotal=$totalPRCLoop;
+		$principleBalancePreviousFirst=$balancePRC-$totalPRCPaymentTotal;
+		//here VRF ACRUE 
+			if($countP > 1){
+				
+			    $dateConstantForPayment1First=$constantPaymentDate;
+				$dateCreatedqq1First=date_create($dateConstantForPayment1First);
+				$dateDurationAndTypeqqFirst=$countForPaymentDate1First." ".$duration_type;
+				date_add($dateCreatedqq1First,date_interval_create_from_date_string($dateDurationAndTypeqqFirst));
+				$payment_date1First=date_format($dateCreatedqq1First,"Y-m-d");	
+			$totalNumberOfDaysFirst=round((strtotime($payment_date)-strtotime($payment_date1First))/(60*60*24));
+			if($principleBalancePreviousFirst > 0){
+			$totalAcruedVRF1First=$principleBalancePreviousFirst*$vrfRepaymentRate*$totalNumberOfDaysFirst/$numberOfDaysPerYear;
+			}else{
+			$totalAcruedVRF1First=0;	
+			}
+            //$totalAcruedVRFFirst .=$totalAcruedVRF1First."----".$principleBalancePreviousFirst."---".$payment_date1First."--".$payment_dateFirst."--".$totalNumberOfDaysFirst."<br/>";
+            //$totalAcruedVRFfirst +=$totalAcruedVRF1First;			
+			++$countForPaymentDate1First;
+			//echo  $totalNumberOfDaysFirst."tele";exit;
+			}			
+			$balanceVRF +=$totalAcruedVRF1First;
+			//END VRF ACRUE		    
+		
+		//-----here for VRF portion----
+		
+        if($balancePRC > 0){
+         $vrf_portion=$amount_remained1 * $vrfRepaymentRate;		 
+         if($balanceVRF >=$totalVRFLoop){
+			 if($balanceVRF >=$vrf_portion){
+         $vrfTopay=$vrf_portion;
+         $amount_remained22=$amount_remained1-$vrfTopay;		 
+		 }else{
+         $vrfTopay=$balanceVRF; 
+         $amount_remained22=$amount_remained1-$vrfTopay;
+		 }         
+         }else{
+         $vrfTopay=0; 
+         $amount_remained22=$amount_remained1-$vrfTopay;
+         }         
+        }else{
+            if($balanceVRF >=$amount_remained1){
+         $vrfTopay=$amount_remained1;
+         $amount_remained22=0; 
+         }else{
+         $vrfTopay=$balanceVRF; 
+         $amount_remained22=0;
+         }
+        }
+	
+		$totalVRFPaymentTotal=$totalVRFLoop;
+
+	        
+			if($balanceVRF >= $totalVRFLoop){
+				if($balanceVRF >=($totalVRFLoop + $vrfTopay)){
+				$vrfTopay=$vrfTopay;
+			}else{$vrfTopay=$vrfTopay-(($totalVRFLoop + $vrfTopay)-$balanceVRF);}}else{
+				$vrfTopay1=$balanceVRF - $totalVRFPaymentTotal;
+				if($vrfTopay1 > 0){
+				$vrfTopay=$vrfTopay1;	
+				}else{
+					$vrfTopay=0;
+				}
+				}
+				$totalVRFLoop +=$vrfTopay; 
+					
+				
+		$amount_remained2=$amount_remained1-$vrfTopay;		
+		//end here for VRF portion----
+		
+		//check if principal amount exceed
+        if($balancePRC >= $amount_remained2){
+        $amount_remained2=$amount_remained2;    
+        }else if($balancePRC < $amount_remained2 && $balancePRC >'0'){
+        $amount_remained2=$balancePRC;    
+        }else{
+        $amount_remained2='0';    
+        }
+		
+			$totalPRCLoop +=$amount_remained2;
+			
+			if($balancePRC >= $totalPRCLoop){$amount_remained2=$amount_remained2;}else{
+				$amount_remained211=$balancePRC - $totalPRCPaymentTotal;
+				if($amount_remained211 > 0){
+				//$amount_remained2=$amount_remained211;
+                $amount_remained2=$amount_remained2;				
+				}else{
+					$amount_remained2=0;
+				}
+				}	
+        // end check principle amount exceed
+			//end
+			//first check principalbalance and incoming balance
+			$principleBalance=$balancePRC-$totalPrinciplePaid;
+			if($principleBalance > $amount_remained2){
+				$amount_remained2=$amount_remained2;
+			}else{
+				$amount_remained2=$principleBalance;
+			}
+            //end check			
+			
+			$totalPrinciplePaid +=$amount_remained2;
+			$principleBalance=$balancePRC-$totalPrinciplePaid;
+			if($principleBalance > 0){
+				$principleBalance=$principleBalance;
+			}else{
+			$principleBalance=0;	
+			}
+			
+			
+			$overallLAFinPayment +=$LAFportion;
+			$overallPNTinPayment +=$penalty_portion;
+			$overallVRFinPayment +=$vrfTopay;
+            if($countP==1){
+				$totalAcruedVRF1First=$acruedVRFBefore + $balanceVRFfirst;
+			}else{
+			$totalAcruedVRF1First=$totalAcruedVRF1First;	
+			}
+			$vrfTopayCheckIf=number_format($vrfTopay,2);$checkLAFportionIf=number_format($LAFportion,2);$checkpenalty_portionIf=number_format($penalty_portion,2);$checkamount_remained2If=number_format($amount_remained2,2);$checktotalAcruedVRF1FirstIf=number_format(($totalAcruedVRF1First),2);$checkprincipleBalanceIf=number_format(($principleBalance),2);
+if($checkLAFportionIf > 0 || $checkpenalty_portionIf > 0 || $vrfTopayCheckIf > 0 || $checkamount_remained2If > 0 || $checktotalAcruedVRF1FirstIf > 0 || $checkprincipleBalanceIf > 0){
+            $lastPaymentDate=date("Y-m-d",strtotime($payment_date));	
+            $amount1=$LAFportion + $penalty_portion + $vrfTopay + $amount_remained2;
+			if($countP == 1){
+			$schedule_start_date=date("Y-m-d",strtotime($payment_date));
+            $monthly_installment=$amount1;			
+			}
+			$TotalamountPerMonth +=$amount1;
+			$amountPerMonthLAF +=$LAFportion;
+			$amountPerMonthPNT +=$penalty_portion;
+			$amountPerMonthVRF +=$vrfTopay;
+			$amountPerMonthPRC +=$amount_remained2;
+			$totalAcruedVRF +=$totalAcruedVRF1First;
+			$TotalPRCGeneral +=$principleBalance;
+}
+			}
+			//echo  $totalAcruedVRF1First;exit;
+			++$countForPaymentDate;
+		}
+		}
+
+//return "Total Amount to be paid=".number_format($TotalamountPerMonth,2)."<br/>"."Laf Portion=".number_format($amountPerMonthLAF,2)."<br>"."Penalty Portion".number_format($amountPerMonthPNT,2)."<br>"."Vrf Portion".number_format($amountPerMonthVRF,2)."<br/>"."Principal Portion".number_format($amountPerMonthPRC,2)."<br/>"."Last Payment Date is: ".$lastPaymentDate;	
+$schedule_principal_amount=$amountPerMonthPRC;
+$schedule_penalty=$amountPerMonthPNT;
+$schedule_laf=$amountPerMonthLAF;
+$schedule_vrf=$amountPerMonthVRF;
+$schedule_total_loan_amount=$TotalamountPerMonth;
+$schedule_start_date=$schedule_start_date;
+$monthly_installment=$monthly_installment;
+$created_at=date("Y-m-d H:i:s");
+$lastPaymentDate=$lastPaymentDate;
+//check exists in loan beneficiary table
+if(self::find()->where(['applicant_id'=>$applicant_id])->count()==0){
+ Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_beneficiary(applicant_id,created_at,updated_at) VALUES('$applicant_id','$created_at','$created_at')")->execute();	
+}
+self::updateAll(['schedule_principal_amount' => $schedule_principal_amount,'schedule_penalty'=>$schedule_penalty,'schedule_laf'=>$schedule_laf,'schedule_vrf'=>$schedule_vrf,'schedule_total_loan_amount'=>$schedule_total_loan_amount,'schedule_start_date'=>$schedule_start_date,'schedule_end_date'=>$lastPaymentDate,'monthly_installment'=>$monthly_installment], 'applicant_id ="' . $applicant_id . '"');	
+
+//end check
+
+	}
+	public static function getScheduleDetail($applicantID) {
+        return self::findBySql("SELECT schedule_principal_amount,schedule_penalty,schedule_laf,schedule_vrf,schedule_total_loan_amount,schedule_start_date,schedule_end_date,monthly_installment FROM loan_beneficiary WHERE  applicant_id='{$applicantID}'")->one();
     }
 
 }

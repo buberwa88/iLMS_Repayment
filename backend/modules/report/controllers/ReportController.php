@@ -72,7 +72,7 @@ class ReportController extends Controller {
         ]);
     }
 
-    public function actionViewOperation($id) {
+    public function actionViewOperation($id){
         $searchModel = new ReportSearch();
         $dataProvider = $searchModel->searchAllReportFilter(Yii::$app->request->queryParams);
         return $this->render('viewOperation', [

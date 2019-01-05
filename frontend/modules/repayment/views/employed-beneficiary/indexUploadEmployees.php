@@ -48,12 +48,17 @@ $this->params['breadcrumbs'][] = $this->title;
                     [
                         'label' => 'Active Loan Beneficiaries',
                         'content' => '<iframe src="' . yii\helpers\Url::to(['employed-beneficiary/beneficiaries-verified']) . '" width="100%" height="600px" style="border: 0"></iframe>',
-                        'id' => '2',
+                        'id' => '1',
                     ],
 					[
                         'label' => 'Inactive Loan Beneficiaries',
                         'content' => '<iframe src="' . yii\helpers\Url::to(['employed-beneficiary/inative-beneficiaries']) . '" width="100%" height="600px" style="border: 0"></iframe>',
                         'id' => '2',
+                    ],
+					[
+                        'label' => 'Loan Repayment Schedule',
+                        'content' => '<iframe src="' . yii\helpers\Url::to(['employed-beneficiary/beneficiaries-payschedule']) . '" width="100%" height="600px" style="border: 0"></iframe>',
+                        'id' => '3',
                     ],
                 ],
                 'position' => TabsX::POS_ABOVE,

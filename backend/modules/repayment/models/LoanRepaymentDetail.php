@@ -55,7 +55,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord {
         return [
             [['loan_repayment_id', 'applicant_id', 'loan_summary_id'], 'required'],
             [['loan_repayment_id', 'applicant_id', 'loan_repayment_item_id', 'loan_summary_id'], 'integer'],
-            [['applicantName', 'totalLoanees', 'firstname', 'middlename', 'surname', 'amount', 'totalAmount', 'f4indexno', 'principal', 'penalty', 'LAF', 'vrf', 'totalLoan', 'outstandingDebt', 'loan_given_to', 'updated_at', 'updated_by'], 'safe'],
+            [['applicantName', 'totalLoanees', 'firstname', 'middlename', 'surname', 'amount', 'totalAmount', 'f4indexno', 'principal', 'penalty', 'LAF', 'vrf', 'totalLoan', 'outstandingDebt', 'loan_given_to', 'updated_at', 'updated_by','vote_number','Vote_name','sub_vote','sub_vote_name','lawson_loan_balance','lawson_payment_date','deduction_code','deduction_description'], 'safe'],
             //[['amount'], 'number'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
             [['loan_repayment_item_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\repayment\models\LoanRepaymentItem::className(), 'targetAttribute' => ['loan_repayment_item_id' => 'loan_repayment_item_id']],

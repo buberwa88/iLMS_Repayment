@@ -20,7 +20,7 @@ echo Form::widget([ // fields with labels
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[
-        'email_address'=>['label'=>'Username:', 'options'=>['placeholder'=>'Email Address','readonly'=>'readonly']],	
+        'username'=>['label'=>'Username:', 'options'=>['placeholder'=>'Username','readonly'=>'readonly']],	
 		'password'=>['type'=>Form::INPUT_PASSWORD,'label'=>'Password:', 'options'=>['placeholder'=>'Password'],
 		'hint'=>'<i>Note: The password must contain at least 8 characters in length where it must include: one capital letter, one number, no spaces.</i>',
 		],

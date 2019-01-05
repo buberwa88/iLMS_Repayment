@@ -121,7 +121,8 @@ echo Form::widget([ // fields with labels
     'columns'=>1,
     'attributes'=>[	
         'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Telephone Number']],
-        'f4indexno'=>['label'=>'Form IV Index Number:', 'options'=>['placeholder'=>'Example: S0105.0011.2003']],       
+        'f4indexno'=>['label'=>'Form IV Index Number:', 'options'=>['placeholder'=>'Example: S0105.0011']],
+        'form_four_completion_year'=>['label'=>'Form IV Completion Year:', 'options'=>['placeholder'=>'Form IV Completion Year']],		
         'NID'=>['label'=>'National Identification Number:', 'options'=>['placeholder'=>'National Identification Number']], 			
         'employee_id'=>['label'=>'Employee ID:', 'options'=>['placeholder'=>'Employee ID']],        
         'LOAN_BENEFICIARY_STATUS'=>['type' => Form::INPUT_WIDGET,

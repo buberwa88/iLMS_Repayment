@@ -497,7 +497,8 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
 	public function getNewEmployedBeneficiariesFound($params,$employee_status)
     {
         $query = EmployedBeneficiary::find()
-                                       ->where('employed_beneficiary.verification_status IN(0,4) AND employed_beneficiary.employment_status ="ONPOST" AND employed_beneficiary.applicant_id >0 AND confirmed="1" AND upload_status="1" AND employee_status="'.$employee_status.'"')
+		                               ->select('employed_beneficiary.employer_id,employed_beneficiary.employed_beneficiary_id,employed_beneficiary.applicant_id,employed_beneficiary.basic_salary,employed_beneficiary.sex,employed_beneficiary.f4indexno,employed_beneficiary.matching,employed_beneficiary.basic_salary,employed_beneficiary.firstname,employed_beneficiary.middlename,employed_beneficiary.surname,employed_beneficiary.sex,employed_beneficiary.mult_employed')
+                                       ->where('employed_beneficiary.verification_status IN(0,4) AND employed_beneficiary.employment_status ="ONPOST" AND employed_beneficiary.applicant_id >0 AND employed_beneficiary.confirmed="1" AND employed_beneficiary.upload_status="1" AND employed_beneficiary.employee_status="'.$employee_status.'"')
                                        ->orderBy('employed_beneficiary.employed_beneficiary_id DESC');
                                    // ->all();
 
@@ -521,15 +522,15 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
          $query->joinwith(["applicant","applicant.user"]);
         $query->andFilterWhere([
             'employed_beneficiary_id' => $this->employed_beneficiary_id,
-            'employer_id' => $this->employer_id,
-            'applicant_id' => $this->applicant_id,
+            'employed_beneficiary.employer_id' => $this->employer_id,
+            'employed_beneficiary.applicant_id' => $this->applicant_id,
             //'basic_salary' => $this->basic_salary,
-            'created_at' => $this->created_at,
-            'created_by' => $this->created_by,
-            'mult_employed' => $this->mult_employed,
+            'employed_beneficiary.created_at' => $this->created_at,
+            'employed_beneficiary.created_by' => $this->created_by,
+            'employed_beneficiary.mult_employed' => $this->mult_employed,
         ]);
 
-        $query->andFilterWhere(['like', 'employee_id', $this->employee_id])
+        $query->andFilterWhere(['like', 'employed_beneficiary.employee_id', $this->employee_id])
 		    ->andFilterWhere(['like', 'employer.employer_name', $this->employerName])
 		    ->andFilterWhere(['like', 'user.firstname', $this->firstname])
 			->andFilterWhere(['like', 'user.middlename', $this->middlename])

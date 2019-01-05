@@ -48,11 +48,11 @@ class Employer extends \yii\db\ActiveRecord
     {
         return [
             //[['user_id', 'employer_name', 'employer_code', 'phone_number', 'physical_address', 'email_address'], 'required'],
-            [['user_id','employer_name', 'employer_code', 'phone_number','employer_type_id','postal_address','ward_id','district','short_name','nature_of_work_id'], 'required', 'on'=>'employer_details'],
+            [['user_id','employer_name', 'employer_code', 'phone_number','employer_type_id','postal_address','ward_id','district','short_name','nature_of_work_id','region'], 'required', 'on'=>'employer_details'],
 			[['rejection_reason'], 'required' , 'on'=>'employer_rejection'],			
-            [['user_id', 'ward_id','district','phone_number'], 'integer'],
+            //[['user_id', 'ward_id','district','phone_number'], 'integer'],
             [['employer_type_id','employerCode', 'short_name', 'nature_of_work_id'], 'string'],
-            [['created_at', 'email_address','employerCode', 'short_name', 'totatEmployees', 'verification_status', 'region', 'nature_of_work_id','rejection_date','employerID','rejection_reason','vote_number'], 'safe'],
+            [['created_at', 'email_address','employerCode', 'short_name', 'totatEmployees', 'verification_status', 'region', 'nature_of_work_id','rejection_date','employerID','rejection_reason','vote_number','fax_number'], 'safe'],
             [['employer_name', 'physical_address', 'email_address','nature_of_work_id'], 'string', 'max' => 100],
 			[['rejection_reason'], 'string', 'max' => 500],
             [['employer_code'], 'string', 'max' => 20],
@@ -93,6 +93,7 @@ class Employer extends \yii\db\ActiveRecord
 			'rejection_reason'=>'Reason',
 			'rejection_date'=>'Rejection Date',
 			'employerID'=>'Employer Id',
+			'fax_number'=>'Fax Number',
         ];
     }
 

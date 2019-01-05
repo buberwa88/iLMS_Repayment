@@ -165,6 +165,17 @@ $this->params['breadcrumbs'][] = $this->title;
                     ]
                 ],
             ],
+			[
+                'columns' => [
+
+                    [
+                        'label'=>'Username',
+                        'value'=>$model->user->username,
+                        //'labelColOptions'=>['style'=>'width:20%'],
+                        //'valueColOptions'=>['style'=>'width:30%'],
+                    ]
+                ],
+            ],
             
             [
                 'columns' => [

@@ -95,10 +95,10 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
             [['employee_check_number', 'employee_mobile_phone_no', 'basic_salary', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_NAME_OF_INSTITUTION_OF_STUDY'], 'required', 'on' => 'Uploding_employed_beneficiaries'],
             [['support_document','employmentStatus2'], 'required', 'on'=>'deactivate_double_employed'],
             [['support_document'], 'file', 'extensions'=>['pdf']],
-			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number', 'sex','salary_source','LOAN_BENEFICIARY_STATUS','programme_level_of_study','learning_institution_id','programme','programme_entry_year','programme_completion_year'], 'required', 'on' => 'additionalEmployee'],
-			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','sex','salary_source','LOAN_BENEFICIARY_STATUS'], 'required', 'on' => 'upload_employees'],
+			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number', 'sex','salary_source','LOAN_BENEFICIARY_STATUS','programme_level_of_study','learning_institution_id','programme','programme_entry_year','programme_completion_year','form_four_completion_year'], 'required', 'on' => 'additionalEmployee'],
+			[['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','sex','salary_source','LOAN_BENEFICIARY_STATUS','form_four_completion_year'], 'required', 'on' => 'upload_employees'],
 			[['f4indexno','employee_id'], 'required', 'on' => 'update_beneficiaries_salaries2'],
-            [['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','sex','salary_source','LOAN_BENEFICIARY_STATUS'], 'required', 'on' => 'upload_employees2'],
+            [['firstname', 'middlename','surname','f4indexno','employee_id','phone_number','sex','salary_source','LOAN_BENEFICIARY_STATUS','form_four_completion_year'], 'required', 'on' => 'upload_employees2'],
 			//['salary_source', 'required', 'when' => function ($model) {
     //return $model->salary_source_check == 3;
 //}, 'whenClient' => "function (attribute, value) {
@@ -116,11 +116,14 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
             [['employer_id', 'applicant_id', 'created_by', 'employee_mobile_phone_no', 'loan_summary_id','programme_entry_year','programme_completion_year'], 'integer'],
             [['f4indexno'],'validateNewEmployee','on'=>'additionalEmployee'],
             ['employee_mobile_phone_no', 'string', 'length' => [10, 12]],
+			//['form_four_completion_year,programme_completion_year,programme_entry_year', 'string', 'length' => [4]],
+			[['form_four_completion_year','programme_completion_year','programme_entry_year'],'is4NumbersOnly'],
+			//[['form_four_completion_year'],'validateF4CompletionYear'],
             [['basic_salary','phone_number'], 'number'],
 	    ['phone_number', 'string', 'length' => [0, 12]],
             [['employment_status', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_YEAR_OF_COMPLETION_STUDIES', 'employee_ACADEMIC_AWARD', 'employee_NAME_OF_INSTITUTION_OF_STUDY'], 'string'],
             [['employer_id', 'employee_id', 'applicant_id', 'employment_status', 'created_at', 'created_by', 'created_at',
-            'employee_current_nameifchanged', 'NID', 'f4indexno', 'phone_number', 'loan_summary_id','principal','penalty','LAF','VRF','totalLoan','paid','outstanding', 'totalLoanees', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_YEAR_OF_COMPLETION_STUDIES', 'employee_ACADEMIC_AWARD', 'employee_NAME_OF_INSTITUTION_OF_STUDY', 'amount', 'verification_status' , 'employerName','district','place_of_birth','learning_institution_id','sex','firstname','middlename','surname','region','firstname1','employmentStatus2','employment_start_date','employment_end_date','upload_status','upload_error','programme_entry_year','programme_completion_year','programme','programme_level_of_study','employee_status','current_name','upload_status','uploaded_learning_institution_code','uploaded_level_of_study','uploaded_programme_studied','uploaded_place_of_birth','uploaded_sex','confirmed','mult_employed','support_document','vote_number','salary_source','salary_source_check','updated_by','updated_at','STUDY_LEVEL2','INSTITUTION_OF_STUDY2','PROGRAMME_STUDIED2','ENTRY_YEAR2','COMPLETION_YEAR2','STUDY_LEVEL3','INSTITUTION_OF_STUDY3','PROGRAMME_STUDIED3','ENTRY_YEAR3','COMPLETION_YEAR3','LOAN_BENEFICIARY_STATUS','traced_by','salary_upload_status','salary_upload_fail_reasson','matching','STUDY_LEVEL1','INSTITUTION_OF_STUDY1','PROGRAMME_STUDIED1','ENTRY_YEAR1','COMPLETION_YEAR1'], 'safe'],
+            'employee_current_nameifchanged', 'NID', 'f4indexno', 'phone_number', 'loan_summary_id','principal','penalty','LAF','VRF','totalLoan','paid','outstanding', 'totalLoanees', 'employee_FIRST_NAME', 'employee_MIDDLE_NAME', 'employee_SURNAME', 'employee_DATE_OF_BIRTH', 'employee_PLACE_OF_BIRTH', 'employee_YEAR_OF_COMPLETION_STUDIES', 'employee_ACADEMIC_AWARD', 'employee_NAME_OF_INSTITUTION_OF_STUDY', 'amount', 'verification_status' , 'employerName','district','place_of_birth','learning_institution_id','sex','firstname','middlename','surname','region','firstname1','employmentStatus2','employment_start_date','employment_end_date','upload_status','upload_error','programme_entry_year','programme_completion_year','programme','programme_level_of_study','employee_status','current_name','upload_status','uploaded_learning_institution_code','uploaded_level_of_study','uploaded_programme_studied','uploaded_place_of_birth','uploaded_sex','confirmed','mult_employed','support_document','vote_number','salary_source','salary_source_check','updated_by','updated_at','STUDY_LEVEL2','INSTITUTION_OF_STUDY2','PROGRAMME_STUDIED2','ENTRY_YEAR2','COMPLETION_YEAR2','STUDY_LEVEL3','INSTITUTION_OF_STUDY3','PROGRAMME_STUDIED3','ENTRY_YEAR3','COMPLETION_YEAR3','LOAN_BENEFICIARY_STATUS','traced_by','salary_upload_status','salary_upload_fail_reasson','matching','STUDY_LEVEL1','INSTITUTION_OF_STUDY1','PROGRAMME_STUDIED1','ENTRY_YEAR1','COMPLETION_YEAR1','form_four_completion_year'], 'safe'],
             [['employeesFile'], 'file', 'skipOnEmpty' => false, 'extensions' => 'xlsx,xls', 'on' => ['upload_employees','update_beneficiaries_salaries']],
             [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'xlsx,xls', 'on' => 'uploaded_files_employees'],
             [['employee_id'], 'string', 'max' => 20],
@@ -210,6 +213,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
             'support_document'=>'Support Document',
 			'salary_source'=>'Salary Source',
 			'traced_by'=>'Traced By:',
+			'form_four_completion_year'=>'f4 Completion Year',
 			
         ];
     }
@@ -431,7 +435,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
        
     }
 
-    public function checkEmployeeExistsNonApplicant($f4indexno, $employerId, $employeeId) {
+    public function checkEmployeeExistsNonApplicant($f4indexno, $employerId, $employeeId,$f4CompletionYear) {
         /*
         $employee_existance_nonApplicant = $this->find()
                         ->where(['f4indexno' => $f4indexno, 'employer_id' => $employerId, 'employee_id' => $employeeId])
@@ -442,7 +446,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
          */
         
         if (EmployedBeneficiary::find()
-                        ->where(['f4indexno' => $f4indexno, 'employer_id' => $employerId, 'employee_id' => $employeeId])->exists()) {
+                        ->where(['f4indexno' => $f4indexno, 'employer_id' => $employerId, 'employee_id' => $employeeId,'form_four_completion_year'=>$f4CompletionYear])->exists()) {
             return 1;
         }else{
             return 0;
@@ -450,9 +454,9 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
         
         
     }
-    public static function getEmployeeExistsNonApplicantID($f4indexno, $employerId, $employeeId) {
+    public static function getEmployeeExistsNonApplicantID($f4indexno, $employerId, $employeeId,$f4completionyear) {
         $employee_existance_nonApplicant = EmployedBeneficiary::find()
-                        ->where(['f4indexno' => $f4indexno, 'employer_id' => $employerId, 'employee_id' => $employeeId])->one();
+                        ->where(['f4indexno' => $f4indexno, 'employer_id' => $employerId, 'employee_id' => $employeeId,'form_four_completion_year'=>$f4completionyear])->one();
         return $employee_existance_nonApplicant;
     }
 
@@ -1078,12 +1082,26 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
   }
     public function validateF4indexnoFormat($attribute, $params)
 {
-    $f4indexno=str_replace(".","",str_replace("S","",str_replace("P","",$this->f4indexno)));	
+	$checkFormat=0;
+	$existPcapital=strpos(strtoupper($this->f4indexno),"P");
+	if($existPcapital < '0'){
+	$existScapital=strpos(strtoupper($this->f4indexno),"S");
+	if($existScapital < '0'){
+	$checkFormat=0;	
+	}else{
+	$checkFormat=1;	
+	}
+    }else{
+	$checkFormat=1;
+    }
+	if($checkFormat==1){
+    $f4indexno=str_replace(".","",str_replace("S","",str_replace("P","",strtoupper($this->f4indexno))));	
 	 if (!preg_match('/^[0-9]*$/', $f4indexno)) {
     $this->addError($attribute, 'Incorrect Form IV index Number');
     } 
-	if(strlen($f4indexno) !=12){
+	if(strlen($f4indexno) !=8){
 	$this->addError($attribute, 'Incorrect Form IV index Number');
+	}
 	}
 }
     public static function getEntryYear($entryYear){
@@ -1101,8 +1119,8 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
                  $result = Application::findBySql($query)->one();
         return $result->application_id; 
     }
-    public static function updateEmployeeReuploaded($employer_id,$employee_id,$applicant_id,$basic_salary,$employment_status,$NID,$f4indexno,$firstname,$middlename,$surname,$sex,$date_of_birth,$place_of_birth,$learning_institution_id,$phone_number,$upload_status,$upload_error,$programme_entry_year,$programme_completion_year,$programme,$programme_level_of_study,$employee_status,$current_name,$uploaded_learning_institution_code,$uploaded_level_of_study,$uploaded_programme_studied,$uploaded_place_of_birth,$uploaded_sex,$verification_status,$employeeExistsId,$salary_source) {
-        EmployedBeneficiary::updateAll(['employer_id' => $employer_id,'employee_id'=>$employee_id,'applicant_id'=>$applicant_id,'basic_salary'=>$basic_salary,'employment_status'=>$employment_status,'NID'=>$NID,'f4indexno'=>$f4indexno,'firstname'=>$firstname,'middlename'=>$middlename,'surname'=>$surname,'sex'=>$sex,'date_of_birth'=>$date_of_birth,'place_of_birth'=>$place_of_birth,'learning_institution_id'=>$learning_institution_id,'phone_number'=>$phone_number,'upload_status'=>$upload_status,'upload_error'=>$upload_error,'programme_entry_year'=>$programme_entry_year,'programme_completion_year'=>$programme_completion_year,'programme'=>$programme,'programme_level_of_study'=>$programme_level_of_study,'employee_status'=>$employee_status,'current_name'=>$current_name,'uploaded_learning_institution_code'=>$uploaded_learning_institution_code,'uploaded_level_of_study'=>$uploaded_level_of_study,'uploaded_programme_studied'=>$uploaded_programme_studied,'uploaded_place_of_birth'=>$uploaded_place_of_birth,'uploaded_sex'=>$uploaded_sex,'verification_status'=>$verification_status,'salary_source'=>$salary_source], 'employed_beneficiary_id ="' . $employeeExistsId . '"');
+    public static function updateEmployeeReuploaded($employer_id,$employee_id,$applicant_id,$basic_salary,$employment_status,$NID,$f4indexno,$f4completionyear,$firstname,$middlename,$surname,$sex,$learning_institution_id,$phone_number,$upload_status,$upload_error,$programme_entry_year,$programme_completion_year,$programme,$programme_level_of_study,$employee_status,$current_name,$uploaded_learning_institution_code,$uploaded_level_of_study,$uploaded_programme_studied,$uploaded_place_of_birth,$uploaded_sex,$verification_status,$employeeExistsId,$salary_source,$LOAN_BENEFICIARY_STATUS,$matching,$traced_by,$updated_at,$updated_by) {
+        EmployedBeneficiary::updateAll(['employer_id' => $employer_id,'employee_id'=>$employee_id,'applicant_id'=>$applicant_id,'basic_salary'=>$basic_salary,'employment_status'=>$employment_status,'NID'=>$NID,'f4indexno'=>$f4indexno,'firstname'=>$firstname,'middlename'=>$middlename,'surname'=>$surname,'sex'=>$sex,'learning_institution_id'=>$learning_institution_id,'phone_number'=>$phone_number,'upload_status'=>$upload_status,'upload_error'=>$upload_error,'programme_entry_year'=>$programme_entry_year,'programme_completion_year'=>$programme_completion_year,'programme'=>$programme,'programme_level_of_study'=>$programme_level_of_study,'employee_status'=>$employee_status,'current_name'=>$current_name,'uploaded_learning_institution_code'=>$uploaded_learning_institution_code,'uploaded_level_of_study'=>$uploaded_level_of_study,'uploaded_programme_studied'=>$uploaded_programme_studied,'uploaded_place_of_birth'=>$uploaded_place_of_birth,'uploaded_sex'=>$uploaded_sex,'verification_status'=>$verification_status,'salary_source'=>$salary_source,'LOAN_BENEFICIARY_STATUS'=>$LOAN_BENEFICIARY_STATUS,'matching'=>$matching,'traced_by'=>$traced_by,'updated_at'=>$updated_at,'updated_by'=>$updated_by], 'employed_beneficiary_id ="' . $employeeExistsId . '"');
     }
     
     public static function getEmployeesFailed($employerID,$uploadStatus,$offset,$limit){
@@ -1124,10 +1142,22 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord {
         //->asArray()    
         ->all();
 		return $employeeDetails;	  
-        }	
+        } 
+/*		
     public function validateNewEmployee($attribute) {
         if ($attribute && $this->f4indexno && $this->employment_status && $this->employer_id) {
             if (self::find()->where('f4indexno=:f4indexno AND employment_status=:employment_status AND employer_id=:employer_id', [':f4indexno' => $this->f4indexno,'employment_status'=>'ONPOST','employer_id'=>$this->employer_id])
+                            ->exists()) {
+                $this->addError($attribute,'Employee Exists');
+                return FALSE;
+            }
+        }
+        return true;
+    }
+*/	
+	public function validateNewEmployee($attribute) {
+        if ($attribute && $this->f4indexno && $this->employment_status && $this->employer_id && $this->form_four_completion_year) {
+            if (self::find()->where('f4indexno=:f4indexno AND form_four_completion_year=:form_four_completion_year AND employment_status=:employment_status AND employer_id=:employer_id', [':f4indexno' => $this->f4indexno,'form_four_completion_year'=>$this->form_four_completion_year,'employment_status'=>'ONPOST','employer_id'=>$this->employer_id])
                             ->exists()) {
                 $this->addError($attribute,'Employee Exists');
                 return FALSE;
@@ -1199,5 +1229,37 @@ public static function getApplicantDetailsNonUniqIdentifierF4indexno($regNo,$f4C
         $applicant_idR = $details_applicant->applicant_id;
         $results = (count($applicant_idR) == 0) ? '0' : $details_applicant;
         return $results;
-    }	
+    }
+public function is4NumbersOnly($attribute)
+{
+    if (!preg_match('/^[0-9]{4}$/', $this->$attribute)) {
+        $this->addError($attribute, 'must contain exactly 4 digits.');
+    }
+}
+public function validateCompletionYear($attribute)
+{
+    if (!preg_match('/^[0-9]{4}$/', $this->$attribute)) {
+        $this->addError($attribute, 'must contain exactly 4 digits.');
+    }
+}
+ public function validateF4CompletionYear($attribute)
+{
+	$splitF4Indexno=explode('.',$this->f4indexno);
+	$f4indexnoSprit1=$splitF4Indexno[0];
+	$f4indexnoSprit2=$splitF4Indexno[1];
+	$f4indexnoSprit3=$splitF4Indexno[2];    
+	if($f4indexnoSprit3 != $this->form_four_completion_year){
+	$this->addError($attribute, 'Incorrect Form IV Completion Year');	
+	}
+	
+}
+public static function getAllBeneficiary($employerID){
+$allBeneficiaries=self::findBySql("SELECT applicant_id FROM employed_beneficiary WHERE  employed_beneficiary.employer_id='$employerID' AND employment_status='ONPOST' AND verification_status='1' AND basic_salary > '0' AND loan_summary_id > '0'")->all();	
+foreach($allBeneficiaries AS $beneficiar){
+\common\models\LoanBeneficiary::getLoanRepaymentSchedule($beneficiar->applicant_id);
+}
+}
+public static function getEmployeeByCheckNumber($checkNumber){
+return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.employee_id='$checkNumber' AND employed_beneficiary.applicant_id > 0")->one();
+}	
 }

@@ -186,6 +186,61 @@ ALTER TABLE `employed_beneficiary` ADD `salary_upload_status` INT NULL DEFAULT N
 ALTER TABLE `employed_beneficiary` ADD `matching` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Used to indicate level of matching on upload/adding employee' AFTER `salary_upload_fail_reasson`;
 ALTER TABLE `employed_beneficiary` ADD `STUDY_LEVEL1` VARCHAR(30) NULL DEFAULT NULL AFTER `vote_number`, ADD `INSTITUTION_OF_STUDY1` VARCHAR(100) NULL DEFAULT NULL AFTER `STUDY_LEVEL1`, ADD `PROGRAMME_STUDIED1` VARCHAR(100) NULL DEFAULT NULL AFTER `INSTITUTION_OF_STUDY1`, ADD `ENTRY_YEAR1` INT(11) NULL DEFAULT NULL AFTER `PROGRAMME_STUDIED1`;
 ALTER TABLE `employed_beneficiary` ADD `COMPLETION_YEAR1` INT(11) NULL DEFAULT NULL AFTER `ENTRY_YEAR1`;
+
+####################28/12/2018###################
+ALTER TABLE `employed_beneficiary` ADD `form_four_completion_year` INT(11) NOT NULL AFTER `f4indexno`;
+ALTER TABLE `loan_beneficiary` CHANGE `firstname` `firstname` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `middlename` `middlename` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL, CHANGE `surname` `surname` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL, CHANGE `f4indexno` `f4indexno` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `phone_number` `phone_number` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `password` `password` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` ADD `schedule_principal_amount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `liquidation_issued_by`, ADD `schedule_penalty` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_principal_amount`, ADD `schedule_laf` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_penalty`, ADD `schedule_vrf` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_laf`, ADD `schedule_total_loan_amount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_vrf`, ADD `schedule_start_date` DATE NULL DEFAULT NULL AFTER `schedule_total_loan_amount`, ADD `schedule_end_date` DATE NULL DEFAULT NULL AFTER `schedule_start_date`;
+ALTER TABLE `loan_beneficiary` ADD `monthly_installment` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_end_date`;
+ALTER TABLE `loan_repayment` ADD `vote_number` VARCHAR(100) NULL DEFAULT NULL COMMENT 'Identify the GVT employer payments' AFTER `gepg_cancel_request_status`, ADD `Vote_name` VARCHAR(100) NULL DEFAULT NULL COMMENT 'Identify the GVT employer payments' AFTER `vote_number`;
+ALTER TABLE `loan_repayment_detail` ADD `vote_number` VARCHAR(100) NULL DEFAULT NULL AFTER `updated_by`, ADD `Vote_name` VARCHAR(100) NULL DEFAULT NULL AFTER `vote_number`, ADD `sub_vote` VARCHAR(100) NULL DEFAULT NULL AFTER `Vote_name`, ADD `sub_vote_name` VARCHAR(100) NULL DEFAULT NULL AFTER `sub_vote`, ADD `lawson_loan_balance` DECIMAL(38,2) NULL DEFAULT NULL AFTER `sub_vote_name`, ADD `lawson_payment_date` DATE NULL DEFAULT NULL AFTER `lawson_loan_balance`, ADD `deduction_code` VARCHAR(50) NULL DEFAULT NULL AFTER `lawson_payment_date`, ADD `deduction_description` VARCHAR(100) NULL DEFAULT NULL AFTER `deduction_code`;
+ALTER TABLE `loan_repayment_detail` CHANGE `deduction_code` `deduction_code` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'heslb code to lawson api';
+ALTER TABLE `loan_repayment_detail` CHANGE `applicant_id` `applicant_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `loan_summary_id` `loan_summary_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan_repayment_detail` ADD `first_name` VARCHAR(100) NULL DEFAULT NULL AFTER `deduction_description`, ADD `middle_name` VARCHAR(100) NULL DEFAULT NULL AFTER `first_name`, ADD `last_name` VARCHAR(100) NULL DEFAULT NULL AFTER `middle_name`;
+ALTER TABLE `loan_repayment_detail` ADD `check_number` VARCHAR(100) NULL DEFAULT NULL AFTER `last_name`;
+
+DROP TABLE IF EXISTS `gepg_lawson`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gepg_lawson` (
+  `gepg_lawson_id` int(11) NOT NULL AUTO_INCREMENT,
+  `bill_number` varchar(100) DEFAULT NULL,
+  `amount` decimal(38,2) DEFAULT NULL,
+  `control_number` varchar(100) DEFAULT NULL,
+  `control_number_date` datetime DEFAULT NULL,
+  `deduction_month` date DEFAULT NULL,
+  `status` tinyint(2) NOT NULL DEFAULT '0' COMMENT '0:Not sent to GePG, 1: Sent to GePG,2: Sent to lawson',
+  `gepg_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`gepg_lawson_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `gvt_employee`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gvt_employee` (
+  `gvt_employee` int(11) NOT NULL AUTO_INCREMENT,
+  `vote_number` varchar(50) DEFAULT NULL,
+  `vote_name` varchar(100) DEFAULT NULL,
+  `Sub_vote` varchar(50) DEFAULT NULL,
+  `sub_vote_name` varchar(100) DEFAULT NULL,
+  `check_number` varchar(50) DEFAULT NULL,
+  `f4indexno` varchar(20) DEFAULT NULL,
+  `first_name` varchar(100) DEFAULT NULL,
+  `middle_name` varchar(100) DEFAULT NULL,
+  `surname` varchar(100) DEFAULT NULL,
+  `sex` char(4) DEFAULT NULL,
+  `NIN` varchar(100) DEFAULT NULL,
+  `employment_date` date DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `payment_date` date DEFAULT NULL,
+  PRIMARY KEY (`gvt_employee`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+ALTER TABLE `loan_repayment` ADD `gepg_lawson_id` INT(11) NULL DEFAULT NULL COMMENT 'for GVT employees' AFTER `Vote_name`;
+ALTER TABLE `loan_repayment` ADD `lowason_check_date` DATE NULL DEFAULT NULL AFTER `gepg_lawson_id`;
 -----------------------------------------------------
 ======================================================
 

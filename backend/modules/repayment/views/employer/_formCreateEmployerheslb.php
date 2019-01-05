@@ -52,7 +52,7 @@ echo Form::widget([ // fields with labels
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[
-         'employerName'=>['label'=>'Employer Name:', 'options'=>['placeholder'=>'Employer Name']], 
+         'employerName'=>['label'=>'Employer Name:', 'options'=>['placeholder'=>'Employer Name','onkeyup'=>"this.value = this.value.toUpperCase();"]], 
 		 'short_name'=>['label'=>'Employer Short Name:', 'options'=>['placeholder'=>'Employer Short Name']],		          			
     ]
 ]);
@@ -66,6 +66,7 @@ echo Form::widget([ // fields with labels
     'attributes'=>[   
         'employer_type_id' => [
                 'type' => Form::INPUT_DROPDOWN_LIST,
+				'label'=>'Employer Type:',
                 'items' =>ArrayHelper::map(\backend\modules\repayment\models\EmployerType::find()->AsArray()->all(),'employer_type_id', 'employer_type'), 
                 'options' => [
                         'prompt' => 'Select Employer Type',
@@ -73,8 +74,13 @@ echo Form::widget([ // fields with labels
                         //'onchange'=>'ShowHideDiv()',
                     ],
               ],
-            'TIN'=>['label'=>'TIN:', 'options'=>['placeholder'=>'TIN']],			         			
+            //'TIN'=>['label'=>'TIN:', 'options'=>['placeholder'=>'TIN']],			         			
     ]
+]);
+?>
+<?=
+$form->field($model2, 'TIN')->label('TIN:')->widget(\yii\widgets\MaskedInput::className(), [
+    'mask' => '999-999-999'
 ]);
 ?>
 <?php
@@ -103,21 +109,33 @@ echo Form::widget([ // fields with labels
     'columns'=>1,
     'attributes'=>[
          	'postal_address'=>['label'=>'Postal Address:', 'options'=>['placeholder'=>'Postal Address']],
-			'physical_address'=>['label'=>'Physical Address:', 'options'=>['placeholder'=>'Physical Address']],
+			'physical_address'=>['label'=>'Physical Address:', 'options'=>['placeholder'=>'Physical Address']],      
+    ]
+]);
+?>
+<?php
+echo Form::widget([ // fields with labels
+    'model'=>$model2,
+    'form'=>$form,
+    'columns'=>1,
+    'attributes'=>[         	
         'region' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
-            'label' => 'Region',
+            'label' => 'Region:',
             'options' => [
                 'data' => ArrayHelper::map(\common\models\Region::find()->all(), 'region_id', 'region_name'),
                 'options' => [
                     'prompt' => 'Select Region Name',
-                    'id' => 'region_Id'
+                    'id' => 'region_Id',
+                ],
+				'pluginOptions' => [
+                'allowClear' => true
                 ],
             ],
         ],
         'district' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
-            'label' => 'District',
+            'label' => 'District:',
             'widgetClass' => DepDrop::className(),
             'options' => [
                 'data' => ArrayHelper::map(\common\models\District::find()->where(['region_id' => $model1->region])->all(), 'district_id', 'district_name'),
@@ -134,7 +152,7 @@ echo Form::widget([ // fields with labels
         ],
         'ward_id' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
-            'label' => 'Ward',
+            'label' => 'Ward:',
             'widgetClass' => DepDrop::className(),
             'options' => [
                 'data' => ArrayHelper::map(backend\modules\application\models\Ward::find()->where(['district_id' => $model1->district])->all(), 'ward_id', 'ward_name'),
@@ -150,31 +168,34 @@ echo Form::widget([ // fields with labels
         
     ]
 ]);
-
-echo Form::widget([ // fields with labels
-    'model'=>$model1,
-    'form'=>$form,
-    'columns'=>1,
-    'attributes'=>[
-        'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Example: 0769853625,0652354251,25589658'],
-		//'hint'=>'<i>Example: 0769853625,0652354251,25589658</i>'
-		],        
-    ]
+?>
+<?=
+$form->field($model2, 'phone_number_employer')->label('Work Phone No.')->widget(\yii\widgets\MaskedInput::className(), [
+    'mask' => '255 99 999 9999'
 ]);
 ?>
 <?php
 echo Form::widget([ // fields with labels
-    'model'=>$model1,
+    'model'=>$model2,
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[
         'fax_number'=>['label'=>'Fax Number:', 'options'=>['placeholder'=>'Fax Number']],
+    ]
+]);
+ ?>
+ <?php
+echo Form::widget([ // fields with labels
+    'model'=>$model1,
+    'form'=>$form,
+    'columns'=>1,
+    'attributes'=>[
 		'email_address'=>['label'=>'Office Email Address:', 'options'=>['placeholder'=>'Email Address']],
     ]
 ]);
  ?>
 <hr>
-<i><strong><h1>Contact Person Details(HR)</h1></strong></i>
+<i><strong><h1>Contact Person Details</h1></strong></i>
 <?php
 echo Form::widget([ // fields with labels
     'model'=>$model2,
@@ -184,9 +205,20 @@ echo Form::widget([ // fields with labels
         'firstname'=>['label'=>'First Name:', 'options'=>['placeholder'=>'First Name']],
         'middlename'=>['label'=>'Middle Name:', 'options'=>['placeholder'=>'Middle Name']],
         'surname'=>['label'=>'Last Name:', 'options'=>['placeholder'=>'Last Name']],
-		'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Example: 0769853625,0652354251,25589658'],
-		//'hint'=>'<i>Example: 0769853625,0652354251,25589658</i>',
-		],
+    ]
+]);
+?>
+<?=
+$form->field($model2, 'phone_number')->label('Mobile Phone No.')->widget(\yii\widgets\MaskedInput::className(), [
+    'mask' => '255 99 999 9999'
+]);
+?>
+<?php
+echo Form::widget([ // fields with labels
+    'model'=>$model2,
+    'form'=>$form,
+    'columns'=>1,
+    'attributes'=>[
 		'email_address'=>['label'=>'Email Address:', 'options'=>['placeholder'=>'Email Address'],
 		'hint'=>'<i>Note: This will be used as username during login.</i>',
 		],
@@ -207,8 +239,8 @@ echo Form::widget([ // fields with labels
     ]
 ]);
 ?>
-  <div class="text-right">
-       <?= Html::submitButton($model1->isNewRecord ? 'Sign Up' : 'Update', ['class' => $model1->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+<div class="text-right">
+       <?= Html::submitButton($model1->isNewRecord ? 'Create' : 'Create', ['class' => $model1->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
   
 <?php
 echo Html::resetButton('Reset', ['class'=>'btn btn-default']);

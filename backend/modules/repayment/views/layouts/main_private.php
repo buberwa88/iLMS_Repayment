@@ -285,7 +285,22 @@ if ($beneficiaryOnstudy > 0) {
 											["label" => "Loan Summary", "url" => Url::to(['/repayment/employed-beneficiary/loanthrough-employers']), 'active' => (Yii::$app->controller->id == 'employed-beneficiary' && (Yii::$app->controller->action->id == 'loanthrough-employers'))],
                                         ],
                                     ],
-                                    ["label" => "Reports", "url" => ["#"], "icon" => "folder"],
+                                    [
+                                        "label" => "Reports",
+                                        'visible' => yii::$app->user->can('/report/report/index'),
+                                        "icon" => "th",
+                                        "url" => "#",
+                                        "items" => [
+                                            ["label" => "Favourites Reports", "url" => Url::to(['/repayment/loan-beneficiary/index-popularreport']),
+                                                'active' => (Yii::$app->controller->id == 'loan-beneficiary' && (Yii::$app->controller->action->id == 'index-popularreport' || Yii::$app->controller->action->id =='create-popularreport' || Yii::$app->controller->action->id =='view-popularreport')),
+                                                'visible' => yii::$app->user->can('/repayment/loan-beneficiary/index-popularreport')
+                                            ],
+                                            ["label" => "All Reports", "url" => Url::to(['/repayment/loan-beneficiary/all-reports']),
+                                                'active' => Yii::$app->controller->id == 'loan-beneficiary' && (Yii::$app->controller->action->id == 'all-reports' || Yii::$app->controller->action->id == 'view-operation'),
+                                                'visible' =>yii::$app->user->can('/repayment/loan-beneficiary/all-reports')
+                                            ],
+                                        ],
+                                    ],
                                 ],
                                 'encodeLabels' => false,
                             ]

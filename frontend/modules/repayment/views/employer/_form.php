@@ -109,7 +109,16 @@ echo Form::widget([ // fields with labels
     'columns'=>1,
     'attributes'=>[
          	'postal_address'=>['label'=>'Postal Address:', 'options'=>['placeholder'=>'Postal Address']],
-			'physical_address'=>['label'=>'Physical Address:', 'options'=>['placeholder'=>'Physical Address']],
+			'physical_address'=>['label'=>'Physical Address:', 'options'=>['placeholder'=>'Physical Address']],      
+    ]
+]);
+?>
+<?php
+echo Form::widget([ // fields with labels
+    'model'=>$model2,
+    'form'=>$form,
+    'columns'=>1,
+    'attributes'=>[         	
         'region' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
             'label' => 'Region:',
@@ -117,7 +126,10 @@ echo Form::widget([ // fields with labels
                 'data' => ArrayHelper::map(\common\models\Region::find()->all(), 'region_id', 'region_name'),
                 'options' => [
                     'prompt' => 'Select Region Name',
-                    'id' => 'region_Id'
+                    'id' => 'region_Id',
+                ],
+				'pluginOptions' => [
+                'allowClear' => true
                 ],
             ],
         ],
@@ -156,18 +168,6 @@ echo Form::widget([ // fields with labels
         
     ]
 ]);
-/*
-echo Form::widget([ // fields with labels
-    'model'=>$model1,
-    'form'=>$form,
-    'columns'=>1,
-    'attributes'=>[
-        'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Example: 0769853625,0652354251,25589658'],
-		//'hint'=>'<i>Example: 0769853625,0652354251,25589658</i>'
-		],        
-    ]
-]);
-*/
 ?>
 <?=
 $form->field($model2, 'phone_number_employer')->label('Work Phone No.')->widget(\yii\widgets\MaskedInput::className(), [

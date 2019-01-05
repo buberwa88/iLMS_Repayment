@@ -191,6 +191,9 @@ class EmployerController extends Controller
 		$model1->phone_number=$model2->phone_number_employer;
         $model1->fax_number=$model2->fax_number;		
 		$model1->TIN=$model2->TIN;
+		$model1->region=$model2->region;
+        $model1->district=$model2->district;
+        $model1->ward_id=$model2->ward_id;
 		$model1->employer_name = preg_replace('/\s+/', ' ',$employerName);        
 
 		//check if employer exist

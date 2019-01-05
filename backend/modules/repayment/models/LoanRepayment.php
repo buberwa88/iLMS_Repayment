@@ -48,7 +48,7 @@ class LoanRepayment extends \yii\db\ActiveRecord {
             [['cancel_reason'], 'required', 'on' => 'Cancell_bill_repayment'],
             //[['amount', 'pay_method_id'], 'required'],
             //[['amount'], 'number'],
-            [['date_bill_generated', 'date_control_received', 'date_receipt_received', 'totalEmployees', 'payment_status', 'amount', 'pay_method_id', 'payment_date', 'operation', 'payment_date', 'gepg_cancel_request_status'], 'safe'],
+            [['date_bill_generated', 'date_control_received', 'date_receipt_received', 'totalEmployees', 'payment_status', 'amount', 'pay_method_id', 'payment_date', 'operation', 'payment_date', 'gepg_cancel_request_status','vote_number','Vote_name','gepg_lawson_id','lowason_check_date'], 'safe'],
             [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 20],
             [['pay_phone_number'], 'string', 'max' => 13],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],

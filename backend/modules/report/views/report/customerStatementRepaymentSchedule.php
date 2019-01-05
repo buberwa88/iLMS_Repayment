@@ -103,7 +103,7 @@ $amountPerMonthPRC =0;
 $totalAcruedVRF =0;
 $TotalPRCGeneral =0;
 
-$factor=1;//the possible payment loop
+$factor=2;//the possible payment loop
 //check if employed
      $MLREB=\frontend\modules\repayment\models\EmployedBeneficiary::getEmployedBeneficiaryPaymentSetting();	
 	 $paymentCalculation = \frontend\modules\repayment\models\EmployedBeneficiary::findBySql("SELECT  basic_salary,applicant_id  FROM employed_beneficiary WHERE  employed_beneficiary.applicant_id='$applicant_id' AND employment_status='ONPOST' AND verification_status='1' AND loan_summary_id >'0'")->one();
@@ -196,7 +196,7 @@ $totalLAFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOri
 			$countForPaymentDateFirst=1;
 			$countForPaymentDate1First=1;
 			
-			$totalMonths=((($balancePRC + $balanceLAF + $balancePNT + $balanceVRF)/$amount1)*$factor) + 2;
+			$totalMonths=((($balancePRC + $balanceLAF + $balancePNT + $balanceVRF)/$amount1)*$factor);
 			$totalOutstandingAmount=($balancePRC + $balanceLAF + $balancePNT + $balanceVRF);
 			$balanceVRF +=$acruedVRFBefore;
         for($countP=1;$countP <= $totalMonths; ++$countP){
@@ -343,6 +343,7 @@ $totalLAFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOri
         }
 		
 			$totalPRCLoop +=$amount_remained2;
+			
 			if($balancePRC >= $totalPRCLoop){$amount_remained2=$amount_remained2;}else{
 				$amount_remained211=$balancePRC - $totalPRCPaymentTotal;
 				if($amount_remained211 > 0){
@@ -354,6 +355,15 @@ $totalLAFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOri
 				}	
         // end check principle amount exceed
 			//end
+			//first check principalbalance and incoming balance
+			$principleBalance=$balancePRC-$totalPrinciplePaid;
+			if($principleBalance > $amount_remained2){
+				$amount_remained2=$amount_remained2;
+			}else{
+				$amount_remained2=$principleBalance;
+			}
+            //end check			
+			
 			$totalPrinciplePaid +=$amount_remained2;
 			$principleBalance=$balancePRC-$totalPrinciplePaid;
 			if($principleBalance > 0){
@@ -371,13 +381,16 @@ $totalLAFORGN=backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOri
 			}else{
 			$totalAcruedVRF1First=$totalAcruedVRF1First;	
 			}
-if($LAFportion > 0 || $penalty_portion > 0 || $vrfTopay > 0 || $amount_remained2 > 0 || $totalAcruedVRF1First > 0 || $principleBalance > 0){			
+			$vrfTopayCheckIf=number_format($vrfTopay,2);$checkLAFportionIf=number_format($LAFportion,2);$checkpenalty_portionIf=number_format($penalty_portion,2);$checkamount_remained2If=number_format($amount_remained2,2);$checktotalAcruedVRF1FirstIf=number_format(($totalAcruedVRF1First),2);$checkprincipleBalanceIf=number_format(($principleBalance),2);
+if($checkLAFportionIf > 0 || $checkpenalty_portionIf > 0 || $vrfTopayCheckIf > 0 || $checkamount_remained2If > 0 || $checktotalAcruedVRF1FirstIf > 0 || $checkprincipleBalanceIf > 0){			
 			?>
 			
 	<tr>
 	<td <?php echo $style5DataAmount; ?>><?php echo $countP; ?></td>
     <td <?php echo $style5DataAmount; ?>><?php echo date("d-m-Y",strtotime($payment_date)); ?></td>
-    <td <?php echo $style5DataAmount; ?>><?php echo number_format(($amount1),2); ?></td>
+    <td <?php echo $style5DataAmount; ?>><?php 
+	$amount1=$LAFportion + $penalty_portion + $vrfTopay + $amount_remained2;
+	echo number_format(($amount1),2); ?></td>
 	<td <?php echo $style5DataAmount; ?>><?php echo number_format($LAFportion,2); ?></td>
 	<td <?php echo $style5DataAmount; ?>><?php echo number_format($penalty_portion,2); ?></td>
 	<td <?php echo $style5DataAmount; ?>><?php echo number_format($vrfTopay,2); ?></td>
@@ -399,37 +412,6 @@ if($LAFportion > 0 || $penalty_portion > 0 || $vrfTopay > 0 || $amount_remained2
 			//echo  $totalAcruedVRF1First;exit;
 			++$countForPaymentDate;
 		}
-		//echo $balanceVRF."--VRF---".$overallVRFinPayment."--PRC--".$balancePRC."---".$totalPrinciplePaid;exit;
-        $OverallBalance=$totalOutstandingAmount-$amountPTotalAccumulated;
-        if(($balanceLAF > $overallLAFinPayment) || ($balancePNT > $overallPNTinPayment) || ($balanceVRF > $overallVRFinPayment) || ($balancePRC > $totalPrinciplePaid)){
-			    //get payment date
-			    $dateConstantForPayment=$payment_dateLast;
-				$dateCreatedqq=date_create($dateConstantForPayment);
-				$dateDurationAndTypeqq="1"." ".$duration_type;
-				date_add($dateCreatedqq,date_interval_create_from_date_string($dateDurationAndTypeqq));
-				$payment_date=date_format($dateCreatedqq,"Y-m-d");
-				//end
-if($balanceLAF > $overallLAFinPayment){$finalLAF=$balanceLAF-$overallLAFinPayment;}else{$finalLAF=0;}
-if($balancePNT > $overallPNTinPayment){$finalPNT=$balancePNT - $overallPNTinPayment;}else{$finalPNT=0;}	
-if($balanceVRF > $overallVRFinPayment){$finalVRF=$balanceVRF - $overallVRFinPayment;}else{$finalVRF=0;}
-if($balancePRC > $totalPrinciplePaid){$finalPRC=$balancePRC - $totalPrinciplePaid;}else{$finalPRC=0;}
-$principleBalanceFinal=$balancePRC-($totalPrinciplePaid + $finalPRC);	
-if($finalLAF > 0 || $finalPNT > 0 || $finalVRF > 0 || $finalPRC > 0){						
-?>
-<tr>
-	<td <?php echo $style5DataAmount; ?>><?php echo $countP; ?></td>
-    <td <?php echo $style5DataAmount; ?>><?php echo date("d-m-Y",strtotime($payment_date)); ?></td>
-    <td <?php echo $style5DataAmount; ?>><?php echo number_format(($OverallBalance),2); ?></td>
-	<td <?php echo $style5DataAmount; ?>><?php echo number_format(($finalLAF),2); ?></td>
-	<td <?php echo $style5DataAmount; ?>><?php echo number_format(($finalPNT),2); ?></td>
-	<td <?php echo $style5DataAmount; ?>><?php echo number_format(($finalVRF),2); ?></td>
-	<td <?php echo $style5DataAmount; ?>><?php echo number_format(($finalPRC),2); ?></td>
-	<td <?php echo $style5DataAmount; ?>><?php echo number_format(($mnc),2); ?></td>
-    <td <?php echo $style5DataAmount; ?>><?php echo number_format($principleBalanceFinal,2); ?></td>
-    </tr>
-<?php	
-}			
-		}
 		}
 ?>
 <tr>
@@ -443,6 +425,9 @@ if($finalLAF > 0 || $finalPNT > 0 || $finalVRF > 0 || $finalPRC > 0){
 	<td <?php echo $style5DataAmount; ?>></td>
     </tr>
 <?php
+?>
+<?php
+
  ?>
 
 

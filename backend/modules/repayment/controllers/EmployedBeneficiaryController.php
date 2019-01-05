@@ -250,8 +250,9 @@ class EmployedBeneficiaryController extends Controller
         }
     }
 	*/
-	public function actionCreate($id=null) {
-        $user_loged_in = Yii::$app->user->identity->login_type;
+	
+	public function actionCreate($id=null) {	
+		$user_loged_in = Yii::$app->user->identity->login_type;
         $modelEmployedBeneficiary = new \frontend\modules\repayment\models\EmployedBeneficiary();
         $searchModelEmployedBeneficiarySearch = new \frontend\modules\repayment\models\EmployedBeneficiarySearch();
         $modelEmployedBeneficiary->scenario = 'additionalEmployee';
@@ -263,32 +264,106 @@ class EmployedBeneficiaryController extends Controller
         $modelEmployedBeneficiary->verification_status = 0;
 
         if ($modelEmployedBeneficiary->load(Yii::$app->request->post()) && $modelEmployedBeneficiary->validate()) {
-			//echo $modelEmployedBeneficiary->programme_level_of_study;exit;
+			$generalMatch='';
+			$salary_source=$modelEmployedBeneficiary->salary_source;
+			$entryYear = $modelEmployedBeneficiary->programme_entry_year;
+            $completionYear = $modelEmployedBeneficiary->programme_completion_year;
+			$studyLevel = $modelEmployedBeneficiary->programme_level_of_study;
+			$f4CompletionYear = $modelEmployedBeneficiary->form_four_completion_year;
+			$regNo=$modelEmployedBeneficiary->f4indexno;
+			$programmeStudied = $modelEmployedBeneficiary->programme;
+			
+			
+			if($salary_source=='central government'){
+					//check employer salary source
+					if($employerSalarySource==1 OR $employerSalarySource==3){
+						$modelEmployedBeneficiary->salary_source=1;
+					}else{
+						$modelEmployedBeneficiary->salary_source='';
+					}
+					//end check
+							
+				}else if($salary_source=='own source'){
+					//check employer salary source
+					if($employerSalarySource !=1){
+						$modelEmployedBeneficiary->salary_source=2;
+					}else{
+						$modelEmployedBeneficiary->salary_source='';
+					}
+					//end check					
+				}else if($salary_source=='both'){
+					//check employer salary source
+					if($employerSalarySource==3){
+						$modelEmployedBeneficiary->salary_source=3;
+					}else{
+						$modelEmployedBeneficiary->salary_source='';
+					}
+					//end check					
+				}else{
+					$modelEmployedBeneficiary->salary_source='';
+				}
+                $EntryAcademicYear = $modelEmployedBeneficiary->getEntryYear($entryYear);
+                $completionYear2 = substr($completionYear, 2, 4);
+                $CompletionAcademicYear = $modelEmployedBeneficiary->getCompletionYear($completionYear2);
+
+                //echo $EntryAcademicYear."<br/>".$CompletionAcademicYear;
+                //exit;
+                if ($modelEmployedBeneficiary->sex == 'MALE') {
+                    $modelEmployedBeneficiary->sex = 'M';
+                } else if ($modelEmployedBeneficiary->sex == 'FEMALE') {
+                    $modelEmployedBeneficiary->sex = 'F';
+                } else {
+                    $modelEmployedBeneficiary->sex = '';
+                }
             //check applicant if exists using unique identifiers i.e employee_f4indexno and employee_NIN
+			    $academicInstitution = $modelEmployedBeneficiary->learning_institution_id;
+				/*
 			    $splitF4Indexno=explode('.',$modelEmployedBeneficiary->f4indexno);
 				$f4indexnoSprit1=$splitF4Indexno[0];
 				$f4indexnoSprit2=$splitF4Indexno[1];
 				$f4indexnoSprit3=$splitF4Indexno[2];
 				$regNo=$f4indexnoSprit1.".".$f4indexnoSprit2;
 				$f4CompletionYear=$f4indexnoSprit3;
+				*/
+				$resultsCountExistIndexNo=$modelEmployedBeneficiary->getAllApplicantsCount($regNo,$f4CompletionYear);
+				if($resultsCountExistIndexNo == 1){
             $employeeID = $modelEmployedBeneficiary->getApplicantDetails($regNo,$f4CompletionYear, $modelEmployedBeneficiary->NID);
             $modelEmployedBeneficiary->applicant_id = $employeeID->applicant_id;
-            // check for disbursed amount to employee
+				}else if($resultsCountExistIndexNo > 1){
+			$resultsUsingNonUniqueIdent = $modelEmployedBeneficiary->getApplicantDetailsNonUniqIdentifierF4indexno($regNo,$f4CompletionYear,$modelEmployedBeneficiary->firstname, $modelEmployedBeneficiary->middlename, $modelEmployedBeneficiary->surname, $academicInstitution, $studyLevel, $programmeStudied, $EntryAcademicYear, $CompletionAcademicYear);
+               $modelEmployedBeneficiary->applicant_id = $resultsUsingNonUniqueIdent->applicant_id;		
+				}else if($resultsCountExistIndexNo==0){
+			$modelEmployedBeneficiary->applicant_id='';		
+				}
+				$match="f4indexno repeated=>".$resultsCountExistIndexNo.", ";
+				$generalMatch.=$match;
+			//$modelEmployedBeneficiary->learning_institution_id=;
+            //check for disbursed amount to employee
             //check using non-unique identifiers
-			$startCpyear=0;
-			$endCpyear=0;
-			$programmeStudiedGeneral = $startCpyear.$endCpyear;
-			$academicInstitutionGeneral=$startCpyear.$endCpyear;
-			$studyLevelGeneral=$startCpyear.$endCpyear;
-			$EntryAcademicYearGeneral=$startCpyear.$endCpyear;
-			$CompletionAcademicYearGeneral=$startCpyear.$endCpyear;
+			
+			//echo "learning_institution_id ".$academicInstitution."<br/>"."Study Level ".$studyLevel."<br/>"."programmeStudied ".$programmeStudied."<br/>"."EntryAcademicYear ".$EntryAcademicYear."<br/>"."CompletionAcademicYear ".$CompletionAcademicYear;exit;
             if (!is_numeric($modelEmployedBeneficiary->applicant_id) && $modelEmployedBeneficiary->applicant_id < 1 && $modelEmployedBeneficiary->applicant_id == '') {
+				$match="f4indexno Mis-match, ";
+				$generalMatch.=$match;
+				/*
                 $resultsUsingNonUniqueIdent = $modelEmployedBeneficiary->getApplicantDetailsUsingNonUniqueIdentifiers($modelEmployedBeneficiary->firstname, $modelEmployedBeneficiary->middlename, $modelEmployedBeneficiary->surname,$academicInstitutionGeneral,$studyLevelGeneral, $programmeStudiedGeneral,$EntryAcademicYearGeneral,$CompletionAcademicYearGeneral);
+				*/
+				$resultsUsingNonUniqueIdent = $modelEmployedBeneficiary->getApplicantDetailsUsingNonUniqueIdentifiers($modelEmployedBeneficiary->firstname, $modelEmployedBeneficiary->middlename, $modelEmployedBeneficiary->surname, $academicInstitution, $studyLevel, $programmeStudied, $EntryAcademicYear, $CompletionAcademicYear);
                 $modelEmployedBeneficiary->applicant_id = $resultsUsingNonUniqueIdent->applicant_id;
-				$modelEmployedBeneficiary->upload_status=1;
-				$modelEmployedBeneficiary->employment_start_date=date("Y-m-d H:i:s");
-				$modelEmployedBeneficiary->confirmed=1;
-            }
+                if($resultsUsingNonUniqueIdent->applicant_id==''){
+				$match="Other Criteria Mis-match, ";
+                $generalMatch.=	$match;				
+				}else if($resultsUsingNonUniqueIdent->applicant_id > 0){
+				$match="Other Criteria match, ";
+                $generalMatch.=	$match;				
+				}
+            }else{
+			$match="f4indexno match, ";
+            $generalMatch.=	$match;		
+			}
+			$modelEmployedBeneficiary->upload_status=1;
+			$modelEmployedBeneficiary->employment_start_date=date("Y-m-d H:i:s");
+			$modelEmployedBeneficiary->confirmed=1;
             // end check using unique identifiers
 
             if (!is_numeric($modelEmployedBeneficiary->applicant_id)) {
@@ -306,6 +381,20 @@ class EmployedBeneficiaryController extends Controller
             } else {
                 $modelEmployedBeneficiary->employee_status = 0;
             }
+			
+			//check double employed
+				if($modelEmployedBeneficiary->confirmed==1){
+				$modelEmployedBeneficiary->employment_start_date = date("Y-m-d");
+            $applicantID = $modelEmployedBeneficiary->applicant_id;
+            $resultsCheckEmployed = \frontend\modules\repayment\models\EmployedBeneficiary::checkDoubleEmployed($applicantID, $employerID);
+            if ($resultsCheckEmployed == 1) {
+                $modelEmployedBeneficiary->mult_employed = 1;
+            } else {
+                $modelEmployedBeneficiary->mult_employed = 0;
+            }
+				}
+				//end check double employed
+			
             // check for disbursed amount to employee      
             if ($modelEmployedBeneficiary->applicant_id > 0) {
                 $resultDisbursed = $modelEmployedBeneficiary->getIndividualEmployeesPrincipalLoan($modelEmployedBeneficiary->applicant_id);
@@ -314,13 +403,34 @@ class EmployedBeneficiaryController extends Controller
                 }
             }
             //end check
+			   //check names and education history match
+			   if($modelEmployedBeneficiary->applicant_id >0){
+				$applicantNameMatchCount=$modelEmployedBeneficiary->getCheckApplicantNamesMatch($modelEmployedBeneficiary->applicant_id,$modelEmployedBeneficiary->firstname, $modelEmployedBeneficiary->middlename, $modelEmployedBeneficiary->surname);
+				if($applicantNameMatchCount > 0){
+				$match="Employee Names match, ";
+                $generalMatch.=	$match;				
+				}else{
+				$match="Employee Names Mis-match, ";
+                $generalMatch.=	$match;				
+				}
+			   }
+				//end check names and education history match
         }
+		$modelEmployedBeneficiary->matching=$generalMatch;
         if ($modelEmployedBeneficiary->load(Yii::$app->request->post()) && $modelEmployedBeneficiary->save()) {
             $dataProvider = $searchModelEmployedBeneficiarySearch->getVerifiedEmployeesUnderEmployer(Yii::$app->request->queryParams, $employerID);
             $dataProviderNonBeneficiary = $searchModelEmployedBeneficiarySearch->getNonVerifiedEmployees(Yii::$app->request->queryParams, $employerID);
             $sms = "Employee Added Successful!";
             Yii::$app->getSession()->setFlash('success', $sms);
-            return $this->redirect(['employer/view','id'=>$employerID]);
+			return $this->redirect(['employer/view','id'=>$employerID]);
+			/*
+            return $this->render('AllBeneficiaries', [
+                        'searchModel' => $searchModelEmployedBeneficiarySearch,
+                        'dataProvider' => $dataProvider,
+                        'dataProviderNonBeneficiary' => $dataProviderNonBeneficiary,
+						
+            ]);
+			*/
         } else {
             return $this->render('create', [
                         'model' => $modelEmployedBeneficiary,'employerID'=>$employerID,
@@ -1040,7 +1150,7 @@ public function actionList_beneficiaries($id) {
 	}
 	}	
     }
-public function actionIndexUploadEmployees($id=null) {
+    public function actionIndexUploadEmployees($id=null) {
         $model = new \frontend\modules\repayment\models\EmployedBeneficiary();
         $employerModel = new \frontend\modules\repayment\models\EmployerSearch();
         $model->scenario = 'upload_employees';
@@ -1050,12 +1160,14 @@ public function actionIndexUploadEmployees($id=null) {
             $datime = date("Y_m_d_H_i_s");
 			$employerID = $model->employer_id;
 			$employerDetails=\backend\modules\repayment\models\Employer::getEmployerDetails($employerID);
-			$employerSalarySource=$employerDetails->salary_source;
+			$employerSalarySource=$employerDetails->salary_source;			
             $model->employeesFile = UploadedFile::getInstance($model, 'employeesFile');
             //$model->employeesFile->saveAs('uploads/' . $datime . $model->employeesFile);
             //$model->employeesFile = 'uploads/' . $datime . $model->employeesFile;
 			$model->employeesFile->saveAs(Yii::$app->params['employerUploadExcelTemplate'] . $datime . $model->employeesFile);
             $model->employeesFile = Yii::$app->params['employerUploadExcelTemplate'] . $datime . $model->employeesFile;
+			$uploadedFileName=$model->employeesFile;
+			$traced_by=$model->traced_by;
             $data = \moonland\phpexcel\Excel::widget([
                         'mode' => 'import',
                         'fileName' => $model->employeesFile,
@@ -1064,6 +1176,7 @@ public function actionIndexUploadEmployees($id=null) {
             ]);
             foreach ($data as $rows) {
                 $model = new \frontend\modules\repayment\models\EmployedBeneficiary();
+				$generalMatch='';
                 $model->scenario = 'upload_employees2';
                 $model->employer_id = $employerID;
 				$model->salary_source=$salary_source;
@@ -1076,161 +1189,36 @@ public function actionIndexUploadEmployees($id=null) {
                 $model->middlename = $model->formatRowData($rows['MIDDLE_NAME']);
                 $model->surname = $model->formatRowData($rows['SURNAME']);
 				$model->LOAN_BENEFICIARY_STATUS = $model->formatRowData($rows['LOAN_BENEFICIARY_STATUS']);
+				$model->form_four_completion_year = $model->formatRowData($rows['FORM_FOUR_COMPLETION_YEAR']);
                 $model->date_of_birth = '';
                 $wardName = '';
-                //$model->place_of_birth = $model->getWardID($wardName);
-                //$wardName=$model->place_of_birth = 1;
                 $phone_number = $model->phone_number = $model->formatRowData($rows['MOBILE_PHONE_NUMBER']);
                 $model->current_name = '';
-				
-				$model->uploaded_level_of_study =$programme_level_of_study1 = $model->formatRowData($rows['STUDY_LEVEL1']);
-                $model->uploaded_learning_institution_code=$institution_code = $model->formatRowData($rows['INSTITUTION_OF_STUDY1']);
-				$model->uploaded_programme_studied=$programme1 = $model->formatRowData($rows['PROGRAMME_STUDIED1']);
-				$entryYear = $model->programme_entry_year = $model->formatRowData($rows['ENTRY_YEAR1']);
-                $completionYear = $model->programme_completion_year = $model->formatRowData($rows['COMPLETION_YEAR1']);
-				$fullFilledStatus1=$model->checkCompletenessOfFields($programme_level_of_study1,$institution_code,$programme1,$entryYear,$completionYear);
-				
-				$startCpyear="0,";
-				$endCpyear=0;
-				$CompletionAcademicYearF1='';
-				$EntryAcademicYearF1='';
-				$studyLevelIDF1='';
-				$programmeStudiedID1='';
-				$learning_institution_idF1='';
-				if($fullFilledStatus1 !=1){
-				$STUDY_LEVELerror1="Missing study level 1 fields";	
-				}else{
-				$STUDY_LEVELerror1="";
-				$completionYearF = substr($completionYear, 2, 4);
-                $CompletionAcademicYear1 = $model->getCompletionYear($completionYearF);
-				$EntryAcademicYear1 = $model->getEntryYear($entryYear);
-				$programme_level_of_study = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study1]);
-                $studyLevel1 = $programme_level_of_study->applicant_category_id;
-				$programmeID = \backend\modules\application\models\Programme::findOne(['programme_name' => $programme1]);
-                $programmeStudiedID1 = $programmeID->programme_id;
-				$learning_institution_id1 = $model->getLearningInstitutionID($institution_code);
-				
-                if($CompletionAcademicYear1 !=''){
-				$CompletionAcademicYearF1=$CompletionAcademicYear1.",";				
-				}
-                if($EntryAcademicYear1 !=''){
-                $EntryAcademicYearF1 = $EntryAcademicYear1.",";				
-				}
-                if($studyLevel1 !=''){
-				$studyLevelIDF1=$studyLevel1.",";	
-				}
-                if($programmeStudiedID1 !=''){
-				$programmeStudiedID1=$programmeStudiedID1.",";	
-				}
-                if($learning_institution_id1 !=''){
-				$learning_institution_idF1=$learning_institution_id1.",";	
-				}				
-				}
-				$model->STUDY_LEVEL2=$programme_level_of_study2 = $model->formatRowData($rows['STUDY_LEVEL2']);
-                $model->INSTITUTION_OF_STUDY2=$institution_code2 = $model->formatRowData($rows['INSTITUTION_OF_STUDY2']);
-				$model->PROGRAMME_STUDIED2=$programme2 = $model->formatRowData($rows['PROGRAMME_STUDIED2']);
-				$entryYear2 = $model->ENTRY_YEAR2 = $model->formatRowData($rows['ENTRY_YEAR2']);
-                $completionYear2 = $model->COMPLETION_YEAR2 = $model->formatRowData($rows['COMPLETION_YEAR2']);
-				$fullFilledStatus2=$model->checkCompletenessOfFields($programme_level_of_study2,$institution_code2,$programme2,$entryYear2,$completionYear2);
-				
-				$CompletionAcademicYearF2='';
-				$EntryAcademicYearF2='';
-				$studyLevelIDF2='';
-				$programmeStudiedID2='';
-				$learning_institution_idF2='';
-				if($fullFilledStatus2 !=1){
-				$STUDY_LEVELerror2="Missing study level 2 fields";	
-				}else{
-				$STUDY_LEVELerror2="";
-				$completionYearF2 = substr($completionYear2, 2, 4);
-                $CompletionAcademicYear2 = $model->getCompletionYear($completionYearF2);
-				$EntryAcademicYear2 = $model->getEntryYear($entryYear2);
-				$programme_level_of_study2 = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study2]);
-                $studyLevel2 = $programme_level_of_study2->applicant_category_id;
-				$programmeID2 = \backend\modules\application\models\Programme::findOne(['programme_name' => $programme2]);
-                $programmeStudiedID2 = $programmeID2->programme_id;
-				$learning_institution_id2 = $model->getLearningInstitutionID($institution_code2);				
-				
-                if($CompletionAcademicYear2 !=''){
-				$CompletionAcademicYearF2=$CompletionAcademicYear2.",";				
-				}
-                if($EntryAcademicYear2 !=''){
-                $EntryAcademicYearF2 = $EntryAcademicYear2.",";				
-				}
-                if($studyLevel2 !=''){
-				$studyLevelIDF2=$studyLevel2.",";	
-				}
-                if($programmeStudiedID2 !=''){
-				$programmeStudiedID2=$programmeStudiedID2.",";	
-				}
-                if($learning_institution_id2 !=''){
-				$learning_institution_idF2=$learning_institution_id2.",";	
-				}				
-				}
-				
-				$model->STUDY_LEVEL3=$programme_level_of_study3 = $model->formatRowData($rows['STUDY_LEVEL3']);
-                $model->INSTITUTION_OF_STUDY3=$institution_code3 = $model->formatRowData($rows['INSTITUTION_OF_STUDY3']);
-				$model->PROGRAMME_STUDIED3=$programme3 = $model->formatRowData($rows['PROGRAMME_STUDIED3']);
-				$model->ENTRY_YEAR3=$entryYear3  = $model->formatRowData($rows['ENTRY_YEAR3']);
-                $model->COMPLETION_YEAR3=$completionYear3 = $model->formatRowData($rows['COMPLETION_YEAR3']);
-				
-				$fullFilledStatus3=$model->checkCompletenessOfFields($programme_level_of_study3,$institution_code3,$programme3,$entryYear3,$completionYear3);
-				
-				$CompletionAcademicYearF3='';
-				$EntryAcademicYearF3='';
-				$studyLevelIDF3='';
-				$programmeStudiedID3='';
-				$learning_institution_idF3='';
-				if($fullFilledStatus3 !=1){
-				$STUDY_LEVELerror3="Missing study level 3 fields";	
-				}else{
-				$STUDY_LEVELerror3="";
-				$completionYearF3 = substr($completionYear3, 2, 4);
-                $CompletionAcademicYear3 = $model->getCompletionYear($completionYearF3);
-				$EntryAcademicYear3 = $model->getEntryYear($entryYear3);
-				$programme_level_of_study3 = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study3]);
-                $studyLevel3 = $programme_level_of_study3->applicant_category_id;
-				$programmeID3 = \backend\modules\application\models\Programme::findOne(['programme_name' => $programme3]);
-                $programmeStudiedID3 = $programmeID3->programme_id;
-				$learning_institution_id3 = $model->getLearningInstitutionID($institution_code3);
-				
-                if($CompletionAcademicYear3 !=''){
-				$CompletionAcademicYearF3=$CompletionAcademicYear3.",";				
-				}
-                if($EntryAcademicYear3 !=''){
-                $EntryAcademicYearF3 = $EntryAcademicYear3.",";				
-				}
-                if($studyLevel3 !=''){
-				$studyLevelIDF3=$studyLevel3.",";	
-				}
-                if($programmeStudiedID3 !=''){
-				$programmeStudiedID3=$programmeStudiedID3.",";	
-				}
-                if($learning_institution_id3 !=''){
-				$learning_institution_idF3=$learning_institution_id3.",";	
-				}				
-				}
-				
-                //$model->learning_institution_id = $model->getLearningInstitutionID($institution_code);
+                $institution_code = $model->formatRowData($rows['INSTITUTION_OF_STUDY']);
+                $model->learning_institution_id = $model->getLearningInstitutionID($institution_code);
                 $NIN = $model->NID = $model->formatRowData($rows['NATIONAL_IDENTIFICATION_NUMBER']);
-                $checkIsmoney = $model->basic_salary = $model->formatRowData($rows['GROSS_SALARY(TZS)']);
+                $checkIsmoney = $model->basic_salary = '';
                 $model->sex = $model->formatRowData($rows['GENDER(MALE_OR_FEMALE)']);
-                
-                
-				$salary_source = $model->formatRowData($rows['SALARY_SOURCE']);                
-                //$programme_level_of_study = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study1]);
-                //$studyLevel = $model->programme_level_of_study = $programme_level_of_study->applicant_category_id;
-				$studyLevelGeneral = $startCpyear.$studyLevelIDF1.$studyLevelIDF2.$studyLevelIDF3.$endCpyear;
-				$model->programme_level_of_study=$studyLevelGeneral;
-                //$programmeID = \backend\modules\application\models\Programme::findOne(['programme_code' => $programme1]);
-                //$programmeStudied = $model->programme = $programmeID->programme_id;
-				$programmeStudiedGeneral = $startCpyear.$programmeStudiedID1.$programmeStudiedID2.$programmeStudiedID3.$endCpyear;
-				$model->programme=$programmeStudiedGeneral;
-                //$model->uploaded_learning_institution_code = $institution_code;
-                //$model->uploaded_level_of_study = $programme_level_of_study1;
-                //$model->uploaded_programme_studied = $programme1;
+                $entryYear = $model->programme_entry_year = $model->formatRowData($rows['ENTRY_YEAR']);
+                $completionYear = $model->programme_completion_year = $model->formatRowData($rows['COMPLETION_YEAR']);
+                $programme1 = $model->formatRowData($rows['PROGRAMME_STUDIED']);
+				$salary_source = $model->formatRowData($rows['SALARY_SOURCE']);
+                $programme_level_of_study1 = $model->formatRowData($rows['STUDY_LEVEL']);
+                $programme_level_of_study = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study1]);
+                $studyLevel = $model->programme_level_of_study = $programme_level_of_study->applicant_category_id;
+                $programmeID = \backend\modules\application\models\Programme::findOne(['programme_name' => $programme1]);
+                $programmeStudied = $model->programme = $programmeID->programme_id;
+                $model->uploaded_learning_institution_code = $institution_code;
+                $model->uploaded_level_of_study = $programme_level_of_study1;
+                $model->uploaded_programme_studied = $programme1;
+                $model->uploaded_place_of_birth = $wardName;
                 $model->uploaded_sex = $model->sex;
-                $model->verification_status = 0;				
+                $model->verification_status = 0;
+				$model->traced_by=$traced_by;
+				$f4CompletionYear = $model->form_four_completion_year;
+			    $regNo=$model->f4indexno;
+			    $updated_at=date("Y-m-d H:i:s");
+				$updated_by=$loggedin;
 
 				if($salary_source=='central government'){
 					//check employer salary source
@@ -1260,10 +1248,9 @@ public function actionIndexUploadEmployees($id=null) {
 				}else{
 					$model->salary_source='';
 				}
-                //$EntryAcademicYear = $model->getEntryYear($entryYear);
-				$EntryAcademicYearGeneral = $startCpyear.$EntryAcademicYearF1.$EntryAcademicYearF2.$EntryAcademicYearF3.$endCpyear;          
-                //$CompletionAcademicYear = $model->getCompletionYear($completionYear2);
-				$CompletionAcademicYearGeneral = $startCpyear.$CompletionAcademicYearF1.$CompletionAcademicYearF2.$CompletionAcademicYearF3.$endCpyear;
+                $EntryAcademicYear = $model->getEntryYear($entryYear);
+                $completionYear2 = substr($completionYear, 2, 4);
+                $CompletionAcademicYear = $model->getCompletionYear($completionYear2);
 
                 //echo $EntryAcademicYear."<br/>".$CompletionAcademicYear;
                 //exit;
@@ -1275,30 +1262,58 @@ public function actionIndexUploadEmployees($id=null) {
                     $model->sex = '';
                 }
                 //check applicant if exists using unique identifiers i.e employee_f4indexno and employee_NIN
+				/*
 				$splitF4Indexno=explode('.',$applcantF4IndexNo);
 				$f4indexnoSprit1=$splitF4Indexno[0];
 				$f4indexnoSprit2=$splitF4Indexno[1];
 				$f4indexnoSprit3=$splitF4Indexno[2];
 				$regNo=$f4indexnoSprit1.".".$f4indexnoSprit2;
 				$f4CompletionYear=$f4indexnoSprit3;
-				$academicInstitutionGeneral = $startCpyear.$learning_institution_idF1.$learning_institution_idF2.$learning_institution_idF3.$endCpyear;
-				//$model->learning_institution_id=$academicInstitutionGeneral;
+				*/
 				$firstname = $model->firstname;
                 $middlename = $model->middlename;
                 $surname = $model->surname;
+				$academicInstitution = $model->learning_institution_id;
 				
-                $employeeID = $model->getApplicantDetails($regNo,$f4CompletionYear,$NIN);
-				//$employeeID=$model->getApplicantDetailsUsingNonUniqueIdentifiers3($regNo,$f4CompletionYear,$firstname, $middlename, $surname,$academicInstitutionGeneral,$studyLevelGeneral, $programmeStudiedGeneral,$EntryAcademicYearGeneral,$CompletionAcademicYearGeneral);
-                $model->applicant_id = $employeeID->applicant_id;				
+				
+				$resultsCountExistIndexNo=$model->getAllApplicantsCount($regNo,$f4CompletionYear);
+				if($resultsCountExistIndexNo == 1){
+            $employeeID = $model->getApplicantDetails($regNo,$f4CompletionYear, $NIN);
+            $model->applicant_id = $employeeID->applicant_id;
+				}else if($resultsCountExistIndexNo > 1){
+			$resultsUsingNonUniqueIdent = $model->getApplicantDetailsNonUniqIdentifierF4indexno($regNo,$f4CompletionYear,$firstname, $middlename, $surname, $academicInstitution, $studyLevel, $programmeStudied, $EntryAcademicYear, $CompletionAcademicYear);
+               $model->applicant_id = $resultsUsingNonUniqueIdent->applicant_id;		
+				}else if($resultsCountExistIndexNo==0){
+			$model->applicant_id='';		
+				}
+				$match="f4indexno repeated=>".$resultsCountExistIndexNo.", ";
+				$generalMatch.=$match;
+				
+				
+                //$employeeID = $model->getApplicantDetails($regNo,$f4CompletionYear,$NIN);
+                //$model->applicant_id = $employeeID->applicant_id;
                 //end check using unique identifiers
-				
-				
                 //check using non-unique identifiers
-                if (!is_numeric($model->applicant_id) && $model->applicant_id < 1 && $model->applicant_id == '') {                    
-                    //$academicInstitution = $model->learning_institution_id;
-                    $resultsUsingNonUniqueIdent = $model->getApplicantDetailsUsingNonUniqueIdentifiers($firstname, $middlename, $surname, $academicInstitutionGeneral,$studyLevelGeneral, $programmeStudiedGeneral,$EntryAcademicYearGeneral,$CompletionAcademicYearGeneral);
+                if (!is_numeric($model->applicant_id) && $model->applicant_id < 1 && $model->applicant_id == '') {
+					$match="f4indexno Mis-match, ";
+				    $generalMatch.=$match;
+				
+                    $academicInstitution = $model->learning_institution_id;
+                    $resultsUsingNonUniqueIdent = $model->getApplicantDetailsUsingNonUniqueIdentifiers($firstname, $middlename, $surname, $academicInstitution, $studyLevel, $programmeStudied, $EntryAcademicYear, $CompletionAcademicYear);
                     $model->applicant_id = $resultsUsingNonUniqueIdent->applicant_id;
-                }
+				
+					if($model->applicant_id==''){
+					$match="Other Criteria Mis-match, ";
+					$generalMatch.=	$match;				
+					}else if($model->applicant_id > 0){
+					$match="Other Criteria match, ";
+					$generalMatch.=	$match;				
+					}
+					
+                }else{
+					$match="f4indexno match, ";
+					$generalMatch.=	$match;		
+			}
                 // end check using unique identifiers                            
                 if (!is_numeric($model->applicant_id)) {
                     $model->applicant_id = '';
@@ -1322,14 +1337,20 @@ public function actionIndexUploadEmployees($id=null) {
                     $eployee_exists_status = 1;
                     $employeeExistsID = $model->getEmployeeExists($applicantId, $model->employer_id, $model->employee_id);
                     $employeeExistsId = $employeeExistsID->employed_beneficiary_id;
+					if($employeeExistsID->verification_status==1){
+					$model->verification_status = $employeeExistsID->verification_status;
+					}
                 } else {
                     $eployee_exists_status = 0;
                     //check if nonApplicant exists in beneficiary table
-                    $nonApplicantFound = $model->checkEmployeeExistsNonApplicant($f4indexno, $model->employer_id, $model->employee_id);
+                    $nonApplicantFound = $model->checkEmployeeExistsNonApplicant($f4indexno, $model->employer_id, $model->employee_id,$f4CompletionYear);
                     if ($nonApplicantFound == 1) {
                         $eployee_exists_nonApplicant = 1;
-                        $resultdNonApplicantExistID = $model->getEmployeeExistsNonApplicantID($f4indexno, $model->employer_id, $model->employee_id);
+                        $resultdNonApplicantExistID = $model->getEmployeeExistsNonApplicantID($f4indexno, $model->employer_id, $model->employee_id,$f4completionyear);
                         $results_nonApplicantFound = $resultdNonApplicantExistID->employed_beneficiary_id;
+						if($resultdNonApplicantExistID->verification_status==1){
+						$model->verification_status = $resultdNonApplicantExistID->verification_status;
+						}
                     } else {
                         $eployee_exists_nonApplicant = 0;
                     }
@@ -1347,7 +1368,7 @@ public function actionIndexUploadEmployees($id=null) {
                 }
                 if ($reason != '') {
                     $model->upload_status = 0;
-                    $model->upload_error = $reason.$STUDY_LEVELerror1.", ".$STUDY_LEVELerror2.", ".$STUDY_LEVELerror3;					
+                    $model->upload_error = $reason;
                 } else {
                     $model->upload_status = 1;
                     $model->upload_error = '';
@@ -1376,22 +1397,35 @@ public function actionIndexUploadEmployees($id=null) {
                     }
                 }
                 //end check
-
+				//check names and education history match
+			   if($model->applicant_id >0){
+				$applicantNameMatchCount=$model->getCheckApplicantNamesMatch($model->applicant_id,$firstname, $middlename, $surname);
+				if($applicantNameMatchCount > 0){
+				$match="Employee Names match, ";
+                $generalMatch.=	$match;				
+				}else{
+				$match="Employee Names Mis-match, ";
+                $generalMatch.=	$match;				
+				}
+			   }
+				//end check names and education history match
+                $model->matching=$generalMatch;
                 if ($eployee_exists_status == 0 && $eployee_exists_nonApplicant == 0) {
                     if ($model->employee_id != 'T12XX35') {
                         $model->save(false);
                     }
                 } else if ($eployee_exists_status == 1) {
                     //$model->updateBeneficiary($checkIsmoney,$employeeExistsId);
-                    $model->updateEmployeeReuploaded($model->employer_id, $model->employee_id, $model->applicant_id, $model->basic_salary, $model->employment_status, $model->NID, $model->f4indexno, $model->firstname, $model->middlename, $model->surname, $model->sex, $model->date_of_birth, $model->place_of_birth, $model->learning_institution_id, $model->phone_number, $model->upload_status, $model->upload_error, $model->programme_entry_year, $model->programme_completion_year, $model->programme, $model->programme_level_of_study, $model->employee_status, $model->current_name, $model->uploaded_learning_institution_code, $model->uploaded_level_of_study, $model->uploaded_programme_studied, $model->uploaded_place_of_birth, $model->uploaded_sex, $model->verification_status, $employeeExistsId,$model->salary_source);
+                    $model->updateEmployeeReuploaded($model->employer_id, $model->employee_id, $model->applicant_id, $model->basic_salary, $model->employment_status, $model->NID, $model->f4indexno,$f4completionyear, $model->firstname, $model->middlename, $model->surname, $model->sex, $model->learning_institution_id, $model->phone_number, $model->upload_status, $model->upload_error, $model->programme_entry_year, $model->programme_completion_year, $model->programme, $model->programme_level_of_study, $model->employee_status, $model->current_name, $model->uploaded_learning_institution_code, $model->uploaded_level_of_study, $model->uploaded_programme_studied, $model->uploaded_place_of_birth, $model->uploaded_sex, $model->verification_status, $employeeExistsId,$model->salary_source,$model->LOAN_BENEFICIARY_STATUS,$model->matching,$model->traced_by,$updated_at,$updated_by);
                 } else if ($eployee_exists_status == 0 && $eployee_exists_nonApplicant == 1) {
                     //$model->updateBeneficiaryNonApplicant($checkIsmoney,$results_nonApplicantFound,$f4indexno,$firstname,$phone_number,$NIN); 
 
-                    $model->updateEmployeeReuploaded($model->employer_id, $model->employee_id, $model->applicant_id, $model->basic_salary, $model->employment_status, $model->NID, $model->f4indexno, $model->firstname, $model->middlename, $model->surname, $model->sex, $model->date_of_birth, $model->place_of_birth, $model->learning_institution_id, $model->phone_number, $model->upload_status, $model->upload_error, $model->programme_entry_year, $model->programme_completion_year, $model->programme, $model->programme_level_of_study, $model->employee_status, $model->current_name, $model->uploaded_learning_institution_code, $model->uploaded_level_of_study, $model->uploaded_programme_studied, $model->uploaded_place_of_birth, $model->uploaded_sex, $model->verification_status, $results_nonApplicantFound,$model->salary_source);
+                    $model->updateEmployeeReuploaded($model->employer_id, $model->employee_id, $model->applicant_id, $model->basic_salary, $model->employment_status, $model->NID, $model->f4indexno,$f4completionyear, $model->firstname, $model->middlename, $model->surname, $model->sex, $model->learning_institution_id, $model->phone_number, $model->upload_status, $model->upload_error, $model->programme_entry_year, $model->programme_completion_year, $model->programme, $model->programme_level_of_study, $model->employee_status, $model->current_name, $model->uploaded_learning_institution_code, $model->uploaded_level_of_study, $model->uploaded_programme_studied, $model->uploaded_place_of_birth, $model->uploaded_sex, $model->verification_status, $results_nonApplicantFound,$model->salary_source,$model->LOAN_BENEFICIARY_STATUS,$model->matching,$model->traced_by,$updated_at,$updated_by);
                 }
 
                 $doneUpload = 1;
             }
+			unlink($uploadedFileName);
             if ($doneUpload == 1) {
                 unlink($model->employeesFile);
                 $sms = "<p>Employees uploaded successful</p>";

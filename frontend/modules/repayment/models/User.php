@@ -76,7 +76,10 @@ class User extends ActiveRecord implements IdentityInterface
     public $employer_id;
 	public $phone_number_employer;
 	public $fax_number;
-	public $verifyCode;
+	public $verifyCode;	
+	public $region;
+	public $district;
+	public $ward_id;
 
     public static function tableName()
     {
@@ -102,10 +105,11 @@ class User extends ActiveRecord implements IdentityInterface
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
             [['user_id','sex','employer_id'], 'safe'],      
-			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'login_type', 'created_at','phone_number_employer'], 'required','on'=>'employer_registration'],
-			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'update_contact_person'],
+			//[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'login_type', 'created_at','phone_number_employer'], 'required','on'=>['employer_registration','heslb_employer_registration']],
+			[['firstname', 'surname','phone_number'], 'required','on'=>'update_contact_person'],
 			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'employer_contact_person'],
-			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'password', 'confirm_password','phone_number','confirm_email','employer_type_id'], 'required', 'on'=>'employer_registration'],
+			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'password', 'confirm_password','phone_number','confirm_email','employer_type_id','region','district','ward_id'], 'required', 'on'=>['employer_registration']],
+			[['firstname', 'surname', 'middlename', 'password_hash', 'password', 'confirm_password','phone_number','employer_type_id','region','district','ward_id'], 'required', 'on'=>['heslb_employer_registration']],
 			[['firstname', 'surname', 'middlename', 'email_address','phone_number'], 'required', 'on'=>'employer_update_information'],
 			[['password_hash','confirm_password'], 'required', 'on'=>'employer_change_password'],
 			['password', 'string', 'length' => [8, 24]],
@@ -124,21 +128,21 @@ class User extends ActiveRecord implements IdentityInterface
             [['username'], 'unique'],
             [['email_address'], 'unique'],
             ['email_address', 'email'],
-			['verifyCode', 'captcha'],
+			['verifyCode', 'captcha','on'=>'employer_registration'],
 			['phone_number', 'checkphonenumber'],
 			['phone_number_employer', 'checkphonenumberemployer'],
 			['fax_number', 'checkFaxNumber','skipOnEmpty' => true],
-			['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => 'employer_registration' ],
-			['confirm_email', 'compare', 'compareAttribute'=>'email_address', 'message'=>"Email must be retyped exactly", 'on' => 'employer_registration' ],
+			['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => ['employer_registration','heslb_employer_registration']],
+			['confirm_email', 'compare', 'compareAttribute'=>'email_address', 'message'=>"Email must be retyped exactly", 'on' => ['employer_registration']],
             ['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => 'employer_contact_person' ],
-			['confirm_email', 'compare', 'compareAttribute'=>'email_address', 'message'=>"Email must be retyped exactly", 'on' => 'employer_contact_person' ],
+			['confirm_email', 'compare', 'compareAttribute'=>'email_address', 'message'=>"Email must be retyped exactly", 'on' => 'employer_contact_person'],
 			['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => 'employer_change_password' ],
 			['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly"],
             [['security_question_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\application\models\SecurityQuestion::className(), 'targetAttribute' => ['security_question_id' => 'security_question_id']],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
 			[['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'user_id']],
 			['password','match','pattern' => '/^.*(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*$/', 'message' =>'Password must contain at least one lower and upper case character and a digit.'],
-            [['password','confirm_password'],'required','on'=>['employer_registration','employer_contact_person','change_pwd_contact_person']],
+            [['password','confirm_password'],'required','on'=>['employer_registration','employer_contact_person','change_pwd_contact_person','heslb_employer_registration']],
 			//[['password'], StrengthValidator::className(), 'min'=>8, 'digit'=>0, 'special'=>3]
         ];
     }
