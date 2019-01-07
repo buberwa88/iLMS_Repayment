@@ -1261,5 +1261,8 @@ foreach($allBeneficiaries AS $beneficiar){
 }
 public static function getEmployeeByCheckNumber($checkNumber){
 return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.employee_id='$checkNumber' AND employed_beneficiary.applicant_id > 0")->one();
+}
+public static function getEmployeeByCheckNumberandEmployer_id($checkNumber,$employer_id){
+return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.employee_id='$checkNumber' AND employed_beneficiary.employer_id='$employer_id'")->one();
 }	
 }

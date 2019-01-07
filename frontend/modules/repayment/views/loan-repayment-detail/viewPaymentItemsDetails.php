@@ -27,7 +27,11 @@ $this->params['breadcrumbs'][] = $this->title;
 				'label'=>'Principal',
 				'format'=>['decimal',2],
                 'value'=>call_user_func(function ($data) {
+					if($data->applicant_id !=''){
                 return $data->getPrincipalLoanPaidPerBill($data->applicant_id,$data->loan_repayment_id);
+					}else{
+				return	$data->amount;	
+					}
             }, $model),
             ],
 			[

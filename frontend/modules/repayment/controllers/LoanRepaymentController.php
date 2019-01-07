@@ -13,6 +13,8 @@ use frontend\modules\repayment\models\LoanRepaymentDetail;
 use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use frontend\modules\repayment\models\GepgLawson;
+use frontend\modules\repayment\models\GepgLawsonSearch;
 
 /**
  * LoanRepaymentController implements the CRUD actions for LoanRepayment model.
@@ -1184,128 +1186,8 @@ return $pdf->render();
 		return $this->redirect(['loan-summary/index-scholarshipnotpaid']);
     }
 	
-	public function actionMonthlyDeductionsResponse() {
-
-        $fileDeductions='<?xml version="1.0" encoding="ISO-8859-1"?>'.
-'<ArrayOfDeductions xmlns="http://schemas.datacontract.org/2004/07/GPP.Models" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">'.
-'<Deductions>'.
-'<ActualBalanceAmount>4044600.00</ActualBalanceAmount>'.
-'<CheckDate>2018-10-31T00:00:00</CheckDate>'.
-'<CheckNumber>11079178589</CheckNumber>'.
-'<DateHired></DateHired>'.
-'<DeductionAmount>212550.00</DeductionAmount>'.
-'<DeductionCode>465 </DeductionCode>'.
-'<DeductionDesc>New HESLB Loan </DeductionDesc>'.
-'<DeptName>Zonal Office Dodoma </DeptName>'.
-'<Deptcode>2005 </Deptcode>'.
-'<FirstName>MORICE </FirstName>'.
-'<LastName>SARARA </LastName>'.
-'<MiddleName>CYPRIAN </MiddleName>'.
-'<NationalId></NationalId>'.
-'<Sex></Sex>'.
-'<VoteName>Division of Public Prosecution</VoteName>'.
-'<Votecode>35 </Votecode>'.
-'</Deductions>'.
-'<Deductions>'.
-'<ActualBalanceAmount>4044600.00</ActualBalanceAmount>'.
-'<CheckDate>2018-10-31T00:00:00</CheckDate>'.
-'<CheckNumber>110791785</CheckNumber>'.
-'<DateHired></DateHired>'.
-'<DeductionAmount>212550.00</DeductionAmount>'.
-'<DeductionCode>465 </DeductionCode>'.
-'<DeductionDesc>New HESLB Loan </DeductionDesc>'.
-'<DeptName>Zonal Office Dodoma </DeptName>'.
-'<Deptcode>2005 </Deptcode>'.
-'<FirstName>MORICE </FirstName>'.
-'<LastName>SARARA </LastName>'.
-'<MiddleName>CYPRIAN </MiddleName>'.
-'<NationalId></NationalId>'.
-'<Sex></Sex>'.
-'<VoteName>Division of Public Prosecution</VoteName>'.
-'<Votecode>908 </Votecode>'.
-'</Deductions>'.
-'<Deductions>'.
-'<ActualBalanceAmount>80489700.00</ActualBalanceAmount>'.
-'<CheckDate>2018-10-31T00:00:00</CheckDate>'.
-'<CheckNumber>1107919085</CheckNumber>'.
-'<DateHired></DateHired>'.
-'<DeductionAmount>212550.00</DeductionAmount>'.
-'<DeductionCode>465 </DeductionCode>'.
-'<DeductionDesc>New HESLB Loan </DeductionDesc>'.
-'<DeptName>Zonal Office Dodoma </DeptName>'.
-'<Deptcode>2005 </Deptcode>'.
-'<FirstName>MORICE </FirstName>'.
-'<LastName>SARARA </LastName>'.
-'<MiddleName>CYPRIAN </MiddleName>'.
-'<NationalId></NationalId>'.
-'<Sex></Sex>'.
-'<VoteName>Division of Public Prosecution</VoteName>'.
-'<Votecode>35 </Votecode>'.
-'</Deductions>'.
-'</ArrayOfDeductions>';
-
-$results = json_decode(json_encode((array)simplexml_load_string($fileDeductions)),true);
-		$ArrayOfDeductions = $results['Deductions'];
-		$cavaca=$results['Deductions'];
-		$employeeCount=simplexml_load_string($fileDeductions);
-		$countEmployees=count($employeeCount->Deductions);
-		//exit;
-		if($countEmployees > 1){
-$si=0;			
-    foreach ($ArrayOfDeductions as $Deductions) {
-
-    $trans_date = date('Y-m-d H:i:s');	
-    $ActualBalanceAmount = trim($Deductions['ActualBalanceAmount']);
-	$CheckDate = date("Y-m-d",strtotime(trim($Deductions['CheckDate'])));
-	$CheckNumber = trim($Deductions['CheckNumber']);
-	$DateHired = trim($Deductions['DateHired']);
-	$DeductionAmount = trim($Deductions['DeductionAmount']);
-	$DeductionCode = trim($Deductions['DeductionCode']);
-	$DeductionDesc = trim($Deductions['DeductionDesc']);
-	$DeptName = trim($Deductions['DeptName']);
-	$FirstName = trim($Deductions['FirstName']);
-	$LastName = trim($Deductions['LastName']);
-	$MiddleName = trim($Deductions['MiddleName']);
-	$NationalId = trim($Deductions['NationalId']);
-	$Sex = trim($Deductions['Sex']);
-	$VoteName = trim($Deductions['VoteName']);
-	$Votecode = trim($Deductions['Votecode']);
-    
-   //echo 'ActualBalanceAmount: '.$ActualBalanceAmount."<br/>".'CheckDate: '.$CheckDate."<br/>"."CheckNumber: ".$CheckNumber."<br/>"."DateHired: ".$DateHired."<br/>"."DeductionAmount".$DeductionAmount."<br/>"."DeductionCode".$DeductionCode."<br/>"."DeductionDesc: ".$DeductionDesc."<br/>"."DeptName: ".$DeptName."<br/>"."FirstName: ".$FirstName."<br/>"."LastName: ".$LastName."<br/>"."MiddleName: ".$MiddleName."<br/>"."NationalId: ".$NationalId."<br/>"."Sex: ".$Sex."<br/>"."VoteName: ".$VoteName."<br/>"."Votecode: ".$Votecode."<br/>"."Done1";
-   $deduction_month=date("Y-m")."-".\frontend\modules\repayment\models\LoanRepayment::DEDUCTION_DATE_REQUEST;
-   $yearT=date("Y");
-   $resultsCount=\frontend\modules\repayment\models\GepgLawson::getBillTreasuryPerYear($yearT) + 1;
-   $bill_number=\frontend\modules\repayment\models\LoanRepayment::TREAURY_BILL_FORMAT.$yearT."-".$resultsCount;
-   $amountBill=0;
-   $amount=0;
-   $control_number_date=date("Y-m-d H:i:s");$created_at=date("Y-m-d H:i:s");
-   \frontend\modules\repayment\models\LawsonMonthlyDeduction::insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month);
-   \frontend\modules\repayment\models\LoanRepayment::checkGePGlawsonBill($deduction_month,$bill_number,$amountBill,$control_number_date,$CheckDate);   $paymentStatus=0;
-   \frontend\modules\repayment\models\LoanRepayment::createBillPerEmployer($amount,$deduction_month,$Votecode,$VoteName,$CheckDate,$paymentStatus);
-   \frontend\modules\repayment\models\LoanRepaymentDetail::insertRepaymentDetailsGSPP($DeductionAmount,$CheckNumber,$Votecode,$CheckDate);
-   \frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidGSPP($CheckDate);
-  ++$si;  	
-}
-	}else{
-	$ActualBalanceAmount = trim($ArrayOfDeductions['ActualBalanceAmount']);
-	$CheckDate = trim($ArrayOfDeductions['CheckDate']);
-	$CheckNumber = trim($ArrayOfDeductions['CheckNumber']);
-	$DateHired = trim($ArrayOfDeductions['DateHired']);
-	$DeductionAmount = trim($ArrayOfDeductions['DeductionAmount']);
-	$DeductionCode = trim($ArrayOfDeductions['DeductionCode']);
-	$DeductionDesc =trim($ArrayOfDeductions['DeductionDesc']);
-	$DeptName = trim($ArrayOfDeductions['DeptName']);
-	$FirstName = trim($ArrayOfDeductions['FirstName']);
-	$LastName = trim($ArrayOfDeductions['LastName']);
-	$MiddleName = trim($ArrayOfDeductions['MiddleName']);
-	$NationalId = trim($ArrayOfDeductions['NationalId']);
-	$Sex = trim($ArrayOfDeductions['Sex']);
-	$VoteName = trim($ArrayOfDeductions['VoteName']);
-	$Votecode = trim($ArrayOfDeductions['Votecode']);
-
-  echo 'ActualBalanceAmount: '.$ActualBalanceAmount."<br/>".'CheckDate: '.$CheckDate."<br/>"."CheckNumber: ".$CheckNumber."<br/>"."DateHired: ".$DateHired."<br/>"."DeductionAmount".$DeductionAmount."<br/>"."DeductionCode".$DeductionCode."<br/>"."DeductionDesc: ".$DeductionDesc."<br/>"."DeptName: ".$DeptName."<br/>"."FirstName: ".$FirstName."<br/>"."LastName: ".$LastName."<br/>"."MiddleName: ".$MiddleName."<br/>"."NationalId: ".$NationalId."<br/>"."Sex: ".$Sex."<br/>"."VoteName: ".$VoteName."<br/>"."Votecode: ".$Votecode."<br/>"."Done2";	
-	}
-	\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerLoanRepayment($CheckDate);
+public function actionMonthlyDeductionsResponse() {
+\frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions);
 $sms="Operation Successful!";
 Yii::$app->getSession()->setFlash('success', $sms);	
 return $this->redirect(['requestgspp-monthdeduction']);	
@@ -1313,8 +1195,14 @@ return $this->redirect(['requestgspp-monthdeduction']);
 public function actionRequestgsppMonthdeduction()
     {
         $model = new LoanRepayment();
+		$model2 = new GepgLawson();
+		$searchModel = new GepgLawsonSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
             return $this->render('requestgsppmonthlydeduction', [
                 'model' => $model,
+				'model2'=>$model2,
+				'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
             ]);
     }
 public function actionRequestgsppMonthdeductionform()

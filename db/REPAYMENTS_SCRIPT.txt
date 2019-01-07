@@ -266,6 +266,13 @@ CREATE TABLE `lawson_monthly_deduction` (
   `deduction_month` date DEFAULT NULL,
   PRIMARY KEY (`lawson_monthly_deduction_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+--------------------06-01-2018-----------------------
+ALTER TABLE `gepg_lawson` ADD `gspp_totalAmount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `check_date`;
+ALTER TABLE `gepg_lawson` ADD `amount_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked and ok, 2: Checked and Differ' AFTER `gspp_totalAmount`;
+ALTER TABLE `gepg_lawson` ADD `gspp_detailAmount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `gspp_totalAmount`;
+ALTER TABLE `gepg_lawson` CHANGE `amount_status` `amount_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked(both gspp amount) and ok, 2: Checked (both gspp amount) and Differ, 3: Checked(gspp and repayment amount) and ok, 4: Checked(gspp and repayment amount) and differ,';
+ALTER TABLE `loan_repayment` ADD `payment_category` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Self Employer, 1: Treasury' AFTER `lowason_check_date`;
+ALTER TABLE `loan_repayment` CHANGE `payment_category` `payment_category` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Self Employer/Beneficiary, 1: Treasury';
 -----------------------------------------------------
 ======================================================
 

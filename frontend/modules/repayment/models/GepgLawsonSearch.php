@@ -19,7 +19,7 @@ class GepgLawsonSearch extends GepgLawson
     {
         return [
             [['gepg_lawson_id', 'status'], 'integer'],
-            [['bill_number', 'control_number', 'control_number_date', 'deduction_month', 'gepg_date'], 'safe'],
+            [['bill_number', 'control_number', 'control_number_date', 'deduction_month', 'gepg_date','amount_status'], 'safe'],
             [['amount'], 'number'],
         ];
     }
@@ -66,6 +66,7 @@ class GepgLawsonSearch extends GepgLawson
             'deduction_month' => $this->deduction_month,
             'status' => $this->status,
             'gepg_date' => $this->gepg_date,
+			'amount_status' => $this->amount_status,
         ]);
 
         $query->andFilterWhere(['like', 'bill_number', $this->bill_number])

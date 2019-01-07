@@ -40,30 +40,46 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
                         'label'=>"First Name",
                         //'vAlign' => 'middle',
                         'value' => function ($model) {
+							if($model->applicant_id !=''){
                             return $model->applicant->user->firstname;
+							}else{
+							return $model->first_name;	
+							}
                         },
             ],
-			/*
+			
             [
                      'attribute' => 'middlename',
                         'label'=>"Middle Name",
                         'value' => function ($model) {
+							if($model->applicant_id !=''){
                             return $model->applicant->user->middlename;
+							}else{
+							return $model->middle_name;	
+							}
                         },
             ],
-			*/
+			
 		    [
                      'attribute' => 'surname',
                         'label'=>"Last Name",
                         'value' => function ($model) {
+							if($model->applicant_id !=''){
                             return $model->applicant->user->surname;
+							}else{
+							return $model->last_name;		
+							}
                         },
             ],
 			[
                      'attribute' => 'f4indexno',
                         'label'=>"Index Number",
                         'value' => function ($model) {
+							if($model->applicant_id !=''){
                             return $model->applicant->f4indexno;
+							}else{
+							return '';	
+							}
                         },
             ],
 			/*
@@ -82,7 +98,11 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
             'value' =>function($model)
             {
                  //return $model->getAmountRequiredForPaymentIndividualLoanee($model->applicant_id,$model->loan_repayment_id,$loan_given_to);
+				 if($model->applicant_id !=''){
 				 return $model->getAmountPaidByIndividualLoaneeUnderLoanRepayment($model->applicant_id,$model->loan_repayment_id);
+				 }else{
+				 return $model->amount;	 
+				 }
             },
             'format'=>['decimal',2],
         ],			

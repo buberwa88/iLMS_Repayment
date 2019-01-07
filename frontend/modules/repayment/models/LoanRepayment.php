@@ -308,7 +308,8 @@ class LoanRepayment extends \yii\db\ActiveRecord
 		
 		
         
-        $this->updateAll(['payment_status' =>'1','date_control_received'=>$date_control_received,'receipt_date'=>$receiptDate,'date_receipt_received'=>$receiptDate,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND amount ="'.$amount.'" AND payment_status ="0"');
+        //$this->updateAll(['payment_status' =>'1','date_control_received'=>$date_control_received,'receipt_date'=>$receiptDate,'date_receipt_received'=>$receiptDate,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND amount ="'.$amount.'" AND payment_status ="0"');
+		$this->updateAll(['payment_status' =>'1','date_control_received'=>$date_control_received,'receipt_date'=>$receiptDate,'date_receipt_received'=>$receiptDate,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND payment_status ="0"');
         $details = LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_summary_id AS 'loan_summary_id',loan_repayment_detail.applicant_id,loan_repayment_detail.loan_repayment_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
                 . "WHERE  loan_repayment.control_number='$controlNumber'")->one();
         $loan_summary_id=$details->loan_summary_id;
@@ -671,11 +672,147 @@ public static function createBillPerEmployer($amount,$deduction_month,$Votecode,
 	$gepg_lawson_id=$getBillDetails->gepg_lawson_id;
 	$bill_number=$getBillDetails->bill_number;
 	$date_bill_generated=$getBillDetails->control_number_date;
- Yii::$app->db->createCommand("INSERT INTO  loan_repayment(employer_id,bill_number,amount,payment_date,date_bill_generated,vote_number,Vote_name,gepg_lawson_id,lowason_check_date,payment_status) VALUES('$getEmployerIDx','$bill_number','$amount','$deduction_month','$date_bill_generated','$Votecode','$VoteName','$gepg_lawson_id','$CheckDate','$paymentStatus')")->execute();	
+ Yii::$app->db->createCommand("INSERT INTO  loan_repayment(employer_id,bill_number,amount,payment_date,date_bill_generated,vote_number,Vote_name,gepg_lawson_id,lowason_check_date,payment_status,payment_category) VALUES('$getEmployerIDx','$bill_number','$amount','$deduction_month','$date_bill_generated','$Votecode','$VoteName','$gepg_lawson_id','$CheckDate','$paymentStatus','1')")->execute();	
 }	
 	}
 public static function updateTotalAmountUnderEmployerBillGSPP($totalAmount1,$loan_repayment_id){
         self::updateAll(['amount'=>$totalAmount1], 'loan_repayment_id ="'.$loan_repayment_id.'"'); 
     }
+	
+public static function generalFunctControlNumber($billNumber,$controlNumber,$date_control_received){
+	 \frontend\modules\repayment\models\GepgLawson::updateAll(['gepg_date'=>$date_control_received,'control_number'=>$controlNumber,'status'=>'1'], 'bill_number ="'.$billNumber.'"');	
+     self::updateAll(['date_control_received'=>$date_control_received,'control_number'=>$controlNumber], 'bill_number ="'.$billNumber.'"');      
+        }
+public static function requestMonthlyDeduction($fileDeductions){
+$fileDeductions='<?xml version="1.0" encoding="ISO-8859-1"?>'.
+'<ArrayOfDeductions xmlns="http://schemas.datacontract.org/2004/07/GPP.Models" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">'.
+'<Deductions>'.
+'<ActualBalanceAmount>4044600.00</ActualBalanceAmount>'.
+'<CheckDate>2018-10-31T00:00:00</CheckDate>'.
+'<CheckNumber>11079178589</CheckNumber>'.
+'<DateHired i:nil="true" />'.
+'<DeductionAmount>212550.00</DeductionAmount>'.
+'<DeductionCode>465 </DeductionCode>'.
+'<DeductionDesc>New HESLB Loan </DeductionDesc>'.
+'<DeptName>Zonal Office Dodoma </DeptName>'.
+'<Deptcode>2004 </Deptcode>'.
+'<FirstName>George </FirstName>'.
+'<LastName>Seveline </LastName>'.
+'<MiddleName>Amosi </MiddleName>'.
+'<NationalId></NationalId>'.
+'<Sex i:nil="true" />'.
+'<VoteName>Division of Public Prosecution</VoteName>'.
+'<Votecode>35 </Votecode>'.
+'</Deductions>'.
+'<Deductions>'.
+'<ActualBalanceAmount>4044600.00</ActualBalanceAmount>'.
+'<CheckDate>2018-10-31T00:00:00</CheckDate>'.
+'<CheckNumber>110791785</CheckNumber>'.
+'<DateHired i:nil="true" />'.
+'<DeductionAmount>212550.00</DeductionAmount>'.
+'<DeductionCode>465 </DeductionCode>'.
+'<DeductionDesc>New HESLB Loan </DeductionDesc>'.
+'<DeptName>Office 2 </DeptName>'.
+'<Deptcode>2005 </Deptcode>'.
+'<FirstName>Amos </FirstName>'.
+'<LastName>Juma </LastName>'.
+'<MiddleName>Masawe </MiddleName>'.
+'<NationalId></NationalId>'.
+'<Sex i:nil="true" />'.
+'<VoteName>Division of Public Prosecution</VoteName>'.
+'<Votecode>908 </Votecode>'.
+'</Deductions>'.
+'<Deductions>'.
+'<ActualBalanceAmount>80489700.00</ActualBalanceAmount>'.
+'<CheckDate>2018-10-31T00:00:00</CheckDate>'.
+'<CheckNumber>1107919085</CheckNumber>'.
+'<DateHired i:nil="true" />'.
+'<DeductionAmount>212550.00</DeductionAmount>'.
+'<DeductionCode>465 </DeductionCode>'.
+'<DeductionDesc>New HESLB Loan </DeductionDesc>'.
+'<DeptName>Office 1 </DeptName>'.
+'<Deptcode>2001 </Deptcode>'.
+'<FirstName>YUSUPH </FirstName>'.
+'<LastName>FADHILI </LastName>'.
+'<MiddleName>MAX </MiddleName>'.
+'<NationalId></NationalId>'.
+'<Sex i:nil="true" />'.
+'<VoteName>Division of Public Prosecution</VoteName>'.
+'<Votecode>35 </Votecode>'.
+'</Deductions>'.
+'</ArrayOfDeductions>';
+
+$results = json_decode(json_encode((array)simplexml_load_string($fileDeductions)),true);
+		$ArrayOfDeductions = $results['Deductions'];
+		$cavaca=$results['Deductions'];
+		$employeeCount=simplexml_load_string($fileDeductions);
+		$countEmployees=count($employeeCount->Deductions);
+		//exit;
+		if($countEmployees > 1){
+$si=0;			
+    foreach ($ArrayOfDeductions as $Deductions) {
+
+    $trans_date = date('Y-m-d H:i:s');	
+    $ActualBalanceAmount = trim($Deductions['ActualBalanceAmount']);
+	$CheckDate = date("Y-m-d",strtotime(trim($Deductions['CheckDate'])));
+	$CheckNumber = trim($Deductions['CheckNumber']);
+	$DateHired = trim($Deductions['DateHired']);
+	$DeductionAmount = trim($Deductions['DeductionAmount']);
+	$DeductionCode = trim($Deductions['DeductionCode']);
+	$DeductionDesc = trim($Deductions['DeductionDesc']);
+	$DeptName = trim($Deductions['DeptName']);
+	$Deptcode = trim($Deductions['Deptcode']);
+	$FirstName = trim($Deductions['FirstName']);
+	$LastName = trim($Deductions['LastName']);
+	$MiddleName = trim($Deductions['MiddleName']);
+	$NationalId = trim($Deductions['NationalId']);
+	$Sex = trim($Deductions['Sex']);
+	$VoteName = trim($Deductions['VoteName']);
+	$Votecode = trim($Deductions['Votecode']);
+    
+   //echo 'ActualBalanceAmount: '.$ActualBalanceAmount."<br/>".'CheckDate: '.$CheckDate."<br/>"."CheckNumber: ".$CheckNumber."<br/>"."DateHired: ".$DateHired."<br/>"."DeductionAmount".$DeductionAmount."<br/>"."DeductionCode".$DeductionCode."<br/>"."DeductionDesc: ".$DeductionDesc."<br/>"."DeptName: ".$DeptName."<br/>"."FirstName: ".$FirstName."<br/>"."LastName: ".$LastName."<br/>"."MiddleName: ".$MiddleName."<br/>"."NationalId: ".$NationalId."<br/>"."Sex: ".$Sex."<br/>"."VoteName: ".$VoteName."<br/>"."Votecode: ".$Votecode."<br/>"."Done1";
+
+   $deduction_month=date("Y-m")."-".\frontend\modules\repayment\models\LoanRepayment::DEDUCTION_DATE_REQUEST;
+   $yearT=date("Y");
+   $resultsCount=\frontend\modules\repayment\models\GepgLawson::getBillTreasuryPerYear($yearT) + 1;
+   $bill_number=\frontend\modules\repayment\models\LoanRepayment::TREAURY_BILL_FORMAT.$yearT."-".$resultsCount;
+   $amountBill=0;
+   $amount=0;
+   $control_number_date=date("Y-m-d H:i:s");$created_at=date("Y-m-d H:i:s");
+   \frontend\modules\repayment\models\LawsonMonthlyDeduction::insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month);
+   \frontend\modules\repayment\models\LoanRepayment::checkGePGlawsonBill($deduction_month,$bill_number,$amountBill,$control_number_date,$CheckDate);   $paymentStatus=0;
+   \frontend\modules\repayment\models\LoanRepayment::createBillPerEmployer($amount,$deduction_month,$Votecode,$VoteName,$CheckDate,$paymentStatus);
+   \frontend\modules\repayment\models\LoanRepaymentDetail::insertRepaymentDetailsGSPP($DeductionAmount,$CheckNumber,$Votecode,$CheckDate,$Votecode,$VoteName,$Deptcode,$DeptName,$ActualBalanceAmount,$DeductionCode,$DeductionDesc,$FirstName,$MiddleName,$LastName);
+  ++$si;  	
+}
+	}else{
+	$ActualBalanceAmount = trim($ArrayOfDeductions['ActualBalanceAmount']);
+	$CheckDate = trim($ArrayOfDeductions['CheckDate']);
+	$CheckNumber = trim($ArrayOfDeductions['CheckNumber']);
+	$DateHired = trim($ArrayOfDeductions['DateHired']);
+	$DeductionAmount = trim($ArrayOfDeductions['DeductionAmount']);
+	$DeductionCode = trim($ArrayOfDeductions['DeductionCode']);
+	$DeductionDesc =trim($ArrayOfDeductions['DeductionDesc']);
+	$DeptName = trim($ArrayOfDeductions['DeptName']);
+	$FirstName = trim($ArrayOfDeductions['FirstName']);
+	$LastName = trim($ArrayOfDeductions['LastName']);
+	$MiddleName = trim($ArrayOfDeductions['MiddleName']);
+	$NationalId = trim($ArrayOfDeductions['NationalId']);
+	$Sex = trim($ArrayOfDeductions['Sex']);
+	$VoteName = trim($ArrayOfDeductions['VoteName']);
+	$Votecode = trim($ArrayOfDeductions['Votecode']);
+
+  echo 'ActualBalanceAmount: '.$ActualBalanceAmount."<br/>".'CheckDate: '.$CheckDate."<br/>"."CheckNumber: ".$CheckNumber."<br/>"."DateHired: ".$DateHired."<br/>"."DeductionAmount".$DeductionAmount."<br/>"."DeductionCode".$DeductionCode."<br/>"."DeductionDesc: ".$DeductionDesc."<br/>"."DeptName: ".$DeptName."<br/>"."FirstName: ".$FirstName."<br/>"."LastName: ".$LastName."<br/>"."MiddleName: ".$MiddleName."<br/>"."NationalId: ".$NationalId."<br/>"."Sex: ".$Sex."<br/>"."VoteName: ".$VoteName."<br/>"."Votecode: ".$Votecode."<br/>"."Done2";	
+	}
+
+	\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidGSPP($CheckDate);
+	\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerLoanRepayment($CheckDate);
+	//the below function to run after receiving summary
+	$GSPPamountSummary='637650.00';
+	\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidGSPPsummary($CheckDate,$GSPPamountSummary);
+	\frontend\modules\repayment\models\LoanRepaymentDetail::checkRepaymentAndGSPPamount($CheckDate);	
+	\frontend\modules\repayment\models\LoanRepaymentDetail::checkGepgStatus();
+	//end	
+}
 	
 }

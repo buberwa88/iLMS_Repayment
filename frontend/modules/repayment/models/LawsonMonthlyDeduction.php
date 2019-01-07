@@ -76,7 +76,7 @@ class LawsonMonthlyDeduction extends \yii\db\ActiveRecord
         ];
     }
 	public static function insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month){
-	if(self::find()->where(['CheckDate'=>$CheckDate,'CheckNumber'=>$check_number])->count()==0){	
+	if(self::find()->where(['CheckDate'=>$CheckDate,'CheckNumber'=>$CheckNumber])->count()==0){	
 Yii::$app->db->createCommand("INSERT IGNORE INTO lawson_monthly_deduction(ActualBalanceAmount,CheckDate ,CheckNumber,DateHired, 	DeductionAmount,DeductionCode,DeductionDesc,DeptName,FirstName,LastName,MiddleName,NationalId,Sex,VoteName,Votecode,created_at,deduction_month) VALUES('$ActualBalanceAmount','$CheckDate','$CheckNumber','$DateHired','$DeductionAmount','$DeductionCode','$DeductionDesc','$DeptName','$FirstName','$LastName','$MiddleName','$NationalId','$Sex','$VoteName','$Votecode','$created_at','$deduction_month')")->execute();	
 }	
 	}

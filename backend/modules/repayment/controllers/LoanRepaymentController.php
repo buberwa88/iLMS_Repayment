@@ -14,6 +14,8 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use frontend\modules\repayment\models\LoanRepaymentPrepaid;
 use frontend\modules\repayment\models\LoanRepaymentPrepaidSearch;
+use frontend\modules\repayment\models\GepgLawson;
+use frontend\modules\repayment\models\GepgLawsonSearch;
 
 /**
  * LoanRepaymentController implements the CRUD actions for LoanRepayment model.
@@ -464,7 +466,7 @@ class LoanRepaymentController extends Controller
         if ($modelLoanRepayment->load(Yii::$app->request->post())) {
 		$controlNumber = $modelLoanRepayment->control_number;
         $amount = $modelLoanRepayment->amount;	
-		if($modelLoanRepayment->payCategory=='EMPLOYER_BILL' OR $modelLoanRepayment->payCategory=='BENEFICIARY_BILL'){
+		if($modelLoanRepayment->payCategory=='EMPLOYER_BILL' OR $modelLoanRepayment->payCategory=='BENEFICIARY_BILL' OR $modelLoanRepayment->payCategory=='TRESURY_BILL'){
         $modelLoanRepayment->updatePaymentAfterGePGconfirmPaymentDone($controlNumber, $amount);
 		}
 		if($modelLoanRepayment->payCategory=='TRESURY_BILL'){
@@ -542,6 +544,37 @@ class LoanRepaymentController extends Controller
             'dataProvider' => $dataProvider,            
         ]);    
         
+    }
+public function actionMonthlyDeductionsResponse() {
+\frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions);
+$sms="Operation Successful!";
+Yii::$app->getSession()->setFlash('success', $sms);	
+return $this->redirect(['requestgspp-monthdeduction']);	
+}
+public function actionRequestgsppMonthdeduction()
+    {
+        $model = new \frontend\modules\repayment\models\LoanRepayment();
+		$model2 = new GepgLawson();
+		$searchModel = new GepgLawsonSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+            return $this->render('requestgsppmonthlydeduction', [
+                'model' => $model,
+				'model2'=>$model2,
+				'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
+            ]);
+    }
+public function actionRequestgsppMonthdeductionform()
+    {
+        $model = new \frontend\modules\repayment\models\LoanRepayment();
+		$model->scenario='gspp_monthly_deduction_request';
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            return $this->redirect(['monthly-deductions-response']);
+        } else {
+            return $this->render('requestgsppmonthlydeductionform', [
+                'model' => $model,
+            ]);
+        }
     }
 	
 }

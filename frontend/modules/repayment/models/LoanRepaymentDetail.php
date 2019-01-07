@@ -1177,7 +1177,7 @@ public static function getOutstandingFullPaid($applicantID,$loan_given_to){
 		}		
         return $amount;
         }
-public static function insertRepaymentDetailsGSPP($amount,$check_number,$Votecode,$CheckDate){
+public static function insertRepaymentDetailsGSPP($amount,$check_number,$Votecode,$CheckDate,$vote_number,$Vote_name,$sub_vote,$sub_vote_name,$lawson_loan_balance,$deduction_code,$deduction_description,$first_name,$middle_name,$last_name){
 	if(self::find()->where(['lawson_payment_date'=>$CheckDate,'check_number'=>$check_number])->count()==0){	
 	$loanRepayment=\frontend\modules\repayment\models\LoanRepayment::find()->where(['lowason_check_date'=>$CheckDate,'vote_number'=>$Votecode])->one();
 	$loan_repayment_id=$loanRepayment->loan_repayment_id;
@@ -1185,10 +1185,10 @@ public static function insertRepaymentDetailsGSPP($amount,$check_number,$Votecod
 	$applicantID=\frontend\modules\repayment\models\EmployedBeneficiary::getEmployeeByCheckNumber($check_number)->applicant_id;
 	$loan_summary_id=\frontend\modules\repayment\models\EmployedBeneficiary::getEmployeeByCheckNumber($check_number)->loan_summary_id;
 	$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
- self::insertGSPPpayments($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$amount,$check_number,$CheckDate);	
+ self::insertGSPPpayments($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$amount,$check_number,$CheckDate,$vote_number,$Vote_name,$sub_vote,$sub_vote_name,$lawson_loan_balance,$deduction_code,$deduction_description,$first_name,$middle_name,$last_name);	
 }	
 	}
-public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$amount,$check_number,$CheckDate){
+public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$applicantID,$loan_given_to,$amount,$check_number,$CheckDate,$vote_number,$Vote_name,$sub_vote,$sub_vote_name,$lawson_loan_balance,$deduction_code,$deduction_description,$first_name,$middle_name,$last_name){
         $moder=new EmployedBeneficiary();
 		$details_PNT=$moder->getPNTsetting();
 		$PNT_V=$details_PNT->rate; 
@@ -1231,7 +1231,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$LAF_v,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,	
         ])->execute();
 		}
         //-----------------END FOR LAF----        
@@ -1287,7 +1297,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$penalty_v,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,		
         ])->execute();
 		}
 		if($vrfTopay >=0){
@@ -1299,7 +1319,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$vrfTopay,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,		
         ])->execute();
 		}
         //-----END for VRF---
@@ -1313,7 +1343,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$amount_remained2,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,		
         ])->execute();
 		}
         //---end---
@@ -1328,7 +1368,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$outstandingPrincipalLoan,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,		
         ])->execute();
 		}
 		//end to pay principal
@@ -1344,7 +1394,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$finalVrfTopay,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,		
         ])->execute();
 		}else{
 		Yii::$app->db->createCommand()
@@ -1355,7 +1415,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$vrf,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,	
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,		
         ])->execute();
 		}
 		}
@@ -1370,7 +1440,17 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         'amount' =>$amount,
         'loan_summary_id' =>$loan_summary_id,
         'lawson_payment_date'=>$CheckDate,
-        'check_number'=>$check_number,		
+        'check_number'=>$check_number,
+        'vote_number'=>$vote_number,
+		'Vote_name'=>$Vote_name,
+		'sub_vote'=>$sub_vote,
+		'sub_vote_name'=>$sub_vote_name,
+		'lawson_loan_balance'=>$lawson_loan_balance,
+		'deduction_code'=>$deduction_code,
+		'deduction_description'=>$deduction_description,
+		'first_name'=>$first_name,
+		'middle_name'=>$middle_name,
+		'last_name'=>$last_name,		
         ])->execute();	
 }
 }
@@ -1389,5 +1469,36 @@ public static function getAmountPaidGSPP($CheckDate){
                 . "FROM loan_repayment_detail  INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE  loan_repayment_detail.lawson_payment_date='$CheckDate' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->one();
 		$amount=$details->amount;
 		\frontend\modules\repayment\models\GepgLawson::updateAll(['amount'=>$amount], 'check_date="'.$CheckDate.'"');
+        }
+public static function getAmountPaidGSPPsummary($CheckDate,$GSPPamountSummary){		
+		$gsppTotalAmount = \frontend\modules\repayment\models\LawsonMonthlyDeduction::findBySql("SELECT SUM(DeductionAmount) AS DeductionAmount "
+                . "FROM lawson_monthly_deduction WHERE  CheckDate='$CheckDate'")->one();
+		$DeductionAmount=$gsppTotalAmount->DeductionAmount;
+		if($GSPPamountSummary==$DeductionAmount){$amount_status=1;}else{$amount_status=2;}
+		\frontend\modules\repayment\models\GepgLawson::updateAll(['gspp_totalAmount'=>$GSPPamountSummary,'gspp_detailAmount'=>$DeductionAmount,'amount_status'=>$amount_status], 'check_date="'.$CheckDate.'"');
+        }
+public static function checkRepaymentAndGSPPamount($CheckDate){		
+		$gsppGepgDetails = \frontend\modules\repayment\models\GepgLawson::findBySql("SELECT amount,gspp_totalAmount,amount_status "
+                . "FROM gepg_lawson WHERE  check_date ='$CheckDate'")->one();
+		$repaymentAmount=$gsppGepgDetails->amount;
+		$gsppSummaryAmount=$gsppGepgDetails->gspp_totalAmount;
+		$amount_status=$gsppGepgDetails->amount_status;
+		if($amount_status==1){
+			if($repaymentAmount==$gsppSummaryAmount){
+		$amount_status1=3;}else{$amount_status1=4;}
+		\frontend\modules\repayment\models\GepgLawson::updateAll(['amount_status'=>$amount_status1], 'check_date="'.$CheckDate.'"');
+		}		
+        }
+public static function checkGepgStatus(){		
+		$gsppGepgDetails = \frontend\modules\repayment\models\GepgLawson::findBySql("SELECT bill_number,amount "
+                . "FROM gepg_lawson WHERE  status ='0' AND amount_status='3'")->one();
+		$bill_number=$gsppGepgDetails->bill_number;
+		$amount=$gsppGepgDetails->amount;
+		
+		if($bill_number !='' && $amount !=''){
+			$controlNumber="9911100".mt_rand (10000,50000);
+			$date_control_received=date("Y-m-d H:i:s");
+\frontend\modules\repayment\models\LoanRepayment::generalFunctControlNumber($bill_number,$controlNumber,$date_control_received);
+		}		
         }		
 }		
