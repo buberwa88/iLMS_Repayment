@@ -42,7 +42,7 @@ class LawsonMonthlyDeduction extends \yii\db\ActiveRecord
     {
         return [
             [['ActualBalanceAmount', 'DeductionAmount'], 'number'],
-            [['CheckDate', 'DateHired', 'created_at','deduction_month'], 'safe'],
+            [['CheckDate', 'DateHired', 'created_at','deduction_month','Deptcode'], 'safe'],
             [['CheckNumber', 'DeductionDesc', 'DeptName', 'FirstName', 'LastName', 'MiddleName', 'NationalId', 'VoteName'], 'string', 'max' => 100],
             [['DeductionCode', 'Votecode'], 'string', 'max' => 50],
             [['Sex'], 'string', 'max' => 4],
@@ -73,11 +73,12 @@ class LawsonMonthlyDeduction extends \yii\db\ActiveRecord
             'Votecode' => 'Votecode',
             'created_at' => 'Created At',
 			'deduction_month'=>'deduction_month',
+			'Deptcode'=>'Deptcode',
         ];
     }
-	public static function insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month){
+	public static function insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month,$Deptcode){
 	if(self::find()->where(['CheckDate'=>$CheckDate,'CheckNumber'=>$CheckNumber])->count()==0){	
-Yii::$app->db->createCommand("INSERT IGNORE INTO lawson_monthly_deduction(ActualBalanceAmount,CheckDate ,CheckNumber,DateHired, 	DeductionAmount,DeductionCode,DeductionDesc,DeptName,FirstName,LastName,MiddleName,NationalId,Sex,VoteName,Votecode,created_at,deduction_month) VALUES('$ActualBalanceAmount','$CheckDate','$CheckNumber','$DateHired','$DeductionAmount','$DeductionCode','$DeductionDesc','$DeptName','$FirstName','$LastName','$MiddleName','$NationalId','$Sex','$VoteName','$Votecode','$created_at','$deduction_month')")->execute();	
+Yii::$app->db->createCommand("INSERT IGNORE INTO lawson_monthly_deduction(ActualBalanceAmount,CheckDate ,CheckNumber,DateHired, 	DeductionAmount,DeductionCode,DeductionDesc,DeptName,FirstName,LastName,MiddleName,NationalId,Sex,VoteName,Votecode,created_at,deduction_month,Deptcode) VALUES('$ActualBalanceAmount','$CheckDate','$CheckNumber','$DateHired','$DeductionAmount','$DeductionCode','$DeductionDesc','$DeptName','$FirstName','$LastName','$MiddleName','$NationalId','$Sex','$VoteName','$Votecode','$created_at','$deduction_month','$Deptcode')")->execute();	
 }	
 	}
 }

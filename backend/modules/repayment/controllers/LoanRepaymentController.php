@@ -547,6 +547,7 @@ class LoanRepaymentController extends Controller
     }
 public function actionMonthlyDeductionsResponse() {
 \frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions);
+\frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeductionSummary($fileDeductionsSummary);
 $sms="Operation Successful!";
 Yii::$app->getSession()->setFlash('success', $sms);	
 return $this->redirect(['requestgspp-monthdeduction']);	
@@ -572,6 +573,37 @@ public function actionRequestgsppMonthdeductionform()
             return $this->redirect(['monthly-deductions-response']);
         } else {
             return $this->render('requestgsppmonthlydeductionform', [
+                'model' => $model,
+            ]);
+        }
+    }
+public function actionPaymentsgsppAllemployees() {
+\frontend\modules\repayment\models\LoanRepayment::requestAllEmployeesMonthly($fileAllEmployMonthly);
+$sms="Operation Successful!";
+Yii::$app->getSession()->setFlash('success', $sms);	
+return $this->redirect(['requestgspp-allemploydeduct']);	
+}
+public function actionRequestgsppAllemploydeduct()
+    {
+        $model = new \frontend\modules\repayment\models\LoanRepayment();
+		$model2 = new GepgLawson();
+		$searchModel = new GepgLawsonSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+            return $this->render('requestgsppallemployees', [
+                'model' => $model,
+				'model2'=>$model2,
+				'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
+            ]);
+    }
+public function actionRequestgsppAllemploydeductform()
+    {
+        $model = new \frontend\modules\repayment\models\LoanRepayment();
+		$model->scenario='gspp_monthly_deduction_request';
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            return $this->redirect(['paymentsgspp-allemployees']);
+        } else {
+            return $this->render('requestgsppallemploydeductform', [
                 'model' => $model,
             ]);
         }

@@ -107,7 +107,7 @@ class LoanRepaymentDetailSearch extends LoanRepaymentDetail {
     }
 	public function searchAllEmployerRepaymentsknown($params) {
         $query = LoanRepaymentDetail::find()
-		        ->select('bill_number,control_number,receipt_number,payment_status,loan_repayment_detail_id,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_given_to,prepaid_id,SUM(loan_repayment_detail.amount) as amount,loan_repayment_detail.check_number,loan_repayment_detail.first_name,loan_repayment_detail.middle_name,loan_repayment_detail.last_name,loan_repayment.employer_id')
+		        ->select('bill_number,control_number,receipt_number,payment_status,loan_repayment_detail_id,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_given_to,prepaid_id,loan_repayment_detail.amount as amount,loan_repayment_detail.check_number,loan_repayment_detail.first_name,loan_repayment_detail.middle_name,loan_repayment_detail.last_name,loan_repayment_detail.Vote_name,loan_repayment.employer_id')
 	            ->andWhere(['>','loan_repayment_detail.applicant_id','0'])
 				->andWhere(['>','loan_repayment.employer_id','0'])
                 ->groupBy('loan_repayment_detail.applicant_id');
@@ -159,7 +159,7 @@ class LoanRepaymentDetailSearch extends LoanRepaymentDetail {
 	
 	public function searchAllEmployerRepaymentsunknown($params) {
         $query = LoanRepaymentDetail::find()
-		        ->select('bill_number,control_number,receipt_number,payment_status,loan_repayment_detail_id,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_given_to,prepaid_id,loan_repayment_detail.amount,loan_repayment_detail.check_number,loan_repayment_detail.first_name,loan_repayment_detail.middle_name,loan_repayment_detail.last_name,loan_repayment.employer_id')
+		        ->select('bill_number,control_number,receipt_number,payment_status,loan_repayment_detail_id,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_given_to,prepaid_id,loan_repayment_detail.amount,loan_repayment_detail.check_number,loan_repayment_detail.first_name,loan_repayment_detail.middle_name,loan_repayment_detail.last_name,loan_repayment_detail.Vote_name,loan_repayment.employer_id')
 				->where(['loan_repayment_detail.applicant_id' => null])
 	            //->andWhere(['>','loan_repayment_detail.applicant_id','0'])
 				->andWhere(['>','loan_repayment.employer_id','0']);
@@ -185,6 +185,54 @@ class LoanRepaymentDetailSearch extends LoanRepaymentDetail {
 		//$query->joinWith("applicant");
         //$query->joinwith(["applicant", "applicant.user"]);
 		$query->joinWith(["loanRepayment", "loanRepayment.employer"]);
+
+        $query->andFilterWhere([
+            'loan_repayment_detail_id' => $this->loan_repayment_detail_id,
+            'loan_repayment_id' => $this->loan_repayment_id,
+            'applicant_id' => $this->applicant_id,
+            'loan_repayment_item_id' => $this->loan_repayment_item_id,
+            'amount' => $this->amount,
+            'applicantName' => $this->applicantName,
+            'loan_summary_id' => $this->loan_summary_id,
+			'loan_repayment.payment_category' => $this->payment_category,
+			'loan_repayment.payment_status' => $this->payment_status,
+        ]);
+
+        $query->andFilterWhere(['like', 'applicant_id', $this->applicant_id])
+                ->andFilterWhere(['like', 'loan_repayment_detail.first_name', $this->first_name])
+                ->andFilterWhere(['like', 'loan_repayment_detail.middle_name', $this->middle_name])
+                ->andFilterWhere(['like', 'loan_repayment_detail.last_name', $this->last_name])
+				->andFilterWhere(['like', 'loan_repayment.control_number', $this->control_number])
+				->andFilterWhere(['like', 'loan_repayment.date_bill_generated', $this->date_bill_generated])
+				->andFilterWhere(['like', 'employer.employer_name', $this->employer_id]);
+                //->andFilterWhere(['like', 'applicant.f4indexno', $this->f4indexno]);
+
+        return $dataProvider;
+    }
+public function searchAllEmployerRepaymentsunknownEmployerNotselfBeneficiary($params) {
+        $query = LoanRepaymentDetail::find()
+		        ->select('bill_number,control_number,receipt_number,payment_status,loan_repayment_detail_id,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_given_to,prepaid_id,loan_repayment_detail.amount,loan_repayment_detail.check_number,loan_repayment_detail.first_name,loan_repayment_detail.middle_name,loan_repayment_detail.last_name,loan_repayment_detail.Vote_name,loan_repayment.employer_id')
+				->where(['loan_repayment_detail.applicant_id' => null])
+				->andWhere(['or',
+					['=','loan_repayment.employer_id','0'],
+					['loan_repayment.employer_id' => null]
+				]);
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->joinWith("loanRepayment");
 
         $query->andFilterWhere([
             'loan_repayment_detail_id' => $this->loan_repayment_detail_id,

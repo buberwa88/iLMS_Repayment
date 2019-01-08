@@ -273,6 +273,15 @@ ALTER TABLE `gepg_lawson` ADD `gspp_detailAmount` DECIMAL(38,2) NULL DEFAULT NUL
 ALTER TABLE `gepg_lawson` CHANGE `amount_status` `amount_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked(both gspp amount) and ok, 2: Checked (both gspp amount) and Differ, 3: Checked(gspp and repayment amount) and ok, 4: Checked(gspp and repayment amount) and differ,';
 ALTER TABLE `loan_repayment` ADD `payment_category` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Self Employer, 1: Treasury' AFTER `lowason_check_date`;
 ALTER TABLE `loan_repayment` CHANGE `payment_category` `payment_category` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Self Employer/Beneficiary, 1: Treasury';
+------------------08-01-2019-------------
+ALTER TABLE `lawson_monthly_deduction` ADD `Deptcode` VARCHAR(50) NULL DEFAULT NULL AFTER `DeductionDesc`;
+ALTER TABLE `gvt_employee` ADD `applicant_id` INT(11) NULL DEFAULT NULL AFTER `payment_date`;
+ALTER TABLE `gvt_employee` ADD `applicant_date_found` DATETIME NULL DEFAULT NULL AFTER `applicant_id`, ADD `action_taken` VARCHAR(200) NULL DEFAULT NULL AFTER `applicant_date_found`;
+ALTER TABLE `gvt_employee` ADD `action_taken_date` DATETIME NULL DEFAULT NULL AFTER `action_taken`, ADD `action_taken_by` INT(11) NULL DEFAULT NULL AFTER `action_taken_date`;
+ALTER TABLE `gvt_employee` ADD `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked' AFTER `payment_date`, ADD `checked_at` DATETIME NULL DEFAULT NULL AFTER `checked_status`;
+ALTER TABLE `gvt_employee` CHANGE `gvt_employee` `gvt_employee_id` INT(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `gvt_employee` CHANGE `applicant_date_found` `applicant_date_checked` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `gvt_employee` ADD `matching` VARCHAR(100) NULL DEFAULT NULL AFTER `action_taken_by`;
 -----------------------------------------------------
 ======================================================
 

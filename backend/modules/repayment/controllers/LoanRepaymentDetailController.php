@@ -197,4 +197,18 @@ class LoanRepaymentDetailController extends Controller
             'modelBatch' => $model2,
         ]);
     }
+	public function actionPaymentsunknownEmployers()
+    {
+    	$this->layout="default_main";
+        $model1 = new LoanRepaymentSearch();
+        $model2 = new LoanRepayment();
+        $searchModel = new LoanRepaymentDetailSearch();
+        $dataProvider = $searchModel->searchAllEmployerRepaymentsunknownEmployerNotselfBeneficiary(Yii::$app->request->queryParams);        
+        return $this->render('paymentsunderemployersunknown', [
+            'model' => $model1,
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'modelBatch' => $model2,
+        ]);
+    }
 }

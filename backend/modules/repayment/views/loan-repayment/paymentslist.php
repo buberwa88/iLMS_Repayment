@@ -23,18 +23,23 @@ $this->params['breadcrumbs'][] = $this->title;
                 'items' => [
 
                     [
-                        'label' => 'Employer Repayment Summary',
+                        'label' => 'Employer Rep. Summary',
                         'content' => '<iframe src="' . yii\helpers\Url::to(['loan-repayment/payments-employer']) . '" width="100%" height="600px" style="border: 0"></iframe>',
                         'id' => '1',
                     ],
 					[
-                        'label' => 'Employer Repayment Details(Ben. Found)',
+                        'label' => 'Employer Rep. Details(Ben. Found)',
                         'content' => '<iframe src="' . yii\helpers\Url::to(['loan-repayment-detail/paymentsunderemployersknown']) . '" width="100%" height="600px" style="border: 0"></iframe>',
                         'id' => '1',
                     ],
 					[
-                        'label' => 'Employer Repayment Details(Ben. Unknown)',
+                        'label' => 'Employer Rep. Details(Ben. Unknown)',
                         'content' => '<iframe src="' . yii\helpers\Url::to(['loan-repayment-detail/paymentsunderemployersunknown']) . '" width="100%" height="600px" style="border: 0"></iframe>',
+                        'id' => '1',
+                    ],
+					[
+                        'label' => 'Rep. Unknown Employer',
+                        'content' => '<iframe src="' . yii\helpers\Url::to(['loan-repayment-detail/paymentsunknown-employers']) . '" width="100%" height="600px" style="border: 0"></iframe>',
                         'id' => '1',
                     ],
 					[

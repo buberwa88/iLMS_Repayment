@@ -42,6 +42,14 @@ $attributes = [
 				return $data->last_name;
             }, $model),
                 'labelColOptions' => ['style' => 'width:20%'],
+				'valueColOptions' => ['style' => 'width:30%'],
+            ],
+			[
+                'label' => 'Employer',
+                'value'=>call_user_func(function ($data){
+				return $data->Vote_name;
+            }, $model),
+                'labelColOptions' => ['style' => 'width:20%'],                
             ],
         ],
     ],

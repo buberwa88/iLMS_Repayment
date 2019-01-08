@@ -1220,6 +1220,10 @@ public function getCheckApplicantNamesMatch($applicant_id,$firstname, $middlenam
         return Applicant::findBySql("SELECT applicant.* FROM applicant INNER JOIN user ON user.user_id=applicant.user_id "
                         . "WHERE  user.firstname='$firstname' AND user.middlename='$middlename' AND user.surname='$surname' AND applicant.applicant_id='$applicant_id' ORDER BY applicant.applicant_id DESC")->count();
     }
+public function getCheckApplicantNamesMatchByNIN($NIN) {
+        return Applicant::findBySql("SELECT applicant.* FROM applicant INNER JOIN user ON user.user_id=applicant.user_id "
+                        . "WHERE  applicant.NID='$NIN'")->count();
+    }
 public static function getAllApplicantsCount($regNo,$f4CompletionYear) {
           return \frontend\modules\application\models\Applicant::findBySql("SELECT applicant.* FROM education INNER JOIN application ON education.application_id=application.application_id INNER JOIN applicant ON applicant.applicant_id=application.applicant_id  WHERE  education.registration_number='$regNo' AND education.completion_year='$f4CompletionYear' AND education.level='OLEVEL'")->count();
     }
@@ -1264,5 +1268,23 @@ return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_benef
 }
 public static function getEmployeeByCheckNumberandEmployer_id($checkNumber,$employer_id){
 return self::findBySql("SELECT * FROM employed_beneficiary WHERE  employed_beneficiary.employee_id='$checkNumber' AND employed_beneficiary.employer_id='$employer_id'")->one();
-}	
+}
+public static function getCheckApplicantNamesMatchGeneral($firstname, $middlename, $surname,$NIN) {
+	if($NIN !=''){
+        $results=Applicant::findBySql("SELECT applicant.applicant_id FROM applicant INNER JOIN user ON user.user_id=applicant.user_id "
+                        . "WHERE applicant.NID='$NIN'")->one();
+	if(count($results)==0){
+	$results=Applicant::findBySql("SELECT applicant.applicant_id FROM applicant INNER JOIN user ON user.user_id=applicant.user_id "
+                        . "WHERE user.firstname='$firstname' AND user.middlename='$middlename' AND user.surname='$surname'")->one();	
+	}					
+	}else{
+	$results=Applicant::findBySql("SELECT applicant.applicant_id FROM applicant INNER JOIN user ON user.user_id=applicant.user_id "
+                        . "WHERE user.firstname='$firstname' AND user.middlename='$middlename' AND user.surname='$surname'")->one();	
+	}
+return $results;	
+    }
+public static function getCheckApplicantNamesMatchGSPP($firstname, $middlename, $surname) {
+        return User::findBySql("SELECT user.* FROM user "
+                        . "WHERE  firstname='$firstname' AND middlename='$middlename' AND surname='$surname'")->count();
+    }	
 }
