@@ -31,7 +31,7 @@ use kartik\date\DatePicker;
                   'options' => [
                       //'data' => ArrayHelper::map(\common\models\User::find()->where(['login_type' => 5])->all(), 'user_id', 'firstname'),
                       
-                      'data' =>ArrayHelper::map(\backend\modules\report\models\Report::findBySql('SELECT id,name FROM `report` INNER JOIN report_access ON report.id=report_access.report_id WHERE report_access.user_role="Help_Desk_Only"')->asArray()->all(), 'id', 'name'),
+                      'data' =>ArrayHelper::map(\backend\modules\report\models\Report::findBySql('SELECT id,name FROM `report` INNER JOIN report_access ON report.id=report_access.report_id WHERE report_access.user_role="Repayment" OR report_access.user_role="repayment_supper"')->asArray()->all(), 'id', 'name'),
                       
                        'options' => [
                         'prompt' => 'Select',

@@ -86,7 +86,14 @@ class Report extends \yii\db\ActiveRecord {
     const ROW_FILTER_13 = '13';
     const ROW_FILTER_14 = '14';
     const ROW_FILTER_15 = '15';
+    const GSPP_EMPLOYEES_STATUS = 'gspp_employees_status';
     const IMAGE_PLACEHOLDER = '/images/default_user.jpg';
+
+    const CHECKED_STATUS_0 = 0;
+    const CHECKED_STATUS_1 = 1;
+    const CHECKED_STATUS_2 = 2;
+    const CHECKED_STATUS_3 = 3;
+    const CHECKED_STATUS_4 = 4;
 
     public static function tableName() {
         return 'report';
@@ -141,6 +148,7 @@ class Report extends \yii\db\ActiveRecord {
     public $total_allocated_amount;
     public $admissionWithNoInstitutions;
 	public $export_mode;
+	public $pageRedirect;
 
     public function rules() {
         return [
@@ -150,7 +158,7 @@ class Report extends \yii\db\ActiveRecord {
             [['sql', 'sql_subquery', 'sql_subquery_where', 'sql_subquery_order', 'sql_subquery_group', 'sql_where', 'sql_order', 'sql_group', 'sql_params', 'package'], 'string'],
             [['name', 'file_name', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'field7', 'field8', 'field9', 'field10', 'field11', 'field12', 'field13', 'field14', 'field15', 'type1', 'type2', 'type3', 'type4', 'type5', 'type6', 'type7', 'type8', 'type9', 'type10', 'type11', 'type12', 'type13', 'type14', 'type15', 'description1', 'description2', 'description3', 'description4', 'description5', 'description6', 'description7', 'description8', 'description9', 'description10', 'description11', 'description12', 'description13', 'description14', 'description15', 'column1', 'column2', 'column3', 'column4', 'column5', 'column6', 'column7', 'column8', 'column9', 'column10', 'column11', 'column12', 'column13', 'column14', 'column15', 'condition1', 'condition2', 'condition3', 'condition4', 'condition5', 'condition6', 'condition7', 'condition8', 'condition9', 'condition10', 'condition11', 'condition12', 'condition13', 'condition14', 'condition15', 'field_data_type1', 'field_data_type2', 'field_data_type3', 'field_data_type4', 'field_data_type5', 'field_data_type6', 'field_data_type7', 'field_data_type8', 'field_data_type9', 'field_data_type10', 'field_data_type11', 'field_data_type12', 'field_data_type13', 'field_data_type14', 'field_data_type15'], 'string', 'max' => 200],
             [['name', 'file_name', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'field7', 'field8', 'field9', 'field10', 'field11', 'field12', 'field13', 'field14', 'field15'], 'validateReportFields'],
-            [['sql_subquery', 'file_field', 'input1', 'input2', 'input3', 'input4', 'input5', 'input6', 'input7', 'input8', 'input9', 'input10', 'input11', 'input12', 'input13', 'input14', 'input15', 'reportStartDate', 'reportEndDate', 'pageOrientation', 'uniqid', 'exportCategory', 'pageIdentify','student_printview','printing_mode','export_mode'], 'safe'],
+            [['sql_subquery', 'file_field', 'input1', 'input2', 'input3', 'input4', 'input5', 'input6', 'input7', 'input8', 'input9', 'input10', 'input11', 'input12', 'input13', 'input14', 'input15', 'reportStartDate', 'reportEndDate', 'pageOrientation', 'uniqid', 'exportCategory', 'pageIdentify','student_printview','printing_mode','export_mode','pageRedirect'], 'safe'],
         ];
     }
 
@@ -305,6 +313,16 @@ class Report extends \yii\db\ActiveRecord {
         ];
     }
 
+    static function gsppEmployeeStatus() {
+        return [
+            self::CHECKED_STATUS_0 => 'Pending',
+            self::CHECKED_STATUS_1 => 'Beneficiary not onrepayment',
+            self::CHECKED_STATUS_2 => 'Beneficiary onrepayment',
+            self::CHECKED_STATUS_3 => 'Nonbeneficiary',
+            self::CHECKED_STATUS_4 => 'Checked employee onrepayment',
+        ];
+    }
+
     static function getOperatorsType() {
         return [self::OPERATOR_TEXT => 'Text',
             //self::OPERATOR_NUMERICAL => 'Numerical',
@@ -324,6 +342,7 @@ class Report extends \yii\db\ActiveRecord {
             self::OPERATOR_CLUSTER_DEFINITION => 'Cluster Name',
 			self::OPERATOR_BOX_FILE => 'Box File',
 			self::OPERATOR_USER => 'User',
+            self::GSPP_EMPLOYEES_STATUS => 'GSPP Employee Status',
         ];
     }
 

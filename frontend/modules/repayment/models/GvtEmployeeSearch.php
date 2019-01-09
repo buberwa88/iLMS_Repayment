@@ -18,8 +18,8 @@ class GvtEmployeeSearch extends GvtEmployee
     public function rules()
     {
         return [
-            [['gvt_employee'], 'integer'],
-            [['vote_number', 'vote_name', 'Sub_vote', 'sub_vote_name', 'check_number', 'f4indexno', 'first_name', 'middle_name', 'surname', 'sex', 'NIN', 'employment_date', 'created_at', 'payment_date'], 'safe'],
+            [['gvt_employee_id'], 'integer'],
+            [['vote_number', 'vote_name', 'Sub_vote', 'sub_vote_name', 'check_number', 'f4indexno', 'first_name', 'middle_name', 'surname', 'sex', 'NIN', 'employment_date', 'created_at', 'payment_date','checked_status'], 'safe'],
         ];
     }
 
@@ -59,10 +59,11 @@ class GvtEmployeeSearch extends GvtEmployee
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'gvt_employee' => $this->gvt_employee,
+            'gvt_employee_id' => $this->gvt_employee_id,
             'employment_date' => $this->employment_date,
             'created_at' => $this->created_at,
             'payment_date' => $this->payment_date,
+            'checked_status' => $this->checked_status,
         ]);
 
         $query->andFilterWhere(['like', 'vote_number', $this->vote_number])

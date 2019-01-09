@@ -16,6 +16,8 @@ use frontend\modules\repayment\models\LoanRepaymentPrepaid;
 use frontend\modules\repayment\models\LoanRepaymentPrepaidSearch;
 use frontend\modules\repayment\models\GepgLawson;
 use frontend\modules\repayment\models\GepgLawsonSearch;
+use frontend\modules\repayment\models\GvtEmployee;
+use frontend\modules\repayment\models\GvtEmployeeSearch;
 
 /**
  * LoanRepaymentController implements the CRUD actions for LoanRepayment model.
@@ -585,13 +587,13 @@ return $this->redirect(['requestgspp-allemploydeduct']);
 }
 public function actionRequestgsppAllemploydeduct()
     {
-        $model = new \frontend\modules\repayment\models\LoanRepayment();
-		$model2 = new GepgLawson();
-		$searchModel = new GepgLawsonSearch();
+        //$model = new \frontend\modules\repayment\models\LoanRepayment();
+		$model = new GvtEmployee();
+		$searchModel = new GvtEmployeeSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
             return $this->render('requestgsppallemployees', [
                 'model' => $model,
-				'model2'=>$model2,
+				//'model2'=>$model2,
 				'searchModel' => $searchModel,
                 'dataProvider' => $dataProvider,
             ]);
@@ -607,6 +609,13 @@ public function actionRequestgsppAllemploydeductform()
                 'model' => $model,
             ]);
         }
+    }
+    public function actionCheckgsppBeneficiary()
+    {
+            \frontend\modules\repayment\models\GvtEmployee::checkBeneficiaryFromGSPPemployees();
+        $sms="Operation Successful!";
+        Yii::$app->getSession()->setFlash('success', $sms);
+        return $this->redirect(['requestgspp-allemploydeduct']);
     }
 	
 }

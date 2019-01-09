@@ -83,34 +83,55 @@ public static function insertGSPPallEmployeesMonthly($CheckDate,$CheckNumber,$Da
 Yii::$app->db->createCommand("INSERT IGNORE INTO gvt_employee(vote_number,vote_name,Sub_vote,sub_vote_name, 	check_number,first_name,middle_name,surname,sex,NIN,employment_date,created_at,payment_date) VALUES('$Votecode','$VoteName','$Deptcode','$DeptName','$CheckNumber','$FirstName','$MiddleName','$LastName','$Sex','$NationalId','$DateHired','$created_at','$CheckDate')")->execute();	
 }
 }
-public static function checkBeneficiaryFromGSPPemployees(){
-$results=self::findBySql("SELECT gvt_employee_id,first_name,middle_name,surname,NIN,sex FROM gvt_employee WHERE  checked_status='0' ORDER BY gvt_employee_id ASC")->all();
-$i=0;
-foreach($results as $employeeDetail){
-	$matching='Matching=>';
-	$first_name=$employeeDetail->first_name;
-	$middle_name=$employeeDetail->middle_name;
-	$surname=$employeeDetail->surname;
-	$NIN=$employeeDetail->NIN;
-	$sex=$employeeDetail->sex;
-	$gvt_employee_id=$employeeDetail->gvt_employee_id;
-	$applicant_date_found=date("Y-m-d H:i:s");
-	$applicant_id=\frontend\modules\repayment\models\EmployedBeneficiary::getCheckApplicantNamesMatchGeneral($first_name, $middle_name, $surname,$NIN)->applicant_id;
-	//echo $applicant_id;exit;
-	if($applicant_id !=''){
-		if($NIN !=''){
-	$matchingByNINCount=\frontend\modules\repayment\models\EmployedBeneficiary::getCheckApplicantNamesMatchByNIN($NIN);
-	}
-	$matchingCount=$matchingByNINCount;
-	if($matchingByNINCount==0){
-	$matchingCount=\frontend\modules\repayment\models\EmployedBeneficiary::getCheckApplicantNamesMatchGSPP($first_name, $middle_name, $surname);	
-	}
-	$matching .=$matchingCount;
-  self::updateAll(['applicant_id'=>$applicant_id,'applicant_date_checked'=>$applicant_date_found,'checked_status'=>1,'matching'=>$matching], 'gvt_employee_id="'.$gvt_employee_id.'"'); 
-	}else{
-	self::updateAll(['applicant_date_checked'=>$applicant_date_found,'checked_status'=>1], 'gvt_employee_id="'.$gvt_employee_id.'"');	
-	}
-	++$i;
-}	
+public static function checkBeneficiaryFromGSPPemployees()
+{
+    $results = self::findBySql("SELECT gvt_employee_id,first_name,middle_name,surname,NIN,sex,check_number FROM gvt_employee WHERE  checked_status='0' ORDER BY gvt_employee_id ASC")->all();
+    $i = 0;
+    if (count($results) > 0) {
+    foreach ($results as $employeeDetail) {
+        $matching = 'Matching=>';
+        $first_name = $employeeDetail->first_name;
+        $middle_name = $employeeDetail->middle_name;
+        $surname = $employeeDetail->surname;
+        $NIN = $employeeDetail->NIN;
+        $sex = $employeeDetail->sex;
+        $gvt_employee_id = $employeeDetail->gvt_employee_id;
+        $applicant_date_found = date("Y-m-d H:i:s");
+        $checkNumber = $employeeDetail->check_number;
+        $countExistRepayment = \frontend\modules\repayment\models\LoanRepaymentDetail::checkCheckNumberExists($checkNumber);
+        if ($countExistRepayment == 0) {
+            $applicant_id = \frontend\modules\repayment\models\EmployedBeneficiary::getCheckApplicantNamesMatchGeneral($first_name, $middle_name, $surname, $NIN)->applicant_id;
+            //echo $applicant_id;exit;
+            if ($applicant_id != '') {
+                if ($NIN != '') {
+                    $matchingByNINCount = \frontend\modules\repayment\models\EmployedBeneficiary::getCheckApplicantNamesMatchByNIN($NIN);
+                }
+                $matchingCount = $matchingByNINCount;
+                if ($matchingByNINCount == 0) {
+                    $matchingCount = \frontend\modules\repayment\models\EmployedBeneficiary::getCheckApplicantNamesMatchGSPP($first_name, $middle_name, $surname);
+                }
+                $matching .= $matchingCount;
+                //check if has repayment
+                $date = date("Y-m-d");
+                $loan_given_to = \frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+                $repayment = \backend\modules\repayment\models\LoanRepaymentDetail::getBeneficiaryRepaymentByDate($applicant_id, date("Y-m-d 23:59:59", strtotime($date)), $loan_given_to);
+                //end check
+                if (!$repayment) {
+                    $principalAmount = \common\models\LoanBeneficiary::getPrincipleNoReturn($applicant_id);
+                    if ($principalAmount > 0) {
+                        self::updateAll(['applicant_id' => $applicant_id, 'applicant_date_checked' => $applicant_date_found, 'checked_status' => 1, 'matching' => $matching], 'gvt_employee_id="' . $gvt_employee_id . '"');
+                    }
+                } else {
+                    self::updateAll(['applicant_id' => $applicant_id, 'applicant_date_checked' => $applicant_date_found, 'checked_status' => 2, 'matching' => $matching], 'gvt_employee_id="' . $gvt_employee_id . '"');
+                }
+            } else {
+                self::updateAll(['applicant_date_checked' => $applicant_date_found, 'checked_status' => 3], 'gvt_employee_id="' . $gvt_employee_id . '"');
+            }
+        } else {
+            self::updateAll(['applicant_date_checked' => $applicant_date_found, 'checked_status' => 4], 'gvt_employee_id="' . $gvt_employee_id . '"');
+        }
+        ++$i;
+    }
+}
 	}
 }

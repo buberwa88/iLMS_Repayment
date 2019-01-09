@@ -83,6 +83,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     </h5>
                 </center>
                 <!--<br/>-->
+                <?= $form->field($model, 'pageRedirect')->label(false)->hiddenInput(['value' =>'/report/popular-report/view', 'readOnly' => 'readOnly']) ?>
                 <?= $form->field($model, 'uniqid')->label(false)->hiddenInput(['value' => $model->id, 'readOnly' => 'readOnly']) ?>
                 <?= $form->field($model, 'pageIdentify')->label(false)->hiddenInput(['value'=>'3','readOnly'=>'readOnly']) ?>
                 <?php

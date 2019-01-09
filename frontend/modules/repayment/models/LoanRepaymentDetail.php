@@ -1500,5 +1500,8 @@ public static function checkGepgStatus(){
 			$date_control_received=date("Y-m-d H:i:s");
 \frontend\modules\repayment\models\LoanRepayment::generalFunctControlNumber($bill_number,$controlNumber,$date_control_received);
 		}		
-        }		
+        }
+public static function checkCheckNumberExists($checkNumber){
+    return self::findBySql("SELECT * FROM loan_repayment_detail WHERE  check_number='$checkNumber'")->count();
+}
 }		

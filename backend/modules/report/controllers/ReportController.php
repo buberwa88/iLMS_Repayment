@@ -183,10 +183,17 @@ class ReportController extends Controller {
         $model = new Report();
         //$model->scenario='exportReport';
         if ($model->load(Yii::$app->request->post())) {
-//            var_dump($model->attributes);
-//            exit;
+            //var_dump($model->attributes);
+           // exit;
             $category = $model->category;
             $id = $model->uniqid;
+            /*
+            if (isset($_POST['Report'])) {
+                $posted_data = Yii::$app->request->post();
+                $actions = $posted_data['Report']['pageRedirect'];
+            }
+            */
+            $actions = $model->pageRedirect;
             $pageIdentify = $model->pageIdentify;
             $exportCategory = $model->exportCategory;
 			$export_mode = $model->export_mode;
@@ -285,6 +292,24 @@ class ReportController extends Controller {
 								$nameUser=$userVal->firstname." ".$userVal->surname;
                                 $reportFilter = "$fieldValue : $nameUser AND ";
                                 $searchParams['user_id']=$value;
+                            }else if ($typeValue == 'gspp_employees_status') {
+                                if($value==0){
+                                    $reportFilter = "$fieldValue : Pending AND ";
+                                    $searchParams['gspp_employees_status']=$value;
+                                }else if($value==1){
+                                    $reportFilter = "$fieldValue : Beneficiary not onrepayment AND ";
+                                    $searchParams['gspp_employees_status']=$value;
+                                }else if($value==2){
+                                    $reportFilter = "$fieldValue : Beneficiary onrepayment AND ";
+                                    $searchParams['gspp_employees_status']=$value;
+                                }else if($value==3){
+                                    $reportFilter = "$fieldValue : Nonbeneficiary AND ";
+                                    $searchParams['gspp_employees_status']=$value;
+                                }else if($value==4){
+                                    $reportFilter = "$fieldValue : Checked employee onrepayment AND ";
+                                    $searchParams['gspp_employees_status']=$value;
+                                }
+
                             } else {
                                 $reportFilter = "$fieldValue  :  $value AND ";
                             }
@@ -341,9 +366,10 @@ class ReportController extends Controller {
         $dataExists = count($this->reportGenerate($sql));
         if ($dataExists > 0) {
             if ($exportCategory == 1) {
-
+               // print_r($this->reportGenerate($sql));
+               // echo "tele";exit;
                 if ($file_name != '' && $file_name != NULL) {
-                    
+
                     if($modelReportTemplate->printing_mode ==1){
                      $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams]);   
                     }
@@ -386,11 +412,11 @@ class ReportController extends Controller {
                     $sms = "<p>Error: No Template Available</p>";
                     Yii::$app->getSession()->setFlash('danger', $sms);
                     if ($pageIdentify == '1') {
-                        return $this->redirect(['view', 'id' => $id]);
+                        return $this->redirect([$actions, 'id' => $id]);
                     } else if ($pageIdentify == '2') {
-                        return $this->redirect(['view-operation', 'id' => $id]);
+                        return $this->redirect([$actions, 'id' => $id]);
                     } else if ($pageIdentify == '3') {
-                        return $this->redirect(['/report/popular-report/view', 'id' => $id]);
+                        return $this->redirect([$actions, 'id' => $id]);
                     }
                 }
             } else if ($exportCategory == 2) {
@@ -403,33 +429,33 @@ class ReportController extends Controller {
                     $sms = "<p>Error: Missing Report Name</p>";
                     Yii::$app->getSession()->setFlash('danger', $sms);
                     if ($pageIdentify == '1') {
-                        return $this->redirect(['view', 'id' => $id]);
+                        return $this->redirect([$actions, 'id' => $id]);
                     } else if ($pageIdentify == '2') {
-                        return $this->redirect(['view-operation', 'id' => $id]);
+                        return $this->redirect([$actions, 'id' => $id]);
                     } else if ($pageIdentify == '3') {
-                        return $this->redirect(['/report/popular-report/view', 'id' => $id]);
+                        return $this->redirect([$actions, 'id' => $id]);
                     }
                 }
             } else {
                 $sms = "<p>Error: Missing Export Category</p>";
                 Yii::$app->getSession()->setFlash('danger', $sms);
                 if ($pageIdentify == '1') {
-                    return $this->redirect(['view', 'id' => $id]);
+                    return $this->redirect([$actions, 'id' => $id]);
                 } else if ($pageIdentify == '2') {
-                    return $this->redirect(['view-operation', 'id' => $id]);
+                    return $this->redirect([$actions, 'id' => $id]);
                 } else if ($pageIdentify == '3') {
-                    return $this->redirect(['/report/popular-report/view', 'id' => $id]);
+                    return $this->redirect([$actions, 'id' => $id]);
                 }
             }
         } else {
             $sms = "<p>No record found</p>";
             Yii::$app->getSession()->setFlash('danger', $sms);
             if ($pageIdentify == '1') {
-                return $this->redirect(['view', 'id' => $id]);
+                return $this->redirect([$actions, 'id' => $id]);
             } else if ($pageIdentify == '2') {
-                return $this->redirect(['view-operation', 'id' => $id]);
+                return $this->redirect([$actions, 'id' => $id]);
             } else if ($pageIdentify == '3') {
-                return $this->redirect(['/report/popular-report/view', 'id' => $id]);
+                return $this->redirect([$actions, 'id' => $id]);
             }
         }
     }

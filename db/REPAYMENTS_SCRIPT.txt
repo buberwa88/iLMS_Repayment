@@ -180,6 +180,17 @@ ALTER TABLE `employed_beneficiary` CHANGE `uploaded_programme_studied` `uploaded
 ALTER TABLE `employed_beneficiary` CHANGE `programme_level_of_study` `programme_level_of_study` VARCHAR(100) NULL DEFAULT NULL;
 ALTER TABLE `employed_beneficiary` CHANGE `basic_salary` `basic_salary` DECIMAL(15,4) NULL DEFAULT NULL;
 
+
+DROP TABLE IF EXISTS `employer_group`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `employer_group` (
+  `employer_group_id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(100) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`employer_group_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 ALTER TABLE `employer_type` ADD `employer_group_id` INT(11) NOT NULL AFTER `employer_type_id`;
 ALTER TABLE `employed_beneficiary` ADD `traced_by` INT(11) NULL DEFAULT NULL AFTER `LOAN_BENEFICIARY_STATUS`;
 ALTER TABLE `employed_beneficiary` ADD `salary_upload_status` INT NULL DEFAULT NULL AFTER `traced_by`, ADD `salary_upload_fail_reasson` VARCHAR(200) NULL DEFAULT NULL AFTER `salary_upload_status`;
@@ -282,6 +293,10 @@ ALTER TABLE `gvt_employee` ADD `checked_status` TINYINT(2) NOT NULL DEFAULT '0' 
 ALTER TABLE `gvt_employee` CHANGE `gvt_employee` `gvt_employee_id` INT(11) NOT NULL AUTO_INCREMENT;
 ALTER TABLE `gvt_employee` CHANGE `applicant_date_found` `applicant_date_checked` DATETIME NULL DEFAULT NULL;
 ALTER TABLE `gvt_employee` ADD `matching` VARCHAR(100) NULL DEFAULT NULL AFTER `action_taken_by`;
+
+--09-01-2019----
+ALTER TABLE `gvt_employee` CHANGE `checked_status` `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked beneficiary not onrepayment, 2: Checked beneficiary onrepayment, 3: Checked nonbeneficiary';
+ALTER TABLE `gvt_employee` CHANGE `checked_status` `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked beneficiary not onrepayment, 2: Checked beneficiary onrepayment, 3: Checked nonbeneficiary, 4: Checked employee onrepayment';
 -----------------------------------------------------
 ======================================================
 

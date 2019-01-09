@@ -12,108 +12,133 @@ use yii\helpers\Url;
 $this->title = 'Request GSPP All Employees';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<script type="text/javascript">
+    function check_status() {
+        //form-group field-user-verifycode
+        document.getElementById("hidden").style.display = "none";
+        document.getElementById("loader").style.display = "block";
+    }
+</script>
 <div class="employed-beneficiary-index">
 
 <div class="panel panel-info">
 <div class="panel-heading">
 					  <?= Html::encode($this->title) ?>
                         </div>
-                        <div class="panel-body"> 
-<p>
-<?= Html::a('Request GSPP All Employees', ['requestgspp-allemploydeductform'], ['class' => 'btn btn-success','onclick'=>'return  check_status()']) ?>
-</p>
+                        <div class="panel-body">
+                            <div class="block" id="hidden">
+<?= Html::a('Request GSPP All Employees', ['requestgspp-allemploydeductform'], ['class' => 'btn btn-success']) ?>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<?= Html::a('Check Beneficiary', ['checkgspp-beneficiary'], ['class' => 'btn btn-warning','onclick'=>'return  check_status()']) ?>
+<br/><br/>
 <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
-            'bill_number',
-            //'amount',
 			[
-            'attribute'=>'amount',
-            'format'=>'raw',    
+            'attribute'=>'first_name',
+			'label'=>'First Name',
+            'format'=>'raw',
             'value' =>function($model)
             {
-                 return $model->amount;
-            }, 
-            'format'=>['decimal',2],
-			'hAlign' => 'right',
+                 return $model->first_name;
+            },
             ],
-            'control_number',
-			[
-            'attribute'=>'control_number_date',
-			'label'=>'Bill Date',
-            'format'=>'raw',    
-            'value' =>function($model)
-            {
-                 return date("Y-m-d",strtotime($model->control_number_date));
-            }, 
+            [
+                'attribute'=>'middle_name',
+                'label'=>'Middle Name',
+                'format'=>'raw',
+                'value' =>function($model)
+                {
+                    return $model->middle_name;
+                },
             ],
-            'deduction_month',
-			/*
-			[
-            'attribute'=>'status',
-			'label'=>'GePG Status',
-            'format'=>'raw',    
-            'value' =>function($model)
-            {
-                 return $model->status;
-            }, 
+            [
+                'attribute'=>'surname',
+                'label'=>'Last Name',
+                'format'=>'raw',
+                'value' =>function($model)
+                {
+                    return $model->surname;
+                },
             ],
-			*/
-			[
-                        'attribute' => 'status',
-						'label'=>'GePG Status',
-                        'value' => function ($model) {
-                           if($model->status==0){
-							 $status='<p class="btn green"; style="color:red;">Pending</p>';   
-							}else if($model->status==1){
-							 $status='<p class="btn green"; style="color:green;">Sent to GePG</p>'; 
-							}else if($model->status==2){
-							$status='<p class="btn green"; style="color:green;">Sent to GSPP</p>';	
-							}
-							return $status;
-                        },
-                        'filterType' => GridView::FILTER_SELECT2,
-                        'filter' => [0=>'Pending',1=>'Sent to GePG',2=>'Sent to GSPP'],
-                        'filterWidgetOptions' => [
-                            'pluginOptions' => ['allowClear' => true],
-                        ],
-                        'filterInputOptions' => ['placeholder' => 'Search'],
-                        'format' => 'raw'
+            [
+                'attribute'=>'check_number',
+                'label'=>'Check #',
+                'format'=>'raw',
+                'value' =>function($model)
+                {
+                    return $model->check_number;
+                },
             ],
-			
-            'gepg_date',
-						
-			[
-                        'attribute' => 'amount_status',
-						'label'=>'Amount Status',
-                        'value' => function ($model) {
-                           if($model->amount_status==0){
-							 $status='<p class="btn green"; style="color:red;">Pending</p>';   
-							}else if($model->amount_status==1){
-							 $status='<p class="btn green"; style="color:green;">GSPP amount OK</p>'; 
-							}else if($model->amount_status==2){
-							$status='<p class="btn green"; style="color:green;">GSPP amount differ</p>';	
-							}else if($model->amount_status==3){
-							$status='<p class="btn green"; style="color:green;">Overall amount OK</p>';	
-							}else if($model->amount_status==4){
-							$status='<p class="btn green"; style="color:green;">Overall amount differ</p>';	
-							}
-							return $status;
-                        },
-                        'filterType' => GridView::FILTER_SELECT2,
-                        'filter' => [0=>'Pending',1=>'GSPP amount OK',2=>'GSPP amount differ',3=>'Overall amount OK',4=>'Overall amount differ'],
-                        'filterWidgetOptions' => [
-                            'pluginOptions' => ['allowClear' => true],
-                        ],
-                        'filterInputOptions' => ['placeholder' => 'Search'],
-                        'format' => 'raw'
-            ],
+            [
+                'attribute'=>'employment_date',
+                'label'=>'Employment Date',
+                'format'=>'raw',
+                'value' =>function($model)
+                {
+                    if($model->employment_date !='0000-00-00' && $model->employment_date !=''){
+                        return $model->employment_date;
+                    }else{
+                        return '';
+                    }
 
+                },
+            ],
+            [
+                'attribute'=>'vote_name',
+                'label'=>'Employer',
+                'format'=>'raw',
+                'value' =>function($model)
+                {
+                    return $model->vote_name;
+                },
+            ],
+            [
+                'attribute'=>'sub_vote_name',
+                'label'=>'Department',
+                'format'=>'raw',
+                'value' =>function($model)
+                {
+                    return $model->sub_vote_name;
+                },
+            ],
+			[
+                        'attribute' => 'checked_status',
+						'label'=>'Status',
+                        'value' => function ($model) {
+                           if($model->checked_status==0){
+							 $status='<p class="btn green"; style="color:red;">Pending</p>';   
+							}else if($model->checked_status==1){
+							 $status='<p class="btn green"; style="color:green;">Beneficiary not onrepayment</p>';
+							}else if($model->checked_status==2){
+							$status='<p class="btn green"; style="color:green;">Beneficiary onrepayment</p>';
+							}else if($model->checked_status==3){
+                               $status='<p class="btn green"; style="color:green;">Nonbeneficiary</p>';
+                           }else if($model->checked_status==4){
+                               $status='<p class="btn green"; style="color:green;">Checked employee onrepayment</p>';
+                           }
+							return $status;
+                        },
+                        'filterType' => GridView::FILTER_SELECT2,
+                        'filter' => [0=>'Pending',1=>'Beneficiary not onrepayment',2=>'Beneficiary onrepayment',3=>'Nonbeneficiary',4=>'Checked employee onrepayment'],
+                        'filterWidgetOptions' => [
+                            'pluginOptions' => ['allowClear' => true],
+                        ],
+                        'filterInputOptions' => ['placeholder' => 'Search'],
+                        'format' => 'raw'
+            ],
             //['class' => 'yii\grid\ActionColumn'],
         ],
+    'hover' => true,
+    'condensed' => true,
+    'floatHeader' => true,
     ]); ?>
+                            </div>
+    <p>
+     <center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center>
+    </p>
 </div>
        </div>
 </div>

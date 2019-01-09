@@ -60,6 +60,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     </h5>
                 </center>
                 <!--<br/>-->
+                <?= $form->field($model, 'pageRedirect')->label(false)->hiddenInput(['value' =>'/report/report/view', 'readOnly' => 'readOnly']) ?>
                 <?= $form->field($model, 'uniqid')->label(false)->hiddenInput(['value' => $model->id, 'readOnly' => 'readOnly']) ?>
                 <?= $form->field($model, 'pageIdentify')->label(false)->hiddenInput(['value' => '1', 'readOnly' => 'readOnly']) ?>
                 <?php
@@ -448,7 +449,37 @@ $this->params['breadcrumbs'][] = $this->title;
                             echo "</div></div>";
                         }
                         ?>
-						
+                        <?php
+                        if ($type == 'gspp_employees_status') {
+                            echo "<div class='form-group'><label class='col-md-3'>" . $model->$field . "</label><div class='col-md-9'>";
+                            //echo CHtml::textField($name, $value, array('size' => 20,'class'=>'form-control'));
+                            ?>
+                            <?php
+                            echo Form::widget([
+                                'model' => $model,
+                                'form' => $form,
+                                'columns' => 1,
+                                'attributes' => [ // 2 column layout
+                                    $name => ['type' => Form::INPUT_WIDGET,
+                                        'widgetClass' => \kartik\select2\Select2::className(),
+                                        'label' => false,
+                                        'options' => [
+                                            'data' => \backend\modules\report\models\Report::gsppEmployeeStatus(),
+                                            'options' => [
+                                                'prompt' => 'Select Status',
+                                            ],
+                                            'pluginOptions' => [
+                                                'allowClear' => true
+                                            ],
+                                        ],
+                                    ],
+                                ]
+                            ]);
+                            ?>
+                            <?php
+                            echo "</div></div>";
+                        }
+                        ?>
 						<?php
                         if ($type == 'form_storage') {
                             echo "<div class='form-group'><label class='col-md-3'>" . $model->$field . "</label><div class='col-md-9'>";
@@ -511,7 +542,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             echo "</div></div>";
                         }
                         ?>
-						
                         <?php
                         /* else{
                           echo "<div class='form-group'><label class='col-md-3'>".$model->$field."</div><label class='col-md-3'>
