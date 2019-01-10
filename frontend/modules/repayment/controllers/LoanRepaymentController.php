@@ -2,6 +2,7 @@
 
 namespace frontend\modules\repayment\controllers;
 
+use common\components\GSSPSoapClient;
 use Yii;
 use frontend\modules\repayment\models\LoanRepayment;
 use frontend\modules\repayment\models\LoanRepaymentSearch;
@@ -1187,6 +1188,17 @@ return $pdf->render();
     }
 	
 public function actionMonthlyDeductionsResponse() {
+    $paymentMonth='';
+    $paymentYear='';
+    echo $paymentMonth."--Month---Year".$paymentYear;exit;
+    $config=[];
+    $config['password']='User@Heslb123';
+    $config['username']='HESLB';
+    $config['url']='192.168.1.104/gsppApi/api/'; //192.168.1.104/gsppApi/api/deductions/getdeductions?month=10&year=2018
+
+        $GSSPSoapClient=new GSSPSoapClient($config);
+        //exit;
+        $fileDeductions=$GSSPSoapClient->getMonthlyGSSPHelbPayment($paymentMonth, $paymentYear);
 \frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions);
 $sms="Operation Successful!";
 Yii::$app->getSession()->setFlash('success', $sms);	

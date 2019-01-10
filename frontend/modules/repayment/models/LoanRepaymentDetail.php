@@ -62,7 +62,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         return [
             [['loan_repayment_id', 'applicant_id', 'loan_summary_id'], 'required'],
             [['loan_repayment_id', 'applicant_id', 'loan_repayment_item_id', 'loan_summary_id'], 'integer'],
-            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id','loan_given_to','updated_at','updated_by','receipt_date','vote_number','Vote_name','sub_vote','sub_vote_name','lawson_loan_balance','lawson_payment_date','deduction_code','deduction_description'], 'safe'],
+            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id','loan_given_to','updated_at','updated_by','receipt_date','vote_number','Vote_name','sub_vote','sub_vote_name','lawson_loan_balance','lawson_payment_date','deduction_code','deduction_description','financial_year_id','academic_year_id'], 'safe'],
             [['amount'], 'number','on' => 'adjustAmount'],
 			[['amount'], 'required', 'on' => 'adjustAmount'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
@@ -1045,7 +1045,7 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         //-----------------END FOR LAF----        
         //----here for penalty portion----
 
-			$penalty_v = $amount_remained * $PNT_V;
+			$penalty_v = round($amount_remained * $PNT_V,2);
             if(($penalty >= $penalty_v) && $penalty > 0){
              $penalty_v=$penalty_v;   
             }else if((($penalty < $penalty_v) && $penalty > 0)){
@@ -1057,7 +1057,7 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         //---end for penalty----
         //-----here for VRF portion----
         if($outstandingPrincipalLoan > 0){
-         $vrf_portion=$amount_remained1 * $VRF_V; 
+         $vrf_portion=round($amount_remained1 * $VRF_V,2);
          if($vrf >=$vrf_portion){
          $vrfTopay=$vrf_portion; 
          $amount_remained2=$amount_remained1-$vrfTopay;
@@ -1247,7 +1247,7 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         //-----------------END FOR LAF----        
         //----here for penalty portion----
 
-			$penalty_v = $amount_remained * $PNT_V;
+			$penalty_v = round($amount_remained * $PNT_V,2);
             if(($penalty >= $penalty_v) && $penalty > 0){
              $penalty_v=$penalty_v;   
             }else if((($penalty < $penalty_v) && $penalty > 0)){
@@ -1259,7 +1259,7 @@ public static function insertGSPPpayments($loan_summary_id,$loan_repayment_id,$a
         //---end for penalty----
         //-----here for VRF portion----
         if($outstandingPrincipalLoan > 0){
-         $vrf_portion=$amount_remained1 * $VRF_V; 
+         $vrf_portion=round($amount_remained1 * $VRF_V,2);
          if($vrf >=$vrf_portion){
          $vrfTopay=$vrf_portion; 
          $amount_remained2=$amount_remained1-$vrfTopay;
@@ -1470,12 +1470,12 @@ public static function getAmountPaidGSPP($CheckDate){
 		$amount=$details->amount;
 		\frontend\modules\repayment\models\GepgLawson::updateAll(['amount'=>$amount], 'check_date="'.$CheckDate.'"');
         }
-public static function getAmountPaidGSPPsummary($CheckDate,$GSPPamountSummary){		
+public static function getAmountPaidGSPPsummary($CheckDate,$GSPPamountSummary,$finalTotalEmployees){
 		$gsppTotalAmount = \frontend\modules\repayment\models\LawsonMonthlyDeduction::findBySql("SELECT SUM(DeductionAmount) AS DeductionAmount "
                 . "FROM lawson_monthly_deduction WHERE  CheckDate='$CheckDate'")->one();
 		$DeductionAmount=$gsppTotalAmount->DeductionAmount;
 		if($GSPPamountSummary==$DeductionAmount){$amount_status=1;}else{$amount_status=2;}
-		\frontend\modules\repayment\models\GepgLawson::updateAll(['gspp_totalAmount'=>$GSPPamountSummary,'gspp_detailAmount'=>$DeductionAmount,'amount_status'=>$amount_status], 'check_date="'.$CheckDate.'"');
+		\frontend\modules\repayment\models\GepgLawson::updateAll(['gspp_totalAmount'=>$GSPPamountSummary,'gspp_detailAmount'=>$DeductionAmount,'amount_status'=>$amount_status,'totalEmployees'=>$finalTotalEmployees], 'check_date="'.$CheckDate.'"');
         }
 public static function checkRepaymentAndGSPPamount($CheckDate){		
 		$gsppGepgDetails = \frontend\modules\repayment\models\GepgLawson::findBySql("SELECT amount,gspp_totalAmount,amount_status "
@@ -1499,9 +1499,32 @@ public static function checkGepgStatus(){
 			$controlNumber="9911100".mt_rand (10000,50000);
 			$date_control_received=date("Y-m-d H:i:s");
 \frontend\modules\repayment\models\LoanRepayment::generalFunctControlNumber($bill_number,$controlNumber,$date_control_received);
-		}		
+		}
+    self::sendControlNumberToGSPP();
         }
 public static function checkCheckNumberExists($checkNumber){
     return self::findBySql("SELECT * FROM loan_repayment_detail WHERE  check_number='$checkNumber'")->count();
 }
+    public static function sendControlNumberToGSPP(){
+        $gsppGepgDetails = \frontend\modules\repayment\models\GepgLawson::findBySql("SELECT control_number,amount,gepg_date,deduction_month,totalEmployees "
+            . "FROM gepg_lawson WHERE  status ='1' AND amount_status='3'")->one();
+        $control_number=$gsppGepgDetails->control_number;
+        $amount=$gsppGepgDetails->amount;
+        $gepg_date=$gsppGepgDetails->gepg_date;
+        $deduction_month=$gsppGepgDetails->deduction_month;
+        $deductionCode=465;
+        $totalEmployees=$gsppGepgDetails->totalEmployees;
+
+        if($control_number !='' && $amount !='' && $gepg_date !='' && $deduction_month !='' && $totalEmployees !=''){
+            $data=[];
+            $data['deductionCode']=$deductionCode;
+            $data['controlNo']=$control_number;
+            $data['amount']=$amount;
+            $data['totalEmployees']=$totalEmployees;
+            $data['controlNoDate']=$controlNoDate;
+            $data['deductionMonth']=date("m",strtotime($deduction_month));
+            $data['deductionYear']=date("Y",strtotime($deduction_month));
+            \common\components\GSPPSoapClient::sendControlNumber($data);
+        }
+    }
 }		

@@ -18,6 +18,7 @@ use frontend\modules\repayment\models\GepgLawson;
 use frontend\modules\repayment\models\GepgLawsonSearch;
 use frontend\modules\repayment\models\GvtEmployee;
 use frontend\modules\repayment\models\GvtEmployeeSearch;
+use common\components\GSPPSoapClient;
 
 /**
  * LoanRepaymentController implements the CRUD actions for LoanRepayment model.
@@ -547,8 +548,20 @@ class LoanRepaymentController extends Controller
         ]);    
         
     }
-public function actionMonthlyDeductionsResponse() {
-\frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions);
+public function actionMonthlyDeductionsResponse($paymentMonth,$paymentYear) {
+    //$paymentMonth='';
+    //$paymentYear='';
+    //echo $paymentMonth."--Month---Year".$paymentYear;exit;
+    $config=[];
+    $config['password']='User@Heslb123';
+    $config['username']='HESLB';
+    $config['url']='192.168.1.104/gsppApi/api/'; //192.168.1.104/gsppApi/api/deductions/getdeductions?month=10&year=2018
+
+    $GSSPSoapClient=new GSPPSoapClient($config);
+    //exit;
+    $fileDeductions=$GSSPSoapClient->getMonthlyGSSPHelbPayment($paymentMonth, $paymentYear);
+    $fileDeductionsSummary=$GSSPSoapClient->getMonthlyDeductionSummary($paymentMonth, $paymentYear);
+\frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions,$paymentMonth,$paymentYear);
 \frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeductionSummary($fileDeductionsSummary);
 $sms="Operation Successful!";
 Yii::$app->getSession()->setFlash('success', $sms);	
@@ -572,14 +585,28 @@ public function actionRequestgsppMonthdeductionform()
         $model = new \frontend\modules\repayment\models\LoanRepayment();
 		$model->scenario='gspp_monthly_deduction_request';
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            return $this->redirect(['monthly-deductions-response']);
+            $paymentYear=date("Y",strtotime($model->payment_date));
+            $paymentMonth=date("m",strtotime($model->payment_date));
+            return $this->redirect(['monthly-deductions-response','paymentYear'=>$paymentYear,'paymentMonth'=>$paymentMonth]);
         } else {
             return $this->render('requestgsppmonthlydeductionform', [
                 'model' => $model,
             ]);
         }
     }
-public function actionPaymentsgsppAllemployees() {
+public function actionPaymentsgsppAllemployees($paymentMonth, $paymentYear) {
+
+//$paymentMonth='';
+    //$paymentYear='';
+    //echo $paymentMonth."--Month---Year".$paymentYear;exit;
+    $config=[];
+    $config['password']='User@Heslb123';
+    $config['username']='HESLB';
+    $config['url']='192.168.1.104/gsppApi/api/'; //192.168.1.104/gsppApi/api/deductions/getdeductions?month=10&year=2018
+
+    $GSSPSoapClient=new GSPPSoapClient($config);
+    //exit;
+    $fileAllEmployMonthly=$GSSPSoapClient->getPaidEmployees($paymentMonth, $paymentYear);
 \frontend\modules\repayment\models\LoanRepayment::requestAllEmployeesMonthly($fileAllEmployMonthly);
 $sms="Operation Successful!";
 Yii::$app->getSession()->setFlash('success', $sms);	
@@ -603,7 +630,9 @@ public function actionRequestgsppAllemploydeductform()
         $model = new \frontend\modules\repayment\models\LoanRepayment();
 		$model->scenario='gspp_monthly_deduction_request';
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            return $this->redirect(['paymentsgspp-allemployees']);
+            $paymentYear=date("Y",strtotime($model->payment_date));
+            $paymentMonth=date("m",strtotime($model->payment_date));
+            return $this->redirect(['paymentsgspp-allemployees','paymentYear'=>$paymentYear,'paymentMonth'=>$paymentMonth]);
         } else {
             return $this->render('requestgsppallemploydeductform', [
                 'model' => $model,

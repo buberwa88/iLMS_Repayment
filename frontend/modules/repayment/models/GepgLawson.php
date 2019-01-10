@@ -33,7 +33,7 @@ class GepgLawson extends \yii\db\ActiveRecord
     {
         return [
             [['amount'], 'number'],
-            [['control_number_date', 'deduction_month', 'gepg_date','check_date','gspp_totalAmount','amount_status','gspp_detailAmount'], 'safe'],
+            [['control_number_date', 'deduction_month', 'gepg_date','check_date','gspp_totalAmount','amount_status','gspp_detailAmount','totalEmployees'], 'safe'],
             [['status'], 'integer'],
             [['bill_number', 'control_number'], 'string', 'max' => 100],
         ];
@@ -57,9 +57,13 @@ class GepgLawson extends \yii\db\ActiveRecord
 			'gspp_totalAmount'=>'gspp_totalAmount',
 			'amount_status'=>'amount_status',
 			'gspp_detailAmount'=>'gspp_detailAmount',
+            'totalEmployees'=>'totalEmployees',
         ];
     }
 	public static function getBillTreasuryPerYear($year){
 	return self::findBySql("SELECT * FROM gepg_lawson WHERE  deduction_month LIKE '%$year'")->count();
 }
+    public static function confirmControlNumberSentToGSPP($controlNumber){
+     self::updateAll(['status'=>2], 'control_number="'.$controlNumber.'"');
+    }
 }

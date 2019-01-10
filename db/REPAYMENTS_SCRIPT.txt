@@ -297,6 +297,9 @@ ALTER TABLE `gvt_employee` ADD `matching` VARCHAR(100) NULL DEFAULT NULL AFTER `
 --09-01-2019----
 ALTER TABLE `gvt_employee` CHANGE `checked_status` `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked beneficiary not onrepayment, 2: Checked beneficiary onrepayment, 3: Checked nonbeneficiary';
 ALTER TABLE `gvt_employee` CHANGE `checked_status` `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked beneficiary not onrepayment, 2: Checked beneficiary onrepayment, 3: Checked nonbeneficiary, 4: Checked employee onrepayment';
+----10-01-2019--
+ALTER TABLE `gepg_lawson` ADD `totalEmployees` INT(11) NULL DEFAULT NULL AFTER `amount_status`;
+ALTER TABLE `loan_repayment_detail` ADD `financial_year_id` INT(11) NULL DEFAULT NULL AFTER `check_number`, ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `financial_year_id`;
 -----------------------------------------------------
 ======================================================
 
