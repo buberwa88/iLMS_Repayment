@@ -549,22 +549,24 @@ class LoanRepaymentController extends Controller
         
     }
 public function actionMonthlyDeductionsResponse($paymentMonth,$paymentYear) {
-    //$paymentMonth='';
-    //$paymentYear='';
-    //echo $paymentMonth."--Month---Year".$paymentYear;exit;
-    $config=[];
-    $config['password']='User@Heslb123';
-    $config['username']='HESLB';
-    $config['url']='192.168.1.104/gsppApi/api/'; //192.168.1.104/gsppApi/api/deductions/getdeductions?month=10&year=2018
+    $config=['uri'=>Yii::$app->params['GSPP']['api_base_uri'],
+             'username'=>Yii::$app->params['GSPP']['auth_username'],
+             'password'=>Yii::$app->params['GSPP']['auth_password'],
+            ]; //192.168.1.104/gsppApi/api/deductions/getdeductions?month=10&year=2018
 
     $GSSPSoapClient=new GSPPSoapClient($config);
-    //exit;
     $fileDeductions=$GSSPSoapClient->getMonthlyGSSPHelbPayment($paymentMonth, $paymentYear);
+	var_dump($fileDeductions);exit;
     $fileDeductionsSummary=$GSSPSoapClient->getMonthlyDeductionSummary($paymentMonth, $paymentYear);
-\frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions,$paymentMonth,$paymentYear);
-\frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeductionSummary($fileDeductionsSummary);
-$sms="Operation Successful!";
-Yii::$app->getSession()->setFlash('success', $sms);	
+    if($fileDeductions !='' && $fileDeductionsSummary !='') {
+        \frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions, $paymentMonth, $paymentYear);
+        \frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeductionSummary($fileDeductionsSummary);
+        $sms="Operation Successful!";
+        Yii::$app->getSession()->setFlash('success', $sms);
+    }else {
+        $sms = "No Record Found!";
+        Yii::$app->getSession()->setFlash('warning', $sms);
+    }
 return $this->redirect(['requestgspp-monthdeduction']);	
 }
 public function actionRequestgsppMonthdeduction()
@@ -602,7 +604,7 @@ public function actionPaymentsgsppAllemployees($paymentMonth, $paymentYear) {
     $config=[];
     $config['password']='User@Heslb123';
     $config['username']='HESLB';
-    $config['url']='192.168.1.104/gsppApi/api/'; //192.168.1.104/gsppApi/api/deductions/getdeductions?month=10&year=2018
+    $config['url']='192.168.5.194/gsppApipilot/api/'; //192.168.1.104/gsppApi/api/deductions/getdeductions?month=10&year=2018
 
     $GSSPSoapClient=new GSPPSoapClient($config);
     //exit;

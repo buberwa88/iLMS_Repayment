@@ -661,7 +661,17 @@ public static function createAutomaticBillsPrepaid(){
 } 
 public static function checkGePGlawsonBill($deduction_month,$bill_number,$amount,$control_number_date,$CheckDate){
 	if(\frontend\modules\repayment\models\GepgLawson::find()->where(['deduction_month'=>$deduction_month,'check_date'=>$CheckDate])->count()==0){
- Yii::$app->db->createCommand("INSERT IGNORE INTO  gepg_lawson(bill_number,amount,deduction_month,control_number_date,check_date) VALUES('$bill_number','$amount','$deduction_month','$control_number_date','$CheckDate')")->execute();	
+ //Yii::$app->db->createCommand("INSERT IGNORE INTO  gepg_lawson(bill_number,amount,deduction_month,control_number_date,check_date) VALUES('$bill_number','$amount','$deduction_month','$control_number_date','$CheckDate')")->execute();
+
+        Yii::$app->db->createCommand()
+            ->insert('gepg_lawson', [
+                'bill_number' => $bill_number,
+                'amount' => $amount,
+                'deduction_month' => $deduction_month,
+                'control_number_date' => $control_number_date,
+                'check_date' => $CheckDate,
+            ])->execute();
+
 }	
 	}
 public static function createBillPerEmployer($amount,$deduction_month,$Votecode,$VoteName,$CheckDate,$paymentStatus){
@@ -672,7 +682,22 @@ public static function createBillPerEmployer($amount,$deduction_month,$Votecode,
 	$gepg_lawson_id=$getBillDetails->gepg_lawson_id;
 	$bill_number=$getBillDetails->bill_number;
 	$date_bill_generated=$getBillDetails->control_number_date;
- Yii::$app->db->createCommand("INSERT INTO  loan_repayment(employer_id,bill_number,amount,payment_date,date_bill_generated,vote_number,Vote_name,gepg_lawson_id,lowason_check_date,payment_status,payment_category) VALUES('$getEmployerIDx','$bill_number','$amount','$deduction_month','$date_bill_generated','$Votecode','$VoteName','$gepg_lawson_id','$CheckDate','$paymentStatus','1')")->execute();	
+ //Yii::$app->db->createCommand("INSERT INTO  loan_repayment(employer_id,bill_number,amount,payment_date,date_bill_generated,vote_number,Vote_name,gepg_lawson_id,lowason_check_date,payment_status,payment_category) VALUES('$getEmployerIDx','$bill_number','$amount','$deduction_month','$date_bill_generated','$Votecode','$VoteName','$gepg_lawson_id','$CheckDate','$paymentStatus','1')")->execute();
+
+        Yii::$app->db->createCommand()
+            ->insert('loan_repayment', [
+                'employer_id' => $getEmployerIDx,
+                'bill_number' => $bill_number,
+                'amount' => $amount,
+                'payment_date' => $deduction_month,
+                'date_bill_generated' => $date_bill_generated,
+                'vote_number' => $Votecode,
+                'Vote_name' => $VoteName,
+                'gepg_lawson_id' => $gepg_lawson_id,
+                'lowason_check_date' => $CheckDate,
+                'payment_status' => $paymentStatus,
+                'payment_category' =>'1',
+            ])->execute();
 }	
 	}
 public static function updateTotalAmountUnderEmployerBillGSPP($totalAmount1,$loan_repayment_id){

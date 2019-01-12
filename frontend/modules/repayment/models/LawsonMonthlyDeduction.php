@@ -78,7 +78,29 @@ class LawsonMonthlyDeduction extends \yii\db\ActiveRecord
     }
 	public static function insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month,$Deptcode){
 	if(self::find()->where(['CheckDate'=>$CheckDate,'CheckNumber'=>$CheckNumber])->count()==0){	
-Yii::$app->db->createCommand("INSERT IGNORE INTO lawson_monthly_deduction(ActualBalanceAmount,CheckDate ,CheckNumber,DateHired, 	DeductionAmount,DeductionCode,DeductionDesc,DeptName,FirstName,LastName,MiddleName,NationalId,Sex,VoteName,Votecode,created_at,deduction_month,Deptcode) VALUES('$ActualBalanceAmount','$CheckDate','$CheckNumber','$DateHired','$DeductionAmount','$DeductionCode','$DeductionDesc','$DeptName','$FirstName','$LastName','$MiddleName','$NationalId','$Sex','$VoteName','$Votecode','$created_at','$deduction_month','$Deptcode')")->execute();	
+//Yii::$app->db->createCommand("INSERT IGNORE INTO lawson_monthly_deduction(ActualBalanceAmount,CheckDate ,CheckNumber,DateHired, 	DeductionAmount,DeductionCode,DeductionDesc,DeptName,FirstName,LastName,MiddleName,NationalId,Sex,VoteName,Votecode,created_at,deduction_month,Deptcode) VALUES('$ActualBalanceAmount','$CheckDate','$CheckNumber','$DateHired','$DeductionAmount','$DeductionCode','$DeductionDesc','$DeptName','$FirstName','$LastName','$MiddleName','$NationalId','$Sex','$VoteName','$Votecode','$created_at','$deduction_month','$Deptcode')")->execute();
+
+        Yii::$app->db->createCommand()
+            ->insert('lawson_monthly_deduction', [
+                'ActualBalanceAmount' => $ActualBalanceAmount,
+                'CheckDate' => $CheckDate,
+                'CheckNumber' => $CheckNumber,
+                'DateHired' => $DateHired,
+                'DeductionAmount' => $DeductionAmount,
+                'DeductionCode' => $DeductionCode,
+                'DeductionDesc' => $DeductionDesc,
+                'DeptName' => $DeptName,
+                'FirstName' => $FirstName,
+                'LastName' => $LastName,
+                'MiddleName' => $MiddleName,
+                'NationalId' => $NationalId,
+                'Sex' => $Sex,
+                'VoteName' => $VoteName,
+                'Votecode' => $Votecode,
+                'created_at'=>$created_at,
+                'deduction_month'=>$deduction_month,
+                'Deptcode'=>$Deptcode,
+            ])->execute();
 }	
 	}
 }

@@ -2,6 +2,11 @@
 
 return [
 'necta_url'=>'http://localhost/necta_api/pub/results.php/necta',
+    'GSPP'=>[
+        'api_base_uri'=>'http://192.168.5.194/gsppApipilot/api/',
+        'auth_username'=>'HESLB',
+        'auth_password'=>'User@Heslb123',
+    ]
 ];
 
 //return [
