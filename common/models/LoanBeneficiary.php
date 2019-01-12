@@ -59,7 +59,8 @@ class LoanBeneficiary extends \yii\db\ActiveRecord {
     public $end_date;
     public $loan_no;
     public $name;
-
+    public $schedule_principal_amount;
+    
     public function rules() {
         return [
             [['firstname', 'middlename', 'surname', 'date_of_birth', 'place_of_birth', 'learning_institution_id', 'physical_address', 'phone_number', 'email_address', 'password', 'district', 'confirm_password', 'sex', 'region'], 'required', 'on' => 'loanee_registration'],

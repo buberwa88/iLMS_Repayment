@@ -50,15 +50,12 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord {
     public $short_name;
     public $payment_date;
     public $receipt_date;
-	public $control_number;
-	public $payment_status;
-	public $employer_id;
 
     public function rules() {
         return [
             [['loan_repayment_id', 'applicant_id', 'loan_summary_id'], 'required'],
             [['loan_repayment_id', 'applicant_id', 'loan_repayment_item_id', 'loan_summary_id'], 'integer'],
-            [['applicantName', 'totalLoanees', 'firstname', 'middlename', 'surname', 'amount', 'totalAmount', 'f4indexno', 'principal', 'penalty', 'LAF', 'vrf', 'totalLoan', 'outstandingDebt', 'loan_given_to', 'updated_at', 'updated_by','vote_number','Vote_name','sub_vote','sub_vote_name','lawson_loan_balance','lawson_payment_date','deduction_code','deduction_description','control_number','payment_status','employer_id','financial_year_id','academic_year_id'], 'safe'],
+            [['applicantName', 'totalLoanees', 'firstname', 'middlename', 'surname', 'amount', 'totalAmount', 'f4indexno', 'principal', 'penalty', 'LAF', 'vrf', 'totalLoan', 'outstandingDebt', 'loan_given_to', 'updated_at', 'updated_by', 'vote_number', 'Vote_name', 'sub_vote', 'sub_vote_name', 'lawson_loan_balance', 'lawson_payment_date', 'deduction_code', 'deduction_description', 'control_number', 'payment_status', 'employer_id', 'financial_year_id', 'academic_year_id'], 'safe'],
             //[['amount'], 'number'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
             [['loan_repayment_item_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\repayment\models\LoanRepaymentItem::className(), 'targetAttribute' => ['loan_repayment_item_id' => 'loan_repayment_item_id']],
@@ -388,6 +385,29 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord {
     public static function getBeneficiaryRepaymentByDate($applicantID, $date, $loan_given_to) {
         $date = date("Y-m-d 23:59:59", strtotime($date));
         return self::findBySql("SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,loan_repayment_detail.vrf_accumulated,loan_repayment_detail.loan_summary_id,loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.receipt_number,loan_repayment.receipt_date,loan_repayment.payment_status FROM loan_repayment_detail INNER JOIN  loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id WHERE loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment.payment_status=1 AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.receipt_date <='" . $date . "' ORDER BY loan_repayment_detail_id ASC")->one();
+    }
+
+    /*
+     * checks if the beneficiary has repayment
+     */
+
+    public static function beneficiaryRepaymentExistByDate($applicantID, $date, $loan_given_to) {
+        $date = date("Y-m-d 23:59:59", strtotime($date));
+        $sql = "SELECT loan_repayment_detail.amount,loan_repayment_detail.loan_repayment_item_id,
+                loan_repayment_detail.vrf_accumulated,
+                loan_repayment_detail.loan_summary_id,
+                loan_repayment_detail.treasury_payment_id,loan_repayment.employer_id,
+                loan_repayment.bill_number,loan_repayment.control_number,
+                loan_repayment.receipt_number,loan_repayment.receipt_date,
+                loan_repayment.payment_status FROM loan_repayment_detail 
+                INNER JOIN  loan_repayment 
+                ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id
+                WHERE loan_repayment_detail.applicant_id='$applicantID' 
+                AND loan_repayment.payment_status=1 
+                AND loan_repayment_detail.loan_given_to='$loan_given_to' 
+                AND loan_repayment.receipt_date <='" . $date . "'
+                ORDER BY loan_repayment_detail_id ASC";
+        return self::findBySql($sql)->exists();
     }
 
     public static function getPaidItemUnderActiveLoanSummaryPerBeneficiary($applicantID, $loanSummaryID, $itemCode_id) {
