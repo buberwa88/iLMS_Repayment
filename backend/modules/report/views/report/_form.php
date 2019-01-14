@@ -134,7 +134,7 @@ echo $form->errorSummary($model);
                                     ],
 									'printing_mode' => ['type' => Form::INPUT_WIDGET,
                                         'widgetClass' => \kartik\select2\Select2::className(),
-                                        'label' =>'Printing Mode',
+                                        'label' =>'PDF Printing Mode',
                                         'options' => [
                                             'data' => ['0' => 'Normal', '1' => 'Template'],
                                             'options' => [
@@ -143,6 +143,19 @@ echo $form->errorSummary($model);
                                             'pluginOptions' => [
                                                     'allowClear' => true
                                                 ],
+                                        ],
+                                    ],
+                                    'excel_printing_mode' => ['type' => Form::INPUT_WIDGET,
+                                        'widgetClass' => \kartik\select2\Select2::className(),
+                                        'label' =>'Excel Printing Mode',
+                                        'options' => [
+                                            'data' => ['0' => 'Normal', '1' => 'Template'],
+                                            'options' => [
+                                                'prompt' => 'Select',
+                                            ],
+                                            'pluginOptions' => [
+                                                'allowClear' => true
+                                            ],
                                         ],
                                     ],
                                 ]

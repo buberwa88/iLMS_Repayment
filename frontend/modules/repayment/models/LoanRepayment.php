@@ -774,7 +774,7 @@ $si=0;
 	$Votecode = trim($ArrayOfDeductions['Votecode']);
 
   //echo 'ActualBalanceAmount: '.$ActualBalanceAmount."<br/>".'CheckDate: '.$CheckDate."<br/>"."CheckNumber: ".$CheckNumber."<br/>"."DateHired: ".$DateHired."<br/>"."DeductionAmount".$DeductionAmount."<br/>"."DeductionCode".$DeductionCode."<br/>"."DeductionDesc: ".$DeductionDesc."<br/>"."DeptName: ".$DeptName."<br/>"."FirstName: ".$FirstName."<br/>"."LastName: ".$LastName."<br/>"."MiddleName: ".$MiddleName."<br/>"."NationalId: ".$NationalId."<br/>"."Sex: ".$Sex."<br/>"."VoteName: ".$VoteName."<br/>"."Votecode: ".$Votecode."<br/>"."Done2";
-  
+   if($CheckDate !=''){
    $deduction_month=date("Y-m")."-".\frontend\modules\repayment\models\LoanRepayment::DEDUCTION_DATE_REQUEST;
    $yearT=date("Y");
    $resultsCount=\frontend\modules\repayment\models\GepgLawson::getBillTreasuryPerYear($yearT) + 1;
@@ -785,11 +785,13 @@ $si=0;
    \frontend\modules\repayment\models\LawsonMonthlyDeduction::insertGSPPdeductionsDetails($ActualBalanceAmount,$CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$LastName,$MiddleName,$NationalId,$Sex,$VoteName,$Votecode,$created_at,$deduction_month,$Deptcode);
    \frontend\modules\repayment\models\LoanRepayment::checkGePGlawsonBill($deduction_month,$bill_number,$amountBill,$control_number_date,$CheckDate);   $paymentStatus=0;
    \frontend\modules\repayment\models\LoanRepayment::createBillPerEmployer($amount,$deduction_month,$Votecode,$VoteName,$CheckDate,$paymentStatus);
-   \frontend\modules\repayment\models\LoanRepaymentDetail::insertRepaymentDetailsGSPP($DeductionAmount,$CheckNumber,$Votecode,$CheckDate,$Votecode,$VoteName,$Deptcode,$DeptName,$ActualBalanceAmount,$DeductionCode,$DeductionDesc,$FirstName,$MiddleName,$LastName);  
+   \frontend\modules\repayment\models\LoanRepaymentDetail::insertRepaymentDetailsGSPP($DeductionAmount,$CheckNumber,$Votecode,$CheckDate,$Votecode,$VoteName,$Deptcode,$DeptName,$ActualBalanceAmount,$DeductionCode,$DeductionDesc,$FirstName,$MiddleName,$LastName); 
+   }   
 	}
-
+    if($CheckDate !=''){
 	\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidGSPP($CheckDate);
 	\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidPerLoanRepayment($CheckDate);
+}
 }
 public static function requestMonthlyDeductionSummary($fileDeductionsSummary){
 $results = json_decode(json_encode((array)simplexml_load_string($fileDeductionsSummary)),true);
@@ -816,22 +818,24 @@ $si=0;
  
 }
 	}else{
-		
+		if($CheckDate !=''){
 	$CheckDate = date("Y-m-d",strtotime(trim($ArrayOfDeductionSummary['CheckDate'])));
 	$TotalDeductionAmount = trim($ArrayOfDeductionSummary['TotalDeductionAmount']);
 	$NumEmployee=trim($summaryDeductions['NumEmployee']);
     $finalTotalDeductions=$TotalDeductionAmount;
     $finalTotalEmployees=$NumEmployee;
   //echo 'TotalDeductionAmount: '.$TotalDeductionAmount."<br/>".'CheckDate: '.$CheckDate."<br/>"."Done2";
-  
+	}
 	}
 	//the below function to run after receiving summary
+	if($CheckDate !=''){
 	$GSPPamountSummary=$finalTotalDeductions;
     $finalTotalEmployees=$finalTotalEmployees;
 	\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountPaidGSPPsummary($CheckDate,$GSPPamountSummary,$finalTotalEmployees);
 	\frontend\modules\repayment\models\LoanRepaymentDetail::checkRepaymentAndGSPPamount($CheckDate);	
 	\frontend\modules\repayment\models\LoanRepaymentDetail::checkGepgStatus();
 	//end
+	}
 }
 public static function requestAllEmployeesMonthly($fileAllEmployMonthly){
 $results = json_decode(json_encode((array)simplexml_load_string($fileAllEmployMonthly)),true);

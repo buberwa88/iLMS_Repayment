@@ -1075,5 +1075,40 @@ self::updateAll(['schedule_principal_amount' => $schedule_principal_amount,'sche
 	public static function getScheduleDetail($applicantID) {
         return self::findBySql("SELECT schedule_principal_amount,schedule_penalty,schedule_laf,schedule_vrf,schedule_total_loan_amount,schedule_start_date,schedule_end_date,monthly_installment FROM loan_beneficiary WHERE  applicant_id='{$applicantID}'")->one();
     }
+    public static function checkBeneficiaryDisco($applicant_id) {
+        $allApplications = \common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
+        return  \backend\modules\disbursement\models\Disbursement::findBySql("SELECT application.* FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id "
+            . "  WHERE disbursement.application_id IN($allApplications) AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL AND application.student_status='STOPED'")->count();
+    }
+
+
+    public static function getAllApplicantApplicationsUnderPreORpostheslb($applicantID,$category,$prePost) {
+        $financial_year  = \backend\modules\disbursement\models\FinancialYear::findBySql("SELECT financial_year  FROM financial_year WHERE  financial_year LIKE '%$category'")->asArray()->one();
+        if($financial_year !='' && $prePost=='Pre') {
+            $resultsFinacialYear = \backend\modules\disbursement\models\FinancialYear::findBySql("SELECT GROUP_CONCAT(financial_year_id) as financial_year_id FROM financial_year WHERE financial_year <= '$financial_year'")->asArray()->one();
+            $valuesXcF = $resultsFinacialYear['financial_year_id'];
+            if ($valuesXcF != '') {
+                $valuesXcF = $valuesXcF;
+            } else {
+                $valuesXcF = -1;
+            }
+        }else if($financial_year !='' && $prePost=='Post'){
+            $resultsFinacialYear = \backend\modules\disbursement\models\FinancialYear::findBySql("SELECT GROUP_CONCAT(financial_year_id) as financial_year_id FROM financial_year WHERE financial_year > '$financial_year'")->asArray()->one();
+            $valuesXcF = $resultsFinacialYear['financial_year_id'];
+            if ($valuesXcF != '') {
+                $valuesXcF = $valuesXcF;
+            } else {
+                $valuesXcF = -1;
+            }
+        }
+        return $valuesXcF;
+    }
+
+    public static function checkBeneficiaryPrePostheslb($applicant_id,$category,$prePost) {
+        $financialYearIdGroup=self::getAllApplicantApplicationsUnderPreORpostheslb($applicant_id,$category,$prePost);
+        $allApplications = self::getAllApplicantApplications($applicant_id);
+        return  \backend\modules\disbursement\models\Disbursement::findBySql("SELECT application.* FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id "
+            . "  WHERE disbursement.application_id IN($allApplications) AND disbursement_batch.financial_year_id IN($financialYearIdGroup) AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL AND application.student_status='STOPED'")->count();
+    }
 
 }

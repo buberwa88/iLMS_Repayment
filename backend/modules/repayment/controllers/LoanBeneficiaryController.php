@@ -795,5 +795,86 @@ class LoanBeneficiaryController extends Controller {
         }
         return $this->redirect(['/repayment/loan-beneficiary/view-loanee-details', 'id' => $id]);
     }
+    public function actionIndexPopularreport() {
+        $searchModel = new \backend\modules\report\models\PopularReportSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexPopularreport', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionAllReports() {
+        $searchModel = new \backend\modules\report\models\ReportSearch();
+        $dataProvider = $searchModel->searchAllReportFilter(Yii::$app->request->queryParams);
+
+        return $this->render('all_reports', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionViewOperation($id) {
+        $searchModel = new \backend\modules\report\models\ReportSearch();
+        $dataProvider = $searchModel->searchAllReportFilter(Yii::$app->request->queryParams);
+        return $this->render('viewOperation', [
+            'model' => \backend\modules\report\models\Report::findOne($id),
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionCreatePopularreport() {
+        $model = new \backend\modules\report\models\PopularReport();
+        $created_by = Yii::$app->user->identity->user_id;
+        $created_at = date("Y-m-d H:i:s");
+        if ($model->load(Yii::$app->request->post())) {
+            $array = $model->report_id;
+            foreach ($array as $value) {
+                $popularReportModel = new \backend\modules\report\models\PopularReport();
+                $popularReportModel->user_id = $created_by;
+                $popularReportModel->report_id = $value;
+                $popularReportModel->rate = 1;
+//$popularReportModel->created_at = $created_at;
+                $resultsCount = \backend\modules\report\models\PopularReport::find()->where(['report_id' => $value, 'user_id' => $created_by])->count();
+                if ($resultsCount == 0) {
+
+                    // here for logs
+                    $old_data = \yii\helpers\Json::encode($popularReportModel->attributes);
+                    $new_data = \yii\helpers\Json::encode($popularReportModel->attributes);
+                    //$model_logs=\common\models\base\Logs::CreateLogall($popularReportModel->id,$old_data,$new_data,"popular_report","CREATE",1);
+                    //end for logs
+                    $popularReportModel->save(false);
+                }
+            }
+
+            $sms = "<p>Operation Successful</p>";
+            Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['index-popularreport']);
+        } else {
+            return $this->render('createPopularreport', [
+                'model' => $model,
+            ]);
+        }
+    }
+
+    public function actionViewPopularreport($id) {
+        //$searchModel = new ReportSearch();
+        //$dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $searchModel = new \backend\modules\report\models\PopularReportSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        return $this->render('viewPopularreport', [
+            'model' => \backend\modules\report\models\Report::findOne(['id' => $id]),
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionDeletePopularreport($id) {
+        \backend\modules\report\models\PopularReport::findOne($id)->delete();
+
+        return $this->redirect(['index-popularreport']);
+    }
 
 }

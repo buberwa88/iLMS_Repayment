@@ -1707,7 +1707,22 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $si = 0;
         $moder = new EmployedBeneficiary();
         $billDetailModel = new LoanRepaymentDetail();
-
+       $resultCount=\common\models\LoanBeneficiary::checkBeneficiaryDisco($applicantID);
+        $category='05';
+        $prePre='Pre';
+        $prePost='Post';
+       $preHeslb=\common\models\LoanBeneficiary::checkBeneficiaryPrePostheslb($applicantID,$category,$prePre);
+       $PostHeslb=\common\models\LoanBeneficiary::checkBeneficiaryPrePostheslb($applicantID,$category,$prePost);
+       if($PostHeslb==0){
+           if($preHeslb==0){
+               $resultsPrePost= 1;
+           }else{
+               $resultsPrePost= 2;
+           }
+           }else{
+           $resultsPrePost= 1;
+       }
+       if($resultCount==0){$has_disco=1;}else{$has_disco=2;}
         $itemCodePrincipal = "PRC";
         $principal_id = $moder->getloanRepaymentItemID($itemCodePrincipal);
         //check if exists in any bill before
@@ -1797,6 +1812,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     'vrf_accumulated' => '0',
                     'created_at' => date("Y-m-d H:i:s"),
                     'created_by' => $loggedin,
+                    'has_disco'=>$has_disco,
+                    'pre_post_heslb'=>$resultsPrePost,
                 ])->execute();
             Yii::$app->db->createCommand()
                 ->insert('loan_summary_detail', [
@@ -1807,6 +1824,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     'amount' => $LAF,
                     'created_at' => date("Y-m-d H:i:s"),
                     'created_by' => $loggedin,
+                    'has_disco'=>$has_disco,
+                    'pre_post_heslb'=>$resultsPrePost,
                 ])->execute();
             Yii::$app->db->createCommand()
                 ->insert('loan_summary_detail', [
@@ -1817,6 +1836,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     'amount' => $penalty,
                     'created_at' => date("Y-m-d H:i:s"),
                     'created_by' => $loggedin,
+                    'has_disco'=>$has_disco,
+                    'pre_post_heslb'=>$resultsPrePost,
                 ])->execute();
             $moder->getIndividualEmployeesPenaltyPerApplication($applicantID, $dateToday);
             $moder->getIndividualEmployeesLAFPerApplication($applicantID);
@@ -1863,6 +1884,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     'amount' => $vrf_3,
                     'created_at' => date("Y-m-d H:i:s"),
                     'created_by' => $loggedin,
+                    'has_disco'=>$has_disco,
+                    'pre_post_heslb'=>$resultsPrePost,
                 ])->execute();
             Yii::$app->db->createCommand()
                 ->insert('loan_summary_detail', [
@@ -1873,6 +1896,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     'amount' => $LAF_3,
                     'created_at' => date("Y-m-d H:i:s"),
                     'created_by' => $loggedin,
+                    'has_disco'=>$has_disco,
+                    'pre_post_heslb'=>$resultsPrePost,
                 ])->execute();
             Yii::$app->db->createCommand()
                 ->insert('loan_summary_detail', [
@@ -1883,6 +1908,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                     'amount' => $penalty_3,
                     'created_at' => date("Y-m-d H:i:s"),
                     'created_by' => $loggedin,
+                    'has_disco'=>$has_disco,
+                    'pre_post_heslb'=>$resultsPrePost,
                 ])->execute();
         }
 

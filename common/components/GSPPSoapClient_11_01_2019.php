@@ -4054,5 +4054,4 @@ class GSPPSoapClient extends Component {
         //return $this->getGSSPSoapClient()->__doRequest($request, $this->wsdl_url, $this->url, 1);
         return $request_string;
     }
-
 }

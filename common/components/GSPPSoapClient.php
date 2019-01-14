@@ -188,19 +188,14 @@ class GSPPSoapClient extends Component {
 		 $info = curl_getinfo($obj);
         curl_close($obj);
 		if($info['http_code']==200){
-			if(count($output)==0){
-				//this is empty
-			return '3';	
-			}else{
 			return $output;
-            //return $info;			
-			}			
+            //return $info;	
 		}else if($info['http_code']==0){
 			//No connection
-			return '0';
+			return '';
 		}else{
 			//Unknown request
-			return '2';
+			return '';
 		}
     }
 	/*
@@ -234,7 +229,16 @@ class GSPPSoapClient extends Component {
           $output = curl_exec($obj);
 		 $info = curl_getinfo($obj);
         curl_close($obj);
-        return $output;
+        if($info['http_code']==200){
+			return $output;
+            //return $info;	
+		}else if($info['http_code']==0){
+			//No connection
+			return '';
+		}else{
+			//Unknown request
+			return '';
+		}
     }
 	/*
 	public function getMonthlyDeductionSummary($paymentMonth, $paymentYear) {

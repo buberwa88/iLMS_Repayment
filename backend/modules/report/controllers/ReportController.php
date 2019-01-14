@@ -226,10 +226,13 @@ class ReportController extends Controller {
                 $field = 'field' . $i;
                 $typeValue = $modelReportTemplate->$type;
                 $attrValue = $model->$attr;
+                //if($attr==input3){
+                //echo $attrValue;exit;
+                //}
                 $conditionValue = $modelReportTemplate->$condition;
                 $columnValue = $modelReportTemplate->$column;
                 $fieldValue = $modelReportTemplate->$field;
-                if (!empty($model->$attr)) {
+                if ($attrValue !='') {
                     $value = $model->$attr;
 
                     if ($typeValue == 'date')
@@ -310,6 +313,14 @@ class ReportController extends Controller {
                                     $searchParams['gspp_employees_status']=$value;
                                 }
 
+                            }else if ($typeValue == 'payer_type_employer_treasury') {
+                                if($value==0){
+                                    $reportFilter = "$fieldValue : Self Employer AND ";
+                                    $searchParams['payer_type_employer_treasury']=$value;
+                                }else if($value==1){
+                                    $reportFilter = "$fieldValue : Treasury AND ";
+                                    $searchParams['payer_type_employer_treasury']=$value;
+                                }
                             } else {
                                 $reportFilter = "$fieldValue  :  $value AND ";
                             }
@@ -371,7 +382,7 @@ class ReportController extends Controller {
                 if ($file_name != '' && $file_name != NULL) {
 
                     if($modelReportTemplate->printing_mode ==1){
-                     $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams]);   
+                     $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams,'exportCategory'=>$exportCategory]);
                     }
                     
                     $htmlContent = $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams]);
@@ -421,10 +432,14 @@ class ReportController extends Controller {
                 }
             } else if ($exportCategory == 2) {
                 if ($modelReportTemplate->name != '' && $modelReportTemplate->name != NULL) {
+                    if ($modelReportTemplate->excel_printing_mode ==0) {
                     ob_start();
                     $this->GenerateExcel($this->reportGenerateExcel($sql), $reportNameExcel);
                     ob_clean();
                     ob_flush();
+                }else{
+                        $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams,'exportCategory'=>$exportCategory]);
+                }
                 } else {
                     $sms = "<p>Error: Missing Report Name</p>";
                     Yii::$app->getSession()->setFlash('danger', $sms);

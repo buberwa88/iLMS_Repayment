@@ -528,6 +528,37 @@ $this->params['breadcrumbs'][] = $this->title;
                             echo "</div></div>";
                         }
                         ?>
+                        <?php
+                        if ($type == 'payer_type_employer_treasury') {
+                            echo "<div class='form-group'><label class='col-md-3'>" . $model->$field . "</label><div class='col-md-9'>";
+                            //echo CHtml::textField($name, $value, array('size' => 20,'class'=>'form-control'));
+                            ?>
+                            <?php
+                            echo Form::widget([
+                                'model' => $model,
+                                'form' => $form,
+                                'columns' => 1,
+                                'attributes' => [ // 2 column layout
+                                    $name => ['type' => Form::INPUT_WIDGET,
+                                        'widgetClass' => \kartik\select2\Select2::className(),
+                                        'label' => false,
+                                        'options' => [
+                                            'data' => \backend\modules\report\models\Report::payerType(),
+                                            'options' => [
+                                                'prompt' => '-- Select --',
+                                            ],
+                                            'pluginOptions' => [
+                                                'allowClear' => true
+                                            ],
+                                        ],
+                                    ],
+                                ]
+                            ]);
+                            ?>
+                            <?php
+                            echo "</div></div>";
+                        }
+                        ?>
 						<?php
                         if ($type == 'user') {
                             echo "<div class='form-group'><label class='col-md-3'>" . $model->$field . "</label><div class='col-md-9'>";

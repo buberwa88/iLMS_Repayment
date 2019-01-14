@@ -556,7 +556,7 @@ public function actionMonthlyDeductionsResponse($paymentMonth,$paymentYear) {
 
     $GSSPSoapClient=new GSPPSoapClient($config);
     $fileDeductions=$GSSPSoapClient->getMonthlyGSSPHelbPayment($paymentMonth, $paymentYear);
-	var_dump($fileDeductions);exit;
+	//echo $fileDeductions;exit;
     $fileDeductionsSummary=$GSSPSoapClient->getMonthlyDeductionSummary($paymentMonth, $paymentYear);
     if($fileDeductions !='' && $fileDeductionsSummary !='') {
         \frontend\modules\repayment\models\LoanRepayment::requestMonthlyDeduction($fileDeductions, $paymentMonth, $paymentYear);
