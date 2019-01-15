@@ -66,7 +66,7 @@ class Employer extends \yii\db\ActiveRecord
             [['user_id', 'ward_id','district','employer_type_id','nature_of_work_id'], 'integer'],
 			//[['employer_name'], 'unique', 'message'=>'Employer Exists'],
             [[ 'short_name'], 'string'],			
-            [['created_at', 'email_address','employer_code', 'short_name','phone_number','verification_status','TIN','countEmployer','district','region','ward_id','fax_number','email_verification_code','email_verification_code2','nature_of_work_other','salary_source','sector','industry','vote_number'], 'safe'],
+            [['created_at', 'email_address','employer_code', 'short_name','phone_number','verification_status','TIN','countEmployer','district','region','ward_id','fax_number','email_verification_code','email_verification_code2','nature_of_work_other','salary_source','sector','industry','vote_number','academic_year_id','financial_year_id'], 'safe'],
             /*['industry', 'required', 'when' => function ($model) {
     return $model->employer_type_id == 1 || $model->employer_type_id == 3;
 }, 'whenClient' => "function (attribute, value) {

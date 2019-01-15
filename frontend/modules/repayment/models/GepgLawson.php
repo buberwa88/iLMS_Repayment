@@ -61,7 +61,7 @@ class GepgLawson extends \yii\db\ActiveRecord
         ];
     }
 	public static function getBillTreasuryPerYear($year){
-	return self::findBySql("SELECT * FROM gepg_lawson WHERE  deduction_month LIKE '%$year'")->count();
+	return self::findBySql("SELECT * FROM gepg_lawson WHERE  control_number_date LIKE '$year%'")->count();
 }
     public static function confirmControlNumberSentToGSPP($controlNumber){
      self::updateAll(['status'=>2], 'control_number="'.$controlNumber.'"');

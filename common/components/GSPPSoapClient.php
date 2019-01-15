@@ -181,8 +181,8 @@ class GSPPSoapClient extends Component {
 		//sending api 
 		$url=$this->uri."deductions/getdeductions?month=".$paymentMonth."&year=".$paymentYear;
         curl_setopt($obj, CURLOPT_URL, $url);
-		curl_setopt($obj, CURLOPT_TIMEOUT, 50);
-        curl_setopt($obj, CURLOPT_CONNECTTIMEOUT, 50);
+		//curl_setopt($obj, CURLOPT_TIMEOUT, 50);
+        //curl_setopt($obj, CURLOPT_CONNECTTIMEOUT, 50);
         ///request data from the api		
           $output = curl_exec($obj);
 		 $info = curl_getinfo($obj);
@@ -223,8 +223,8 @@ class GSPPSoapClient extends Component {
 		//sending api 
 		$url=$this->uri."deductions/getdeductionsummary?month=".$paymentMonth."&year=".$paymentYear;
         curl_setopt($obj, CURLOPT_URL, $url);
-		curl_setopt($obj, CURLOPT_TIMEOUT, 50);
-        curl_setopt($obj, CURLOPT_CONNECTTIMEOUT, 50);
+		//curl_setopt($obj, CURLOPT_TIMEOUT, 50);
+        //curl_setopt($obj, CURLOPT_CONNECTTIMEOUT, 50);
         ///request data from the api		
           $output = curl_exec($obj);
 		 $info = curl_getinfo($obj);

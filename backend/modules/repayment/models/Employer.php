@@ -52,7 +52,7 @@ class Employer extends \yii\db\ActiveRecord
 			[['rejection_reason'], 'required' , 'on'=>'employer_rejection'],			
             //[['user_id', 'ward_id','district','phone_number'], 'integer'],
             [['employer_type_id','employerCode', 'short_name', 'nature_of_work_id'], 'string'],
-            [['created_at', 'email_address','employerCode', 'short_name', 'totatEmployees', 'verification_status', 'region', 'nature_of_work_id','rejection_date','employerID','rejection_reason','vote_number','fax_number'], 'safe'],
+            [['created_at', 'email_address','employerCode', 'short_name', 'totatEmployees', 'verification_status', 'region', 'nature_of_work_id','rejection_date','employerID','rejection_reason','vote_number','fax_number','academic_year_id','financial_year_id'], 'safe'],
             [['employer_name', 'physical_address', 'email_address','nature_of_work_id'], 'string', 'max' => 100],
 			[['rejection_reason'], 'string', 'max' => 500],
             [['employer_code'], 'string', 'max' => 20],

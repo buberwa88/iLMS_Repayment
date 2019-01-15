@@ -62,7 +62,7 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
         return [
             [['loan_repayment_id', 'applicant_id', 'loan_summary_id'], 'required'],
             [['loan_repayment_id', 'applicant_id', 'loan_repayment_item_id', 'loan_summary_id'], 'integer'],
-            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id','loan_given_to','updated_at','updated_by','receipt_date','vote_number','Vote_name','sub_vote','sub_vote_name','lawson_loan_balance','lawson_payment_date','deduction_code','deduction_description','financial_year_id','academic_year_id'], 'safe'],
+            [['applicantName','totalLoanees','firstname','middlename','surname', 'amount','totalAmount','amount1','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','amountx1','payment_status','receipt_number','treasury_user_id','loan_given_to','updated_at','updated_by','receipt_date','vote_number','Vote_name','sub_vote','sub_vote_name','lawson_loan_balance','lawson_payment_date','deduction_code','deduction_description','financial_year_id','academic_year_id','pre_post_heslb','has_disco'], 'safe'],
             [['amount'], 'number','on' => 'adjustAmount'],
 			[['amount'], 'required', 'on' => 'adjustAmount'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
@@ -325,6 +325,7 @@ public function insertAllPaymentsofAllLoaneesUnderBillSelfEmployedBeneficiary($l
         //$loan_repayment_item_id=$details_MLREB->loan_repayment_item_id;
         //foreach ($details_applicant as $value_applicant) { 
         $amount1=$totalAmount1;
+        $loan_summary_id='';
         $totalOutstandingAmount=$moder->getIndividualEmployeeTotalLoanUnderBill($applicantID,$loan_summary_id);
         if($totalOutstandingAmount >= $amount1){
           $amount=$amount1;  
@@ -965,7 +966,12 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
               $amount=$totalOutstandingAmount;
               $loanStatus=0;			  
            }
-           
+           $resultPrePostHasDisco=self::getPrePostheslbHasDisco($applicantID,$loan_summary_id);
+           $applicant_has_disco=$resultPrePostHasDisco->has_disco;
+           $applicant_pre_post_heslb=$resultPrePostHasDisco->pre_post_heslb;
+           $currentFinancialYearID=self::getCurrentFinancialYear()->financial_year_id;
+           $currentAcademicYearID=self::getActiveAcademicYear()->academic_year_id;
+
            $vrf=$moder->getIndividualEmployeesVRFUnderBill($applicantID,$loan_summary_id,$loan_given_to);
            $itemCodeVRF="VRF";
            $vrf_id=$moder->getloanRepaymentItemID($itemCodeVRF);
@@ -990,7 +996,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$LAF_id,
         'amount' =>$LAF,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		//----------------PNT--------------------
 		Yii::$app->db->createCommand()
@@ -999,7 +1009,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$PNT_id,
         'amount' =>$penalty,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		//-------------VRF-----------------------
 		Yii::$app->db->createCommand()
@@ -1008,7 +1022,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$vrf_id,
         'amount' =>$vrf,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		//-----------------PRC-------------------
 		Yii::$app->db->createCommand()
@@ -1017,7 +1035,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$PRC_id,
         'amount' =>$outstandingPrincipalLoan,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();		
 		   //end about finishing paying loan
 		   }else{		   
@@ -1039,7 +1061,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$LAF_id,
         'amount' =>$LAF_v,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		}
         //-----------------END FOR LAF----        
@@ -1093,7 +1119,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$PNT_id,
         'amount' =>$penalty_v,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		}
 		if($vrfTopay >=0){
@@ -1103,7 +1133,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$vrf_id,
         'amount' =>$vrfTopay,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		}
         //-----END for VRF---
@@ -1115,7 +1149,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$PRC_id,
         'amount' =>$amount_remained2,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		}
         //---end---
@@ -1128,7 +1166,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$PRC_id,
         'amount' =>$outstandingPrincipalLoan,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		}
 		//end to pay principal
@@ -1142,7 +1184,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$vrf_id,
         'amount' =>$finalVrfTopay,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		}else{
 		Yii::$app->db->createCommand()
@@ -1151,7 +1197,11 @@ public static function insertAllPaymentsGeneral($loan_summary_id,$loan_repayment
         'applicant_id' =>$applicantID,
         'loan_repayment_item_id' =>$vrf_id,
         'amount' =>$vrf,
-        'loan_summary_id' =>$loan_summary_id,    
+        'loan_summary_id' =>$loan_summary_id,
+        'pre_post_heslb' =>$applicant_pre_post_heslb,
+        'has_disco' =>$applicant_has_disco,
+        'financial_year_id' =>$currentFinancialYearID,
+        'academic_year_id' =>$currentAcademicYearID,
         ])->execute();
 		}
 		}		
@@ -1171,7 +1221,7 @@ public static function getAmountFullPaid($applicantID,$loan_given_to){
         return $amount;
         }
 public static function getOutstandingFullPaid($applicantID,$loan_given_to){
-        $amount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoan($model->applicant_id,$loan_given_to)-\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountFullPaid($model->applicant_id,$loan_given_to);
+        $amount=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoan($applicantID,$loan_given_to)-\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountFullPaid($applicantID,$loan_given_to);
 		if($amount<0){
 		$amount=0;
 		}		
@@ -1521,10 +1571,25 @@ public static function checkCheckNumberExists($checkNumber){
             $data['controlNo']=$control_number;
             $data['amount']=$amount;
             $data['totalEmployees']=$totalEmployees;
-            $data['controlNoDate']=$controlNoDate;
+            $data['controlNoDate']=$gepg_date;
             $data['deductionMonth']=date("m",strtotime($deduction_month));
             $data['deductionYear']=date("Y",strtotime($deduction_month));
             \common\components\GSPPSoapClient::sendControlNumber($data);
         }
+    }
+    public static function getPrePostheslbHasDisco($applicantID,$loan_summary_id){
+            $details = \backend\modules\repayment\models\LoanSummaryDetail::findBySql("SELECT pre_post_heslb,has_disco "
+                . "FROM  loan_summary_detail WHERE  loan_summary_detail.loan_summary_id='$loan_summary_id' AND applicant_id='$applicantID'")->one();
+            return $details;
+        }
+    public static function getCurrentFinancialYear(){
+        $details_financial_year = \backend\modules\disbursement\models\FinancialYear::findBySql("SELECT financial_year_id "
+            . "FROM  financial_year WHERE  is_active='1'")->one();
+        return $details_financial_year;
+    }
+    public static function getActiveAcademicYear(){
+        $detailsAcademicYear = \backend\modules\allocation\models\AcademicYear::findBySql("SELECT academic_year_id "
+            . "FROM  academic_year WHERE  is_current='1'")->one();
+        return $detailsAcademicYear;
     }
 }		

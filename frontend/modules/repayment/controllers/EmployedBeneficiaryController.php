@@ -61,7 +61,8 @@ class EmployedBeneficiaryController extends Controller {
 
         $dataProvider = $searchModel->getVerifiedEmployeesUnderEmployer(Yii::$app->request->queryParams, $employerID);
         $dataProviderNonBeneficiary = $searchModel->getNonVerifiedEmployees(Yii::$app->request->queryParams, $employerID);
-
+        $inputFiles1='';
+        $date_time=date("Y-m-d");
         if (isset($_POST['EmployedBeneficiary'])) {
             //CHECKING IF A USER STILL IS HAVING ACTIVE SESSION...
             if (\Yii::$app->user->identity->user_id == '' OR \Yii::$app->user->identity->user_id == 0) {
@@ -519,7 +520,10 @@ class EmployedBeneficiaryController extends Controller {
                 $completionYear2 = substr($completionYear, 2, 4);
                 $CompletionAcademicYear = $modelEmployedBeneficiary->getCompletionYear($completionYear2);
 
-                //echo $EntryAcademicYear."<br/>".$CompletionAcademicYear;
+            $modelEmployedBeneficiary->financial_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
+            $modelEmployedBeneficiary->academic_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
+
+            //echo $EntryAcademicYear."<br/>".$CompletionAcademicYear;
                 //exit;
                 if ($modelEmployedBeneficiary->sex == 'MALE') {
                     $modelEmployedBeneficiary->sex = 'M';
@@ -1202,7 +1206,6 @@ class EmployedBeneficiaryController extends Controller {
 				$generalMatch='';
                 $model->scenario = 'upload_employees2';
                 $model->employer_id = $employerID;
-				$model->salary_source=$salary_source;
                 $model->created_by = \Yii::$app->user->identity->user_id;
                 $model->employment_status = "ONPOST";
                 $model->created_at = date("Y-m-d H:i:s");
@@ -1213,8 +1216,12 @@ class EmployedBeneficiaryController extends Controller {
                 $model->surname = EmployedBeneficiary::formatRowData($rows['SURNAME']);
 				$model->LOAN_BENEFICIARY_STATUS = $model->formatRowData($rows['LOAN_BENEFICIARY_STATUS']);
 				$model->form_four_completion_year = $model->formatRowData($rows['FORM_FOUR_COMPLETION_YEAR']);
+                $f4completionyear=$model->form_four_completion_year;
                 $model->date_of_birth = '';
                 $wardName = '';
+
+                $model->financial_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
+                $model->academic_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
                 $phone_number = $model->phone_number = EmployedBeneficiary::formatRowData($rows['MOBILE_PHONE_NUMBER']);
                 $model->current_name = '';
                 $institution_code = EmployedBeneficiary::formatRowData($rows['INSTITUTION_OF_STUDY']);
@@ -1226,6 +1233,7 @@ class EmployedBeneficiaryController extends Controller {
                 $completionYear = $model->programme_completion_year = EmployedBeneficiary::formatRowData($rows['COMPLETION_YEAR']);
                 $programme1 = EmployedBeneficiary::formatRowData($rows['PROGRAMME_STUDIED']);
 				$salary_source = EmployedBeneficiary::formatRowData($rows['SALARY_SOURCE']);
+                $model->salary_source=$salary_source;
                 $programme_level_of_study1 = EmployedBeneficiary::formatRowData($rows['STUDY_LEVEL']);
                 $programme_level_of_study = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study1]);
                 $studyLevel = $model->programme_level_of_study = $programme_level_of_study->applicant_category_id;
@@ -1469,9 +1477,10 @@ class EmployedBeneficiaryController extends Controller {
 
         $dataProvider = $searchModel->getVerifiedEmployeesUnderEmployer(Yii::$app->request->queryParams, $employerID);
         $dataProviderNonBeneficiary = $searchModel->getNonVerifiedEmployees(Yii::$app->request->queryParams, $employerID);
-
+        $inputFiles1='';
         if (isset($_POST['EmployedBeneficiary'])) {
             //CHECKING IF A USER STILL IS HAVING ACTIVE SESSION...
+            $date_time = date("Y_m_d_H_i_s");
             if (\Yii::$app->user->identity->user_id == '' OR \Yii::$app->user->identity->user_id == 0) {
                 unlink('uploads/' . $date_time . $inputFiles1);
                 $sms = '<p>Operation did not complete,session expired </p>';
@@ -1487,7 +1496,7 @@ class EmployedBeneficiaryController extends Controller {
                 $employerID = $employer2->employer_id;
             }
             if ($modelHeader->load(Yii::$app->request->post())) {
-                $date_time = date("Y_m_d_H_i_s");
+                //$date_time = date("Y_m_d_H_i_s");
                 $inputFiles1 = UploadedFile::getInstance($modelHeader, 'employeesFile');
                 $modelHeader->employeesFile = UploadedFile::getInstance($modelHeader, 'employeesFile');
                 $modelHeader->upload($date_time);
@@ -2006,11 +2015,12 @@ class EmployedBeneficiaryController extends Controller {
 					$objPHPExcelOutput->getActiveSheet()->SetCellValue('I' . $rowCount, $customTitle[8]);
 			//end prepare output for error header
 			$i=0;
+            $doneUpload='';
             foreach ($data as $rows) {
                 $model = new EmployedBeneficiary();
                 $model->scenario = 'update_beneficiaries_salaries2';
                 $model->employer_id = $employerID;
-				$model->salary_source=$salary_source;
+				//$model->salary_source=$salary_source;
                 $model->updated_by = \Yii::$app->user->identity->user_id;
                 $model->employment_status = "ONPOST";
                 $model->updated_at = date("Y-m-d H:i:s");

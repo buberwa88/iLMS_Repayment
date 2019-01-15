@@ -516,6 +516,7 @@ class LoanRepaymentController extends Controller
         $applicantID=$applicant->applicant_id;
         $model2->applicant_id=$applicantID;
         $model2->amount=0;
+        $loan_repayment_id='';
         //$model2->pay_method_id=$model2->getPaymentMethod();
         $model2->payment_date=date('Y-m-d');
         if($applicantID >0){			
@@ -523,7 +524,7 @@ class LoanRepaymentController extends Controller
             $ActiveBill=$modelBill->getActiveBillLoanee($applicantID);
             $billID=$ActiveBill->loan_summary_id;
             $loan_summary_id=$billID; 
-            $beneficiaryCode="BEN";			
+            $beneficiaryCode="BEN";
             $repaymnet_reference_number=$beneficiaryCode."-".$model2->loan_repayment_id;
             $loan_repayment_id=$model2->loan_repayment_id;
 			
@@ -865,7 +866,7 @@ return $pdf->render();
 	   $user_loged_in=Yii::$app->user->identity->login_type;
            $user_id=Yii::$app->user->identity->user_id;
            $model = new LoanRepayment();
-           
+        $loan_repayment_id='';
 		   $selection=(array)Yii::$app->request->post('selection');//typecasting
                    if(count($selection) > 0){
                     $model->amount=0;

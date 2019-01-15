@@ -280,7 +280,10 @@ class EmployedBeneficiaryController extends Controller
             $f4CompletionYear = $modelEmployedBeneficiary->form_four_completion_year;
             $regNo = $modelEmployedBeneficiary->f4indexno;
             $programmeStudied = $modelEmployedBeneficiary->programme;
-
+            $employerDetails=\frontend\modules\repayment\models\Employer::getEmployerCategory($employerID);
+            $employerSalarySource=$employerDetails->salary_source;
+            $modelEmployedBeneficiary->financial_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
+            $modelEmployedBeneficiary->academic_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
 
             if ($salary_source == 'central government') {
                 //check employer salary source
@@ -1196,7 +1199,6 @@ class EmployedBeneficiaryController extends Controller
                 $generalMatch = '';
                 $model->scenario = 'upload_employees2';
                 $model->employer_id = $employerID;
-                $model->salary_source = $salary_source;
                 $model->created_by = \Yii::$app->user->identity->user_id;
                 $model->employment_status = "ONPOST";
                 $model->created_at = date("Y-m-d H:i:s");
@@ -1207,6 +1209,7 @@ class EmployedBeneficiaryController extends Controller
                 $model->surname = $model->formatRowData($rows['SURNAME']);
                 $model->LOAN_BENEFICIARY_STATUS = $model->formatRowData($rows['LOAN_BENEFICIARY_STATUS']);
                 $model->form_four_completion_year = $model->formatRowData($rows['FORM_FOUR_COMPLETION_YEAR']);
+                $f4completionyear=$model->form_four_completion_year;
                 $model->date_of_birth = '';
                 $wardName = '';
                 $phone_number = $model->phone_number = $model->formatRowData($rows['MOBILE_PHONE_NUMBER']);
@@ -1220,6 +1223,7 @@ class EmployedBeneficiaryController extends Controller
                 $completionYear = $model->programme_completion_year = $model->formatRowData($rows['COMPLETION_YEAR']);
                 $programme1 = $model->formatRowData($rows['PROGRAMME_STUDIED']);
                 $salary_source = $model->formatRowData($rows['SALARY_SOURCE']);
+                $model->salary_source = $salary_source;
                 $programme_level_of_study1 = $model->formatRowData($rows['STUDY_LEVEL']);
                 $programme_level_of_study = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study1]);
                 $studyLevel = $model->programme_level_of_study = $programme_level_of_study->applicant_category_id;
@@ -1233,6 +1237,8 @@ class EmployedBeneficiaryController extends Controller
                 $model->verification_status = 0;
                 $model->traced_by = $traced_by;
                 $f4CompletionYear = $model->form_four_completion_year;
+                $model->financial_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
+                $model->academic_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
                 $regNo = $model->f4indexno;
                 $updated_at = date("Y-m-d H:i:s");
                 $updated_by = $loggedin;

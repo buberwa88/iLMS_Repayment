@@ -8,7 +8,7 @@ use frontend\modules\repayment\models\Employer;
 use frontend\modules\repayment\models\EmployerSearch;
 use frontend\modules\repayment\models\LoanRepaymentDetail;
 use frontend\modules\repayment\models\LoanSummaryDetail;
-use frontend\modules\repayment\models\LoanSummary;
+//use frontend\modules\repayment\models\LoanSummary;
 use backend\modules\repayment\models\LoanRepaymentSetting;
 use backend\modules\repayment\models\LoanRepaymentItem;
 

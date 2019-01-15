@@ -385,7 +385,7 @@ class ReportController extends Controller {
                      $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams,'exportCategory'=>$exportCategory]);
                     }
                     
-                    $htmlContent = $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams]);
+                    $htmlContent = $this->renderPartial($file_name, ['id' => $id, 'reportData' => $this->reportGenerate($sql), 'reportSubQuery' => $sql_subquery, 'applicantCategory' => $applicantCategorySet, 'reportName' => $reportName, 'searchParams' => $searchParams,'exportCategory'=>$exportCategory]);
                     
                     $generated_by = Yii::$app->user->identity->firstname . " " . Yii::$app->user->identity->middlename . " " . Yii::$app->user->identity->surname;
 

@@ -18,7 +18,7 @@ use backend\modules\application\models\Application;
 use backend\modules\repayment\models\LoanSummaryDetail;
 use backend\modules\repayment\models\LoanSummary;
 use backend\models\SystemSetting;
-use backend\modules\repayment\models\EmployedBeneficiary;
+//use backend\modules\repayment\models\EmployedBeneficiary;
 use backend\modules\repayment\models\EmployerPenaltyCycle;
 
 /**
@@ -92,7 +92,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 			['phone_number', 'string', 'length' => [0, 12]],
             [['employment_status'], 'string'],
             [['employer_id', 'employee_id', 'applicant_id', 'employment_status', 'created_at', 'created_by', 'created_at',
-                'employee_current_nameifchanged','NID','f4indexno','firstname','phone_number','loan_summary_id', 'principal', 'totalLoanees','verification_status','firstname','middlename','surname','employerName','learning_institution_id','place_of_birth','principal','penalty','LAF','VRF','totalLoan','paid','outstanding','f4indexno2','confirmed','mult_employed','support_document','employee_status','vote_number'], 'safe'],
+                'employee_current_nameifchanged','NID','f4indexno','firstname','phone_number','loan_summary_id', 'principal', 'totalLoanees','verification_status','firstname','middlename','surname','employerName','learning_institution_id','place_of_birth','principal','penalty','LAF','VRF','totalLoan','paid','outstanding','f4indexno2','confirmed','mult_employed','support_document','employee_status','vote_number','academic_year_id','financial_year_id'], 'safe'],
             [['imageFile'], 'file', 'skipOnEmpty' => false, 'extensions' => 'xlsx,xls','on'=>'Uploding_employed_beneficiaries'],
             [['file'], 'file', 'skipOnEmpty' => false, 'extensions' => 'xlsx,xls','on'=>'uploaded_files_employees'],
             [['employee_id'], 'string', 'max' => 20],
@@ -338,7 +338,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
         		
 		}
 		/////////////
-        return $penalty_to_payFinal;
+        return round($penalty_to_payFinal,2);
         }
 		
 		public static function getIndividualEmployeesPenaltyPerApplication($applicantID,$date){
@@ -461,7 +461,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 	  $numberOfDaysPerYear=\backend\modules\repayment\models\EmployedBeneficiary::getTotaDaysPerYearSetting();
 	  $pricipalLoan1qaws=\common\models\LoanBeneficiary::getAmountNoReturned($applicantID);
 	  ///looiping among all the disbursed_amount
-	   
+        $totlaVRF=0;
 	      foreach ($pricipalLoan1qaws as $resultsApp) {
 					$pricipalLoan=$resultsApp->disbursed_amount;
 					$application_id=$resultsApp->application_id;
@@ -516,7 +516,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 					if($totlaVRF < 0){
 		$totlaVRF=0;	
 		}
-return 	$totlaVRF;				
+return 	round($totlaVRF,2);
 		}
 		
 		public static function getIndividualEmployeesVRFperApplication($applicantID,$date){
@@ -799,6 +799,7 @@ public static function getIndividualVRFreprocessLoan($applicantID,$date,$amount,
 	   
 	      //foreach ($pricipalLoan1qaws as $resultsApp) {
 					$pricipalLoan=$amount;
+                    $totlaVRF=0;
                                         $dateLoanDisbursed=date("Y-m-d",strtotime($statusDate)); 
                                         $formula_stage_level=\common\models\LoanBeneficiary::getVrFBeforeRepayment($dateLoanDisbursed);
                                         //var_dump($formula_stage_level);

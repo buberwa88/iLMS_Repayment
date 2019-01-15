@@ -636,7 +636,7 @@ class LoanBeneficiary extends \yii\db\ActiveRecord {
     }
 
     public static function getTotalLoanNoReturnPerApplication($application_id, $loanRepaymentItemRate) {
-        $allApplications = \common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
+        //$allApplications = \common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
         $totalLoanNoreturn = \backend\modules\disbursement\models\Disbursement::findBySql("SELECT SUM('$loanRepaymentItemRate'*disbursed_amount) AS 'disbursed_amount', disbursement_batch.academic_year_id AS 'academic_year_id',disbursement.disbursement_batch_id AS 'disbursement_batch_id' FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id "
                         . "  WHERE disbursement.application_id ='$application_id' AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL")->one();
         return $totalLoanNoreturn;
@@ -718,6 +718,9 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 
 $subtitalAcc=0;
 $subtitalAccq=0;
+$overallLAFinPayment=0;
+$overallVRFinPayment=0;
+$overallPNTinPayment=0;
 $date=date("Y-m-d");
 $duration_type="months";
 ?>
@@ -1100,6 +1103,8 @@ self::updateAll(['schedule_principal_amount' => $schedule_principal_amount,'sche
             } else {
                 $valuesXcF = -1;
             }
+        }else{
+            $valuesXcF = -1;
         }
         return $valuesXcF;
     }

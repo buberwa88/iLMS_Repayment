@@ -507,7 +507,8 @@ class EmployerController extends Controller
 			}else{
 			$model2->username=$model2->firstname;
 			}
-         
+            $model1->financial_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
+            $model1->academic_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
 		$employerName=$model1->employerName;
 		$model1->verification_status=1;
         $loggedin=Yii::$app->user->identity->user_id;        
