@@ -12,6 +12,13 @@ use yii\helpers\Url;
 $this->title = 'Request GSPP Monthly Deductions';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<script type="text/javascript">
+    function check_status2() {
+        //form-group field-user-verifycode
+        document.getElementById("hidden").style.display = "none";
+        document.getElementById("loader").style.display = "block";
+    }
+</script>
 <div class="employed-beneficiary-index">
 
 <div class="panel panel-info">
@@ -19,9 +26,12 @@ $this->params['breadcrumbs'][] = $this->title;
 					  <?= Html::encode($this->title) ?>
                         </div>
                         <div class="panel-body"> 
-<p>
+						<div class="block" id="hidden">
+
 <?= Html::a('Reguset GSPP Monthly Deductions', ['requestgspp-monthdeductionform'], ['class' => 'btn btn-success','onclick'=>'return  check_status()']) ?>
-</p>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<?= Html::a('Send Control #', ['sendcontrolngspp'], ['class' => 'btn btn-warning','onclick'=>'return  check_status2()']) ?>
+<br/><br/>
 <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
@@ -114,6 +124,10 @@ $this->params['breadcrumbs'][] = $this->title;
             //['class' => 'yii\grid\ActionColumn'],
         ],
     ]); ?>
+	</div>
+	<p>
+     <center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center>
+    </p>
 </div>
        </div>
 </div>

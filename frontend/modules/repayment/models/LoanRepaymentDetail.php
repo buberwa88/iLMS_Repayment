@@ -1570,7 +1570,7 @@ public static function checkGepgStatus(){
 			$date_control_received=date("Y-m-d H:i:s");
 \frontend\modules\repayment\models\LoanRepayment::generalFunctControlNumber($bill_number,$controlNumber,$date_control_received);
 		}
-    self::sendControlNumberToGSPP();
+    //self::sendControlNumberToGSPP();
         }
 public static function checkCheckNumberExists($checkNumber){
     return self::findBySql("SELECT * FROM loan_repayment_detail WHERE  check_number='$checkNumber'")->count();
@@ -1582,7 +1582,7 @@ public static function checkCheckNumberExists($checkNumber){
         $amount=$gsppGepgDetails->amount;
         $gepg_date=$gsppGepgDetails->gepg_date;
         $deduction_month=$gsppGepgDetails->deduction_month;
-        $deductionCode=465;
+        $deductionCode=\frontend\modules\repayment\models\GepgLawson::GSPP_DEDUCTION_CODE;
         $totalEmployees=$gsppGepgDetails->totalEmployees;
 
         if($control_number !='' && $amount !='' && $gepg_date !='' && $deduction_month !='' && $totalEmployees !=''){
@@ -1594,7 +1594,8 @@ public static function checkCheckNumberExists($checkNumber){
             $data['controlNoDate']=$gepg_date;
             $data['deductionMonth']=date("m",strtotime($deduction_month));
             $data['deductionYear']=date("Y",strtotime($deduction_month));
-            \common\components\GSPPSoapClient::sendControlNumber($data);
+            return $data;
+            //\common\components\GSPPSoapClient::sendControlNumber($data);
         }
     }
     public static function getPrePostheslbHasDisco($applicantID,$loan_summary_id){

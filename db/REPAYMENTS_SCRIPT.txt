@@ -334,4 +334,8 @@ ALTER TABLE `loan_summary_detail` CHANGE `pre_post_heslb` `pre_post_heslb` TINYI
 ##====================17-01-2019==================
 ALTER TABLE `report` ADD `report_student_code` INT(11) NULL DEFAULT NULL AFTER `excel_printing_mode`;
 
+##=================18-01-2018======================
+ALTER TABLE `gepg_lawson` ADD `gsppContrlnAcknowledge` VARCHAR(300) NULL DEFAULT NULL AFTER `totalEmployees`;
+ALTER TABLE `gepg_lawson` ADD `gsppAcknDate` DATETIME NULL DEFAULT NULL AFTER `gsppContrlnAcknowledge`;
+
 

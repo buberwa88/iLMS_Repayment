@@ -115,8 +115,12 @@ class GSPPSoapClient extends Component {
      * ]
      */
 
-    public function sendControlNumber($data) {
-        $controlNumber=$data['controlNo'];
+    public function sendControlNumber($data)
+    {
+        $controlNumber = $data['controlNo'];
+        //$deductionCode = $data['deductionCode'];
+        $output='';
+        if ($controlNumber != '') {
         $request_string = "<monthDeducContrnumber>
                    <DeducContrnumberInfo>
                    <DeductionCode>" . $data['deductionCode'] . "</DeductionCode>
@@ -128,21 +132,31 @@ class GSPPSoapClient extends Component {
                    <deductYear>" . $data['deductionYear'] . "</deductYear>
                    </DeducContrnumberInfo>
                    </monthDeducContrnumber>";
-        //generating/getting the xml request object/DOM
-        //$request = $this->generateSoapRequestXMLDOM($request_string);
-        //sending the request to the GSSP webs service
-        // return $this->getGSSPSoapClient()->__doRequest($request, $this->wsdl_url, $this->url, 1);
-        //return $response = $client->__soapCall($request, array(1));
-        //print_r($data);exit;
-        //to update if confirmed received to GSPP
-        \frontend\modules\repayment\models\GepgLawson::confirmControlNumberSentToGSPP($controlNumber);
+
+        //setting api auth deateail
+        $obj = $this->setAuthentication();
+        //sending api
+        $url = $this->uri . "Deductions/PostControlNumber";
+        curl_setopt($obj, CURLOPT_URL, $url);
+        curl_setopt($obj, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($obj, CURLOPT_POSTFIELDS, $request_string);
+        curl_setopt($obj, CURLOPT_RETURNTRANSFER, true);
+        ///request data from the api
+        $output = curl_exec($obj);
+        $info = curl_getinfo($obj);
+        curl_close($obj);
+
+        \frontend\modules\repayment\models\GepgLawson::confirmControlNumberSentToGSPP($controlNumber,$output);
+    }
+        //return $output;
+        //return $data;
     }
 
     /*
      * returns the monthly payment done by GSSPG to HESLB
      */
 
-    public function getPaidEmployees($paymentMonth, $paymentYear) {
+    public function getPaidEmployees($paymentMonth, $paymentYear,$request_string) {
         /*
         $request_string = "<monthDeducContrnumber>
                    <DeducContrnumberInfo>

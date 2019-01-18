@@ -464,7 +464,7 @@ class LoanRepaymentController extends Controller
         $loggedin=Yii::$app->user->identity->user_id;
         $employer2=$employerModel->getEmployer($loggedin);
         $employerID=$employer2->employer_id;
-        $modelLoanRepaymentPrepaid->employer_id=$employerID;
+        $modelLoanRepayment->employer_id=$employerID;
 		$modelLoanRepayment->scenario='gepgPayment';
         if ($modelLoanRepayment->load(Yii::$app->request->post())) {
 		$controlNumber = $modelLoanRepayment->control_number;
@@ -647,6 +647,19 @@ public function actionRequestgsppAllemploydeductform()
         $sms="Operation Successful!";
         Yii::$app->getSession()->setFlash('success', $sms);
         return $this->redirect(['requestgspp-allemploydeduct']);
+    }
+	public function actionSendcontrolngspp()
+    {
+        $data=\frontend\modules\repayment\models\LoanRepaymentDetail::sendControlNumberToGSPP();
+        $config=['uri'=>Yii::$app->params['GSPP']['api_base_uri_contrln'],
+            'username'=>Yii::$app->params['GSPP']['auth_username'],
+            'password'=>Yii::$app->params['GSPP']['auth_password'],
+        ];
+        $GSSPSoapClient=new GSPPSoapClient($config);
+        $GSSPSoapClient->sendControlNumber($data);
+        $sms="Operation Successful!";
+        Yii::$app->getSession()->setFlash('success', $sms);
+        return $this->redirect(['requestgspp-monthdeduction']);
     }
 	
 }

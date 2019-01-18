@@ -2018,4 +2018,17 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         }
         return $totalLoan;
     }
+	
+	public static function getTotalVRFBeforeRepayment($loan_summary_id, $loan_given_to,$applicant_id)
+    {
+        $details_amount = self::findBySql("SELECT SUM(loan_summary_detail.vrf_before_repayment) AS vrf_before_repayment "
+            . "FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id  WHERE  loan_summary_detail.loan_summary_id='$loan_summary_id'  AND loan_summary_detail.loan_given_to='$loan_given_to' AND loan_summary_detail.applicant_id='$applicant_id'")->one();
+        return $details_amount;
+    }
+	public static function getTotalPRCBeforeRepayment($loan_summary_id, $loan_given_to,$applicant_id)
+    {
+        $details_amount = self::findBySql("SELECT SUM(loan_summary_detail.amount) AS amount "
+            . "FROM loan_summary_detail INNER JOIN loan_summary ON loan_summary.loan_summary_id=loan_summary_detail.loan_summary_id INNER JOIN loan_repayment_item ON loan_summary_detail.loan_repayment_item_id=loan_repayment_item.loan_repayment_item_id WHERE  loan_summary_detail.loan_summary_id='$loan_summary_id'  AND loan_summary_detail.loan_given_to='$loan_given_to' AND loan_summary_detail.applicant_id='$applicant_id' AND loan_repayment_item.item_code='PRC'")->one();
+        return $details_amount;
+    }
 }

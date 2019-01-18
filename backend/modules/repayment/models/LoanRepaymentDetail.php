@@ -442,5 +442,15 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord {
                 break;
         }
     }
+	public static function getFirstPaymentDate($applicantID, $loan_given_to) {
+        $results = self::findBySql("SELECT loan_repayment.receipt_date,loan_repayment_detail.loan_summary_id FROM loan_repayment_detail 
+                INNER JOIN  loan_repayment 
+                ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id
+                WHERE loan_repayment_detail.applicant_id='$applicantID' 
+                AND loan_repayment.payment_status=1 
+                AND loan_repayment_detail.loan_given_to='$loan_given_to'                 
+                ORDER BY loan_repayment_detail_id ASC")->one();
+        return $results;
+    }
 
 }
