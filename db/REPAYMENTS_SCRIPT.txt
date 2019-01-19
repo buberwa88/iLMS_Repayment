@@ -338,4 +338,8 @@ ALTER TABLE `report` ADD `report_student_code` INT(11) NULL DEFAULT NULL AFTER `
 ALTER TABLE `gepg_lawson` ADD `gsppContrlnAcknowledge` VARCHAR(300) NULL DEFAULT NULL AFTER `totalEmployees`;
 ALTER TABLE `gepg_lawson` ADD `gsppAcknDate` DATETIME NULL DEFAULT NULL AFTER `gsppContrlnAcknowledge`;
 
+##=================19-01-2019=====
+ALTER TABLE `gepg_bill` ADD `bill_reference_table_id` INT NULL DEFAULT NULL AFTER `bill_id`, ADD `bill_type` VARCHAR(50) NULL DEFAULT NULL AFTER `bill_reference_table_id`, ADD `bill_reference_table` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_type`;
+ALTER TABLE `gepg_receipt` ADD `bill_reference_table_id` INT NULL DEFAULT NULL AFTER `paymServProvName`, ADD `bill_type` VARCHAR(50) NULL DEFAULT NULL AFTER `bill_reference_table_id`, ADD `bill_reference_table` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_type`;
+
 

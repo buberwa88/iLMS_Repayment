@@ -651,14 +651,20 @@ public function actionRequestgsppAllemploydeductform()
 	public function actionSendcontrolngspp()
     {
         $data=\frontend\modules\repayment\models\LoanRepaymentDetail::sendControlNumberToGSPP();
+		if(isset($data['controlNo']) && !empty($data['controlNo'])){
         $config=['uri'=>Yii::$app->params['GSPP']['api_base_uri_contrln'],
             'username'=>Yii::$app->params['GSPP']['auth_username'],
             'password'=>Yii::$app->params['GSPP']['auth_password'],
         ];
         $GSSPSoapClient=new GSPPSoapClient($config);
-        $GSSPSoapClient->sendControlNumber($data);
-        $sms="Operation Successful!";
-        Yii::$app->getSession()->setFlash('success', $sms);
+        $output=$GSSPSoapClient->sendControlNumber($data);
+		if($output){
+		 \frontend\modules\repayment\models\GepgLawson::confirmControlNumberSentToGSPP($data['controlNo'],$output);
+		 $sms="Operation Successful!";
+		 Yii::$app->getSession()->setFlash('success', $sms);
+		}        
+        
+		}
         return $this->redirect(['requestgspp-monthdeduction']);
     }
 	

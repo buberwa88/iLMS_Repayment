@@ -117,10 +117,10 @@ class GSPPSoapClient extends Component {
 
     public function sendControlNumber($data)
     {
-        $controlNumber = $data['controlNo'];
+        //$controlNumber = $data['controlNo'];
         //$deductionCode = $data['deductionCode'];
         $output='';
-        if ($controlNumber != '') {
+       // if ($controlNumber != '') {
         $request_string = "<monthDeducContrnumber>
                    <DeducContrnumberInfo>
                    <DeductionCode>" . $data['deductionCode'] . "</DeductionCode>
@@ -146,9 +146,9 @@ class GSPPSoapClient extends Component {
         $info = curl_getinfo($obj);
         curl_close($obj);
 
-        \frontend\modules\repayment\models\GepgLawson::confirmControlNumberSentToGSPP($controlNumber,$output);
-    }
-        //return $output;
+        //\frontend\modules\repayment\models\GepgLawson::confirmControlNumberSentToGSPP($controlNumber,$output);
+	   //}
+        return $output;
         //return $data;
     }
 
