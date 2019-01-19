@@ -325,4 +325,13 @@ ALTER TABLE `loan_summary_detail` ADD `financial_year_id` INT(11) NULL DEFAULT N
 ALTER TABLE `employed_beneficiary` ADD `financial_year_id` INT(11) NULL DEFAULT NULL AFTER `matching`, ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `financial_year_id`;
 ALTER TABLE `employer` ADD `financial_year_id` INT(11) NULL DEFAULT NULL AFTER `vote_number`, ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `financial_year_id`;
 
+##======16-01-2019======
+ALTER TABLE `loan_repayment_detail` CHANGE `has_disco` `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes, 3: Has Both';
+ALTER TABLE `loan_repayment_detail` CHANGE `pre_post_heslb` `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB, 3: Both';
+ALTER TABLE `loan_summary_detail` CHANGE `has_disco` `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes, 3: Has Both';
+ALTER TABLE `loan_summary_detail` CHANGE `pre_post_heslb` `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB, 3: Both';
+
+##====================17-01-2019==================
+ALTER TABLE `report` ADD `report_student_code` INT(11) NULL DEFAULT NULL AFTER `excel_printing_mode`;
+
 

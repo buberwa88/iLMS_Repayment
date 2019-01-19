@@ -1650,6 +1650,46 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $loggedin = Yii::$app->user->identity->user_id;
         $loan_given_to = \frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_EMPLOYER;
         $todate = date("Y-m-d H:i:s");
+
+
+        //=======================
+        $resultsPrePost = '1';
+        $has_disco = '1';
+        $resultCount = \common\models\LoanBeneficiary::checkBeneficiaryDisco($applicantID);
+        $category = '05';
+        $prePre = 'Pre';
+        $prePost = 'Post';
+        $preHeslb = \common\models\LoanBeneficiary::checkBeneficiaryPrePostheslb($applicantID, $category, $prePre);
+        $PostHeslb = \common\models\LoanBeneficiary::checkBeneficiaryPrePostheslb($applicantID, $category, $prePost);
+        if ($PostHeslb == 0) {
+            if ($preHeslb == 0) {
+                $resultsPrePost = 1;
+            } else {
+                $resultsPrePost = 2;
+            }
+        } else {
+            if ($preHeslb == 0) {
+                $resultsPrePost = 1;
+            } else {
+                $resultsPrePost = 3;
+            }
+        }
+        $currentFinancialYearID = \frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
+        $currentAcademicYearID = \frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
+
+        if ($resultCount == 0) {
+            $has_disco = 1;
+        } else {
+            $resultCountNonDisco = \common\models\LoanBeneficiary::checkBeneficiaryNonDisco($applicantID);
+            if ($resultCountNonDisco > 0) {
+                $has_disco = 3;
+            } else {
+                $has_disco = 2;
+            }
+        }
+        //==========================
+
+        if ($employerID != '') {
         if ($itemCategory == 'PRC') {
             $principal_id = \backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCategory);
             //check if exists in loan summary
@@ -1667,8 +1707,13 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                         'employer_id' => $employerID,
                         'created_at' => $todate,
                         'created_by' => $loggedin,
+                        'has_disco' => $has_disco,
+                        'pre_post_heslb' => $resultsPrePost,
+                        'financial_year_id' => $currentFinancialYearID,
+                        'current_academic_year_id' => $currentAcademicYearID,
                     ])->execute();
-                Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$principal_id','$academicYearID','$amount','$todate','$todate','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+                //Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$principal_id','$academicYearID','$amount','$todate','$todate','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+                \backend\modules\repayment\models\Loan::insertLoanGeneral($applicantID,$application_id,$principal_id,$academicYearID,$amount,$loan_given_to,$loggedin);
             }
         }
         if ($itemCategory == 'VRF') {
@@ -1689,10 +1734,18 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                         'employer_id' => $employerID,
                         'created_at' => $todate,
                         'created_by' => $loggedin,
+                        'has_disco' => $has_disco,
+                        'pre_post_heslb' => $resultsPrePost,
+                        'financial_year_id' => $currentFinancialYearID,
+                        'current_academic_year_id' => $currentAcademicYearID,
                     ])->execute();
-                Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$vrf_id','$amount','$todate','$todate','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+                //Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$vrf_id','$amount','$todate','$todate','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+
+                $academicYearID='';
+                \backend\modules\repayment\models\Loan::insertLoanGeneral($applicantID,$application_id,$vrf_id,$academicYearID,$amount,$loan_given_to,$loggedin);
             }
         }
+    }
     }
 
     public static function getTotalAmountForLoanSummary($loan_summary_id, $loan_given_to)
@@ -1713,6 +1766,10 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
         $si = 0;
         $moder = new EmployedBeneficiary();
         $billDetailModel = new LoanRepaymentDetail();
+
+        //=======================
+        $resultsPrePost='1';
+        $has_disco='1';
        $resultCount=\common\models\LoanBeneficiary::checkBeneficiaryDisco($applicantID);
         $category='05';
         $prePre='Pre';
@@ -1726,12 +1783,24 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
                $resultsPrePost= 2;
            }
            }else{
-           $resultsPrePost= 1;
+           if($preHeslb==0){
+               $resultsPrePost= 1;
+           }else{
+               $resultsPrePost= 3;
+           }
        }
         $currentFinancialYearID=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
         $currentAcademicYearID=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
 
-       if($resultCount==0){$has_disco=1;}else{$has_disco=2;}
+       if($resultCount==0){$has_disco=1;}else{
+           $resultCountNonDisco=\common\models\LoanBeneficiary::checkBeneficiaryNonDisco($applicantID);
+           if($resultCountNonDisco > 0){
+               $has_disco=3;
+           }else{
+               $has_disco=2;
+           }
+           }
+       //==========================
         $itemCodePrincipal = "PRC";
         $principal_id = $moder->getloanRepaymentItemID($itemCodePrincipal);
         //check if exists in any bill before
@@ -1756,7 +1825,8 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 
                 Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_summary_detail(loan_summary_id,applicant_id,loan_repayment_item_id,academic_year_id,amount,created_at,created_by,has_disco,pre_post_heslb,financial_year_id,current_academic_year_id) VALUES('$loan_summary_id','$applicantID','$principal_id','$academicYearID','$pricipalLoan','$created_at','$loggedin','$has_disco','$resultsPrePost','$currentFinancialYearID','$currentAcademicYearID')")->execute();
 //INSERT INTO loan table toget the acumulated loan of beneficiary based on loan number/application id
-                Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$loan_number','$principal_id','$academicYearID','$pricipalLoan','$created_at','$created_at','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+                //Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,academic_year_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$loan_number','$principal_id','$academicYearID','$pricipalLoan','$created_at','$created_at','0','$loan_given_to','$loggedin','$loggedin')")->execute();
+  \backend\modules\repayment\models\Loan::insertLoanGeneral($applicantID,$loan_number,$principal_id,$academicYearID,$pricipalLoan,$loan_given_to,$loggedin);
 //end
             }
             ++$si;

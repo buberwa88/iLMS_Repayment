@@ -382,7 +382,9 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 		$penalty_to_pay=0;	
 		}
 		if($penalty_to_pay > 0){
-        Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$PNT_id','$penalty_to_pay','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();	
+        //Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$PNT_id','$penalty_to_pay','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();
+            $academicYearID='';
+            \backend\modules\repayment\models\Loan::insertLoanGeneral($applicantID,$application_id,$PNT_id,$academicYearID,$penalty_to_pay,$loan_given_to,$loggedin);
         }		
 		}
 		/////////////        
@@ -431,7 +433,10 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
 		$LAF_to_pay=0;	
 		}	
 		if($LAF_to_pay > 0){
-        Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$LAF_id','$LAF_to_pay','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();		
+        //Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$LAF_id','$LAF_to_pay','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();
+
+            $academicYearID='';
+            \backend\modules\repayment\models\Loan::insertLoanGeneral($applicantID,$application_id,$LAF_id,$academicYearID,$LAF_to_pay,$loan_given_to,$loggedin);
 		}
 		}
         }
@@ -587,7 +592,10 @@ return 	round($totlaVRF,2);
                                  $totlaVRF +=($pricipalLoan*$VRF_Rate*$totalNumberOfDays)/$numberOfDaysPerYear;
                     }
 					if($totlaVRF > 0){
-					Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$vrf_id','$totlaVRF','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();
+					//Yii::$app->db->createCommand("INSERT IGNORE INTO  loan(applicant_id,loan_number,loan_repayment_item_id,amount,created_at,updated_at,is_full_paid,loan_given_to,created_by,updated_by) VALUES('$applicantID','$application_id','$vrf_id','$totlaVRF','$created_at','$created_at','','$loan_given_to','$loggedin','$loggedin')")->execute();
+
+                        $academicYearID='';
+                        \backend\modules\repayment\models\Loan::insertLoanGeneral($applicantID,$application_id,$vrf_id,$academicYearID,$totlaVRF,$loan_given_to,$loggedin);
 		}	
 		}
 		/*

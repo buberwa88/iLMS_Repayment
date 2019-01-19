@@ -598,6 +598,7 @@ class ReportController extends Controller {
                     //$mpdf = new \Mpdf\Mpdf(['orientation' => 'L']);
                     //$mpdf->showImageErrors = true;
                     //$mpdf->SetHTMLHeader('','',true);
+                $reportLabel='';
                     $mpdf->SetDefaultFontSize(8.0);
                     $mpdf->useDefaultCSS2 = true;
                     $mpdf->SetTitle('Report');
@@ -664,12 +665,15 @@ class ReportController extends Controller {
             }else if($id==20){
             $custtomerState="<br/><strong>CUSTOMER STATEMENT : REPAYMENT SCHEDULE</strong>";           
              $pritedOnside=$printed_on;
-            }else{
+            }else if($id==18){
 			 $custtomerState="<hr>
          <strong>CUSTOMER STATEMENT</strong>
            <hr>"; 
              $pritedOnside="Loan Collection Acounts:<br/>".$desc."<br/>".$printed_on;	
-			}
+			}else{
+                        $custtomerState="<br/><strong>".$modelReportTemplate->name." REPORT"."</strong>";
+                        $pritedOnside=$printed_on;
+                    }
             if($modelReportTemplate->printing_mode ==1){
                      $reportLabel = "report_" . date("Y_m_d_h_m_s");
                      $printedBy="Printed By: " . Yii::$app->user->identity->firstname . " " . Yii::$app->user->identity->surname."<br/><br/>Verified By : ______________________________________________ ";
@@ -866,6 +870,7 @@ class ReportController extends Controller {
             $application_id = $posted_data['Application']['application_id'];
             $applicant_id = $posted_data['Application']['applicant_id'];
 			$export_mode = $posted_data['Application']['export_mode'];
+                $reportLabel='';
             if($id==''){
                 $reportName="";
                 $htmlContent="";

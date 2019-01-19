@@ -1111,7 +1111,7 @@ class EmployedBeneficiaryController extends Controller
                 if (count($employeesLoanSummary) > 0) {
                     foreach ($employeesLoanSummary AS $employeesLoanSumResults) {
                         $employer_id = $employeesLoanSumResults->employer_id;
-                        $disbursed_amount = $employeesLoanSumResults->disbursed_amount;
+                        $disbursed_amount = round($employeesLoanSumResults->disbursed_amount,2);
                         $academic_year_id = $employeesLoanSumResults->academic_year_id;
                         $applicant_id = $employeesLoanSumResults->applicant_id;
                         $application_id = $employeesLoanSumResults->application_id;
@@ -1146,6 +1146,7 @@ class EmployedBeneficiaryController extends Controller
                             $itemCategory = "PRC";
                             $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $disbursed_amount, $application_id);
                             $totalVRF = $LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id, $date, $loan_given_to);
+                            $totalVRF=round($totalVRF,2);
                             if ($totalVRF > 0) {
                                 $itemCategory = "VRF";
                                 $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $totalVRF, $application_id);
@@ -1155,6 +1156,7 @@ class EmployedBeneficiaryController extends Controller
                             $itemCategory = "PRC";
                             $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $disbursed_amount, $application_id);
                             $totalVRF = $LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id, $date, $loan_given_to);
+                            $totalVRF=round($totalVRF,2);
                             if ($totalVRF > 0) {
                                 $itemCategory = "VRF";
                                 $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $totalVRF, $application_id);

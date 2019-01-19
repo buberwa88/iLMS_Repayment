@@ -59,7 +59,7 @@ class LoanBeneficiary extends \yii\db\ActiveRecord {
     public $end_date;
     public $loan_no;
     public $name;
-    public $schedule_principal_amount;
+    //public $schedule_principal_amount;
     
     public function rules() {
         return [
@@ -1068,7 +1068,7 @@ $created_at=date("Y-m-d H:i:s");
 $lastPaymentDate=$lastPaymentDate;
 //check exists in loan beneficiary table
 if(self::find()->where(['applicant_id'=>$applicant_id])->count()==0){
- Yii::$app->db->createCommand("INSERT IGNORE INTO  loan_beneficiary(applicant_id,created_at,updated_at) VALUES('$applicant_id','$created_at','$created_at')")->execute();	
+    self::insertLoanBeneficiary($applicant_id);
 }
 self::updateAll(['schedule_principal_amount' => $schedule_principal_amount,'schedule_penalty'=>$schedule_penalty,'schedule_laf'=>$schedule_laf,'schedule_vrf'=>$schedule_vrf,'schedule_total_loan_amount'=>$schedule_total_loan_amount,'schedule_start_date'=>$schedule_start_date,'schedule_end_date'=>$lastPaymentDate,'monthly_installment'=>$monthly_installment], 'applicant_id ="' . $applicant_id . '"');	
 
@@ -1082,6 +1082,12 @@ self::updateAll(['schedule_principal_amount' => $schedule_principal_amount,'sche
         $allApplications = \common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
         return  \backend\modules\disbursement\models\Disbursement::findBySql("SELECT application.* FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id "
             . "  WHERE disbursement.application_id IN($allApplications) AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL AND application.student_status='STOPED'")->count();
+    }
+
+    public static function checkBeneficiaryNonDisco($applicant_id) {
+        $allApplications = \common\models\LoanBeneficiary::getAllApplicantApplications($applicant_id);
+        return  \backend\modules\disbursement\models\Disbursement::findBySql("SELECT application.* FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id "
+            . "  WHERE disbursement.application_id IN($allApplications) AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL AND application.student_status<>'STOPED'")->count();
     }
 
 
@@ -1113,7 +1119,20 @@ self::updateAll(['schedule_principal_amount' => $schedule_principal_amount,'sche
         $financialYearIdGroup=self::getAllApplicantApplicationsUnderPreORpostheslb($applicant_id,$category,$prePost);
         $allApplications = self::getAllApplicantApplications($applicant_id);
         return  \backend\modules\disbursement\models\Disbursement::findBySql("SELECT application.* FROM disbursement INNER JOIN  disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id INNER JOIN academic_year ON academic_year.academic_year_id=disbursement_batch.academic_year_id INNER JOIN application ON application.application_id=disbursement.application_id "
-            . "  WHERE disbursement.application_id IN($allApplications) AND disbursement_batch.financial_year_id IN($financialYearIdGroup) AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL AND application.student_status='STOPED'")->count();
+            . "  WHERE disbursement.application_id IN($allApplications) AND disbursement_batch.financial_year_id IN($financialYearIdGroup) AND disbursement.status='8' AND disbursement_batch.is_approved='1' AND disbursement_batch.employer_id IS NULL")->count();
+    }
+
+    public static function insertLoanBeneficiary($applicant_id) {
+        $totalCount=self::findBySql("SELECT  loan_beneficiary.* FROM  loan_beneficiary WHERE  applicant_id='$applicant_id'")->count();
+        if($totalCount ==0){
+            $created_at=date("Y-m-d H:i:s");
+            Yii::$app->db->createCommand()
+                ->insert('loan_beneficiary', [
+                    'applicant_id' =>$applicant_id,
+                    'created_at'=>$created_at,
+                    'updated_at'=>$created_at,
+                ])->execute();
+        }
     }
 
 }
