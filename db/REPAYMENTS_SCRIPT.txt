@@ -314,9 +314,41 @@ ALTER TABLE `loan_beneficiary` CHANGE `learning_institution_id` `learning_instit
 ALTER TABLE `loan_beneficiary` CHANGE `liquidation_date_issues` `liquidation_date_issued` DATETIME NULL DEFAULT NULL COMMENT 'Date Liquidation letter was issued';
 ALTER TABLE `loan_beneficiary` CHANGE `loan_confirmation_status` `loan_confirmation_status` INT(1) NOT NULL DEFAULT '0' COMMENT 'Shows whether the loan was confirmed or not, 0=nt confirmed,1=confirmed';
 
+
 ##=================12-01-2019================
 ALTER TABLE `loan_repayment_detail` ADD `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB' AFTER `academic_year_id`;
 ALTER TABLE `loan_summary_detail` ADD `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB' AFTER `updated_by`;
+
+=======
+#######12/Jan/2019 from 29/Dec/2018 Charles Mhoja
+--
+-- Table structure for table `loan_non_beneficiary`
+--
+CREATE TABLE `loan_non_beneficiary` (
+  `applicant_id` int(11) NOT NULL,
+  `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by` int(11) NOT NULL,
+  `user_comments` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+ALTER TABLE `loan_non_beneficiary`
+ ADD KEY `loan_applicant_id_index` (`applicant_id`);
+
+
+ALTER TABLE `loan_non_beneficiary` 
+ADD `is_beneficiary` BOOLEAN NOT NULL DEFAULT FALSE AFTER `created_by`; 
+ALTER TABLE `loan_non_beneficiary` ADD INDEX `is_beneficiary_index` (`is_beneficiary`)
+
+ALTER TABLE loan_non_beneficiary
+ADD CONSTRAINT FK_applicant_applicant_id
+FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id)
+ON UPDATE CASCADE
+ON DELETE CASCADE,
+
+ADD CONSTRAINT FK_user_created_by
+FOREIGN KEY (created_by) REFERENCES user(user_id)
+ON UPDATE CASCADE
+ON DELETE CASCADE;
 
 ##=====14-01-2019------
 ALTER TABLE `loan_repayment_detail` ADD `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes' AFTER `pre_post_heslb`;
@@ -341,5 +373,8 @@ ALTER TABLE `gepg_lawson` ADD `gsppAcknDate` DATETIME NULL DEFAULT NULL AFTER `g
 ##=================19-01-2019=====
 ALTER TABLE `gepg_bill` ADD `bill_reference_table_id` INT NULL DEFAULT NULL AFTER `bill_id`, ADD `bill_type` VARCHAR(50) NULL DEFAULT NULL AFTER `bill_reference_table_id`, ADD `bill_reference_table` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_type`;
 ALTER TABLE `gepg_receipt` ADD `bill_reference_table_id` INT NULL DEFAULT NULL AFTER `paymServProvName`, ADD `bill_type` VARCHAR(50) NULL DEFAULT NULL AFTER `bill_reference_table_id`, ADD `bill_reference_table` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_type`;
+ALTER TABLE `loan_non_beneficiary` ADD `is_active` BOOLEAN NOT NULL DEFAULT TRUE AFTER `user_comments`;
+ALTER TABLE `loan_non_beneficiary` CHANGE `user_comments` `user_comments` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL;
+
 
 
