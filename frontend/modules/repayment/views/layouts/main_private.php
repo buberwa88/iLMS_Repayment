@@ -194,6 +194,7 @@ if($notificationFailedEmployee > 0){
     //["label" => "New Loan Summary".$notificationNewLoanSummaryFinalResults, "url" => Url::to(['/repayment/loan-summary/index-notfication']), 'active' => (Yii::$app->controller->action->id == 'index-notfication'&&Yii::$app->controller->id=='loan-summary')],
 	["label" => "Waiting Control Number", "url" => Url::to(['/repayment/loan-repayment/waiting-controlnumber']), 'active' => (Yii::$app->controller->action->id == 'waiting-controlnumber'&&Yii::$app->controller->id=='loan-repayment')],
     ["label" => "Pending Payments".$notificationPaymentPendingFinalReslt, "url" => Url::to(['/repayment/loan-repayment/index-notification']), 'active' => (Yii::$app->controller->action->id == 'index-notification'&&Yii::$app->controller->id=='loan-repayment')],
+	["label" => "Contrl # Redirect", "url" => Url::to(['/repayment/loan-repayment/testgepg-controlnumber']), 'active' => (Yii::$app->controller->action->id == 'testgepg-controlnumber'&&Yii::$app->controller->id=='loan-repayment')],
 	],
                         ],
 									

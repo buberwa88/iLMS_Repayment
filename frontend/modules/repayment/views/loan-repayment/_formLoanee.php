@@ -53,9 +53,16 @@ $amountApplicant=\frontend\modules\repayment\models\EmployedBeneficiary::MINIMUM
 $bill_number=$model->bill_number;
 $outstandingDebt=$outstandingDebt;
 $outstandingDebt22=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($results->applicant_id,$date,$loan_given_to);
+$testingLocal=\frontend\modules\repayment\models\LoanRepayment::TESTING_REPAYMENT_LOCAL;
+			//GePG LIVE
+			if($testingLocal=='N'){
+$controlNumber=null;
+$date=null;
+			}
+			if($testingLocal=='T'){
 $controlNumber=mt_rand (10,100);
 $date=date("Y-m-d H:i:s");
-
+			}
 ?>
 <script>
   function check_status() {

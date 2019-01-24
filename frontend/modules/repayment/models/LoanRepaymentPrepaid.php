@@ -73,7 +73,7 @@ class LoanRepaymentPrepaid extends \yii\db\ActiveRecord
             [['employer_id', 'applicant_id', 'loan_summary_id', 'created_by', 'payment_status', 'cancelled_by', 'gepg_cancel_request_status', 'monthly_deduction_status'], 'integer'],
             [['monthly_amount'], 'number'],
             [['payment_date', 'created_at', 'date_bill_generated', 'date_control_received', 'receipt_date', 'date_receipt_received', 'cancelled_at', 'date_deducted'], 'safe'],
-            [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 20],
+            [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 100],
             [['cancel_reason'], 'string', 'max' => 200],
         ];
     }

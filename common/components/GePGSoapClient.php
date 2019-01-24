@@ -12,7 +12,7 @@ class GePGSoapClient extends Component {
 
     public $server_uri; ///base url/ip forthe Gepg System
     public $post_url;
-    public $gfs_code; /// 
+    //public $gfs_code; ///
     public $sp_code; ///service provider code
     public $sp_subcode; //service provider subcode
     public $sp_id; //service provider id 
@@ -105,19 +105,22 @@ class GePGSoapClient extends Component {
      */
 
     public function sendBill($params) {
-        $sp_code = $this->gfs_code; // \Yii::$app->params['GePG']['sp_code'];
-        $sp_subcode = $this->gfs_subcode; // \Yii::$app->params['GePG']['sp_subcode'];
+        $sp_code = $this->sp_code; // \Yii::$app->params['GePG']['sp_code'];
+        $sp_subcode = $this->sp_subcode; // \Yii::$app->params['GePG']['sp_subcode'];
         $service_provider_id = $this->sp_id; // \Yii::$app->params['GePG']['sp_id'];
         /////bill details
         $bill_no = $params["bill_number"];
         $bill_amount = $params["amount"];
-        $bill_type = $params['bill_type']; // bill type "Application Fees Payment";
+        $bill_type = $params['bill_type']; // e.g 140313
         $bill_desc = $params['bill_description']; // Bill details "Application Fees Payment";
-        $bill_gen_date = date('Y-m-d' . '\T' . 'h:i:s');
+        $bill_gen_date = $params['bill_gen_date']; //date('Y-m-d' . '\T' . 'H:i:s');
         $bill_gernerated_by = $params['bill_gernerated_by'];
         $bill_payer_id = $params['bill_payer_id'];
         $bill_payer_name = trim($params['payer_name']);
         $payer_phone_number = trim($params["payer_phone_number"]);
+        $bill_reference_table_id=$params['bill_reference_table_id'];
+        $bill_reference_table=$params['bill_reference_table'];
+        $bill_expiry_date=$params['bill_expiry_date'];
         $payer_email = "";
         $content = "<gepgBillSubReq>" .
                 "<BillHdr>" .
@@ -130,7 +133,7 @@ class GePGSoapClient extends Component {
                 "<SpSysId>" . $service_provider_id . "</SpSysId>" .
                 "<BillAmt>" . $bill_amount . "</BillAmt>" .
                 "<MiscAmt>0</MiscAmt>" .
-                "<BillExprDt>" . Date('Y-m-d' . '\T' . 'h:i:s', strtotime("+$this->bill_expiry_date days")) . "</BillExprDt>" .
+                "<BillExprDt>" . Date('Y-m-d' . '\T' . 'h:i:s', strtotime("+$bill_expiry_date days")) . "</BillExprDt>" .
                 "<PyrId>" . $bill_payer_id . "</PyrId>" .
                 "<PyrName>" . $bill_payer_name . "</PyrName>" .
                 "<BillDesc>" . $bill_desc . "</BillDesc>" .
@@ -156,30 +159,7 @@ class GePGSoapClient extends Component {
                 "</BillTrxInf>" .
                 "</gepgBillSubReq>";
         $signature = $this->generateSignature($content);
-//$signature = base64_encode($signature);  //output crypted data base64 encoded
-//Compose xml request
         $data_string = "<Gepg>" . $content . "<gepgSignature>" . $signature . "</gepgSignature></Gepg>";
-
-        /*
-          //$bill_request_url = $this->post_url; //\Yii::$app->params['GePG']['send_bill_url']; //this is for each
-          $ch = curl_init($bill_request_url);
-          curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-          curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-          curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-          curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-          curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-          'Content-Type:application/xml',
-          'Gepg-Com:default.sp.in',
-          'Gepg-Code:' . $sp_code, //'Gepg-Code:SP111'
-          'Content-Length:' . strlen($data_string))
-          );
-          curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-          curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-          //Capture returned content from GePG
-          $resultCurlPost = curl_exec($ch);
-          curl_close($ch);
-          return $resultCurlPost
-         */;
         return $this->postRequest($data_string);
     }
 
@@ -220,7 +200,8 @@ class GePGSoapClient extends Component {
      * used to cancel any bill sent to GePG system
      * $params: Bill parameters required to cancel the bill
      */
-
+ ###commented by me telesphory####
+    /*
     public function cancelBill($params) {
         $content = "<gepgBillCanclReq>" .
                 "<SpCode>" . $SpCode . "</SpCode>" .
@@ -231,14 +212,15 @@ class GePGSoapClient extends Component {
         $data_string = "<Gepg>" . $content . "<gepgSignature>" . $signature . "</gepgSignature></Gepg>";
         return $this->postRequest($data_string);
     }
-
+*/
+    ############end commented by me telesphory##############
     public function postReconciliation($params) {
         $content = "<gepgSpReconcReq>" .
-                "<SpReconcReqId>" . $params['sp_recon_req_id'] . "</SpReconcReqId>" .
+                "<SpReconcReqId>" . $params['SpReconcReqId'] . "</SpReconcReqId>" .
                 "<SpCode>" . $this->sp_code . "</SpCode>" .
                 "<SpSysId>" . $this->sp_id . "</SpSysId>" .
-                "<TnxDt>" . $params['transaction_date'] . "</TnxDt>" .
-                "<ReconcOpt>" . $params['recon_opt'] . "</ReconcOpt>" .
+                "<TnxDt>" . $params['TnxDt'] . "</TnxDt>" .
+                "<ReconcOpt>" . $params['ReconcOpt'] . "</ReconcOpt>" .
                 "</gepgSpReconcReq>";
 
         $signature = $this->generateSignature($content);

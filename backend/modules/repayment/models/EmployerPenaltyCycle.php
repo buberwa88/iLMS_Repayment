@@ -36,6 +36,8 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
 /**
      * @inheritdoc
      */
+	 public $penalty;
+	 public $payment_deadline_day_per_month;
     public function rules() {
         return [
             [['employer_id', 'repayment_deadline_day', 'duration', 'is_active', 'created_by', 'updated_by'], 'integer'],
@@ -45,7 +47,7 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
             [['duration_type', 'cycle_type'], 'string'],
             [['start_date'], 'compare', 'operator' => '>=', 'compareValue' => date('Y-m-d', time())],
             [['end_date'], 'compare', 'operator' => '>=', 'compareAttribute' => 'start_date'],
-            [['start_date', 'end_date', 'created_at', 'updated_at'], 'safe'],
+            [['start_date', 'end_date', 'created_at', 'updated_at','penalty','payment_deadline_day_per_month'], 'safe'],
         ];
     }
 

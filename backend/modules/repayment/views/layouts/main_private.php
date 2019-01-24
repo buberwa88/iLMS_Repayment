@@ -285,6 +285,7 @@ if ($beneficiaryOnstudy > 0) {
                                             ["label" => "Sector", "url" => Url::to(['/repayment/nature-of-work']), 'active' => (Yii::$app->controller->id == 'nature-of-work')],
 											["label" => "GePG Payment", "url" => Url::to(['/repayment/loan-repayment/gepg-payments']), 'active' => (Yii::$app->controller->id == 'loan-repayment' && (Yii::$app->controller->action->id == 'gepg-payments'))],
 											["label" => "Loan Summary", "url" => Url::to(['/repayment/employed-beneficiary/loanthrough-employers']), 'active' => (Yii::$app->controller->id == 'employed-beneficiary' && (Yii::$app->controller->action->id == 'loanthrough-employers'))],
+											["label" => "GePG Bill Proccessing Setting", "url" => Url::to(['/repayment/gepg-bill-processing-setting/index']), 'active' => (Yii::$app->controller->id == 'gepg-bill-processing-setting')],
                                         ],
                                     ],
                                     [

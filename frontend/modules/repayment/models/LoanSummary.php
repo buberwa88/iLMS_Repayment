@@ -64,7 +64,7 @@ class LoanSummary extends \yii\db\ActiveRecord
             [['amount'], 'number'],
             [['created_at', 'status', 'employer_name', 'Employer_Code', 'Bill_Ref_No', 'traced_by', 'number_of_employees', 'dateSubmitted', 
                 'amountx', 'description', 'principal', 'penalty', 'LAF', 'VRF', 'totalLoan','paid','outstanding','vrf_accumulated','vrf_last_date_calculated'], 'safe'],
-            [['reference_number'], 'string', 'max' => 50],
+            [['reference_number'], 'string', 'max' => 100],
             [['reference_number'], 'unique', 'message' =>'Bill number already exist'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
             [['employer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Employer::className(), 'targetAttribute' => ['employer_id' => 'employer_id']],

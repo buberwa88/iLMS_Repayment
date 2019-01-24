@@ -24,6 +24,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+	 
     public static function tableName()
     {
         return 'employer_penalty_payment';
@@ -35,6 +36,9 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
 	 public $totalAmount;
 	 public $outstandingAmount;
 	 public $paidAmount;
+	 public $employer_code;
+	 public $employer_name;
+	 public $phone_number;
     public function rules()
     {
         return [
@@ -44,7 +48,7 @@ class EmployerPenaltyPayment extends \yii\db\ActiveRecord
             [['employer_id'], 'integer'],
             //[['amount'], 'number', 'min' => 1000],		
             //['age', 'integer', 'min' => 0],			
-            [['payment_date', 'created_at','control_number','receipt_number','pay_method_id','date_control_requested','date_control_received','date_receipt_received','payment_status','totalAmount','outstandingAmount','paidAmount','employer_id', 'amount',], 'safe'],
+            [['payment_date', 'created_at','control_number','receipt_number','pay_method_id','date_control_requested','date_control_received','date_receipt_received','payment_status','totalAmount','outstandingAmount','paidAmount','employer_id', 'amount','employer_code','employer_name','phone_number','receipt_date'], 'safe'],
         ];
     }
 
@@ -520,5 +524,39 @@ public static function getAmountTobePaidemployedBeneficiary($loan_summary_id,$ap
         $totalAmount +=$amount;		   
 	 return $totalAmount;
 }
+public static function getEmployerPenaltyDetails($employer_penalty_payment_id){
+        $details = self::findBySql("SELECT  employer_penalty_payment.bill_number,employer_penalty_payment.amount,employer.employer_code,employer.employer_name,employer_penalty_payment.date_control_requested,employer.phone_number  FROM employer_penalty_payment INNER JOIN employer ON employer_penalty_payment.employer_id=employer.employer_id  WHERE  employer_penalty_payment.employer_penalty_payment_id='$employer_penalty_payment_id'")->one();
 
+		if(count($details) > 0){
+    $dataToQueue = [
+        "bill_number" => $details->bill_number,
+        "amount"=>$details->amount,
+        "bill_type"=>\frontend\modules\repayment\models\LoanRepayment::EMPLOYER_PENALTY_GFSCODE,
+        "bill_description"=>\frontend\modules\repayment\models\LoanRepayment::EMPLOYER_PENALTY_BILL_DESC,
+        "bill_gen_date"=>date('Y-m-d' . '\T' . 'H:i:s',strtotime($details->date_control_requested)),
+        "bill_gernerated_by"=>$details->employer_name,
+        "bill_payer_id"=>$details->employer_code,
+        "payer_name"=>$details->employer_name,
+        "payer_phone_number"=>$details->phone_number,
+        "bill_expiry_date"=>\frontend\modules\repayment\models\LoanRepayment::BILL_EXPIRE_DATE_EMPLOYER_PENALTY,
+        "bill_reference_table_id"=>$employer_penalty_payment_id,
+        "bill_reference_table"=>"employer_penalty_payment",
+		"primary_keycolumn"=>"employer_penalty_payment_id",
+    ];
+
+        return $dataToQueue;
+		}else{
+		return '';	
+		}
+}
+public static function getBillPenaltyEmployer($employerID,$year){
+	return self::findBySql("SELECT * FROM employer_penalty_payment WHERE  payment_date LIKE '$year%' AND employer_id='$employerID'")->count();
+}
+public static function updateControlngepgrealy($control_number,$bill_number,$date_control_received){	
+        self::updateAll(['date_control_received'=>$date_control_received,'control_number'=>$control_number,'payment_status'=>0], 'bill_number ="'.$bill_number.'" AND (control_number="" OR control_number IS NULL)');        
+    }
+public static function updatePaymentAfterGePGconfirmPaymentDonepenaltylive($controlNumber,$paid_amount,$date_receipt_received,$receiptDate,$receiptNumber){
+        self::updateAll(['payment_status' =>'1','receipt_date'=>$receiptDate,'date_receipt_received'=>$date_receipt_received,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND payment_status ="0"');
+
+    }
 }

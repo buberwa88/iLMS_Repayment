@@ -38,7 +38,17 @@ class LoanRepayment extends \yii\db\ActiveRecord
      * @inheritdoc
      */
 	 const DEDUCTION_DATE_REQUEST=26;
-	 const TREAURY_BILL_FORMAT="TRES";
+	 const EMPLOYER_BILL_FORMAT="RPEMP";
+	 const BENEFICIARY_BILL_FORMAT="RPBEN";
+	 const TREAURY_BILL_FORMAT="RPTRE";
+	 const EMPLOYER_PENALTY_BILL_FORMAT="EPPNT";
+     const LOAN_REPAYMENT_GFSCODE="140314";//TO ASK HESLB
+	 const EMPLOYER_PENALTY_GFSCODE="140315";//TO ASK HESLB
+     const LOAN_REPAYMENT_BILL_DESC="Loan Repayment";//TO ASK HESLB
+	 const EMPLOYER_PENALTY_BILL_DESC="Employer Penalty";//to ask HESLB
+     const BILL_EXPIRE_DATE_LOAN_REPAYMENT=90;//TO ASK HESLB
+	 const BILL_EXPIRE_DATE_EMPLOYER_PENALTY=90;//TO ASK HESL
+	 const TESTING_REPAYMENT_LOCAL="T";//N
 	 
     public static function tableName()
     {
@@ -69,6 +79,11 @@ class LoanRepayment extends \yii\db\ActiveRecord
 	public $outstandingAmount;
 	public $payment_date2;
 	public $payCategory;
+	public $employer_code;
+	public $employer_name;
+	public $phone_number;
+	public $email_address;
+	public $name;
 
     public function rules()
     {
@@ -81,8 +96,8 @@ class LoanRepayment extends \yii\db\ActiveRecord
             [['employerId_bulk'], 'required','on'=>'bulkBillTreasury'],
             [['payment_date'], 'required','on'=>'billConfirmationTreasury'],
 			[['payment_date'], 'required','on'=>'gspp_monthly_deduction_request'],
-            [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource','receipt_date','vote_number','Vote_name','gepg_lawson_id','lowason_check_date'], 'safe'],
-            [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 20],
+            [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource','receipt_date','vote_number','Vote_name','gepg_lawson_id','lowason_check_date','employer_code','employer_name','phone_number','email_address','name'], 'safe'],
+            [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 100],
             [['pay_phone_number'], 'string', 'max' => 13],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
             [['employer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Employer::className(), 'targetAttribute' => ['employer_id' => 'employer_id']],
@@ -286,7 +301,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
 		
 		//here to update the acrued VRF from last payment after payment confirmed
 		$detailsAllApplicantVRF = LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_summary_id AS 'loan_summary_id',loan_repayment_detail.applicant_id,loan_repayment_detail.loan_repayment_id,loan_repayment_detail.loan_repayment_item_id,loan_repayment.receipt_date  FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment.control_number='$controlNumber' GROUP BY loan_repayment_detail.applicant_id ORDER BY loan_repayment_detail.loan_repayment_detail_id DESC")->all();
+                . "WHERE  loan_repayment.control_number='$controlNumber' AND loan_repayment_detail.applicant_id > 0 GROUP BY loan_repayment_detail.applicant_id ORDER BY loan_repayment_detail.loan_repayment_detail_id DESC")->all();
 				foreach($detailsAllApplicantVRF AS $resultsAppvrf){
         $loan_summary_id=$resultsAppvrf->loan_summary_id;
 		$applicantID=$resultsAppvrf->applicant_id;
@@ -317,7 +332,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
 		
 		//here to update the loan balance after payment confirmed
 		$detailsAllApplicants = LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_summary_id AS 'loan_summary_id',loan_repayment_detail.applicant_id,loan_repayment_detail.loan_repayment_id,loan_repayment_detail.loan_repayment_item_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment.control_number='$controlNumber' GROUP BY loan_repayment_detail.applicant_id ORDER BY loan_repayment_detail.loan_repayment_detail_id DESC")->all();
+                . "WHERE  loan_repayment.control_number='$controlNumber' AND loan_repayment_detail.applicant_id > 0 GROUP BY loan_repayment_detail.applicant_id ORDER BY loan_repayment_detail.loan_repayment_detail_id DESC")->all();
 				foreach($detailsAllApplicants AS $resultsApp){
         $loan_summary_id=$resultsApp->loan_summary_id;
 		$applicantID=$resultsApp->applicant_id;
@@ -333,6 +348,58 @@ class LoanRepayment extends \yii\db\ActiveRecord
 	}
 		//end
  }
+
+public static function updatePaymentAfterGePGconfirmPaymentDonelive($controlNumber,$paid_amount,$date_receipt_received,$receiptDate,$receiptNumber){
+		$loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+		$model=new LoanSummary();		
+		//here to update the acrued VRF from last payment after payment confirmed
+		$detailsAllApplicantVRF = LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_summary_id AS 'loan_summary_id',loan_repayment_detail.applicant_id,loan_repayment_detail.loan_repayment_id,loan_repayment_detail.loan_repayment_item_id,loan_repayment.receipt_date  FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
+                . "WHERE  loan_repayment.control_number='$controlNumber' AND loan_repayment_detail.applicant_id > 0 GROUP BY loan_repayment_detail.applicant_id ORDER BY loan_repayment_detail.loan_repayment_detail_id DESC")->all();
+				foreach($detailsAllApplicantVRF AS $resultsAppvrf){
+        $loan_summary_id=$resultsAppvrf->loan_summary_id;
+		$applicantID=$resultsAppvrf->applicant_id;
+		$loanRepaymentId=$resultsAppvrf->loan_repayment_id;
+		$loan_repayment_item_id=$resultsAppvrf->loan_repayment_item_id;
+		$Currentpayment_date=date("Y-m-d",strtotime($receiptDate));
+		//check if there is any payment before
+		if (LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.amount FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1'")->exists()) {					
+					$detailsww = LoanRepaymentDetail::findBySql("SELECT loan_repayment.receipt_date FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' ORDER BY loan_repayment.loan_repayment_id DESC")->one();
+				$Previousrepayment_date=date("Y-m-d",strtotime($detailsww->receipt_date));			
+                \frontend\modules\repayment\models\LoanRepaymentDetail::updateAcruedVRFToBeneficiaryOnEveryPayment($loan_summary_id,$applicantID,$loan_given_to,$loanRepaymentId,$Currentpayment_date,$Previousrepayment_date);
+		}
+		//end check
+		
+	}
+		//end
+		
+		
+        
+        //$this->updateAll(['payment_status' =>'1','date_control_received'=>$date_control_received,'receipt_date'=>$receiptDate,'date_receipt_received'=>$receiptDate,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND amount ="'.$amount.'" AND payment_status ="0"');
+		self::updateAll(['payment_status' =>'1','receipt_date'=>$receiptDate,'date_receipt_received'=>$date_receipt_received,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND payment_status ="0"');
+        $details = LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_summary_id AS 'loan_summary_id',loan_repayment_detail.applicant_id,loan_repayment_detail.loan_repayment_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
+                . "WHERE  loan_repayment.control_number='$controlNumber'")->one();
+        $loan_summary_id=$details->loan_summary_id;       $model->updateAll(['status' =>'1'], 'loan_summary_id ="'.$loan_summary_id.'" AND status<>2 AND status<>5 AND status<>4');
+		
+		//here to update the loan balance after payment confirmed
+		$detailsAllApplicants = LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_summary_id AS 'loan_summary_id',loan_repayment_detail.applicant_id,loan_repayment_detail.loan_repayment_id,loan_repayment_detail.loan_repayment_item_id FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
+                . "WHERE  loan_repayment.control_number='$controlNumber' AND loan_repayment_detail.applicant_id > 0 GROUP BY loan_repayment_detail.applicant_id ORDER BY loan_repayment_detail.loan_repayment_detail_id DESC")->all();
+				foreach($detailsAllApplicants AS $resultsApp){
+        $loan_summary_id=$resultsApp->loan_summary_id;
+		$applicantID=$resultsApp->applicant_id;
+		$loanRepaymentId=$resultsApp->loan_repayment_id;
+		$loan_repayment_item_id=$resultsApp->loan_repayment_item_id;
+		\frontend\modules\repayment\models\LoanRepaymentDetail::updateLoanBalanceToBeneficiaryAfterEveryPayment($loan_summary_id,$applicantID,$loan_given_to,$loanRepaymentId,$loan_repayment_item_id);
+		
+		$loanPaidExistsCount=LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_repayment_id,loan_repayment_detail.amount FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.applicant_id")->count();
+		if($loanPaidExistsCount== 1){
+		\frontend\modules\repayment\models\LoanRepaymentDetail::updateVRFBeforeRepayment($loan_summary_id,$applicantID,$loan_given_to);
+				}
+	}
+		//end
+ } 
 public function updatePaymentAfterGePGconfirmPaymentEmployerPenalty($controlNumber,$amount){
 		$date_control_received=date("Y-m-d H:i:s");
 		$receiptDate=date("Y-m-d H:i:s");
@@ -516,7 +583,7 @@ public static function checkPaymentsEmployer($employerID,$firstDayPreviousMonth,
 	return $details;
 }
 public static function checkPaymentsEmployerAcruePenalty($employerID,$checkMonth,$loan_given_to){
-	$details =  \frontend\modules\repayment\models\LoanRepayment::findBySql("SELECT * FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id WHERE  employer_id='$employerID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND payment_status='1' AND payment_date like '%$checkMonth%'")->count();
+	$details =  \frontend\modules\repayment\models\LoanRepayment::findBySql("SELECT loan_repayment_detail.* FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id WHERE  employer_id='$employerID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND payment_status='1' AND payment_date like '%$checkMonth%'")->count();
 	return $details;
 }
 public static function createAutomaticBills($payment_date,$employerID){
@@ -661,7 +728,9 @@ public static function createAutomaticBillsPrepaid(){
 } 
 public static function checkGePGlawsonBill($deduction_month,$bill_number,$amount,$control_number_date,$CheckDate){
 	if(\frontend\modules\repayment\models\GepgLawson::find()->where(['deduction_month'=>$deduction_month,'check_date'=>$CheckDate])->count()==0){
- //Yii::$app->db->createCommand("INSERT IGNORE INTO  gepg_lawson(bill_number,amount,deduction_month,control_number_date,check_date) VALUES('$bill_number','$amount','$deduction_month','$control_number_date','$CheckDate')")->execute();
+    $treasuryDetail = \common\models\user::findBySql("SELECT user_id "
+                . "FROM user WHERE  login_type='6'")->one();
+				$user_id=$treasuryDetail->user_id;
 
         Yii::$app->db->createCommand()
             ->insert('gepg_lawson', [
@@ -670,6 +739,7 @@ public static function checkGePGlawsonBill($deduction_month,$bill_number,$amount
                 'deduction_month' => $deduction_month,
                 'control_number_date' => $control_number_date,
                 'check_date' => $CheckDate,
+				'user_id'=>$user_id,
             ])->execute();
 
 }	
@@ -897,5 +967,62 @@ $si=0;
   
    \frontend\modules\repayment\models\GvtEmployee::insertGSPPallEmployeesMonthly($CheckDate,$CheckNumber,$DateHired,$DeductionAmount,$DeductionCode,$DeductionDesc,$DeptName,$FirstName,$MiddleName,$LastName,$NationalId,$Sex,$VoteName,$Votecode,$created_at);
 	}
+}
+
+public static function getEmployerDetailsForBilling($loan_repayment_id){
+        $details = self::findBySql("SELECT  loan_repayment.bill_number,loan_repayment.amount,employer.employer_code,employer.employer_name,loan_repayment.date_bill_generated,employer.phone_number,employer.email_address,loan_repayment.loan_repayment_id  FROM loan_repayment INNER JOIN employer ON loan_repayment.employer_id=employer.employer_id  WHERE  loan_repayment.loan_repayment_id='$loan_repayment_id' AND loan_repayment.payment_status=0")->one();
+
+    $dataToQueue = [
+        "bill_number" => $details->bill_number,
+        "amount"=>$details->amount,
+        "bill_type"=>\frontend\modules\repayment\models\LoanRepayment::LOAN_REPAYMENT_GFSCODE,
+        "bill_description"=>\frontend\modules\repayment\models\LoanRepayment::LOAN_REPAYMENT_BILL_DESC,
+        "bill_gen_date"=>date('Y-m-d' . '\T' . 'H:i:s',strtotime($details->date_bill_generated)),
+        "bill_gernerated_by"=>$details->employer_name,
+        "bill_payer_id"=>$details->employer_code,
+        "payer_name"=>$details->employer_name,
+        "payer_phone_number"=>$details->phone_number,
+        "bill_expiry_date"=>\frontend\modules\repayment\models\LoanRepayment::BILL_EXPIRE_DATE_LOAN_REPAYMENT,
+        "bill_reference_table_id"=>$details->loan_repayment_id,
+        "bill_reference_table"=>"loan_repayment",
+		"primary_keycolumn"=>"loan_repayment_id",
+    ];
+
+        return $dataToQueue;
+}
+public static function updateControlngepgrealy($control_number,$bill_number,$date_control_received){
+	    $billNumber=$bill_number;
+        $billPrefix = substr($billNumber, 0, 5);
+		if($billPrefix=='RPTRE'){
+		\frontend\modules\repayment\models\GepgLawson::updateAll(['gepg_date'=>$date_control_received,'control_number'=>$control_number,'status'=>'1'], 'bill_number ="'.$bill_number.'"');	
+		}		
+        self::updateAll(['date_control_received'=>$date_control_received,'control_number'=>$control_number,'payment_status'=>0], 'bill_number ="'.$bill_number.'" AND (control_number="" OR control_number IS NULL)');        
+    }
+public static function getBeneficiaryDetailsForBilling($loan_repayment_id){
+        $details = self::findBySql("SELECT  loan_repayment.bill_number,loan_repayment.amount,CONCAT(user.firstname.' '.user.middlename.' '.user.surname) AS 'name',loan_repayment.date_bill_generated,user.phone_number,loan_repayment.loan_repayment_id  FROM loan_repayment INNER JOIN applicant ON loan_repayment.applicant_id=applicant.applicant_id INNER JOIN user ON user.user_id=applicant.user_id WHERE  loan_repayment.loan_repayment_id='$loan_repayment_id' AND loan_repayment.payment_status=0")->one();
+
+    $dataToQueue = [
+        "bill_number" =>$details->bill_number,
+        "amount"=>$details->amount,
+        "bill_type"=>\frontend\modules\repayment\models\LoanRepayment::LOAN_REPAYMENT_GFSCODE,
+        "bill_description"=>\frontend\modules\repayment\models\LoanRepayment::LOAN_REPAYMENT_BILL_DESC,
+        "bill_gen_date"=>date('Y-m-d' . '\T' . 'H:i:s',strtotime($details->date_bill_generated)),
+        "bill_gernerated_by"=>$details->name,
+        "bill_payer_id"=>$details->bill_number,
+        "payer_name"=>$details->name,
+        "payer_phone_number"=>$details->phone_number,
+        "bill_expiry_date"=>\frontend\modules\repayment\models\LoanRepayment::BILL_EXPIRE_DATE_LOAN_REPAYMENT,
+        "bill_reference_table_id"=>$details->loan_repayment_id,
+        "bill_reference_table"=>"loan_repayment",
+		"primary_keycolumn"=>"loan_repayment_id",
+    ];
+
+        return $dataToQueue;
+}
+public static function getBillRepaymentEmployer($employerID,$year){
+	return self::findBySql("SELECT * FROM loan_repayment WHERE  payment_date LIKE '$year%' AND employer_id='$employerID'")->count();
+}
+public static function getBillRepaymentBeneficiary($applicantID,$year){
+	return self::findBySql("SELECT * FROM loan_repayment WHERE  payment_date LIKE '$year%' AND applicant_id='$applicantID'")->count();
 }
 }

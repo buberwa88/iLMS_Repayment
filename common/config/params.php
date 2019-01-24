@@ -14,7 +14,7 @@ return [
         'sp_code' => 'SP111',
         'sp_subcode' => '7001',
         'sp_id' => 'LHESLB001',
-        'gfs_code' => '140313',
+        'sp_code' => '140313',
         'auth_certificate' => "/var/www/html/olams/frontend/web/sign/heslbolams.pfx", // gepg certificate
         'auth_certificate_pswd' => 'heslbolams',
         'auth_type' => 'cert', //GEPG authentication type
@@ -25,6 +25,7 @@ return [
         ///bill post details
         'send_bill_url' => "http://154.118.230.202/api/bill/sigqrequest",
         'send_reconciliations_url' => "http://154.118.230.202/api/reconciliations/sig_sp_qrequest",
+        'cancel_bill_url' => "http://154.118.230.202/api/bill/sigcancel_request",
         'bill_expire_date' => "90", ///number of days the bill will exipire
     ////bill recon details
     ],

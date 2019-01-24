@@ -16,6 +16,10 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use frontend\modules\repayment\models\GepgLawson;
 use frontend\modules\repayment\models\GepgLawsonSearch;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
+use \common\rabbit\Producer;
+//use  yii\web\Session;
 
 /**
  * LoanRepaymentController implements the CRUD actions for LoanRepayment model.
@@ -195,7 +199,15 @@ class LoanRepaymentController extends Controller
             $billID=$ActiveBill->loan_summary_id;
             $loan_summary_id=$billID;
             //$totalAmount1=$model2->getAmountRequiredForPayment($loan_summary_id);          
-            $repaymnet_reference_number=$employer2->employer_code."-".$model2->loan_repayment_id;
+            //$repaymnet_reference_number=$employer2->employer_code."-".$model2->loan_repayment_id;
+			
+			//generate bill
+			$yearT=date("Y");	
+	$resultsCount=\frontend\modules\repayment\models\LoanRepayment::getBillRepaymentEmployer($employerID,$yearT) + 1;
+    $repaymnet_reference_number=\frontend\modules\repayment\models\LoanRepayment::EMPLOYER_BILL_FORMAT.$employer2->employer_code.$yearT."-".$resultsCount;
+			//end generate bill
+			
+			
             $loan_repayment_id=$model2->loan_repayment_id;
             //$model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$controlNumber);
             if($salarySource==2){
@@ -346,7 +358,18 @@ class LoanRepaymentController extends Controller
             }
             //end for temporaly test
           //end
+		     $testingLocal=\frontend\modules\repayment\models\LoanRepayment::TESTING_REPAYMENT_LOCAL;
+			//GePG LIVE
+			if($testingLocal=='N'){
+            $dataToQueue=$model->getEmployerDetailsForBilling($loan_repayment_id);
+            Producer::queue("GePGBillSubmitionQueue", $dataToQueue);
+			}
+            //end GePG LIVE
+            ###########below to be commented when we go with GePG######
+			if($testingLocal=='T'){
             $model->updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber);
+			}
+            ##############END below to be commented when we go with GePG####
         //end requesting number
 		if($employerSalarySource==0){
 		   $sms="Kindly use the below control number for payment!";
@@ -544,8 +567,14 @@ class LoanRepaymentController extends Controller
             $ActiveBill=$modelBill->getActiveBillLoanee($applicantID,$loan_given_to);
             $billID=$ActiveBill->loan_summary_id;
             $loan_summary_id=$billID; 
-            $beneficiaryCode="BEN";			
-            $repaymnet_reference_number=$beneficiaryCode."-".$model2->loan_repayment_id;
+            //$beneficiaryCode="BEN";			
+            //$repaymnet_reference_number=$beneficiaryCode."-".$model2->loan_repayment_id;
+			
+			//generate bill
+			$yearT=date("Y");	
+    $repaymnet_reference_number=\frontend\modules\repayment\models\LoanRepayment::BENEFICIARY_BILL_FORMAT.$yearT."-".$model2->loan_repayment_id;
+			//end generate bill
+			
             $loan_repayment_id=$model2->loan_repayment_id;
 			
             
@@ -604,6 +633,13 @@ class LoanRepaymentController extends Controller
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 			//end if amount changed
+			$testingLocal=\frontend\modules\repayment\models\LoanRepayment::TESTING_REPAYMENT_LOCAL;
+			//GePG LIVE
+			if($testingLocal=='N'){
+            $dataToQueue=$model->getBeneficiaryDetailsForBilling($model->loan_repayment_id);
+            Producer::queue("GePGBillSubmitionQueue", $dataToQueue);
+			}
+            //end GePG LIVE
 		   $sms="Kindly use the below control number for payment!";
            Yii::$app->getSession()->setFlash('success', $sms);
             return $this->redirect(['viewconfirmed-paymentbeneficiary', 'id' => $model->loan_repayment_id]);
@@ -1090,8 +1126,15 @@ return $pdf->render();
             $billID=$ActiveBill->loan_summary_id;
             $loan_summary_id=$billID;
             //$totalAmount1=$model2->getAmountRequiredForPayment($loan_summary_id);          
-            $repaymnet_reference_number=$employer2->employer_code."-".$model2->loan_repayment_id;
+            //$repaymnet_reference_number=$employer2->employer_code."-".$model2->loan_repayment_id;
             $loan_repayment_id=$model2->loan_repayment_id;
+			
+			//generate bill
+			$yearT=date("Y");	
+	$resultsCount=\frontend\modules\repayment\models\LoanRepayment::getBillRepaymentEmployer($employerID,$yearT) + 1;
+    $repaymnet_reference_number=\frontend\modules\repayment\models\LoanRepayment::EMPLOYER_BILL_FORMAT.$employer2->employer_code.$yearT."-".$resultsCount;
+			//end generate bill
+			
             //$model2->updateReferenceNumber($repaymnet_reference_number,$totalAmount1,$controlNumber);
 			
 			$searchModel->insertPaymentOfScholarshipBeneficiaries($loan_summary_id,$loan_repayment_id,$loan_given_to);
@@ -1104,7 +1147,7 @@ return $pdf->render();
         
         }
         $dataProviderBills=$searchLoanRepayment->searchPaymentsForSpecificEmployer(Yii::$app->request->queryParams,$employerID);		
-        return $this->render('generateBill', [
+        return $this->render('generateBillscholarship', [
             'model' => $model2,'dataProviderBills'=>$dataProviderBills,'searchLoanRepayment' => $searchLoanRepayment,
             
         ]);
@@ -1136,8 +1179,19 @@ return $pdf->render();
             $controlNumber='';    
             }
             //end for temporaly test
+			$testingLocal=\frontend\modules\repayment\models\LoanRepayment::TESTING_REPAYMENT_LOCAL;
+			//GePG LIVE
+			if($testingLocal=='N'){
+            $dataToQueue=$model->getEmployerDetailsForBilling($loan_repayment_id);
+            Producer::queue("GePGBillSubmitionQueue", $dataToQueue);
+			}
+            //end GePG LIVE
           //end
+		  //below to be deleted when GePG
+            if($testingLocal=='T'){		  
             $model->updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber);
+			}
+			//end below to be deleted when GePG
         //end requesting number
 		if($employerSalarySource==0){
 		   $sms="Kindly use the below control number for payment!";
@@ -1229,5 +1283,43 @@ public function actionRequestgsppMonthdeductionform()
                 'model' => $model,
             ]);
         }
+    }
+    public function actionTestgepgControlnumber()
+    {
+        //$model = new LoanRepayment();
+        //$session = Yii::$app->session;
+        //$session->set('user_id', '1');
+        //$user_id = $session->get('user_id');
+        //echo $user_id;
+         echo "tele";exit;
+        ###########GePG Important part############
+        $billNumber='RPEMP88888';
+        $control_number='647474647474';
+        $billPrefix = substr($billNumber, 0, 5);
+        $date_control_received=date("Y-m-d H:i:s");
+        $operationType=\backend\modules\repayment\models\GepgBillProcessingSetting::RECEIVE_CONTROL_NO;
+        $results_url=\backend\modules\repayment\models\GepgBillProcessingSetting::getBillPrefix($billPrefix,$operationType);
+
+        //return $this->redirect([$results_url->bill_processing_uri,'control_number'=>$control_number,'bill_number'=>$billNumber,'date_control_received'=>$date_control_received]);
+        \Yii::$app->runAction("http://localhost/ilms_repayment", [
+            'control_number'=>$control_number,
+            'bill_number'=>$billNumber,
+            'date_control_received'=>$date_control_received
+        ]);
+        ###########end GePG important part#############
+    }
+    public function actionReceiveControlnumber($control_number,$bill_number,$date_control_received)
+    {
+        if($control_number !='' && $bill_number !='' && $date_control_received !='') {
+            \frontend\modules\repayment\models\LoanRepayment::updateControlngepgrealy($control_number,$bill_number,$date_control_received);
+        }
+
+    }
+    public function actionReceivePaymentgepg($controlNumber,$amount,$date_receipt_received,$receiptDate,$receiptNumber)
+    {
+        if($controlNumber !='' && $amount !='' && $date_receipt_received !='' && $receiptDate !='' && $receiptNumber !='') {
+            \frontend\modules\repayment\models\LoanRepayment::updatePaymentAfterGePGconfirmPaymentDonelive($controlNumber,$amount,$date_receipt_received,$receiptDate,$receiptNumber);
+        }
+
     }
 }

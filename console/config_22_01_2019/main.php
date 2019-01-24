@@ -20,23 +20,6 @@ return [
                 ],
             ],
         ],
-	
-		'user' => [
-            'class' => '\common\components\Controller',
-            'identityClass' => 'common\models\User',
-			//'enableSession' => false,
-			//'enableAutoLogin' => false,
-            //'enableAutoLogin' => true,
-        ],
-		
-		'session' => [ // for use session in console application
-            'class' => 'yii\web\Session'
-        ],
-		'urlManager' => [
-        'class' => 'yii\web\UrlManager',
-        'scriptUrl' => 'http://localhost/ilms_repayment/index.php',
-]
     ],
-	
     'params' => $params,
 ];

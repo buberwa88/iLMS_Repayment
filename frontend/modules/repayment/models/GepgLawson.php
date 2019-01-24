@@ -30,11 +30,13 @@ class GepgLawson extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+	 public $name;
+	 public $phone_number;
     public function rules()
     {
         return [
             [['amount'], 'number'],
-            [['control_number_date', 'deduction_month', 'gepg_date','check_date','gspp_totalAmount','amount_status','gspp_detailAmount','totalEmployees','gsppContrlnAcknowledge'], 'safe'],
+            [['control_number_date', 'deduction_month', 'gepg_date','check_date','gspp_totalAmount','amount_status','gspp_detailAmount','totalEmployees','gsppContrlnAcknowledge','name','phone_number'], 'safe'],
             [['status'], 'integer'],
             [['bill_number', 'control_number'], 'string', 'max' => 100],
         ];

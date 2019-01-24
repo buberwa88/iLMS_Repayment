@@ -10,6 +10,7 @@ use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use frontend\modules\repayment\models\EmployerSearch;
+use \common\rabbit\Producer;
 
 /**
  * EmployerPenaltyPaymentController implements the CRUD actions for EmployerPenaltyPayment model.
@@ -88,6 +89,7 @@ class EmployerPenaltyPaymentController extends Controller
 		$loggedin = Yii::$app->user->identity->user_id;
         $employer2 = $employerModel->getEmployer($loggedin);
 		$employer_id=$employer2->employer_id;
+		$finalemployer_penalty_payment_id='';
         if ($model->load(Yii::$app->request->post())) {	
         $countResults=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()
 			->where(['employer_id'=>$employer_id])
@@ -103,21 +105,50 @@ class EmployerPenaltyPaymentController extends Controller
             $newAmount->save();
             $finalemployer_penalty_payment_id=$employer_penalty_payment_id;			
 		   }else{
-			$couuntEmployerBillPNT=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()->where(['employer_id'=>$employer_id])->count();	
+			//$couuntEmployerBillPNT=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()->where(['employer_id'=>$employer_id])->count();
+            $yearT=date("Y");	
+			$couuntEmployerBillPNT=\frontend\modules\repayment\models\EmployerPenaltyPayment::getBillPenaltyEmployer($employer_id,$yearT);			
 			$model->payment_date=date("Y-m-d");
 			$model->created_at=date("Y-m-d H:i:s");
-			$controlNumber=mt_rand (100,1000);
-			$newBiLLCount=$couuntEmployerBillPNT +1;
-			$model->bill_number=$employer_id."EPNT".$newBiLLCount;
-			$model->control_number=$controlNumber;
 			$model->date_control_requested=date("Y-m-d H:i:s");
+			
+			$testingLocal=\frontend\modules\repayment\models\LoanRepayment::TESTING_REPAYMENT_LOCAL;
+			//GePG LIVE
+			if($testingLocal=='T'){
+			$controlNumber=mt_rand (100,1000);
+			$model->control_number=$controlNumber;			
 			$model->date_control_received =date("Y-m-d H:i:s");
+			}
+			if($testingLocal=='N'){
+			$model->control_number=NULL;
+			$model->date_control_received =date("Y-m-d H:i:s");
+			}
+			$newBiLLCount=$couuntEmployerBillPNT +1;
+			//$model->bill_number=$employer_id."EPNT".$newBiLLCount;
+			
+			
+			//generate bill
+			$yearT=date("Y");
+    $model->bill_number=\frontend\modules\repayment\models\LoanRepayment::EMPLOYER_PENALTY_BILL_FORMAT.$employer2->employer_code.$yearT."-".$newBiLLCount;
+			//end generate bill
+			
 			//$model->pay_method_id=4;
 			$model->payment_status=0;		
 			$model->employer_id = $employer2->employer_id;	
 			$model->save();
-            $finalemployer_penalty_payment_id=$model->employer_penalty_payment_id;		
+            $finalemployer_penalty_payment_id=$model->employer_penalty_payment_id;			
+						
 		   }
+		
+		     $testingLocal=\frontend\modules\repayment\models\LoanRepayment::TESTING_REPAYMENT_LOCAL;
+			//GePG LIVE
+			if($testingLocal=='N'){
+            $dataToQueue=\frontend\modules\repayment\models\EmployerPenaltyPayment::getEmployerPenaltyDetails($finalemployer_penalty_payment_id);
+			if($dataToQueue !=''){
+            Producer::queue("GePGBillSubmitionQueue", $dataToQueue);
+			}
+            }
+            //end GePG LIVE
 		
 		    $sms="Kindly use the below control number for payment!";
            Yii::$app->getSession()->setFlash('success', $sms);
@@ -215,16 +246,24 @@ class EmployerPenaltyPaymentController extends Controller
             $newAmount->amount= $totalamount;
             $newAmount->save();			
 			}else{
-			$couuntEmployerBillPNT=\frontend\modules\repayment\models\EmployerPenaltyPayment::find()->where(['employer_id'=>$employer_id])->count();	
+			$yearT=date("Y");	
+			$couuntEmployerBillPNT=\frontend\modules\repayment\models\EmployerPenaltyPayment::getBillPenaltyEmployer($employer_id,$yearT);
 			$model->payment_date=date("Y-m-d");
 			$model->created_at=date("Y-m-d H:i:s");
-			$controlNumber=mt_rand (100,1000);
+			//$controlNumber=mt_rand (100,1000);
+			$controlNumber=null;
 			$newBiLLCount=$couuntEmployerBillPNT +1;
-			$model->bill_number=$employer_id."EPNT".$newBiLLCount;
+			//$model->bill_number=$employer_id."EPNT".$newBiLLCount;
 			$model->control_number=$controlNumber;
 			$model->date_control_requested=date("Y-m-d H:i:s");
-			$model->date_control_received =date("Y-m-d H:i:s");
+			$model->date_control_received =null;
+			//$model->date_control_received =date("Y-m-d H:i:s");
 			$model->amount= $amount;
+			
+			//generate bill
+			$yearT=date("Y");
+    $model->bill_number=\frontend\modules\repayment\models\LoanRepayment::EMPLOYER_PENALTY_BILL_FORMAT.$employer2->employer_code.$yearT."-".$newBiLLCount;
+			//end generate bill
 			//$model->pay_method_id=4;
 			//$model->payment_status=0;		
 			$model->employer_id = $employer2->employer_id;	

@@ -1560,15 +1560,43 @@ public static function checkRepaymentAndGSPPamount($CheckDate){
 		}		
         }
 public static function checkGepgStatus(){		
-		$gsppGepgDetails = \frontend\modules\repayment\models\GepgLawson::findBySql("SELECT bill_number,amount "
-                . "FROM gepg_lawson WHERE  status ='0' AND amount_status='3'")->one();
+		$gsppGepgDetails = \frontend\modules\repayment\models\GepgLawson::findBySql("SELECT gepg_lawson.bill_number,gepg_lawson.amount,gepg_lawson.control_number_date,gepg_lawson.gepg_lawson_id,CONCAT(user.firstname.' '.user.middlename.' '.user.surname) AS 'name',user.phone_number "
+                . "FROM gepg_lawson INNER JOIN user ON user.user_id=gepg_lawson.user_id WHERE  gepg_lawson.status ='0' AND gepg_lawson.amount_status='3'")->one();
 		$bill_number=$gsppGepgDetails->bill_number;
 		$amount=$gsppGepgDetails->amount;
+		$date_bill_generated=$gsppGepgDetails->control_number_date;
+		$gepg_lawson_id=$gsppGepgDetails->gepg_lawson_id;
+		$name=$gsppGepgDetails->name;
+		$phone_number=$gsppGepgDetails->phone_number;
 		
 		if($bill_number !='' && $amount !=''){
-			$controlNumber="9911100".mt_rand (10000,50000);
-			$date_control_received=date("Y-m-d H:i:s");
-\frontend\modules\repayment\models\LoanRepayment::generalFunctControlNumber($bill_number,$controlNumber,$date_control_received);
+			//$controlNumber="9911100".mt_rand (10000,50000);
+			//$date_control_received=date("Y-m-d H:i:s");
+			
+			
+			$dataToQueue = [
+        "bill_number" =>$bill_number,
+        "amount"=>$amount,
+        "bill_type"=>\frontend\modules\repayment\models\LoanRepayment::LOAN_REPAYMENT_GFSCODE,
+        "bill_description"=>\frontend\modules\repayment\models\LoanRepayment::LOAN_REPAYMENT_BILL_DESC,
+        "bill_gen_date"=>date('Y-m-d' . '\T' . 'H:i:s',strtotime($date_bill_generated)),
+        "bill_gernerated_by"=>$name,
+        "bill_payer_id"=>$bill_number,
+        "payer_name"=>$name,
+        "payer_phone_number"=>$phone_number,
+        "bill_expiry_date"=>\frontend\modules\repayment\models\LoanRepayment::BILL_EXPIRE_DATE_LOAN_REPAYMENT,
+        "bill_reference_table_id"=>$gepg_lawson_id,
+        "bill_reference_table"=>"gepg_lawson",
+		"primary_keycolumn"=>"gepg_lawson_id",
+    ];
+	
+	\frontend\modules\repayment\models\GepgLawson::updateAll(['status'=>3], 'gepg_lawson_id="'.$gepg_lawson_id.'"');
+
+        return $dataToQueue;
+			
+			
+			
+//\frontend\modules\repayment\models\LoanRepayment::generalFunctControlNumber($bill_number,$controlNumber,$date_control_received);
 		}
     //self::sendControlNumberToGSPP();
         }
