@@ -82,7 +82,8 @@ public $enableCsrfValidation = false;
         } else {
         $login_type=\Yii::$app->user->identity->login_type;
 	if($login_type ==2){
-        return $this->redirect(['repayment/default/index']);    
+        $this->layout = "main_private_employer";
+        return $this->render('index');     
          }else if($login_type ==1){
              //application%2Fdefault%2Fmy-application-index
         $this->layout = "main_private_beneficiary";
@@ -97,19 +98,9 @@ public $enableCsrfValidation = false;
              $this->getInstitutionsession();
         
          return $this->redirect(['allocation/default/index']);  
-         }else if($login_type ==2){
-        //$this->layout = "main_private";
-        //return $this->render('index'); 
-        return $this->redirect(['repayment/default/index']);		
-         }else if($login_type ==6){
-		return $this->redirect(['repayment/default/index-treasury']); 
-		 }else{		
+         }else{		
             //$this->layout = "main_private";
-            //return $this->render('index');
-			  $this->layout = "main_public";             
-              Yii::$app->user->logout();
-			  Yii::$app->session->setFlash('error', 'Sorry ! You do not have enough permission contact your system administrator for help');
-            return $this->redirect(['login']);
+            return $this->render('index');
 			}
         }
     }

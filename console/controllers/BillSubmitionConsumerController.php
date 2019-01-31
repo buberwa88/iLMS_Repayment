@@ -20,7 +20,7 @@ class BillSubmitionConsumerController extends Controller {
     public function actionIndex()
     {
 
-        $connection = new AMQPStreamConnection('41.59.225.155', 5672, 'admin', '0lams@2018?ucc');
+        $connection = new AMQPStreamConnection(Yii::$app->params['RabbitMQ']['server_ip'], Yii::$app->params['RabbitMQ']['server_port'],Yii::$app->params['RabbitMQ']['username'], Yii::$app->params['RabbitMQ']['password']);
         
         $channel = $connection->channel();
         
@@ -70,14 +70,14 @@ class BillSubmitionConsumerController extends Controller {
     public function submitBill($array)
     {
 
-        if (!$cert_store = file_get_contents("/var/www/html/olams/frontend/web/sign/heslbolams.pfx")) {
+        if (!$cert_store = file_get_contents(Yii::$app->params['auth_certificate'])) {
           echo "Error: Unable to read the cert file\n".\Yii::getAlias('@webroot');
           exit;
         }
         else
         {
             
-            if (openssl_pkcs12_read($cert_store, $cert_info, "heslbolams"))
+            if (openssl_pkcs12_read($cert_store, $cert_info, Yii::$app->params['auth_certificate_pswd']))
             {
 
                 $config=[
@@ -115,7 +115,7 @@ $queryq4 = "insert into gepg_bill4(response_message,date_created) value "
 		
 		$dataContents="Data Received:".$vdata."Signature Received:".$vsignature;
 		
-		if (!$pcert_store = file_get_contents("/var/www/html/olams/frontend/web/sign/gepgpubliccertificatetoclients.pfx")) {
+		if (!$pcert_store = file_get_contents(Yii::$app->params['gepg_content_verif_key'])) {
 			//echo "Error: Unable to read the cert file\n";
 			//exit;
 			$getConFileFailed="Error: Unable to read the cert file";
@@ -158,12 +158,13 @@ $queryq7e = "insert into gepg_bill7(response_message,date_created) value "
 */			
 			
 			$date_createdsc=date("Y-m-d H:i:s");
+			/*
 			Yii::$app->db->createCommand()
         ->insert('gepg_bill7', [
         'response_message' =>$content,
         'date_created' =>$date_createdsc,   
         ])->execute();
-
+*/
                     
         $query = "insert into gepg_bill(bill_number, bill_request,retry,status,response_message,date_created, 	bill_reference_table_id,bill_type,bill_reference_table,bill_amount,primary_keycolumn) value "
                 . "('{$Billno}','',0,0,'{$bill_request}','".date('Y-m-d H:i:s')."','{$bill_reference_table_id}','{$bill_type}','{$bill_reference_table}','{$bill_amount}','{$primary_keycolumn}')";

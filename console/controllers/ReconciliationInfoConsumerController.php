@@ -18,7 +18,7 @@ class ReconciliationInfoConsumerController extends Controller {
     public function actionIndex()
     {
 
-        $connection = new AMQPStreamConnection('41.59.225.155', 5672, 'admin', '0lams@2018?ucc');
+        $connection = new AMQPStreamConnection(Yii::$app->params['RabbitMQ']['server_ip'], Yii::$app->params['RabbitMQ']['server_port'],Yii::$app->params['RabbitMQ']['username'], Yii::$app->params['RabbitMQ']['password']);
         
         $channel = $connection->channel();
         

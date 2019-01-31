@@ -173,7 +173,7 @@ class DisbursementSearch extends Disbursement
     public function searchDisbursedLoan($params,$id)
     {
         $query = Disbursement::find()
-                              ->where(['application.applicant_id'=>$id,'disbursement.status'=>8,'disbursement_batch.is_approved'=>1])
+                              ->where(['application.applicant_id'=>$id,'disbursement.status'=>8,'disbursement_batch.is_approved'=>1,'disbursement.disbursed_as'=>1])
                               ->groupBy(['disbursement_batch.academic_year_id','disbursement_batch.semester_number','disbursement_batch.instalment_definition_id'])
                               ->orderBy(['disbursement.disbursement_id'=>SORT_ASC]);
 

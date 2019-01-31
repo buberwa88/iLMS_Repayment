@@ -1025,4 +1025,14 @@ public static function getBillRepaymentEmployer($employerID,$year){
 public static function getBillRepaymentBeneficiary($applicantID,$year){
 	return self::findBySql("SELECT * FROM loan_repayment WHERE  payment_date LIKE '$year%' AND applicant_id='$applicantID'")->count();
 }
+public static function cancelBillgeneral($bill_reference_table,$billNumber,$cancelled_by,$cancelled_date,$cancelled_reason,$bill_reference_table_id,$primary_keycolumn){
+	if($bill_reference_table=='gepg_lawson'){
+			 $query4 = "UPDATE '".$bill_reference_table."' SET  control_number='CANCELLED',payment_status='3',canceled_by='$cancelled_by',canceled_at='$cancelled_date',cancel_reason='$cancelled_reason',gepg_cancel_request_status='2' WHERE bill_number='".$billNumber."'";
+             Yii::$app->db->createCommand($query4)->execute();	
+			 $queryN = "UPDATE loan_repayment SET  control_number='CANCELLED',payment_status='3',canceled_by='$cancelled_by',canceled_at='$cancelled_date',cancel_reason='$cancelled_reason',gepg_cancel_request_status='2' WHERE bill_number='".$billNumber."'";
+             Yii::$app->db->createCommand($queryN)->execute();
+				  }else{
+			$query4 = "UPDATE '".$bill_reference_table."' SET  control_number='CANCELLED',payment_status='3',canceled_by='$cancelled_by',canceled_at='$cancelled_date',cancel_reason='$cancelled_reason',gepg_cancel_request_status='2' WHERE bill_number='".$billNumber."'";		  
+				  }
+}
 }

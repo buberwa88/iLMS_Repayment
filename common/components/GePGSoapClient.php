@@ -92,6 +92,15 @@ class GePGSoapClient extends Component {
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         $resultCurlPost = curl_exec($ch);
         curl_close($ch);
+		
+		//to be separated
+		$date_createdsc=date("Y-m-d H:i:s");
+			Yii::$app->db->createCommand()
+        ->insert('gepg_bill7', [
+        'response_message' =>$data,
+        'date_created' =>$date_createdsc,   
+        ])->execute();
+		//end to be separate		
         return $resultCurlPost;
     }
 

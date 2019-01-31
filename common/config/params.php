@@ -15,10 +15,11 @@ return [
         'sp_subcode' => '7001',
         'sp_id' => 'LHESLB001',
         'sp_code' => '140313',
-        'auth_certificate' => "/var/www/html/olams/frontend/web/sign/heslbolams.pfx", // gepg certificate
+        'auth_certificate' => "/var/www/html/ilms_repayment/frontend/web/sign/heslbolams.pfx", // gepg certificate
         'auth_certificate_pswd' => 'heslbolams',
         'auth_type' => 'cert', //GEPG authentication type
-        'gepg_private_key' => "/var/www/html/olams/frontend/web/sign/gepgclientprivatekey.pfx",
+        'gepg_private_key' => "/var/www/html/ilms_repayment/frontend/web/sign/gepgclientprivatekey.pfx",
+		'gepg_content_verif_key' => "/var/www/html/ilms_repayment/frontend/web/sign/gepgpubliccertificatetoclients.pfx",
         'cert_signature_algorithm' => 'sha1WithRSAEncryption',
 //        'auth_username'=>'',
 //        'auth_password'=>'',

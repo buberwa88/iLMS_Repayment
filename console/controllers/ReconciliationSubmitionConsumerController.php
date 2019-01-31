@@ -19,7 +19,7 @@ class ReconciliationSubmitionConsumerController extends Controller {
     public function actionIndex()
     {
 
-        $connection = new AMQPStreamConnection('41.59.225.155', 5672, 'admin', '0lams@2018?ucc');
+        $connection = new AMQPStreamConnection(Yii::$app->params['RabbitMQ']['server_ip'], Yii::$app->params['RabbitMQ']['server_port'],Yii::$app->params['RabbitMQ']['username'], Yii::$app->params['RabbitMQ']['password']);
         
         $channel = $connection->channel();
         
@@ -66,14 +66,14 @@ class ReconciliationSubmitionConsumerController extends Controller {
     public function submitReconcRequest($array) 
     {        
         
-        if (!$cert_store = file_get_contents("/var/www/html/olams/frontend/web/sign/heslbolams.pfx")) {
+        if (!$cert_store = file_get_contents(Yii::$app->params['auth_certificate'])) {
           echo "Error: Unable to read the cert file\n".\Yii::getAlias('@webroot');
           exit;
         }
         else
         {
             
-            if (openssl_pkcs12_read($cert_store, $cert_info, "heslbolams"))
+            if (openssl_pkcs12_read($cert_store, $cert_info, Yii::$app->params['auth_certificate_pswd']))
             {
                                
                 $config=[
@@ -104,7 +104,7 @@ class ReconciliationSubmitionConsumerController extends Controller {
 		
 		$dataContents="Data Received:".$vdata."Signature Received:".$vsignature;
 		
-		if (!$pcert_store = file_get_contents("/var/www/html/olams/frontend/web/sign/gepgpubliccertificatetoclients.pfx")) {
+		if (!$pcert_store = file_get_contents(Yii::$app->params['gepg_content_verif_key'])) {
 			//echo "Error: Unable to read the cert file\n";
 			//exit;
 			$getConFileFailed="Error: Unable to read the cert file";
