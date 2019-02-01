@@ -38,6 +38,8 @@ class Loan extends \yii\db\ActiveRecord
      */
 	const LOAN_NOT_FULL_PAID = 0;
     const LOAN_FULL_PAID = 1;
+    const CATEGORY_VRF_ACRUE=1;
+    const CATEGORY_VRF_BEFORE_REPAYMENT=2;
 	
     public function rules()
     {
@@ -96,6 +98,38 @@ class Loan extends \yii\db\ActiveRecord
 
     static function hasLoan($applicant_id) {
         return self::find()->where(['applicant_id' => $applicant_id])->exists();
+    }
+    public static function updateAccumulatedVRFloanTable($applicantID,$loan_given_to,$amount_accumulated,$category){
+        if($category==1) {
+            $details_loan = Loan::findBySql("SELECT loan.vrf_accumulated,loan.loan_id FROM loan INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan.loan_repayment_item_id WHERE  loan.applicant_id='$applicantID' AND loan.loan_given_to='$loan_given_to' AND loan_repayment_item.item_code='VRF' AND loan.vrf_accumulated > 0  ORDER BY loan_id ASC")->one();
+            $vrf_accumulated = $details_loan->vrf_accumulated;
+            $loan_id = $details_loan->loan_id;
+
+            if ($loan_id == '') {
+                $details_loanF = Loan::findBySql("SELECT loan.vrf_accumulated,loan.loan_id FROM loan INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan.loan_repayment_item_id WHERE  loan.applicant_id='$applicantID' AND loan.loan_given_to='$loan_given_to' AND loan_repayment_item.item_code='VRF' ORDER BY loan_id ASC")->one();
+                $loan_idF = $details_loanF->loan_id;
+                $TotalAmount = $details_loanF->vrf_accumulated + $amount_accumulated;
+                Loan::updateAll(['vrf_accumulated' => $TotalAmount], 'loan_id ="' . $loan_idF . '"');
+            } else {
+                $totalAccumulatedAmount = $vrf_accumulated + $amount_accumulated;
+                Loan::updateAll(['vrf_accumulated' => $totalAccumulatedAmount], 'loan_id ="' . $loan_id . '"');
+            }
+        }
+        if($category==2){
+            $details_loan = Loan::findBySql("SELECT loan.vrf_before_repayment,loan.loan_id FROM loan INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan.loan_repayment_item_id WHERE  loan.applicant_id='$applicantID' AND loan.loan_given_to='$loan_given_to' AND loan_repayment_item.item_code='VRF' AND loan.vrf_before_repayment > 0  ORDER BY loan_id ASC")->one();
+            $vrf_before_repayment = $details_loan->vrf_before_repayment;
+            $loan_id = $details_loan->loan_id;
+
+            if ($loan_id == '') {
+                $details_loanF = Loan::findBySql("SELECT loan.vrf_before_repayment,loan.loan_id FROM loan INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan.loan_repayment_item_id WHERE  loan.applicant_id='$applicantID' AND loan.loan_given_to='$loan_given_to' AND loan_repayment_item.item_code='VRF' ORDER BY loan_id ASC")->one();
+                $loan_idF = $details_loanF->loan_id;
+                $TotalAmount = $details_loanF->vrf_before_repayment + $amount_accumulated;
+                Loan::updateAll(['vrf_before_repayment' => $TotalAmount], 'loan_id ="' . $loan_idF . '"');
+            } else {
+                $totalAccumulatedAmount = $vrf_before_repayment + $amount_accumulated;
+                Loan::updateAll(['vrf_before_repayment' => $totalAccumulatedAmount], 'loan_id ="' . $loan_id . '"');
+            }
+        }
     }
 	
 }

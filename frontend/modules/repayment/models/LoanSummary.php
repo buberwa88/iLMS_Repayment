@@ -204,7 +204,8 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
  $value = (count($amount) == 0) ? '0' : $amount;
  return $value;
  }
- public static function getActiveBillToUpdateVRFofEmployees($employerID,$loan_given_to){	 
+ public static function getActiveBillToUpdateVRFofEmployees($employerID,$loan_given_to){
+     $category=\backend\modules\repayment\models\Loan::CATEGORY_VRF_ACRUE;
       $details_bill = LoanSummary::findBySql("SELECT loan_summary.loan_summary_id,loan_summary.vrf_accumulated,loan_summary.vrf_last_date_calculated FROM loan_summary INNER JOIN loan_summary_detail ON loan_summary_detail.loan_summary_id=loan_summary.loan_summary_id  WHERE  loan_summary.employer_id='$employerID' AND (loan_summary.status='0' OR loan_summary.status='1') AND loan_summary_detail.loan_given_to='$loan_given_to' ORDER BY loan_summary.loan_summary_id DESC")->one();
       $billID=$details_bill->loan_summary_id;     
       //$billValue = (count($billID) == 0) ? '0' : $billID;
@@ -250,6 +251,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
 					 $vrf_accumulatedIndividualTotal=$vrf_accumulatedIndividual + $accumulatedVRF;
                      $LoanSummaryDetailModel->updateBeneficiaryVRFaccumulated($amountTotal,$vrf_accumulatedIndividualTotal,$applicantID,$loan_summary_id,$loan_repayment_item_id,$loan_given_to);
                      $vrf_accumulated +=$accumulatedVRF;
+ \backend\modules\repayment\models\Loan::updateAccumulatedVRFloanTable($applicantID,$loan_given_to,$accumulatedVRF,$category);
                     }
                     
                     ++$i;
@@ -322,6 +324,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
  return $remainedUnpaid;
  }
     public static function getActiveBillToUpdateVRFofSelfBeneficiary($applicantID,$loan_given_to){
+        $category=\backend\modules\repayment\models\Loan::CATEGORY_VRF_ACRUE;
       $details_bill = LoanSummary::findBySql("SELECT * FROM loan_summary WHERE  applicant_id='$applicantID' AND (status='0' OR status='1') ORDER BY loan_summary_id DESC")->one();
       $billID=$details_bill->loan_summary_id;     
       //$billValue = (count($billID) == 0) ? '0' : $billID;
@@ -367,6 +370,7 @@ public function getTotalPaidunderBillIndividualEmployee($LoanSummaryID,$applican
 					 $vrf_accumulatedIndividualTotal=$vrf_accumulatedIndividual + $accumulatedVRF;
                      $LoanSummaryDetailModel->updateBeneficiaryVRFaccumulated($amountTotal,$vrf_accumulatedIndividualTotal,$applicantID,$loan_summary_id,$loan_repayment_item_id,$loan_given_to);
                      $vrf_accumulated +=$accumulatedVRF;
+ \backend\modules\repayment\models\Loan::updateAccumulatedVRFloanTable($applicantID,$loan_given_to,$accumulatedVRF,$category);
                     }
                     
                     ++$i;

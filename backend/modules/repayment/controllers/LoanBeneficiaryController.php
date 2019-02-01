@@ -139,7 +139,7 @@ class LoanBeneficiaryController extends Controller {
             $employeeID = $modelLoanBeneficiary->getApplicantDetails($applcantF4IndexNo, $NIN);
             $model->applicant_id = $employeeID->applicant_id;
         }
-
+        $headers='';
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             if ($model->applicant_id > 0) {
                 $applicantDetail = $modelLoanBeneficiary->getApplicantDetailsUsingApplicantID($model->applicant_id);
@@ -218,6 +218,7 @@ class LoanBeneficiaryController extends Controller {
 
     public function actionViewLoaneeDetails($id) {
         $applicant_id = \yii\bootstrap\Html::encode($id);
+        $dataProviderAllocatedLoan='';
         $searchModel = new ApplicationSearch();
         $searchModelLoanBeneficiary = new LoanBeneficiarySearch();
         $searchModelApplicantAssociate = new \frontend\modules\application\models\ApplicantAssociateSearch();
@@ -301,8 +302,9 @@ class LoanBeneficiaryController extends Controller {
         $model = new LoanBeneficiary();
         $model->scenario = 'reprocessloan';
         if ($model->load(Yii::$app->request->post())) {
+            $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
             ##################### run VRF check ###################
-            \frontend\modules\repayment\models\LoanSummary::updateVRFaccumulatedGeneral();
+            \frontend\modules\repayment\models\LoanSummary::updateVRFaccumulatedGeneral($loan_given_to);
             ########################		
             $startDate = $model->start_date;
             $endDate = $model->end_date;
@@ -571,6 +573,7 @@ class LoanBeneficiaryController extends Controller {
     private function reprocessBeneficiaryLoan($applicant_id) {
         $applicant_id = \yii\bootstrap\Html::encode($applicant_id);
         //check if beneficiary has started payinf the loan
+        $dateToday=date('Y-m-d', time());
         $loan_give_to = \frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
         $has_repayments = \backend\modules\repayment\models\LoanRepaymentDetail::beneficiaryRepaymentExistByDate($applicant_id, date('Y-m-d', time()), $loan_give_to);
         if ($has_repayments) {
@@ -708,7 +711,7 @@ class LoanBeneficiaryController extends Controller {
                 $resultPNT = \backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id, $PNT_id);
                 $totalPNTORGN = $resultPNT->amount;
                 //----------------This is for VRF-----------------
-                $totalVRFORGN = \backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id, $dateToday, $loan_give_to);
+                $totalVRFORGN = \backend\modules\repayment\models\LoanSummaryDetail::getTotalVRFOriginal($applicant_id, reprocess-loan, $loan_give_to);
                 //---------------this is for PRC-------------
                 $resultPRC = \backend\modules\repayment\models\LoanSummaryDetail::getTotalAmountInFirstLoanSummary($applicant_id, $PRC_id);
                 $totalPRCORGN = $resultPRC->amount;

@@ -341,7 +341,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
 		\frontend\modules\repayment\models\LoanRepaymentDetail::updateLoanBalanceToBeneficiaryAfterEveryPayment($loan_summary_id,$applicantID,$loan_given_to,$loanRepaymentId,$loan_repayment_item_id);
 		
 		$loanPaidExistsCount=LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_repayment_id,loan_repayment_detail.amount FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.applicant_id")->count();
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.applicant_id,loan_repayment.bill_number")->count();
 		if($loanPaidExistsCount== 1){
 		\frontend\modules\repayment\models\LoanRepaymentDetail::updateVRFBeforeRepayment($loan_summary_id,$applicantID,$loan_given_to);
 				}
@@ -393,7 +393,7 @@ public static function updatePaymentAfterGePGconfirmPaymentDonelive($controlNumb
 		\frontend\modules\repayment\models\LoanRepaymentDetail::updateLoanBalanceToBeneficiaryAfterEveryPayment($loan_summary_id,$applicantID,$loan_given_to,$loanRepaymentId,$loan_repayment_item_id);
 		
 		$loanPaidExistsCount=LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_repayment_id,loan_repayment_detail.amount FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.applicant_id")->count();
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.applicant_id AND loan_repayment.bill_number")->count();
 		if($loanPaidExistsCount== 1){
 		\frontend\modules\repayment\models\LoanRepaymentDetail::updateVRFBeforeRepayment($loan_summary_id,$applicantID,$loan_given_to);
 				}

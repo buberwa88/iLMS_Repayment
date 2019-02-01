@@ -1146,20 +1146,24 @@ class EmployedBeneficiaryController extends Controller
                             $itemCategory = "PRC";
                             $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $disbursed_amount, $application_id);
                             $totalVRF = $LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id, $date, $loan_given_to);
+							\common\models\LoanBeneficiary::insertLoanBeneficiary($applicant_id);
                             $totalVRF=round($totalVRF,2);
                             if ($totalVRF > 0) {
                                 $itemCategory = "VRF";
                                 $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $totalVRF, $application_id);
+								\common\models\LoanBeneficiary::insertLoanBeneficiary($applicant_id);
                             }
                         } else {
                             $loan_summary_id = $employeesLoanSummaryExist->loan_summary_id;
                             $itemCategory = "PRC";
                             $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $disbursed_amount, $application_id);
                             $totalVRF = $LoanSummaryDetailModel->getTotalVRFOriginalGivenToApplicantTrhEmployer($applicant_id, $date, $loan_given_to);
+							\common\models\LoanBeneficiary::insertLoanBeneficiary($applicant_id);
                             $totalVRF=round($totalVRF,2);
                             if ($totalVRF > 0) {
                                 $itemCategory = "VRF";
                                 $LoanSummaryDetailModel->insertBeneficiariesLoanThroughEmployer($employerID, $loan_summary_id, $applicant_id, $academic_year_id, $itemCategory, $totalVRF, $application_id);
+								\common\models\LoanBeneficiary::insertLoanBeneficiary($applicant_id);
                             }
                             //$Recent_loan_summary_id=$employeesLoanSummaryExist->loan_summary_id;
                             //$LoanSummaryModel->updateCeasedAllPreviousActiveBillUnderEmployer($employer_id,$Recent_loan_summary_id);

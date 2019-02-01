@@ -1760,6 +1760,7 @@ class LoanSummaryDetail extends \yii\db\ActiveRecord
 
     public static function insertLoaneeBillDetailGeneral($applicantID, $loan_summary_id, $loan_given_to)
     {
+        \common\models\LoanBeneficiary::insertLoanBeneficiary($applicantID);
         $loggedin = Yii::$app->user->identity->user_id;
         $created_at = date("Y-m-d H:i:s");
         $dateToday = date("Y-m-d");

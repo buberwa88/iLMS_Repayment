@@ -870,13 +870,15 @@ public static function updateAcruedVRFToBeneficiaryOnEveryPayment($loansummaryID
 self::updateAll(['vrf_accumulated' => $totalAcruedVRF],'loan_repayment_id = "'.$loanRepaymentId.'" AND loan_given_to = "'.$loan_given_to.'" AND applicant_id="'.$applicantID.'" AND loan_summary_id="'.$loansummaryID.'" AND loan_repayment_item_id="'.$VRF_id.'" AND vrf_accumulated IS NULL');      
 }
 public static function updateVRFBeforeRepayment($loansummaryID,$applicantID,$loan_given_to){
+    $category=\backend\modules\repayment\models\Loan::CATEGORY_VRF_BEFORE_REPAYMENT;
         $itemCodeVRF = "VRF";
         $vrf_id = \backend\modules\repayment\models\EmployedBeneficiary::getloanRepaymentItemID($itemCodeVRF);
         $detailsAmountChargesVRF_3_1 = LoanSummaryDetail::findBySql("SELECT SUM(A.amount) AS amount1 FROM loan_summary_detail A  INNER JOIN loan_summary B ON B.loan_summary_id=A.loan_summary_id"
                         . " WHERE  A.applicant_id='$applicantID' AND A.loan_summary_id='$loansummaryID' AND A.loan_repayment_item_id='" . $vrf_id . "' AND A.loan_given_to='$loan_given_to'")->one();
         $TotalVRFbeforeRepayment = $detailsAmountChargesVRF_3_1->amount1;
 		
- LoanSummaryDetail::updateAll(['vrf_before_repayment' =>$TotalVRFbeforeRepayment],'loan_given_to = "'.$loan_given_to.'" AND applicant_id="'.$applicantID.'" AND loan_summary_id="'.$loansummaryID.'" AND loan_repayment_item_id="'.$vrf_id.'"');      
+ LoanSummaryDetail::updateAll(['vrf_before_repayment' =>$TotalVRFbeforeRepayment],'loan_given_to = "'.$loan_given_to.'" AND applicant_id="'.$applicantID.'" AND loan_summary_id="'.$loansummaryID.'" AND loan_repayment_item_id="'.$vrf_id.'"');
+    \backend\modules\repayment\models\Loan::updateAccumulatedVRFloanTable($applicantID,$loan_given_to,$TotalVRFbeforeRepayment,$category);
 }
 public static function insertPaymentOfScholarshipBeneficiaries($loan_summary_id,$loan_repayment_id,$loan_given_to){
         $details_applicant = LoanSummaryDetail::findBySql("SELECT loan_summary_detail.applicant_id from loan_summary_detail WHERE loan_summary_detail.loan_summary_id='$loan_summary_id' AND loan_summary_detail.loan_given_to='$loan_given_to' GROUP BY loan_summary_detail.applicant_id")->all();
