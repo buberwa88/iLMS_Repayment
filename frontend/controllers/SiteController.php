@@ -772,12 +772,22 @@ public function actionPasswordRecover()
         $model = new \frontend\modules\repayment\models\RefundClaimant();
         $model->scenario='refundRegistration';
         if ($model->load(Yii::$app->request->post())) {
-
+              if($model->save()){
+                  return $this->redirect(['list-steps', 'id' => $model->refund_claimant_id]);
+              }
         } else {
             return $this->render('refundRegister', [
                 'model' => $model,
             ]);
         }
+    }
+    public function actionListSteps($id)
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundClaimant();
+        return $this->render('listSteps', [
+            'model' => $model,
+        ]);
     }
 	
 }

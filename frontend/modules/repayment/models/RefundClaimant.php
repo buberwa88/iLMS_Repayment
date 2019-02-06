@@ -52,6 +52,7 @@ class RefundClaimant extends \yii\db\ActiveRecord
         return [
             [['applicant_id', 'f4_completion_year', 'necta_details_confirmed', 'created_by', 'updated_by'], 'integer'],
             [['email','refund_type','firstname','middlename','surname','phone_number','verifyCode'], 'required','on'=>'refundRegistration'],
+            ['verifyCode', 'captcha','on'=>'refundRegistration'],
             [['created_at', 'updated_at','sex'], 'safe'],
             [['firstname', 'middlename', 'surname', 'necta_firstname', 'necta_middlename', 'necta_surname'], 'string', 'max' => 45],
             [['sex', 'necta_sex'], 'string', 'max' => 1],

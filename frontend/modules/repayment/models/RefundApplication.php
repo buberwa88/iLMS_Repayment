@@ -190,4 +190,29 @@ class RefundApplication extends \yii\db\ActiveRecord
     {
         return $this->hasMany(\backend\modules\repayment\models\RefundClaimantAttachment::className(), ['refund_application_id' => 'refund_application_id']);
     }
+	public static function getStageChecked($level,$refund_claimant_id){
+        $status=1;
+        $models=\frontend\modules\repayment\models\RefundApplication::find()->where("refund_claimant_id='{$refund_claimant_id}'")->all();
+
+        if(count($models)>0){
+            /*
+            foreach($models as $model){
+                if($model->under_sponsorship==1&&$model->sponsor_proof_document==""){
+                    $status=$status*0;
+                }
+                ###################non-necta student
+                if($model->is_necta==2&&$model->certificate_document==""){
+                    $status=$status*0;
+                }
+                ########################end ################
+            }
+            */
+            $status=$status*0;
+        }
+        else{
+            $status=$status*0;
+        }
+
+        return $status;
+    }
 }
