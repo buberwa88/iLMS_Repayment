@@ -1322,4 +1322,25 @@ public function actionRequestgsppMonthdeductionform()
         }
 
     }
+    public function actionIndexRefund()
+{
+    $model = new LoanRepayment();
+    $this->layout="main_private_beneficiary";
+    return $this->render('index_refund', [
+        'model' => $model,
+        'jwded'=>890,
+    ]);
+}
+    public function actionRepaymentSchedule()
+    {
+        $model = new LoanRepayment();
+        $employerModel = new EmployerSearch();
+        $this->layout="main_private_beneficiary";
+        $loggedin=Yii::$app->user->identity->user_id;
+        $applicant=$employerModel->getApplicant($loggedin);
+        $applicant_id=$applicant->applicant_id;
+        return $this->render('beneficiaryRepaySchedule', [
+            'applicant_id'=>$applicant_id,
+        ]);
+    }
 }

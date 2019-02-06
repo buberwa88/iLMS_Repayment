@@ -26,6 +26,7 @@ class Controller extends \yii\web\Controller {
         $dontRequireLogin = array();
         array_push($dontRequireLogin, '/site/index');
         array_push($dontRequireLogin, '/site/login');
+        array_push($dontRequireLogin,'site/refund-register');
         array_push($dontRequireLogin, '/application/default/home-page');
         array_push($dontRequireLogin, '/application/default/loan-apply');
         array_push($dontRequireLogin, '/application/default/necta');

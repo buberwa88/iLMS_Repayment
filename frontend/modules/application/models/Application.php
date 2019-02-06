@@ -421,7 +421,7 @@ return $sum;
      * To get Total Disbursed Loan Per Academic Year Per Semister Per Installment
      */
     public static function getTotalDisbursedLoan($application_id,$academic_year_id,$semester_number,$instalment_definition_id){
-    $resultsDisb=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT GROUP_CONCAT(DISTINCT disbursement.disbursement_batch_id) as disbursement_batch_id FROM disbursement INNER JOIN disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE  disbursement_batch.academic_year_id='$academic_year_id' AND disbursement_batch.semester_number='$semester_number' AND disbursement_batch.instalment_definition_id='$instalment_definition_id' AND disbursement_batch.is_approved='1' AND disbursement.application_id='$application_id' AND disbursement.status='3'")->asArray()->one();
+    $resultsDisb=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT GROUP_CONCAT(DISTINCT disbursement.disbursement_batch_id) as disbursement_batch_id FROM disbursement INNER JOIN disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE  disbursement_batch.academic_year_id='$academic_year_id' AND disbursement_batch.semester_number='$semester_number' AND disbursement_batch.instalment_definition_id='$instalment_definition_id' AND disbursement_batch.is_approved='1' AND disbursement.application_id='$application_id' AND disbursement.status='8'")->asArray()->one();
         $valuesXcF=$resultsDisb['disbursement_batch_id'];
 		if($valuesXcF !=''){
 		$valuesXcF=$valuesXcF;	
@@ -429,13 +429,13 @@ return $sum;
 			$valuesXcF=-1;
 		}
         
-      $query = (new \yii\db\Query())->from('disbursement')->where("disbursement_batch_id IN($valuesXcF) AND application_id='$application_id' AND status='3'");
+      $query = (new \yii\db\Query())->from('disbursement')->where("disbursement_batch_id IN($valuesXcF) AND application_id='$application_id' AND status='8'");
 $sum = $query->sum('disbursed_amount');
 return $sum;
 //return $valuesXcF;
 }
     static function getLoanItemsDisbursed($application_id,$academic_year_id,$semester_number,$instalment_definition_id){
-    $resultsDisb=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT GROUP_CONCAT(DISTINCT disbursement.disbursement_batch_id) as disbursement_batch_id FROM disbursement INNER JOIN disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE  disbursement_batch.academic_year_id='$academic_year_id' AND disbursement_batch.semester_number='$semester_number' AND disbursement_batch.instalment_definition_id='$instalment_definition_id' AND disbursement_batch.is_approved='1' AND disbursement.application_id='$application_id' AND disbursement.status='3'")->asArray()->one();
+    $resultsDisb=\backend\modules\disbursement\models\Disbursement::findBySql("SELECT GROUP_CONCAT(DISTINCT disbursement.disbursement_batch_id) as disbursement_batch_id FROM disbursement INNER JOIN disbursement_batch ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE  disbursement_batch.academic_year_id='$academic_year_id' AND disbursement_batch.semester_number='$semester_number' AND disbursement_batch.instalment_definition_id='$instalment_definition_id' AND disbursement_batch.is_approved='1' AND disbursement.application_id='$application_id' AND disbursement.status='8'")->asArray()->one();
         $valuesXcF=$resultsDisb['disbursement_batch_id'];
 		if($valuesXcF !=''){
 			$valuesXcF=$valuesXcF;
@@ -444,7 +444,7 @@ return $sum;
 		}
         
           return new \yii\data\ActiveDataProvider([
-            'query' => \backend\modules\disbursement\models\disbursement::find()->where("disbursement_batch_id IN($valuesXcF) AND application_id='$application_id' AND status='3'"),
+            'query' => \backend\modules\disbursement\models\disbursement::find()->where("disbursement_batch_id IN($valuesXcF) AND application_id='$application_id' AND status='8'"),
         ]);
     }
     public static function checkLoanAllocated($applicantID){ 
@@ -539,7 +539,7 @@ public static function dropdownDisb() {
 		}else{
 		$valuesXcF=-1;	
 		}
-    $models = \common\models\AcademicYear::findBySql("SELECT academic_year.academic_year_id AS 'academic_year_id',academic_year.academic_year AS 'academic_year' FROM academic_year INNER JOIN disbursement_batch ON disbursement_batch.academic_year_id=academic_year.academic_year_id INNER JOIN disbursement ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE disbursement.application_id IN($valuesXcF) AND  status='3'")->all();
+    $models = \common\models\AcademicYear::findBySql("SELECT academic_year.academic_year_id AS 'academic_year_id',academic_year.academic_year AS 'academic_year' FROM academic_year INNER JOIN disbursement_batch ON disbursement_batch.academic_year_id=academic_year.academic_year_id INNER JOIN disbursement ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE disbursement.application_id IN($valuesXcF) AND  disbursement.status='8'")->all();
     foreach ($models as $model) {
         $dropdown[$model->academic_year_id] = $model->academic_year;
     }
@@ -556,7 +556,7 @@ public static function dropdownDisbSermister() {
 		}else{
 			$valuesXcF=-1;
 		}
-    $models = \common\models\Semester::findBySql("SELECT semester.semester_id AS 'semester_id',semester.description AS 'description' FROM semester INNER JOIN disbursement_batch ON disbursement_batch.semester_number=semester.semester_id INNER JOIN disbursement ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE disbursement.application_id IN($valuesXcF) AND  status='3'")->all();
+    $models = \common\models\Semester::findBySql("SELECT semester.semester_id AS 'semester_id',semester.description AS 'description' FROM semester INNER JOIN disbursement_batch ON disbursement_batch.semester_number=semester.semester_id INNER JOIN disbursement ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE disbursement.application_id IN($valuesXcF) AND  disbursement.status='8'")->all();
     foreach ($models as $model) {
         $dropdown[$model->semester_id] = $model->description;
     }
@@ -573,7 +573,7 @@ public static function dropdownDisbInstalment() {
 		}else{
 			$valuesXcF=-1;
 		}
-    $models = \backend\modules\disbursement\models\InstalmentDefinition::findBySql("SELECT instalment_definition.instalment_definition_id AS 'instalment_definition_id',instalment_definition.instalment_desc AS 'instalment_desc' FROM instalment_definition INNER JOIN disbursement_batch ON disbursement_batch.instalment_definition_id=instalment_definition.instalment_definition_id INNER JOIN disbursement ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE disbursement.application_id IN($valuesXcF) AND  status='3'")->all();
+    $models = \backend\modules\disbursement\models\InstalmentDefinition::findBySql("SELECT instalment_definition.instalment_definition_id AS 'instalment_definition_id',instalment_definition.instalment_desc AS 'instalment_desc' FROM instalment_definition INNER JOIN disbursement_batch ON disbursement_batch.instalment_definition_id=instalment_definition.instalment_definition_id INNER JOIN disbursement ON disbursement.disbursement_batch_id=disbursement_batch.disbursement_batch_id WHERE disbursement.application_id IN($valuesXcF) AND  disbursement.status='8'")->all();
     foreach ($models as $model) {
         $dropdown[$model->instalment_definition_id] = $model->instalment_desc;
     }

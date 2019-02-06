@@ -84,6 +84,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
 	public $phone_number;
 	public $email_address;
 	public $name;
+	public $refund_type;
 
     public function rules()
     {
@@ -96,7 +97,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
             [['employerId_bulk'], 'required','on'=>'bulkBillTreasury'],
             [['payment_date'], 'required','on'=>'billConfirmationTreasury'],
 			[['payment_date'], 'required','on'=>'gspp_monthly_deduction_request'],
-            [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource','receipt_date','vote_number','Vote_name','gepg_lawson_id','lowason_check_date','employer_code','employer_name','phone_number','email_address','name'], 'safe'],
+            [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource','receipt_date','vote_number','Vote_name','gepg_lawson_id','lowason_check_date','employer_code','employer_name','phone_number','email_address','name','refund_type'], 'safe'],
             [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 100],
             [['pay_phone_number'], 'string', 'max' => 13],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
@@ -393,7 +394,7 @@ public static function updatePaymentAfterGePGconfirmPaymentDonelive($controlNumb
 		\frontend\modules\repayment\models\LoanRepaymentDetail::updateLoanBalanceToBeneficiaryAfterEveryPayment($loan_summary_id,$applicantID,$loan_given_to,$loanRepaymentId,$loan_repayment_item_id);
 		
 		$loanPaidExistsCount=LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_repayment_id,loan_repayment_detail.amount FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id "
-                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.applicant_id AND loan_repayment.bill_number")->count();
+                . "WHERE  loan_repayment_detail.applicant_id='$applicantID' AND loan_repayment_detail.loan_given_to='$loan_given_to' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.applicant_id,loan_repayment.bill_number")->count();
 		if($loanPaidExistsCount== 1){
 		\frontend\modules\repayment\models\LoanRepaymentDetail::updateVRFBeforeRepayment($loan_summary_id,$applicantID,$loan_given_to);
 				}

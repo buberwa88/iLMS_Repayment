@@ -19,33 +19,22 @@ $user_id = Yii::$app->user->identity->user_id;
 $modelApplicant = \frontend\modules\application\models\Applicant::find()->where("user_id = {$user_id}")->one();
 $existAllocation=\frontend\modules\application\models\Application::checkExistAllocation($modelApplicant->applicant_id);
 $existDisbursement=\frontend\modules\application\models\Application::checkExistDisbursment($modelApplicant->applicant_id);
-
+$existAllocation=1;
+$existDisbursement=1;
 
 
         $loggedin=Yii::$app->user->identity->user_id;
         $applicant=EmployerSearch::getApplicant($loggedin);
         $applicantID=$applicant->applicant_id;
-        
-        
+		
         $checkGraduated= \frontend\modules\application\models\Application::find()
         ->where(['applicant_id'=>$applicantID,'student_status'=>'GRADUATED'])->orderBy(['application_id'=>SORT_ASC])->count();
         if($checkGraduated > 0){
             $countGraduated=1;
         }
-		//check loged in employer
-        /*        
-		$employerStatus= \frontend\modules\repayment\models\Employer::find()
-        ->where(['user_id'=>$loggedin,'salary_source'=>1])->orderBy(['employer_id'=>SORT_DESC])->count();
-        if($employerStatus ==0){
-            $label="My Bill";$label="My Bill";
-        }else{           
-           $label="Prepare & Send Bill";
-        }
-		*/
+		$countGraduated=1;
 		$label="My Bill";
-		//end check
-
-?>
+ ?>
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -67,16 +56,7 @@ scratch. This page gets rid of lal links and provides the needed markup only.
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <?php $this->head() ?>
-    <style>
-        .kv-file-remove{
-        display: none;
-        //text-align: center;
-    }
- .navbar-right {
-    float: right !important;
-    margin-right: 250px!important;
-}
-        </style>
+  
 </head>
 <!--
 BODY TAG OPTIONS: #365C77 
@@ -122,7 +102,7 @@ desired effect
             ]);
             $menuItems = [
                 ['label' => 'Home', 'url' => ['/site/index']],
-                     ['label' => 'My Application', 'icon' => 'list-alt', 'url' => Url::to(['/application/default/my-application-index']), 'active' => (Yii::$app->controller->id == 'default' && Yii::$app->controller->action->id == 'my-application-index')|| Yii::$app->controller->id == 'education'|| Yii::$app->controller->id=="applicant-associate"|| Yii::$app->controller->id=="application"||Yii::$app->controller->id=='applicant'],
+                     ['label' => 'My Application', 'icon' => 'list-alt', 'url' => Url::to(['/application/default/my-application-index']), 'active' => ((Yii::$app->controller->id == 'default' ||  Yii::$app->controller->id == 'education'|| Yii::$app->controller->id=="applicant-associate"|| Yii::$app->controller->id=="application"||Yii::$app->controller->id=='applicant') && (Yii::$app->controller->action->id == 'my-application-index') && Yii::$app->controller->action->id != 'disbursed-loan' && Yii::$app->controller->action->id != 'allocated-loan')],
                      ['label' => 'Change Password', 'icon' => 'lock', 'url' => ['/site/change-password'],'active' => (Yii::$app->controller->id == 'site')],
                                 
             ];
@@ -159,7 +139,7 @@ desired effect
         <section class="sidebar">
 
                <!-- Sidebar user panel (optional) -->
-            <div class="user-pan1el">
+            <div class="user-panel">
                    <center>
                 <div class="pull-center image">
                     <img src="image/logo/heslb_logo.gif" class="img-circle" alt="logo">
@@ -177,8 +157,10 @@ desired effect
                     "items" => [
                          ['label' => 'Home', 'icon' => 'home', 'url' => Url::to(['/application/default/index']), 'active' => (Yii::$app->controller->id == 'default' && Yii::$app->controller->action->id == 'index')],
                               
-                        ['label' => 'Application', 'icon' => 'list-alt', 'url' => Url::to(['/application/default/my-application-index']), 'active' => ((Yii::$app->controller->id == 'default' || Yii::$app->controller->id == 'education' || Yii::$app->controller->id=="applicant-associate" || Yii::$app->controller->id=="application" || Yii::$app->controller->id=='applicant') && (Yii::$app->controller->action->id == 'my-application-index' || Yii::$app->controller->action->id == 'application-list' || Yii::$app->controller->action->id == 'new-application' || Yii::$app->controller->action->id != 'allocated-loan' || Yii::$app->controller->action->id == 'my-profile' || Yii::$app->controller->action->id == 'updateprofile') && Yii::$app->controller->action->id != 'index' && Yii::$app->controller->action->id != 'disbursed-loan' && Yii::$app->controller->action->id != 'notification')],
-                        ['label' => 'Allocation', 'icon' => 'dashboard', 'url' => ['/application/application/allocated-loan'],'active' => (Yii::$app->controller->id == 'application' && Yii::$app->controller->action->id == 'allocated-loan'),'visible' =>$existAllocation =='1'],
+                                ['label' => 'My Application ', 'icon' => 'list-alt', 'url' => Url::to(['/application/default/my-application-index']), 'active' => ((Yii::$app->controller->id == 'default' || Yii::$app->controller->id == 'education'|| Yii::$app->controller->id=="applicant-associate"|| Yii::$app->controller->id=="application"||Yii::$app->controller->id=='applicant') && (Yii::$app->controller->action->id == 'my-profile' || Yii::$app->controller->action->id == 'updateprofile' || Yii::$app->controller->action->id == 'my-application-index') && Yii::$app->controller->action->id != 'disbursed-loan' && Yii::$app->controller->action->id != 'allocated-loan')],
+                                ['label' => 'Appeal', 'icon' => 'gavel', 'url' => ['/appeal/appeal'],'active' => (Yii::$app->controller->id == 'site')],
+                               // ['label' => 'Complaints', 'icon' => 'comments', 'url' => ['/appeal/complaints'],'active' => (Yii::$app->controller->id == 'site')],
+							   ['label' => 'Allocation', 'icon' => 'dashboard', 'url' => ['/application/application/allocated-loan'],'active' => (Yii::$app->controller->id == 'application' && Yii::$app->controller->action->id == 'allocated-loan'),'visible' =>$existAllocation =='1'],
                         ['label' => 'Disbursment', 'icon' => 'dashboard', 'url' => ['/application/application/disbursed-loan'],'active' => (Yii::$app->controller->id == 'application' && Yii::$app->controller->action->id == 'disbursed-loan'),'visible' =>$existDisbursement=='1'],
                         ['label' => 'Repayment', 'icon' => 'dashboard', 'url' => ['/appeal/appeal/index'],'active' => (Yii::$app->controller->id == 'appeal'),'visible' =>$countAllocation=='23'],
 						[
@@ -191,13 +173,12 @@ desired effect
                                     //["label" => "Loan Summary", "url" => Url::to(['/repayment/loan-summary/index-beneficiary']), 'active' => (Yii::$app->controller->id =='loan-summary'&&Yii::$app->controller->action->id=='index-beneficiary'), "icon" => "money"],
                                     ["label" =>$label, "url" => Url::to(['/repayment/loan-repayment/index-beneficiary']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='index-beneficiary'), "icon" => "th"],
                                     ["label" => "Payments", "url" => Url::to(['/repayment/loan-repayment-detail/bills-payments-benefiaciary']), 'active' => (Yii::$app->controller->id =='loan-repayment-detail'), "icon" => "th"],
+									["label" => "My Re-payment Schedule", "url" => Url::to(['/repayment/loan-repayment/repayment-schedule']), 'active' => (Yii::$app->controller->id =='loan-repayment' &&Yii::$app->controller->action->id=='repayment-schedule'), "icon" => "th"],
 				    //["label" => "Receipts", "url" => Url::to(['/repayment/loan-repayment/receipt']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='receipt'), "icon" => "money"],
 					],
 					],
-                                ['label' => 'Appeal', 'icon' => 'balance-scale', 'url' => ['/appeal/appeal/index'],'active' => (Yii::$app->controller->id == 'appeal'),'visible' =>$countAllocation=='23'],
-                                ['label' => 'Complaints', 'icon' => 'comments', 'url' => ['/appeal/complaints/index'],'active' => (Yii::$app->controller->id == 'complaints'),'visible' =>$countAllocation=='23'],
-                        ['label' => 'Notifications', 'icon' => 'far fa-bell', 'url' => ['/application/application/notification'],'active' => (Yii::$app->controller->id == 'application' && Yii::$app->controller->action->id == 'notification'),'visible' =>$countAllocation=='23'],
-                                ['label' => 'Change Password', 'icon' => 'lock', 'url' => ['/site/change-password'],'active' => (Yii::$app->controller->id == 'site'),'visible' =>$countAllocation=='0'],
+    ['label' => 'Refund', "icon" => "th", 'url' => Url::to(['/repayment/loan-repayment/index-refund']), 'active' => ((Yii::$app->controller->id == 'loan-repayment' || Yii::$app->controller->id == 'refund-education-history' || Yii::$app->controller->id == 'refund-claimant') && (Yii::$app->controller->action->id == 'index-refund' || Yii::$app->controller->action->id == 'create'))],
+                                ['label' => 'Change Password', 'icon' => 'lock', 'url' => ['/site/change-password'],'active' => (Yii::$app->controller->id == 'site')],
                                    
                             ],
                     ]

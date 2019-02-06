@@ -9,15 +9,15 @@ use Yii;
  *
  * @property integer $refund_application_id
  * @property integer $refund_claimant_id
- * @property string $claim_number
- * @property string $amount
+ * @property string $application_number
+ * @property string $refund_claimant_amount
  * @property integer $finaccial_year_id
  * @property integer $academic_year_id
  * @property string $trustee_firstname
  * @property string $trustee_midlename
  * @property string $trustee_surname
  * @property string $trustee_sex
- * @property integer $verification_status
+ * @property integer $current_status
  * @property integer $refund_verification_framework_id
  * @property string $check_number
  * @property string $bank_account_number
@@ -30,6 +30,7 @@ use Yii;
  * @property string $updated_at
  * @property integer $updated_by
  * @property integer $is_active
+ * @property integer $submitted
  *
  * @property AcademicYear $academicYear
  * @property Bank $bank
@@ -39,7 +40,7 @@ use Yii;
  * @property RefundType $refundType
  * @property RefundVerificationFramework $refundVerificationFramework
  * @property User $updatedBy
- * @property RefundApplicationInternalOperation[] $refundApplicationInternalOperations
+ * @property RefundApplicationOperation[] $refundApplicationOperations
  * @property RefundClaimantAttachment[] $refundClaimantAttachments
  */
 class RefundApplication extends \yii\db\ActiveRecord
@@ -58,11 +59,11 @@ class RefundApplication extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['refund_claimant_id', 'finaccial_year_id', 'academic_year_id', 'verification_status', 'refund_verification_framework_id', 'bank_id', 'refund_type_id', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['amount'], 'number'],
+            [['refund_claimant_id', 'finaccial_year_id', 'academic_year_id', 'current_status', 'refund_verification_framework_id', 'bank_id', 'refund_type_id', 'created_by', 'updated_by', 'is_active', 'submitted'], 'integer'],
+            [['refund_claimant_amount'], 'number'],
             [['created_at', 'updated_at'], 'safe'],
             [['updated_at'], 'required'],
-            [['claim_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],
+            [['application_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname'], 'string', 'max' => 45],
             [['trustee_sex'], 'string', 'max' => 1],
             [['bank_account_name'], 'string', 'max' => 100],
@@ -85,15 +86,15 @@ class RefundApplication extends \yii\db\ActiveRecord
         return [
             'refund_application_id' => 'Refund Application ID',
             'refund_claimant_id' => 'Refund Claimant ID',
-            'claim_number' => 'Claim Number',
-            'amount' => 'Amount',
+            'application_number' => 'Application Number',
+            'refund_claimant_amount' => 'Refund Claimant Amount',
             'finaccial_year_id' => 'Finaccial Year ID',
             'academic_year_id' => 'Academic Year ID',
             'trustee_firstname' => 'Trustee Firstname',
             'trustee_midlename' => 'Trustee Midlename',
             'trustee_surname' => 'Trustee Surname',
             'trustee_sex' => 'Trustee Sex',
-            'verification_status' => 'Verification Status',
+            'current_status' => 'Current Status',
             'refund_verification_framework_id' => 'Refund Verification Framework ID',
             'check_number' => 'Check Number',
             'bank_account_number' => 'Bank Account Number',
@@ -106,6 +107,7 @@ class RefundApplication extends \yii\db\ActiveRecord
             'updated_at' => 'Updated At',
             'updated_by' => 'Updated By',
             'is_active' => 'Is Active',
+            'submitted' => 'Submitted',
         ];
     }
 
@@ -176,7 +178,7 @@ class RefundApplication extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundApplicationInternalOperations()
+    public function getRefundApplicationOperations()
     {
         return $this->hasMany(\backend\modules\repayment\models\RefundApplicationInternalOperation::className(), ['refund_application_id' => 'refund_application_id']);
     }

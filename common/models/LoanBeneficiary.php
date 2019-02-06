@@ -756,6 +756,9 @@ $amountPerMonthVRF =0;
 $amountPerMonthPRC =0;
 $totalAcruedVRF =0;
 $TotalPRCGeneral =0;
+##############added 04-02-2019################
+$overallVRFinPayment=0;
+#################end#############################
 
 $factor=2;//the possible payment loop
 //check if employed
@@ -942,12 +945,19 @@ $totalLAFORGN=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLAFOr
 		
 		//-----here for VRF portion----
 		
-        if($balancePRC > 0){
+        $principleBalance=$balancePRC-$totalPrinciplePaid;
+        if($balancePRC > 0 && $principleBalance > 0){
          $vrf_portion=$amount_remained1 * $vrfRepaymentRate;		 
          if($balanceVRF >=$totalVRFLoop){
 			 if($balanceVRF >=$vrf_portion){
          $vrfTopay=$vrf_portion;
-         $amount_remained22=$amount_remained1-$vrfTopay;		 
+         $amount_remained22=$amount_remained1-$vrfTopay;
+         ##########added 04-02-2019#######
+		 if($amount_remained22 > $principleBalance){
+			 $amountUnassigned=$amount_remained22-$principleBalance;
+			 $vrfTopay=$vrfTopay+$amountUnassigned;
+		 } 
+          ##end#######################		 
 		 }else{
          $vrfTopay=$balanceVRF; 
          $amount_remained22=$amount_remained1-$vrfTopay;

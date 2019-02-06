@@ -19,8 +19,8 @@ $user_id = Yii::$app->user->identity->user_id;
 $modelApplicant = \frontend\modules\application\models\Applicant::find()->where("user_id = {$user_id}")->one();
 $existAllocation=\frontend\modules\application\models\Application::checkExistAllocation($modelApplicant->applicant_id);
 $existDisbursement=\frontend\modules\application\models\Application::checkExistDisbursment($modelApplicant->applicant_id);
-
-
+$existAllocation=1;
+$existDisbursement=1;
 
         $loggedin=Yii::$app->user->identity->user_id;
         $applicant=EmployerSearch::getApplicant($loggedin);
@@ -190,9 +190,12 @@ desired effect
                                     //["label" => "Loan Summary", "url" => Url::to(['/repayment/loan-summary/index-beneficiary']), 'active' => (Yii::$app->controller->id =='loan-summary'&&Yii::$app->controller->action->id=='index-beneficiary'), "icon" => "money"],
                                     ["label" =>$label, "url" => Url::to(['/repayment/loan-repayment/index-beneficiary']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='index-beneficiary'), "icon" => "th"],
                                     ["label" => "Payments", "url" => Url::to(['/repayment/loan-repayment-detail/bills-payments-benefiaciary']), 'active' => (Yii::$app->controller->id =='loan-repayment-detail'), "icon" => "th"],
+									["label" => "My Re-payment Schedule", "url" => Url::to(['/repayment/loan-repayment/repayment-schedule']), 'active' => (Yii::$app->controller->id =='loan-repayment' &&Yii::$app->controller->action->id=='repayment-schedule'), "icon" => "th"],
 				    //["label" => "Receipts", "url" => Url::to(['/repayment/loan-repayment/receipt']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='receipt'), "icon" => "money"],
 					],
 					],
+    ['label' => 'Refund', "icon" => "th", 'url' => Url::to(['/repayment/loan-repayment/index-refund']), 'active' => (Yii::$app->controller->id == 'loan-repayment' && Yii::$app->controller->action->id == 'index-refund')],
+
                                 ['label' => 'Appeal', 'icon' => 'balance-scale', 'url' => ['/appeal/appeal/index'],'active' => (Yii::$app->controller->id == 'appeal'),'visible' =>$countAllocation=='23'],
                                 ['label' => 'Complaints', 'icon' => 'comments', 'url' => ['/appeal/complaints/index'],'active' => (Yii::$app->controller->id == 'complaints'),'visible' =>$countAllocation=='23'],
                         ['label' => 'Notifications', 'icon' => 'far fa-bell', 'url' => ['/application/application/notification'],'active' => (Yii::$app->controller->id == 'application' && Yii::$app->controller->action->id == 'notification'),'visible' =>$countAllocation=='23'],

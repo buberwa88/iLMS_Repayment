@@ -765,5 +765,19 @@ public function actionPasswordRecover()
         }
 
     }
+
+    public function actionRefundRegister()
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundClaimant();
+        $model->scenario='refundRegistration';
+        if ($model->load(Yii::$app->request->post())) {
+
+        } else {
+            return $this->render('refundRegister', [
+                'model' => $model,
+            ]);
+        }
+    }
 	
 }

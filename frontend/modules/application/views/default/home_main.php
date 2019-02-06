@@ -75,10 +75,16 @@ echo TabsX::widget([
 		
 		
 		[
-           'label'=>'Register',
+           'label'=>'Repayment',
            'content'=>$this->render('repayment_register'),
            'id'=>'repayment_register_tab_id',
            'active'=>($activeTab == 'repayment_register'),
+        ],
+        [
+            'label'=>'Refund',
+            'content'=>$this->render('refund_register'),
+            'id'=>'refund_register_tab_id',
+            'active'=>($activeTab == 'refund_register'),
         ],
 		
   

@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\modules\repayment\models;
+namespace frontend\modules\repayment\models;
 
 use Yii;
 
@@ -43,8 +43,8 @@ class RefundEducationHistory extends \yii\db\ActiveRecord
             [['refund_application_id', 'program_id', 'institution_id', 'entry_year', 'completion_year', 'created_by', 'updated_by', 'is_active'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
-            [['institution_id'], 'exist', 'skipOnError' => true, 'targetClass' => LearningInstitution::className(), 'targetAttribute' => ['institution_id' => 'learning_institution_id']],
-            [['program_id'], 'exist', 'skipOnError' => true, 'targetClass' => Programme::className(), 'targetAttribute' => ['program_id' => 'programme_id']],
+            [['institution_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\allocation\models\LearningInstitution::className(), 'targetAttribute' => ['institution_id' => 'learning_institution_id']],
+            [['program_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\allocation\models\Programme::className(), 'targetAttribute' => ['program_id' => 'programme_id']],
             [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'user_id']],
         ];
     }
@@ -82,7 +82,7 @@ class RefundEducationHistory extends \yii\db\ActiveRecord
      */
     public function getInstitution()
     {
-        return $this->hasOne(LearningInstitution::className(), ['learning_institution_id' => 'institution_id']);
+        return $this->hasOne(\backend\modules\allocation\models\LearningInstitution::className(), ['learning_institution_id' => 'institution_id']);
     }
 
     /**
@@ -90,7 +90,7 @@ class RefundEducationHistory extends \yii\db\ActiveRecord
      */
     public function getProgram()
     {
-        return $this->hasOne(Programme::className(), ['programme_id' => 'program_id']);
+        return $this->hasOne(\backend\modules\allocation\models\Programme::className(), ['programme_id' => 'program_id']);
     }
 
     /**

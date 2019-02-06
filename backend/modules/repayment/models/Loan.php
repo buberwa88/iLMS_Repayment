@@ -123,10 +123,10 @@ class Loan extends \yii\db\ActiveRecord
             if ($loan_id == '') {
                 $details_loanF = Loan::findBySql("SELECT loan.vrf_before_repayment,loan.loan_id FROM loan INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan.loan_repayment_item_id WHERE  loan.applicant_id='$applicantID' AND loan.loan_given_to='$loan_given_to' AND loan_repayment_item.item_code='VRF' ORDER BY loan_id ASC")->one();
                 $loan_idF = $details_loanF->loan_id;
-                $TotalAmount = $details_loanF->vrf_before_repayment + $amount_accumulated;
+                $TotalAmount = $amount_accumulated;
                 Loan::updateAll(['vrf_before_repayment' => $TotalAmount], 'loan_id ="' . $loan_idF . '"');
             } else {
-                $totalAccumulatedAmount = $vrf_before_repayment + $amount_accumulated;
+                $totalAccumulatedAmount = $amount_accumulated;
                 Loan::updateAll(['vrf_before_repayment' => $totalAccumulatedAmount], 'loan_id ="' . $loan_id . '"');
             }
         }

@@ -7,6 +7,7 @@
 use yii\helpers\Html;
 use common\widgets\Alert;
 yiister\adminlte\assets\Asset::register($this);
+$style='style="font-size: 15px; font-family: Helvetica;"';
 
 ?>
   <style>
@@ -25,7 +26,32 @@ yiister\adminlte\assets\Asset::register($this);
     min-height: 50px;
     border-radius: 0;
 }
- 
+ .blink_text {
+
+    animation:1s blinker linear infinite;
+    -webkit-animation:1s blinker linear infinite;
+    -moz-animation:1s blinker linear infinite;
+
+     color: red;
+    }
+
+    @-moz-keyframes blinker {  
+     0% { opacity: 1.0; }
+     50% { opacity: 0.0; }
+     100% { opacity: 1.0; }
+     }
+
+    @-webkit-keyframes blinker {  
+     0% { opacity: 1.0; }
+     50% { opacity: 0.0; }
+     100% { opacity: 1.0; }
+     }
+
+    @keyframes blinker {  
+     0% { opacity: 1.0; }
+     50% { opacity: 0.0; }
+     100% { opacity: 1.0; }
+     }
  </style>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -119,17 +145,21 @@ desired effect
                 </div>
            
    <h4 class="hdheading page-header">Helpdesk</h4>
-    <p><strong>General</strong><br>
-+255 22 241 0751</p>
+    <p <?php echo $style; ?>><strong>Hotline Numbers</strong><br/>
+   +255 22 550 7910<br/>0739665533</p>
+<p <?php echo $style; ?>><strong>Application Desk</strong><br/>
+<a href="mailto:helpdesk@heslb.go.tz">helpdesk@heslb.go.tz</a></p>
+<p <?php echo $style; ?>><strong>General Contacts</strong><br/>
+ +255 22 277 2432/33<br/>
+<a href="mailto:info@heslb.go.tz">info@heslb.go.tz</a></p>
+<p <?php echo $style; ?>><strong>Repayment Desk</strong><br/>
+<a href="mailto:repayment@heslb.go.tz">repayment@heslb.go.tz</a></p>
+<!-- 
+<p <?php //echo $style; ?>><span class="blink_text"><strong>SOMA MASWALI NA MAJIBU
+    KABLA HUJAPIGA SIMU</strong></span><br/>
+    <a style='color:red !important' target="_blank" href="maswali_ya_mara_kwa_mara.pdf">PAKUA HAPA</a></p>
 
-    <p style="font-size:16px"><strong>Application Office </strong><br>
- 
-application@heslb.go.tz<br>
- 
-<strong>Payment Issues</strong><br>
-malipo@heslb.go.tz</p>
-
-                        <!--                <h4 class='hdheading page-header'>Deadline</h4>
+                                       <h4 class='hdheading page-header'>Deadline</h4>
                                         <p>Applications will be closed 04 August 2017 23:59hours</p>-->
                                     </center>
             </div>
@@ -262,4 +292,78 @@ yii\bootstrap\Modal::end();
 <?php $this->endBody() ?>
 </body>
 </html>
-<?php $this->endPage() ?>
+<?php $this->endPage()?>
+
+<script>
+$(document).ready(function () {
+
+//	informWebsiteUnderConstruction();
+
+});
+
+function informWebsiteUnderConstruction() {
+
+	var $bgShade = $('<div id="divBgShade" style="position:fixed;top:0px;bottom:0px;left:0px;right:0px;margin:auto;background:#000;z-index:100000;">');
+
+	var $pageCover = $('<div id="divPageCover" style="position:absolute;top:30px;bottom:30px;left:30px;right:30px;margin:auto;background:#FFF;z-index:100000;">');
+
+	var html = '<div id="divMsgW" style="text-align:center;margin-top:100px;padding:10px;">';
+
+	html += '<h1 style="font-weight:bold;">OLAS Is Under Construction</h1>';
+
+	html += '<h3 style="font-weight:bold;color:red;">You are not advised to continue.</h3>';
+
+	html += '<h3 style="font-weight:bold;color:#069;">Please visit again after sometime to check the status.</h3>';
+
+	html += '<h3 style="padding:10px 0px;font-weight:bold;text-decoration:underline;"><a href="http://heslb.go.tz">Alternatively, you can go to our website here: www.heslb.go.tz</a></h3>';
+
+	html += '</div>';
+
+	html += '<a href="javascript:void 0;" style="position:absolute;right:10;top:10px;font-weight:bold;font-size:10px;color:#CCC;">XClose</a>';
+
+	$pageCover.html(html);
+
+
+
+	$bgShade.css({ opacity: "0.4" });
+
+	$pageCover.css({ borderRadius: "10px" });
+
+
+
+	$bgShade.appendTo("body");
+
+	$pageCover.appendTo("body");
+
+
+
+	var TABKeyCode = 9, ESCKeyCode = 27;
+
+	var $a = $pageCover.find("a").dblclick(function () {
+
+		$("#divPageCover").remove();
+
+		$("#divBgShade").remove();
+
+	}).keydown(function (e) {
+
+		if (e.keyCode === TABKeyCode) {
+
+			return false;
+
+		} else if (e.keyCode === ESCKeyCode) {
+
+			$("#divPageCover").remove();
+
+			$("#divBgShade").remove();
+
+			return false;
+
+		}
+
+	});
+
+	setTimeout(function () { $a.focus(); }, 10);
+
+}
+</script>

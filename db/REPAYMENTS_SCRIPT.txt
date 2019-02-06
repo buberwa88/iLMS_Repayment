@@ -419,6 +419,9 @@ ALTER TABLE `loan` ADD `loan_repayment_setting_id` VARCHAR(50) NULL DEFAULT NULL
 
 ##########31-01-2019##############################
 ALTER TABLE `notification` ADD `refund_claimant_id` INT(11) NULL DEFAULT NULL AFTER `treasury_id`;
+###############04-02-2019#####################
+ALTER TABLE `refund_application` ADD `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted, 2: Submitted but not Confirmed, 3: Submitted and Confirmed' AFTER `is_active`;
+ALTER TABLE `refund_application` CHANGE `submitted` `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted, 2: Submitted but not Confirmed, 3: Submitted and Confirmed, 4: Attempted';
 
 
 
