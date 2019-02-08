@@ -13,7 +13,13 @@ $attemptedApplication=0;
 <div class="education-create">
         <div class="panel panel-info">
         <div class="panel-heading">
-      <h4><i class="icon fa fa-info"></i>  YOU ARE  APPLYING FOR REFUND AS NON-BENEFICIARY           
+      <h4><i class="icon fa fa-info"></i>  YOU ARE  APPLYING FOR REFUND AS NON-BENEFICIARY 
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?= Html::a(
+                                                    '<i class="fa  fa-power-off"></i>Logout',
+                                                    ['/site/logout'],
+                                                    ['data-method' => 'post']
+                                                ) ?>
+               
            </h4>
 	  
         </div>

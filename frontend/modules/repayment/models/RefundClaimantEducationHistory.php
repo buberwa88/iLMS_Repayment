@@ -41,7 +41,8 @@ class RefundClaimantEducationHistory extends \yii\db\ActiveRecord
     {
         return [
             [['refund_application_id', 'program_id', 'institution_id', 'entry_year', 'completion_year', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['program_id', 'institution_id', 'entry_year', 'completion_year'], 'required','on'=>'refundTresuryEducation'],
+            [['created_at', 'updated_at','study_level'], 'safe'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['institution_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\allocation\models\LearningInstitution::className(), 'targetAttribute' => ['institution_id' => 'learning_institution_id']],
             [['program_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\allocation\models\Programme::className(), 'targetAttribute' => ['program_id' => 'programme_id']],
@@ -66,6 +67,7 @@ class RefundClaimantEducationHistory extends \yii\db\ActiveRecord
             'updated_at' => 'Updated At',
             'updated_by' => 'Updated By',
             'is_active' => 'Is Active',
+            'study_level'=>'Study Level',
         ];
     }
 
@@ -92,6 +94,14 @@ class RefundClaimantEducationHistory extends \yii\db\ActiveRecord
     {
         return $this->hasOne(\backend\modules\allocation\models\Programme::className(), ['programme_id' => 'program_id']);
     }
+    public function getStudylevel()
+    {
+        return $this->hasOne(\backend\modules\application\models\ApplicantCategory::className(), ['applicant_category_id' => 'study_level']);
+    }
+	public function getRefundApplication()
+    {
+        return $this->hasOne(RefundApplication::className(), ['refund_application_id' => 'refund_application_id']);
+    }
 
     /**
      * @return \yii\db\ActiveQuery
@@ -99,5 +109,13 @@ class RefundClaimantEducationHistory extends \yii\db\ActiveRecord
     public function getUpdatedBy()
     {
         return $this->hasOne(User::className(), ['user_id' => 'updated_by']);
+    }
+    public static function getStageChecked($refund_application_id ){
+        $details_ = self::find()
+            ->select('study_level')
+            ->where(['refund_application_id'=>$refund_application_id])
+            ->one();
+        $results=count($details_->study_level);
+        return $results;
     }
 }

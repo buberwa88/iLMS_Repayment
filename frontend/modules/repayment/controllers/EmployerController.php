@@ -236,7 +236,7 @@ class EmployerController extends Controller
    $modelEmployerContactPerson->created_at=$model1->created_at;
    $modelEmployerContactPerson->save();
    //end create contact person
-		   
+            $headers='';
 		    $employerIdN=$model1->employer_id;    
 			$encrypt_method = "aes128";
 			$secret_key = 'ucc2018';
@@ -558,6 +558,18 @@ class EmployerController extends Controller
         }
     }
 public function actionProgrammeName() {
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $InstitutionId = $parents[0];
+                $out = \frontend\modules\repayment\models\Employer::getProgrammes($InstitutionId);
+                echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
+                return;
+            }
+        }
+    }
+public function actionProgrammeNamepublic() {
         $out = [];
         if (isset($_POST['depdrop_parents'])) {
             $parents = $_POST['depdrop_parents'];

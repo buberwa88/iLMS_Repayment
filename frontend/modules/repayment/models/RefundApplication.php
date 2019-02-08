@@ -61,7 +61,7 @@ class RefundApplication extends \yii\db\ActiveRecord
         return [
             [['refund_claimant_id', 'finaccial_year_id', 'academic_year_id', 'current_status', 'refund_verification_framework_id', 'bank_id', 'refund_type_id', 'created_by', 'updated_by', 'is_active', 'submitted'], 'integer'],
             [['refund_claimant_amount'], 'number'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at','trustee_phone_number','trustee_email','trustee_email'], 'safe'],
             [['updated_at'], 'required'],
             [['application_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname'], 'string', 'max' => 45],
@@ -215,4 +215,9 @@ class RefundApplication extends \yii\db\ActiveRecord
 
         return $status;
     }
+	public static function getRefundApplicationDetails($refundClaimantid){
+		return self::findOne($refundClaimantid);
+	}
+	
+	
 }

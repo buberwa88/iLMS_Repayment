@@ -53,6 +53,7 @@ class Controller extends \yii\web\Controller {
 		array_push($dontRequireLogin, '/repayment/default/recover-password');
 		array_push($dontRequireLogin, '/repayment/employer/viewemployer-verificationcode');
 		array_push($dontRequireLogin, '/repayment/loan-beneficiary/verify-beneficiaryemail');
+		array_push($dontRequireLogin, '/repayment/employer/programme-namepublic');
 		//END REPAYMENT
 		
              $mustLogin = array();

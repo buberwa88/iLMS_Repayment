@@ -15,6 +15,7 @@ use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
 use frontend\modules\application\rabbit\Producer;
+use  yii\web\Session;
 /**
  * Site controller
  */
@@ -693,6 +694,7 @@ public function actionPasswordRecover()
             $plaintext = $results->user_id;
             $output = openssl_encrypt($plaintext, $encrypt_method, $key, 0, $iv);
             $variableToget=base64_encode($output);
+            $password='';
             //$password = str_shuffle($results->email_address);
             
             //$url = 'http://olas.heslb.go.tz/index.php?r=site/recover-password&id='.$results->user_id;
@@ -701,6 +703,7 @@ public function actionPasswordRecover()
     //email notification
           $message = "Dear ".$results->firstname." ".$results->middlename." ".$results->surname.",\r\n\r\nYou have asked to reset your Account Password,Please find the below new password:- \r\n\r\n".$url."\r\n\r\nThis email has been sent by Higher Education Students' Loan Board(HESLB).\r\nIf you believe you have received it by mistake, please ignore and sorry for inconvenience.";
           $subject = "Recover iLMS password";
+          $headers='';
           $headers .= "MIME-Version: 1.0\r\n";
           $headers .= "From: iLMS ";
           if (mail($results->email_address, $subject, $message, $headers)) {
@@ -770,10 +773,66 @@ public function actionPasswordRecover()
     {
         $this->layout="main_public";
         $model = new \frontend\modules\repayment\models\RefundClaimant();
+        $modelRefundApplication = new \frontend\modules\repayment\models\RefundApplication();
+        $modelRefundContactPerson = new \frontend\modules\repayment\models\RefundContactPerson();
         $model->scenario='refundRegistration';
-        if ($model->load(Yii::$app->request->post())) {
-              if($model->save()){
-                  return $this->redirect(['list-steps', 'id' => $model->refund_claimant_id]);
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+			      $todate = date("Y-m-d H:i:s");
+			      $model->created_at=$todate;
+                  $model->updated_at=$todate;
+              if($model->save(false)){
+                  //return $this->redirect(['list-steps', 'id' => $model->refund_claimant_id]);
+                  $modelRefundApplication->refund_claimant_id=$model->refund_claimant_id;                  
+                  $code = strtotime($todate);
+                  $modelRefundApplication->application_number=$code;
+                  $modelRefundApplication->trustee_firstname=$model->firstname;
+                  $modelRefundApplication->trustee_midlename=$model->middlename;
+                  $modelRefundApplication->trustee_surname=$model->surname;
+                  $modelRefundApplication->refund_type_id=$model->refund_type;
+                  $modelRefundApplication->created_at=$todate;
+                  $modelRefundApplication->updated_at=$todate;
+                  $modelRefundApplication->finaccial_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
+                  $modelRefundApplication->academic_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
+                  $modelRefundApplication->trustee_phone_number=$model->phone_number;
+                  $modelRefundApplication->trustee_email=$model->email;
+                  $modelRefundApplication->save(false);
+
+                  $modelRefundContactPerson->firstname=$model->firstname;
+                  $modelRefundContactPerson->middlename=$model->middlename;
+                  $modelRefundContactPerson->surname=$model->surname;
+                  $modelRefundContactPerson->email_address=$model->email;
+                  $modelRefundContactPerson->phone_number=$model->phone_number;
+                  $modelRefundContactPerson->created_at=$todate;
+                  $modelRefundContactPerson->updated_at=$todate;
+                  $modelRefundContactPerson->refund_application_id=$modelRefundApplication->refund_application_id;
+                  $modelRefundContactPerson->save(false);
+
+                  ####################here send email#####################
+                  $headers='';
+                  if (fsockopen("www.google.com", 80)) {
+                      //$url = Yii::$app->params['emailReturnUrl'].'employer-activate-account&id='.$variableToget;
+                      $message = "Dear ".$model->firstname." ".$model->middlename." ".$model->surname.",\nYour loan refund application code is:\r\n".$modelRefundApplication->application_number."\r\nThis email has been sent by Higher Education Students' Loan Board(HESLB).\r\nIf you believe you have received it by mistake, please ignore and sorry for inconvenience.";
+                      $subject = "iLMS loan refund application";
+                      $headers .= "MIME-Version: 1.0\r\n";
+                      $headers .= "From: iLMS ";
+
+                      if (mail($modelRefundApplication->trustee_email, $subject, $message, $headers)) {
+                          return $this->redirect(['confirm-applicationno', 'id' => $model->refund_claimant_id]);
+                      }else{
+                          $sms = "<p>Email not sent!<br/>
+                   Kindly contact HESLB for assistance. </p>";
+                          Yii::$app->getSession()->setFlash('danger', $sms);
+                          return $this->redirect(['confirm-applicationno', 'id' => $model->refund_claimant_id]);
+                      }
+                  } else {
+                      echo '<p class="messageSuccessFailed"><em>YOU HAVE NO INTERNET CONNECTION: Can not send  SMS!</em></p>';
+                      $sms = "<p>Kindly Contact HESLB to complete registration. </p>";
+                      Yii::$app->getSession()->setFlash('success', $sms);
+                      return $this->redirect(['confirm-applicationno', 'id' => $model->refund_claimant_id]);
+                  }
+                  ##################################end send email##################################
+
+                  return $this->redirect(['confirm-applicationno', 'id' => $model->refund_claimant_id]);
               }
         } else {
             return $this->render('refundRegister', [
@@ -781,12 +840,191 @@ public function actionPasswordRecover()
             ]);
         }
     }
-    public function actionListSteps($id)
+    public function actionConfirmApplicationno($id)
     {
         $this->layout="main_public";
         $model = new \frontend\modules\repayment\models\RefundClaimant();
-        return $this->render('listSteps', [
-            'model' => $model,
+		$model->scenario='refundApplicationCodeVerification';
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+			//set session	
+            $session = Yii::$app->session;			
+            $refundClaimantid = $session->get('refund_claimant_id');			
+			//end set session
+			$refundType=$model->getRefuntTypePerClaimant($refundClaimantid)->refund_type_id;
+			if($refundType==1){
+			return $this->redirect(['list-steps-nonbeneficiary', 'id' => $refundClaimantid]);
+			}else if($refundType==2){
+			return $this->redirect(['list-steps-overdeducted', 'id' => $refundClaimantid]);	
+			}else if($refundType==3){
+			return $this->redirect(['list-steps-deceased', 'id' => $refundClaimantid]);	
+			}			
+		} else {	
+        return $this->render('confirmApplicationno', [
+            'model' => $model,'id'=>$id,
+        ]);
+		}
+    }
+	 public function actionListStepsNonbeneficiary($id)
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundClaimant();
+        return $this->render('listStepsNonbeneficiary', [
+            'model' => $model,'id'=>$id,
+        ]);
+    }
+	public function actionListStepsOverdeducted($id)
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundClaimant();
+        return $this->render('listStepsOverdeducted', [
+            'model' => $model,'id'=>$id,
+        ]);
+    }
+	public function actionListStepsDeceased($id)
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundClaimant();
+        return $this->render('listStepsDeceased', [
+            'model' => $model,'id'=>$id,
+        ]);
+    }
+	public function actionCreateRefundf4education()
+{
+	$this->layout="main_public";
+    $model = new \frontend\modules\repayment\models\RefundClaimant();  
+    $model->scenario='refundf4education';	
+	if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+		//set session
+			$session = Yii::$app->session;
+            $refundClaimantid = $session->get('refund_claimant_id');			
+			//end set session
+			if($refundClaimantid !=''){
+		$modelRefundresults=\frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
+		$modelRefundresults->f4indexno=$model->f4indexno;
+		$modelRefundresults->f4_completion_year=$model->f4_completion_year;
+		$modelRefundresults->necta_firstname=$model->necta_firstname;
+		$modelRefundresults->necta_middlename=$model->necta_middlename;
+		$modelRefundresults->necta_surname=$model->necta_surname;
+		if($modelRefundresults->save()){
+		return $this->redirect(['f4education-preview', 'id' => $refundClaimantid]);
+	}
+			}else{
+				$sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+		return $this->redirect(['f4education-preview', 'id' => $refundClaimantid]);		
+			}
+		} else {
+    return $this->render('createRefundf4education', [
+        'model' => $model,
+    ]);
+		}
+}
+public function actionF4educationPreview($id)
+    {
+		$this->layout="main_public";
+		$session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $model = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);	
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+			if($refundClaimantid !=''){	
+			$sms = "<p>Information updated successful!</p>";
+            Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['f4education-preview', 'id' => $refundClaimantid]);
+		}else{
+			$sms = "<p>Session Expired!</p>";
+            Yii::$app->getSession()->setFlash('error', $sms);
+			return $this->redirect(['f4education-preview', 'id' => $refundClaimantid]);
+		}
+        } else {
+            return $this->render('f4educationPreview', [
+                'model' => $model,
+            ]);
+        }
+    }
+public function actionCreateTertiary()
+{
+	$this->layout="main_public";
+    $model = new \frontend\modules\repayment\models\RefundClaimantEducationHistory();  
+    $model->scenario='refundTresuryEducation';	
+	if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+		//set session
+			$session = Yii::$app->session;
+            $refundClaimantid = $session->get('refund_claimant_id');
+            $refund_application_id = $session->get('refund_application_id');
+			//end set session
+			if($refundClaimantid !='' && $refund_application_id !=''){
+		$model->refund_application_id=$refund_application_id;
+		if($model->save()){
+		return $this->redirect(['index-tertiary-education']);
+	}
+			}else{
+				$sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+		return $this->redirect(['create-tertiary', 'id' => $refundClaimantid]);		
+			}
+		} else {
+    return $this->render('createTertiary', [
+        'model' => $model,
+    ]);
+		}
+}
+public function actionIndexTertiaryEducation()
+    {
+		$this->layout="main_public";
+		    //set session
+			$session = Yii::$app->session;
+            $refundClaimantid = $session->get('refund_claimant_id');
+            $refund_application_id = $session->get('refund_application_id');			
+			//end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEducationHistorySearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+		
+        return $this->render('indexTertiaryEducation', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionCreateEmploymentDetails()
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundClaimantEducationHistory();
+        $model->scenario='refundTresuryEducation';
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            //set session
+            $session = Yii::$app->session;
+            $refundClaimantid = $session->get('refund_claimant_id');
+            $refund_application_id = $session->get('refund_application_id');
+            //end set session
+            if($refundClaimantid !='' && $refund_application_id !=''){
+                $model->refund_application_id=$refund_application_id;
+                if($model->save()){
+                    return $this->redirect(['index-tertiary-education']);
+                }
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['create-tertiary', 'id' => $refundClaimantid]);
+            }
+        } else {
+            return $this->render('createEmploymentDetails', [
+                'model' => $model,
+            ]);
+        }
+    }
+    public function actionIndexEmploymentDetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEducationHistorySearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexEmploymentDetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
         ]);
     }
 	
