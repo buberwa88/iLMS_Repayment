@@ -891,13 +891,14 @@ public function actionPasswordRecover()
 	public function actionCreateRefundf4education()
 {
 	$this->layout="main_public";
-    $model = new \frontend\modules\repayment\models\RefundClaimant();  
+    //$model = new \frontend\modules\repayment\models\RefundClaimant();
+    //set session
+    $session = Yii::$app->session;
+    $refundClaimantid = $session->get('refund_claimant_id');
+    //end set session
+    $model = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
     $model->scenario='refundf4education';	
 	if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-		//set session
-			$session = Yii::$app->session;
-            $refundClaimantid = $session->get('refund_claimant_id');			
-			//end set session
 			if($refundClaimantid !=''){
 		$modelRefundresults=\frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
 		$modelRefundresults->f4indexno=$model->f4indexno;
@@ -905,6 +906,9 @@ public function actionPasswordRecover()
 		$modelRefundresults->necta_firstname=$model->necta_firstname;
 		$modelRefundresults->necta_middlename=$model->necta_middlename;
 		$modelRefundresults->necta_surname=$model->necta_surname;
+        $modelRefundresults->firstname=$model->necta_firstname;
+        $modelRefundresults->middlename=$model->necta_middlename;
+        $modelRefundresults->surname=$model->necta_surname;
 		if($modelRefundresults->save()){
 		return $this->redirect(['f4education-preview', 'id' => $refundClaimantid]);
 	}
@@ -987,8 +991,8 @@ public function actionIndexTertiaryEducation()
     public function actionCreateEmploymentDetails()
     {
         $this->layout="main_public";
-        $model = new \frontend\modules\repayment\models\RefundClaimantEducationHistory();
-        $model->scenario='refundTresuryEducation';
+        $model = new \frontend\modules\repayment\models\RefundClaimantEmployment();
+        $model->scenario='refundEmploymentDetails';
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             //set session
             $session = Yii::$app->session;
@@ -998,12 +1002,12 @@ public function actionIndexTertiaryEducation()
             if($refundClaimantid !='' && $refund_application_id !=''){
                 $model->refund_application_id=$refund_application_id;
                 if($model->save()){
-                    return $this->redirect(['index-tertiary-education']);
+                    return $this->redirect(['index-employment-details']);
                 }
             }else{
                 $sms = "<p>Session Expired!</p>";
                 Yii::$app->getSession()->setFlash('error', $sms);
-                return $this->redirect(['create-tertiary', 'id' => $refundClaimantid]);
+                return $this->redirect(['index-employment-details', 'id' => $refundClaimantid]);
             }
         } else {
             return $this->render('createEmploymentDetails', [
@@ -1019,13 +1023,37 @@ public function actionIndexTertiaryEducation()
         $refundClaimantid = $session->get('refund_claimant_id');
         $refund_application_id = $session->get('refund_application_id');
         //end set session
-        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEducationHistorySearch();
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('indexEmploymentDetails', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+    }
+    public function actionContactDetailsPreview()
+    {
+        $this->layout="main_public";
+        $session = Yii::$app->session;
+        $refund_application_id = $session->get('refund_application_id');
+        $resultsContacts=\frontend\modules\repayment\models\RefundContactPerson::find()->where(['refund_application_id'=>$refund_application_id])->orderBy(['refund_contact_person_id'=>SORT_DESC])->one();
+        $refund_contact_person_id=$resultsContacts->refund_contact_person_id;
+        $model = \frontend\modules\repayment\models\RefundContactPerson::findOne($resultsContacts->refund_contact_person_id);
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            if($refund_application_id !=''){
+                $sms = "<p>Information updated successful!</p>";
+                Yii::$app->getSession()->setFlash('success', $sms);
+                return $this->redirect(['contact-details-preview', 'id' => $refund_contact_person_id]);
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['contact-details-preview', 'id' => $refund_contact_person_id]);
+            }
+        } else {
+            return $this->render('contactDetailsPreview', [
+                'model' => $model,
+            ]);
+        }
     }
 	
 }

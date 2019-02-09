@@ -6,7 +6,7 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\RefundEducationHistory */
 
-$this->title = 'Step 2: Tertiary Education Details';
+$this->title = 'Step 3: Employment Details';
 //$this->params['breadcrumbs'][] = ['label' => 'Refund Education Histories', 'url' => ['index']];
 //$this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -16,7 +16,7 @@ $this->title = 'Step 2: Tertiary Education Details';
             <?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-            <?= $this->render('_form_tertiaryeducation', [
+            <?= $this->render('_form_employmentDetails', [
                 'model' => $model,
             ]) ?>
 

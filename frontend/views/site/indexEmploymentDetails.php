@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 use kartik\tabs\TabsX;
 use kartik\detail\DetailView;
-use frontend\modules\repayment\models\RefundClaimantEducationHistory;
+use frontend\modules\repayment\models\RefundClaimantEmployment;
 //set session
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
@@ -15,7 +15,7 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Step 2: Tertiary Education Details';
+$this->title = 'Step 3: Employment Details';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">
@@ -25,26 +25,22 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <div class="panel-body">
             <p>
-                <?= Html::a('Add New Tertiary Education Details ', ['create-tertiary'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a('Add New Employment Details ', ['create-employment-details'], ['class' => 'btn btn-success']) ?>
             </p><br/><br/>
-            <?php  $modelRefundClaimantEducationHistory = RefundClaimantEducationHistory::find()->where("refund_application_id={$refund_application_id}")->all();
+            <?php  $modelRefundClaimantEducationHistory = RefundClaimantEmployment::find()->where("refund_application_id={$refund_application_id}")->all();
 
 
             $sn = 0;
             foreach ($modelRefundClaimantEducationHistory as $model) {
                 ++$sn;
                 $attributes = [
-                    [
-                        'group' => true,
-                        'label' => "Tertiary Education Details ",
-                        'rowOptions' => ['class' => 'info']
-                    ],
+
                     [
                         'columns' => [
 
                             [
-                                'label' => 'Study Level',
-                                'value'=>$model->studylevel->applicant_category,
+                                'label' => 'Employer Name',
+                                'value'=>$model->employer_name,
                                 //'labelColOptions'=>['style'=>'width:20%'],
                                 //'valueColOptions'=>['style'=>'width:30%'],
                             ],
@@ -56,8 +52,8 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label'=>'Institution',
-                                'value'=>$model->institution->institution_name,
+                                'label'=>'Employee ID/Check #',
+                                'value'=>$model->employee_id,
                                 //'labelColOptions'=>['style'=>'width:20%'],
                                 //'valueColOptions'=>['style'=>'width:30%'],
                             ]
@@ -67,8 +63,8 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label'=>'Programme',
-                                'value'=>$model->program->programme_name,
+                                'label'=>'Start Date',
+                                'value'=>$model->start_date,
                                 //'labelColOptions'=>['style'=>'width:20%'],
                                 //'valueColOptions'=>['style'=>'width:30%'],
                             ]
@@ -79,24 +75,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label'=>'Entry Year',
-                                'value'=>$model->entry_year,
+                                'label'=>'End Date',
+                                'value'=>$model->end_date,
                                 //'labelColOptions'=>['style'=>'width:20%'],
                                 //'valueColOptions'=>['style'=>'width:30%'],
                             ],
                         ],
                     ],
-                    [
-                        'columns' => [
 
-                            [
-                                'label'=>'Completion Year',
-                                'value'=>$model->completion_year,
-                                //'labelColOptions'=>['style'=>'width:20%'],
-                                //'valueColOptions'=>['style'=>'width:30%'],
-                            ],
-                        ],
-                    ],
                 ];
 
 
@@ -110,7 +96,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 echo '<div class="text-right">
 	<p>';
                 ?>
-                <?= Html::a('Update/Edit', ['update-contactperson', 'id' => $model->refund_education_history_id,'emploID'=>$model->refund_education_history_id], ['class' => 'btn btn-primary']) ?>
+                <?= Html::a('Update/Edit', ['update-contactperson', 'id' => $model->refund_claimant_employment_id,'emploID'=>$model->refund_claimant_employment_id], ['class' => 'btn btn-primary']) ?>
                 <?php
                 echo "</p></div>";
             }?>

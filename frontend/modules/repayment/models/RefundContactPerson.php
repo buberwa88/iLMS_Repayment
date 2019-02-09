@@ -61,4 +61,12 @@ class RefundContactPerson extends \yii\db\ActiveRecord
     {
         return $this->hasOne(RefundApplication::className(), ['refund_application_id' => 'refund_application_id']);
     }
+	public static function getStageChecked($refund_application_id ){
+        $details_ = self::find()
+            ->select('phone_number')
+            ->where(['refund_application_id'=>$refund_application_id])
+            ->one();
+        $results=count($details_->phone_number);
+        return $results;
+    }
 }

@@ -7,6 +7,8 @@ $yearmax = date("Y");
 for ($y = 1982; $y <= $yearmax; $y++) {
     $year[$y] = $y;
 }
+$session = Yii::$app->session;
+$refundClaimantid = $session->get('refund_claimant_id');
 ?>
 <script>
     function setRefundType2(type) {
@@ -133,12 +135,17 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                         ]
                     ]);
       ?>
-     
-        <?php
-        echo Html::submitButton($model->isNewRecord ? Yii::t('app', 'Submit') : Yii::t('app', 'Submit'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary', 'id' => 'create-button-id']
-        );
-        ActiveForm::end();
-        ?>
+
+                    <div class="text-right">
+                        <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Submit', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+
+                        <?php
+                        echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
+                        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/list-steps-nonbeneficiary','id'=>$refundClaimantid], ['class' => 'btn btn-warning']);
+
+                        ActiveForm::end();
+                        ?>
+                    </div>
         </div>
         </div>
 </div>

@@ -45,6 +45,7 @@ class RefundClaimantEmployment extends \yii\db\ActiveRecord
             [['refund_claimant_id', 'refund_application_id', 'created_by', 'updated_by'], 'integer'],
             [['employer_name', 'employee_id'], 'string', 'max' => 100],
             [['matching_status'], 'string', 'max' => 200],
+			[['employer_name', 'employee_id', 'start_date', 'end_date'], 'required','on'=>'refundEmploymentDetails'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['refund_application_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundApplication::className(), 'targetAttribute' => ['refund_application_id' => 'refund_application_id']],
             [['refund_claimant_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundClaimant::className(), 'targetAttribute' => ['refund_claimant_id' => 'refund_claimant_id']],

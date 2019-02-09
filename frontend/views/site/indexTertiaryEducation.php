@@ -34,11 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 foreach ($modelRefundClaimantEducationHistory as $model) {
                     ++$sn;
                     $attributes = [
-                        [
-                            'group' => true,
-                            'label' => "Tertiary Education Details ",
-                            'rowOptions' => ['class' => 'info']
-                        ],
+
                         [
                             'columns' => [
 
@@ -107,8 +103,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'mode' => DetailView::MODE_VIEW,
                         'attributes' => $attributes,
                     ]);
-                    echo '<div class="text-right">
-	<p>';
+                    echo '<div class="text-right">	<p>';
                     ?>
                     <?= Html::a('Update/Edit', ['update-contactperson', 'id' => $model->refund_education_history_id,'emploID'=>$model->refund_education_history_id], ['class' => 'btn btn-primary']) ?>
                     <?php
