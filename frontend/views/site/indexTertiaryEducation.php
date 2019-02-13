@@ -93,6 +93,23 @@ $this->params['breadcrumbs'][] = $this->title;
                                 ],
                             ],
                         ],
+                        [
+                            'columns' => [
+
+                                [
+                                    'label'=>'Certificate Document',
+                                    'value'=>call_user_func(function ($data) {
+                                        if($data->certificate_document !=''){
+                                            return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->certificate_document. '")','class'=>'label label-primary']);
+                                        }else{
+                                            return $data->certificate_document;
+                                        }
+                                    }, $model),
+                                    'format' => 'raw',
+
+                                ],
+                            ],
+                        ],
                     ];
 
 
@@ -111,7 +128,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }?>
             <br/></br/>
             <div class="rowQA">
-                <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
+                <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
                 <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
             </div>
 </div>

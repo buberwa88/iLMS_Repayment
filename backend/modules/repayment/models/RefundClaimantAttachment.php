@@ -43,9 +43,9 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
             [['last_verified_at'], 'safe'],
             [['attachment_path', 'other_description'], 'string', 'max' => 500],
             [['attachment_definition_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\AttachmentDefinition::className(), 'targetAttribute' => ['attachment_definition_id' => 'attachment_definition_id']],
-            [['refund_application_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundApplication::className(), 'targetAttribute' => ['refund_application_id' => 'refund_application_id']],
-            [['refund_comment_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundComment::className(), 'targetAttribute' => ['refund_comment_id' => 'refund_comment_id']],
-            [['last_verified_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['last_verified_by' => 'user_id']],
+            [['refund_application_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\RefundApplication::className(), 'targetAttribute' => ['refund_application_id' => 'refund_application_id']],
+            [['refund_comment_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\repayment\models\RefundComment::className(), 'targetAttribute' => ['refund_comment_id' => 'refund_comment_id']],
+            [['last_verified_by'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\User::className(), 'targetAttribute' => ['last_verified_by' => 'user_id']],
         ];
     }
 
@@ -81,7 +81,7 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
      */
     public function getRefundApplication()
     {
-        return $this->hasOne(RefundApplication::className(), ['refund_application_id' => 'refund_application_id']);
+        return $this->hasOne(\frontend\modules\repayment\models\RefundApplication::className(), ['refund_application_id' => 'refund_application_id']);
     }
 
     /**
@@ -89,7 +89,7 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
      */
     public function getRefundComment()
     {
-        return $this->hasOne(RefundComment::className(), ['refund_comment_id' => 'refund_comment_id']);
+        return $this->hasOne(\backend\modules\repayment\models\RefundComment::className(), ['refund_comment_id' => 'refund_comment_id']);
     }
 
     /**
@@ -97,6 +97,6 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
      */
     public function getLastVerifiedBy()
     {
-        return $this->hasOne(User::className(), ['user_id' => 'last_verified_by']);
+        return $this->hasOne(\frontend\modules\repayment\models\User::className(), ['user_id' => 'last_verified_by']);
     }
 }

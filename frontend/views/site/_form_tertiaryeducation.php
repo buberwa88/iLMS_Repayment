@@ -9,6 +9,7 @@ use yii\helpers\Url;
 use kartik\widgets\PasswordInput;
 use yii\captcha\Captcha;
 use kartik\date\DatePicker;
+use kartik\widgets\FileInput;
 use frontend\modules\repayment\models\EmployerSearch;
 
 /* @var $this yii\web\View */
@@ -30,7 +31,8 @@ use frontend\modules\repayment\models\EmployerSearch;
 </style>
 <div class="refund-education-history-form">
     <?php
-    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL]);
+    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL,'options' => ['enctype' => 'multipart/form-data'],
+        'enableClientValidation' => TRUE,]);
     ?>
     <?php
     echo Form::widget([ // fields with labels
@@ -87,6 +89,26 @@ use frontend\modules\repayment\models\EmployerSearch;
             'entry_year'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_PhD_id']],
             'completion_year'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_PhD_id']],
         ]
+    ]);
+    ?>
+    <?php
+    echo $form->field($model, 'certificate_document')->label('Certificate Document:')->widget(FileInput::classname(), [
+        'options' => ['accept' => 'site/pdf'],
+        'pluginOptions' => [
+            'showCaption' => false,
+            'showRemove' => TRUE,
+            'showUpload' => false,
+            // 'browseClass' => 'btn btn-primary btn-block',
+            'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
+            'browseLabel' =>  'Certificate Document (required format .pdf only)',
+            'initialPreview'=>[
+                "$model->certificate_document",
+
+            ],
+            'initialCaption'=>$model->certificate_document,
+            'initialPreviewAsData'=>true,
+        ],
+        //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
     ]);
     ?>
 

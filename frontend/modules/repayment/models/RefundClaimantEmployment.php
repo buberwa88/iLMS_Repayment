@@ -41,11 +41,13 @@ class RefundClaimantEmployment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['start_date', 'end_date', 'created_at', 'updated_at'], 'safe'],
+            [['start_date', 'end_date', 'created_at', 'updated_at','first_slip_document','second_slip_document'], 'safe'],
             [['refund_claimant_id', 'refund_application_id', 'created_by', 'updated_by'], 'integer'],
             [['employer_name', 'employee_id'], 'string', 'max' => 100],
             [['matching_status'], 'string', 'max' => 200],
-			[['employer_name', 'employee_id', 'start_date', 'end_date'], 'required','on'=>'refundEmploymentDetails'],
+			[['first_slip_document'], 'file', 'extensions'=>['pdf']],
+			[['second_slip_document'], 'file', 'extensions'=>['pdf']],
+			[['employer_name', 'employee_id', 'start_date', 'end_date','employment_status','first_slip_document','second_slip_document'], 'required','on'=>'refundEmploymentDetails'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['refund_application_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundApplication::className(), 'targetAttribute' => ['refund_application_id' => 'refund_application_id']],
             [['refund_claimant_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundClaimant::className(), 'targetAttribute' => ['refund_claimant_id' => 'refund_claimant_id']],
@@ -104,5 +106,14 @@ class RefundClaimantEmployment extends \yii\db\ActiveRecord
     public function getUpdatedBy()
     {
         return $this->hasOne(User::className(), ['user_id' => 'updated_by']);
+    }
+
+    public static function getStageChecked($refund_application_id ){
+        $details_ = self::find()
+            ->select('refund_application_id')
+            ->where(['refund_application_id'=>$refund_application_id])
+            ->all();
+        $results=count($details_);
+        return $results;
     }
 }

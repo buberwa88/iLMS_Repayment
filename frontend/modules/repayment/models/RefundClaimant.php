@@ -65,7 +65,8 @@ class RefundClaimant extends \yii\db\ActiveRecord
             ['verifyCode', 'captcha','on'=>['refundRegistration','refundApplicationCodeVerification']],
             //[['f4indexno','f4_completion_year'], 'required','on'=>'refundf4educationnecta'],
             [['f4indexno','necta_firstname','necta_middlename','necta_surname','f4_completion_year'], 'required','on'=>'refundf4education'],
-            [['created_at', 'updated_at','sex','refundClaimantid'], 'safe'],
+            [['created_at', 'updated_at','sex','refundClaimantid','f4_certificate_document','f4type'], 'safe'],
+			[['f4_certificate_document'], 'file', 'extensions'=>['pdf']],
             [['firstname', 'middlename', 'surname', 'necta_firstname', 'necta_middlename', 'necta_surname'], 'string', 'max' => 45],
             [['sex', 'necta_sex'], 'string', 'max' => 1],
             [['firstname', 'middlename', 'surname'], 'match','not' => true,'pattern' => '/[^a-zA-Z_-]/','message' => 'Only Characters  Are Allowed...'],
@@ -160,10 +161,10 @@ class RefundClaimant extends \yii\db\ActiveRecord
         }
         return true;
     }
-    public static function getRefuntTypePerClaimant($refundClaimID){
+    public static function getRefuntTypePerClaimant($refund_application_id){
         $details_ = \frontend\modules\repayment\models\RefundApplication::find()
             ->select('refund_type_id')
-            ->where(['refund_claimant_id'=>$refundClaimID])
+            ->where(['refund_application_id'=>$refund_application_id])
             ->one();
         return $details_;
     }

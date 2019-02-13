@@ -1,3 +1,12 @@
+<script>
+    function viewUploadedFile(url) {
+        $('#view-attachment-dialog-id').dialog('open');
+        $('#view-attachment-iframe-id').attr('src', url);
+    }
+    function reloadPage(url){
+        document.location.href = url;
+    }
+</script>
 <?php
 
 use yii\helpers\Html;
@@ -82,7 +91,40 @@ $this->params['breadcrumbs'][] = $this->title;
                             ],
                         ],
                     ],
+                    [
+                        'columns' => [
 
+                            [
+                                'label'=>'First Salary/Pay Slip Document',
+                                'value'=>call_user_func(function ($data) {
+                                    if($data->first_slip_document !=''){
+                                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->first_slip_document . '")','class'=>'label label-primary']);
+                                    }else{
+                                        return $data->first_slip_document;
+                                    }
+                                }, $model),
+                                'format' => 'raw',
+
+                            ],
+                        ],
+                    ],
+                    [
+                        'columns' => [
+
+                            [
+                                'label'=>'Second Salary/Pay Slip Document',
+                'value'=>call_user_func(function ($data) {
+                    if($data->second_slip_document !=''){
+                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->second_slip_document . '")','class'=>'label label-primary']);
+                    }else{
+                        return $data->second_slip_document;
+                    }
+                }, $model),
+                'format' => 'raw',
+
+                            ],
+                        ],
+                    ],
                 ];
 
 
@@ -102,8 +144,29 @@ $this->params['breadcrumbs'][] = $this->title;
             }?>
             <br/></br/>
             <div class="rowQA">
-                <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
+                <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
                 <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
             </div>
         </div>
     </div>
+
+
+
+<?php
+/*
+yii\jui\Dialog::begin([
+    'id' => 'view-attachment-dialog-id',
+    'clientOptions' => [
+        'width' => '500',
+        'height' => '400',
+        'modal' => true,
+        'autoOpen' => false,
+    ]
+]);
+
+echo '<iframe src="" id="view-attachment-iframe-id" width="100%" height="100%" style="border: 0">';
+echo '</iframe>';
+echo '<br><br>';
+yii\jui\Dialog::end();
+*/
+?>

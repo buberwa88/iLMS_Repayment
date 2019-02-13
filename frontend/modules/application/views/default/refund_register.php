@@ -49,7 +49,7 @@ use yii\helpers\Html;
 			</p>
 			<p>
 				<strong>
-					<a href="index.php?r=application/default/home-page&amp;activeTab=login_tab_id">
+					<a href="index.php?r=site/confirm-applicationno&amp;id=8">
 						<button type="button" class="btn btn-primary btn-sm" style="width:80%;font-size:16px;background-color: #00C0EF;">
                             VIEW REFUND STATUS
                         </button>

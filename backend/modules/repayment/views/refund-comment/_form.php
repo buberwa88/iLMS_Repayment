@@ -1,0 +1,46 @@
+<?php
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use backend\modules\appeal\models\AttachmentDefinition;
+
+/* @var $this yii\web\View */
+/* @var $model backend\modules\repayment\models\RefundComment */
+/* @var $form yii\widgets\ActiveForm */
+
+ 
+?>
+
+<div class="refund-comment-form">
+
+    <?php $form = ActiveForm::begin(); ?>
+    <?= $form->field($model, 'attachment_definition_id')->widget(\kartik\widgets\Select2::classname(), [
+        'data' => \yii\helpers\ArrayHelper::map(AttachmentDefinition::find()->orderBy('attachment_definition_id')->asArray()->all(), 'attachment_definition_id', 'attachment_desc'),
+        'options' => ['placeholder' => 'Choose Attachment  '],
+        'pluginOptions' => [
+            'allowClear' => true
+        ],
+    ]); ?>
+
+    <?= $form->field($model, 'comment')->textInput(['maxlength' => true, 'placeholder' => 'Comment']) ?>
+ 
+   <?= $form->field($model, 'is_active')->widget(\kartik\widgets\Select2::classname(), [
+        'data' =>[1=>"Active",0=>'Inactive'],
+        'options' => ['placeholder' => 'Choose Status'],
+        'pluginOptions' => [
+            'allowClear' => true
+        ],
+    ]); ?>
+    <div class="form-group">
+    <?php if(Yii::$app->controller->action->id != 'save-as-new'): ?>
+        <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+    <?php endif; ?>
+    <?php if(Yii::$app->controller->action->id != 'create'): ?>
+        <?= Html::submitButton('Clone/Copy', ['class' => 'btn btn-info', 'value' => '1', 'name' => '_asnew']) ?>
+    <?php endif; ?>
+        <?= Html::a(Yii::t('app', 'Cancel'), Yii::$app->request->referrer , ['class'=> 'btn btn-danger']) ?>
+    </div>
+
+    <?php ActiveForm::end(); ?>
+
+</div>

@@ -16,6 +16,7 @@ use frontend\models\SignupForm;
 use frontend\models\ContactForm;
 use frontend\modules\application\rabbit\Producer;
 use  yii\web\Session;
+use yii\web\UploadedFile;
 /**
  * Site controller
  */
@@ -848,9 +849,10 @@ public function actionPasswordRecover()
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
 			//set session	
             $session = Yii::$app->session;			
-            $refundClaimantid = $session->get('refund_claimant_id');			
+            $refundClaimantid = $session->get('refund_claimant_id');
+            $refund_application_id = $session->get('refund_application_id');
 			//end set session
-			$refundType=$model->getRefuntTypePerClaimant($refundClaimantid)->refund_type_id;
+			$refundType=$model->getRefuntTypePerClaimant($refund_application_id)->refund_type_id;
 			if($refundType==1){
 			return $this->redirect(['list-steps-nonbeneficiary', 'id' => $refundClaimantid]);
 			}else if($refundType==2){
@@ -863,6 +865,25 @@ public function actionPasswordRecover()
             'model' => $model,'id'=>$id,
         ]);
 		}
+    }
+    public function actionRefundListsteps()
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundClaimant();
+        $model->scenario='refundApplicationCodeVerification';
+            //set session
+            $session = Yii::$app->session;
+            $refundClaimantid = $session->get('refund_claimant_id');
+            $refund_application_id = $session->get('refund_application_id');
+            //end set session
+            $refundType=$model->getRefuntTypePerClaimant($refund_application_id)->refund_type_id;
+            if($refundType==1){
+                return $this->redirect(['list-steps-nonbeneficiary', 'id' => $refundClaimantid]);
+            }else if($refundType==2){
+                return $this->redirect(['list-steps-overdeducted', 'id' => $refundClaimantid]);
+            }else if($refundType==3){
+                return $this->redirect(['list-steps-deceased', 'id' => $refundClaimantid]);
+            }
     }
 	 public function actionListStepsNonbeneficiary($id)
     {
@@ -895,10 +916,17 @@ public function actionPasswordRecover()
     //set session
     $session = Yii::$app->session;
     $refundClaimantid = $session->get('refund_claimant_id');
+    $refund_application_id = $session->get('refund_application_id');
     //end set session
     $model = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
     $model->scenario='refundf4education';	
 	if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+
+        $datime=date("Y_m_d_H_i_s");
+        $model->f4_certificate_document = UploadedFile::getInstance($model, 'f4_certificate_document');
+        $model->f4_certificate_document->saveAs(Yii::$app->params['refundAttachments'] ."f4_certificate_document"."_".$refund_application_id."_". $datime.'.'.$model->f4_certificate_document->extension);
+        $model->f4_certificate_document = Yii::$app->params['refundAttachments'] ."f4_certificate_document"."_".$refund_application_id."_".$datime.'.'.$model->f4_certificate_document->extension;
+
 			if($refundClaimantid !=''){
 		$modelRefundresults=\frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
 		$modelRefundresults->f4indexno=$model->f4indexno;
@@ -909,13 +937,14 @@ public function actionPasswordRecover()
         $modelRefundresults->firstname=$model->necta_firstname;
         $modelRefundresults->middlename=$model->necta_middlename;
         $modelRefundresults->surname=$model->necta_surname;
+        $modelRefundresults->f4_certificate_document=$model->f4_certificate_document;
 		if($modelRefundresults->save()){
-		return $this->redirect(['f4education-preview', 'id' => $refundClaimantid]);
+		return $this->redirect(['indexf4educationdetails']);
 	}
 			}else{
 				$sms = "<p>Session Expired!</p>";
                 Yii::$app->getSession()->setFlash('error', $sms);
-		return $this->redirect(['f4education-preview', 'id' => $refundClaimantid]);		
+		return $this->redirect(['indexf4educationdetails']);
 			}
 		} else {
     return $this->render('createRefundf4education', [
@@ -950,12 +979,18 @@ public function actionCreateTertiary()
 	$this->layout="main_public";
     $model = new \frontend\modules\repayment\models\RefundClaimantEducationHistory();  
     $model->scenario='refundTresuryEducation';	
-	if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+	if ($model->load(Yii::$app->request->post())) {
 		//set session
 			$session = Yii::$app->session;
             $refundClaimantid = $session->get('refund_claimant_id');
             $refund_application_id = $session->get('refund_application_id');
 			//end set session
+
+        $datime=date("Y_m_d_H_i_s");
+        $model->certificate_document = UploadedFile::getInstance($model, 'certificate_document');
+        $model->certificate_document->saveAs(Yii::$app->params['refundAttachments'] ."certificate_document_tertiary_educ"."_".$refund_application_id."_". $datime.'.'.$model->certificate_document->extension);
+        $model->certificate_document = Yii::$app->params['refundAttachments'] ."certificate_document_tertiary_educ"."_".$refund_application_id."_".$datime.'.'.$model->certificate_document->extension;
+
 			if($refundClaimantid !='' && $refund_application_id !=''){
 		$model->refund_application_id=$refund_application_id;
 		if($model->save()){
@@ -993,12 +1028,26 @@ public function actionIndexTertiaryEducation()
         $this->layout="main_public";
         $model = new \frontend\modules\repayment\models\RefundClaimantEmployment();
         $model->scenario='refundEmploymentDetails';
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+        if ($model->load(Yii::$app->request->post())) {
             //set session
             $session = Yii::$app->session;
             $refundClaimantid = $session->get('refund_claimant_id');
             $refund_application_id = $session->get('refund_application_id');
             //end set session
+            $datime=date("Y_m_d_H_i_s");
+            $model->first_slip_document = UploadedFile::getInstance($model, 'first_slip_document');
+            $model->second_slip_document = UploadedFile::getInstance($model, 'second_slip_document');
+            /*
+            $model->support_document->saveAs('../../vframework_document/verification_support_document_'.$model->verification_framework_id.'_'.$datime.'.'.$model->support_document->extension);
+            $model->support_document = 'vframework_document/verification_support_document_'.$model->verification_framework_id.'_'.$datime.'.'.$model->support_document->extension;
+            */
+            $model->first_slip_document->saveAs(Yii::$app->params['refundAttachments'] ."first_slip_document"."_".$refund_application_id."_". $datime.'.'.$model->first_slip_document->extension);
+            $model->first_slip_document = Yii::$app->params['refundAttachments'] ."first_slip_document"."_".$refund_application_id."_".$datime.'.'.$model->first_slip_document->extension;
+
+            $model->second_slip_document->saveAs(Yii::$app->params['refundAttachments'] ."second_slip_document"."_".$refund_application_id."_".$datime.'.'.$model->second_slip_document->extension);
+            $model->second_slip_document = Yii::$app->params['refundAttachments'] ."second_slip_document"."_".$refund_application_id."_".$datime.'.'.$model->second_slip_document->extension;
+
+
             if($refundClaimantid !='' && $refund_application_id !=''){
                 $model->refund_application_id=$refund_application_id;
                 if($model->save()){
@@ -1031,23 +1080,23 @@ public function actionIndexTertiaryEducation()
             'dataProvider' => $dataProvider,
         ]);
     }
-    public function actionContactDetailsPreview()
+    public function actionContactDetailsPreview($id)
     {
         $this->layout="main_public";
         $session = Yii::$app->session;
         $refund_application_id = $session->get('refund_application_id');
         $resultsContacts=\frontend\modules\repayment\models\RefundContactPerson::find()->where(['refund_application_id'=>$refund_application_id])->orderBy(['refund_contact_person_id'=>SORT_DESC])->one();
         $refund_contact_person_id=$resultsContacts->refund_contact_person_id;
-        $model = \frontend\modules\repayment\models\RefundContactPerson::findOne($resultsContacts->refund_contact_person_id);
+        $model = \frontend\modules\repayment\models\RefundContactPerson::findOne($id);
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             if($refund_application_id !=''){
                 $sms = "<p>Information updated successful!</p>";
                 Yii::$app->getSession()->setFlash('success', $sms);
-                return $this->redirect(['contact-details-preview', 'id' => $refund_contact_person_id]);
+                return $this->redirect(['index-contactdetails']);
             }else{
                 $sms = "<p>Session Expired!</p>";
                 Yii::$app->getSession()->setFlash('error', $sms);
-                return $this->redirect(['contact-details-preview', 'id' => $refund_contact_person_id]);
+                return $this->redirect(['index-contactdetails']);
             }
         } else {
             return $this->render('contactDetailsPreview', [
@@ -1055,5 +1104,485 @@ public function actionIndexTertiaryEducation()
             ]);
         }
     }
-	
+    public function actionCreateRefundBankdetails()
+    {
+        $this->layout="main_public";
+        //$model = new \frontend\modules\repayment\models\RefundClaimant();
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $model = new \frontend\modules\repayment\models\RefundApplication();
+        $model->scenario='refundBankDetailsAdd';
+        if ($model->load(Yii::$app->request->post())) {
+
+            $datime=date("Y_m_d_H_i_s");
+            $model->bank_card_document = UploadedFile::getInstance($model, 'bank_card_document');
+            $model->bank_card_document->saveAs(Yii::$app->params['refundAttachments'] ."bank_card_document"."_".$refund_application_id."_". $datime.'.'.$model->bank_card_document->extension);
+            $model->bank_card_document = Yii::$app->params['refundAttachments'] ."bank_card_document"."_".$refund_application_id."_".$datime.'.'.$model->bank_card_document->extension;
+
+            if($refund_application_id !=''){
+                $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                $modelRefundresults->bank_name=$model->bank_name;
+                $modelRefundresults->bank_account_number=$model->bank_account_number;
+                $modelRefundresults->bank_account_name=$model->bank_account_name;
+                $modelRefundresults->branch=$model->branch;
+                $modelRefundresults->bank_card_document=$model->bank_card_document;
+                if($modelRefundresults->save(false)){
+                    return $this->redirect(['index-bankdetails']);
+                }
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['index-bankdetails']);
+            }
+        } else {
+            return $this->render('createRefundBankdetails', [
+                'model' => $model,
+            ]);
+        }
+    }
+    public function actionBankDetailspreview($id)
+    {
+        $this->layout="main_public";
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        $model = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+        $model->scenario='refundBankDetailsAdd';
+        if ($model->load(Yii::$app->request->post())){
+            $datime=date("Y_m_d_H_i_s");
+            $model->bank_card_document = UploadedFile::getInstance($model, 'bank_card_document');
+            $model->bank_card_document->saveAs(Yii::$app->params['refundAttachments'] ."bank_card_document"."_".$refund_application_id."_". $datime.'.'.$model->bank_card_document->extension);
+            $model->bank_card_document = Yii::$app->params['refundAttachments'] ."bank_card_document"."_".$refund_application_id."_".$datime.'.'.$model->bank_card_document->extension;
+            if($model->save(false)) {
+            if($refund_application_id !=''){
+                $sms = "<p>Information updated successful!</p>";
+                Yii::$app->getSession()->setFlash('success', $sms);
+                return $this->redirect(['bank-detailspreview', 'id' => $refund_application_id]);
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['bank-detailspreview', 'id' => $refund_application_id]);
+            }}else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['bank-detailspreview', 'id' => $refund_application_id]);
+            }
+        } else {
+            return $this->render('bankDetailspreview', [
+                'model' => $model,
+            ]);
+        }
+    }
+    public function actionCreateSecurityfund()
+    {
+        $this->layout="main_public";
+        //$model = new \frontend\modules\repayment\models\RefundClaimant();
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $model = new \frontend\modules\repayment\models\RefundApplication();
+        $model->scenario='refundSocialFundDetails';
+        if ($model->load(Yii::$app->request->post())) {
+
+            $datime=date("Y_m_d_H_i_s");
+            if($model->social_fund_status==1) {
+                $model->social_fund_document = UploadedFile::getInstance($model, 'social_fund_document');
+                $model->social_fund_receipt_document = UploadedFile::getInstance($model, 'social_fund_receipt_document');
+
+                $model->social_fund_document->saveAs(Yii::$app->params['refundAttachments'] . "social_fund_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_document->extension);
+                $model->social_fund_document = Yii::$app->params['refundAttachments'] . "social_fund_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_document->extension;
+
+                $model->social_fund_receipt_document->saveAs(Yii::$app->params['refundAttachments'] . "social_fund_receipt_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_receipt_document->extension);
+                $model->social_fund_receipt_document = Yii::$app->params['refundAttachments'] . "social_fund_receipt_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_receipt_document->extension;
+            }else{
+                $model->social_fund_document=null;
+                $model->social_fund_receipt_document=null;
+            }
+
+            if($refund_application_id !=''){
+                $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                $modelRefundresults->social_fund_status=$model->social_fund_status;
+                $modelRefundresults->social_fund_document=$model->social_fund_document;
+                $modelRefundresults->social_fund_receipt_document=$model->social_fund_receipt_document;
+                if($modelRefundresults->save(false)){
+                    return $this->redirect(['index-socialfund']);
+                }
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['index-socialfund']);
+            }
+        } else {
+            return $this->render('createSecurityfund', [
+                'model' => $model,
+            ]);
+        }
+    }
+    public function actionSocialFundpreview($id)
+    {
+        $this->layout="main_public";
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        $model = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+        $model->scenario='refundBankDetailsAdd';
+        if ($model->load(Yii::$app->request->post())){
+            $datime=date("Y_m_d_H_i_s");
+            if($model->social_fund_status==1) {
+                $model->social_fund_document = UploadedFile::getInstance($model, 'social_fund_document');
+                $model->social_fund_receipt_document = UploadedFile::getInstance($model, 'social_fund_receipt_document');
+
+                $model->social_fund_document->saveAs(Yii::$app->params['refundAttachments'] . "social_fund_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_document->extension);
+                $model->social_fund_document = Yii::$app->params['refundAttachments'] . "social_fund_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_document->extension;
+
+                $model->social_fund_receipt_document->saveAs(Yii::$app->params['refundAttachments'] . "social_fund_receipt_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_receipt_document->extension);
+                $model->social_fund_receipt_document = Yii::$app->params['refundAttachments'] . "social_fund_receipt_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_receipt_document->extension;
+            }else{
+                $model->social_fund_document=null;
+                $model->social_fund_receipt_document=null;
+            }
+            if($model->save(false)) {
+                if($refund_application_id !=''){
+                    $sms = "<p>Information updated successful!</p>";
+                    Yii::$app->getSession()->setFlash('success', $sms);
+                    return $this->redirect(['social-fundpreview', 'id' => $refund_application_id]);
+                }else{
+                    $sms = "<p>Session Expired!</p>";
+                    Yii::$app->getSession()->setFlash('error', $sms);
+                    return $this->redirect(['social-fundpreview', 'id' => $refund_application_id]);
+                }}else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['social-fundpreview', 'id' => $refund_application_id]);
+            }
+        } else {
+            return $this->render('socialFundpreview', [
+                'model' => $model,
+            ]);
+        }
+    }
+    public function actionIndexSocialfund()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexSocialfund', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionIndexBankdetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexBankDetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionIndexContactdetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexContactDetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionIndexf4educationdetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexf4educationdetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionCreateRepaymentdetails()
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundApplication();
+        $model->scenario='refundEmploymentDetails';
+        if ($model->load(Yii::$app->request->post())) {
+            //set session
+            $session = Yii::$app->session;
+            $refundClaimantid = $session->get('refund_claimant_id');
+            $refund_application_id = $session->get('refund_application_id');
+            //end set session
+            $datime=date("Y_m_d_H_i_s");
+            $model->liquidation_letter_document = UploadedFile::getInstance($model, 'liquidation_letter_document');
+
+            $model->liquidation_letter_document->saveAs(Yii::$app->params['refundAttachments'] ."liquidation_letter_document"."_".$refund_application_id."_". $datime.'.'.$model->liquidation_letter_document->extension);
+            $model->liquidation_letter_document = Yii::$app->params['refundAttachments'] ."liquidation_letter_document"."_".$refund_application_id."_".$datime.'.'.$model->liquidation_letter_document->extension;
+
+
+            if($refundClaimantid !='' && $refund_application_id !=''){
+                $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                $modelRefundresults->liquidation_letter_number=$model->liquidation_letter_number;
+                $modelRefundresults->liquidation_letter_document=$model->liquidation_letter_document;
+                if($modelRefundresults->save(false)){
+                    return $this->redirect(['index-repaymentdetails']);
+                }
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['index-repaymentdetails']);
+            }
+        } else {
+            return $this->render('createRepaymentdetails', [
+                'model' => $model,
+            ]);
+        }
+    }
+    public function actionIndexRepaymentdetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexRepaymentdetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionCreateDeathdetails()
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundApplication();
+        $model->scenario='refundDeathDetails';
+        if ($model->load(Yii::$app->request->post())) {
+            //set session
+            $session = Yii::$app->session;
+            $refundClaimantid = $session->get('refund_claimant_id');
+            $refund_application_id = $session->get('refund_application_id');
+            //end set session
+            $datime=date("Y_m_d_H_i_s");
+            $model->death_certificate_document = UploadedFile::getInstance($model, 'death_certificate_document');
+
+            $model->death_certificate_document->saveAs(Yii::$app->params['refundAttachments'] ."death_certificate_document"."_".$refund_application_id."_". $datime.'.'.$model->death_certificate_document->extension);
+            $model->death_certificate_document = Yii::$app->params['refundAttachments'] ."death_certificate_document"."_".$refund_application_id."_".$datime.'.'.$model->death_certificate_document->extension;
+
+
+            if($refundClaimantid !='' && $refund_application_id !=''){
+                $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                $modelRefundresults->death_certificate_document=$model->death_certificate_document;
+                $modelRefundresults->death_certificate_number=$model->death_certificate_number;
+                if($modelRefundresults->save(false)){
+                    return $this->redirect(['index-deathdetails']);
+                }
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['index-deathdetails']);
+            }
+        } else {
+            return $this->render('createDeathdetails', [
+                'model' => $model,
+            ]);
+        }
+    }
+    public function actionIndexDeathdetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexDeathdetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionCreateCourtdetails()
+{
+    $this->layout="main_public";
+    $model = new \frontend\modules\repayment\models\RefundApplication();
+    $model->scenario='refundCourtDetails';
+    if ($model->load(Yii::$app->request->post())) {
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $datime=date("Y_m_d_H_i_s");
+        $model->court_letter_certificate_document = UploadedFile::getInstance($model, 'court_letter_certificate_document');
+
+        $model->court_letter_certificate_document->saveAs(Yii::$app->params['refundAttachments'] ."court_letter_certificate_document"."_".$refund_application_id."_". $datime.'.'.$model->court_letter_certificate_document->extension);
+        $model->court_letter_certificate_document = Yii::$app->params['refundAttachments'] ."court_letter_certificate_document"."_".$refund_application_id."_".$datime.'.'.$model->court_letter_certificate_document->extension;
+
+
+        if($refundClaimantid !='' && $refund_application_id !=''){
+            $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+            $modelRefundresults->court_letter_certificate_document=$model->court_letter_certificate_document;
+            $modelRefundresults->court_letter_number=$model->court_letter_number;
+            if($modelRefundresults->save(false)){
+                return $this->redirect(['index-courtdetails']);
+            }
+        }else{
+            $sms = "<p>Session Expired!</p>";
+            Yii::$app->getSession()->setFlash('error', $sms);
+            return $this->redirect(['index-courtdetails']);
+        }
+    } else {
+        return $this->render('createCourtdetails', [
+            'model' => $model,
+        ]);
+    }
+}
+    public function actionIndexCourtdetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexCourtdetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionCreateFamilysessiondetails()
+    {
+        $this->layout="main_public";
+        $model = new \frontend\modules\repayment\models\RefundApplication();
+        $model->scenario='refundFamilySessionDetails';
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        if ($model->load(Yii::$app->request->post())) {
+
+            $datime=date("Y_m_d_H_i_s");
+            $model->letter_family_session_document = UploadedFile::getInstance($model, 'letter_family_session_document');
+            $model->letter_family_session_document->saveAs(Yii::$app->params['refundAttachments'] ."letter_family_session_document"."_".$refund_application_id."_". $datime.'.'.$model->letter_family_session_document->extension);
+            $model->letter_family_session_document = Yii::$app->params['refundAttachments'] ."letter_family_session_document"."_".$refund_application_id."_".$datime.'.'.$model->letter_family_session_document->extension;
+
+
+            if($refundClaimantid !='' && $refund_application_id !=''){
+                $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                $modelRefundresults->letter_family_session_document=$model->letter_family_session_document;
+                $modelRefundresults->trustee_firstname=$model->trustee_firstname;
+                $modelRefundresults->trustee_midlename=$model->trustee_midlename;
+                $modelRefundresults->trustee_surname=$model->trustee_surname;
+                if($modelRefundresults->save(false)){
+                    return $this->redirect(['index-familysessiondetails']);
+                }
+            }else{
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['index-familysessiondetails']);
+            }
+        } else {
+            return $this->render('createFamilysessiondetails', [
+                'model' => \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id),
+            ]);
+        }
+    }
+    public function actionIndexFamilysessiondetails()
+    {
+        $this->layout="main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('indexFamilysessiondetails', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+	public function actionRefundApplicationview($refundApplicationID) {
+		$this->layout="main_public";
+	   $model =\frontend\modules\repayment\models\RefundApplication::findOne($refundApplicationID);
+        return $this->render('refund_application_details', [
+                    'model' => $model,
+        ]);
+	}
+	public function actionLogoutRefund($id)
+    {
+		$session = Yii::$app->session;
+		/*
+        $this->layout="main_public";
+		$session = Yii::$app->session;
+		// close a session
+        $session->close();
+        // destroys all data registered to a session.
+        $session->destroy();
+		return $this->redirect(['confirm-applicationno', 'id' =>$id]);
+        */
+		$session->remove('refund_claimant_id');
+        unset($session['refund_claimant_id']);
+        unset($_SESSION['refund_claimant_id']);
+		$session->remove('refund_application_id');
+        unset($session['refund_application_id']);
+        unset($_SESSION['refund_application_id']);
+		$session->destroy();
+        Yii::$app->user->logout();
+        
+       return $this->goHome();		
+        
+		}
+    public function actionRefundConfirm($id)
+    {
+        $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($id);
+        $modelRefundresults->submitted=2;
+        if($modelRefundresults->save(false));
+        return $this->redirect(['list-steps-nonbeneficiary','id'=>$id]);
+    }
+    public function actionRefundSubmitapplication($id)
+    {
+        $modelRefundresults=\frontend\modules\repayment\models\RefundApplication::findOne($id);
+        $modelRefundresults->submitted=3;
+        if($modelRefundresults->save(false));
+        return $this->redirect(['list-steps-nonbeneficiary','id'=>$id]);
+    }
 }

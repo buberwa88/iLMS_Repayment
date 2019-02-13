@@ -427,5 +427,32 @@ ALTER TABLE `refund_application` CHANGE `submitted` `submitted` TINYINT(2) NOT N
 ALTER TABLE `refund_application` ADD `trustee_phone_number` VARCHAR(20) NULL DEFAULT NULL AFTER `trustee_surname`, ADD `trustee_email` VARCHAR(20) NULL DEFAULT NULL AFTER `trustee_phone_number`;
 ##########08-02-2019#########
 ALTER TABLE `refund_claimant_education_history` ADD `study_level` INT(11) NULL DEFAULT NULL AFTER `refund_application_id`;
+###################09-02-2019##############
+ALTER TABLE `refund_claimant_employment` ADD `employment_status` TINYINT NOT NULL COMMENT '1: employed, 2: not employed' AFTER `refund_application_id`;
+ALTER TABLE `refund_claimant_employment` ADD `slip_document` VARCHAR(100) NULL DEFAULT NULL AFTER `employment_status`;
+ALTER TABLE `refund_claimant_employment` CHANGE `slip_document` `first_slip_document` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_claimant_employment` ADD `second_slip_document` VARCHAR(100) NULL DEFAULT NULL AFTER `first_slip_document`;
+
+############10-02-2019###############################
+ALTER TABLE `refund_application` ADD `bank_name` VARCHAR(100) NULL DEFAULT NULL AFTER `bank_account_name`, ADD `branch` VARCHAR(100) NULL DEFAULT NULL AFTER `bank_name`;
+ALTER TABLE `refund_application` ADD `bank_card_document` VARCHAR(100) NULL DEFAULT NULL AFTER `branch`;
+ALTER TABLE `refund_application` ADD `social_fund_status` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Retired, 2: Not Retired' AFTER `bank_id`, ADD `social_fund_document` VARCHAR(100) NULL DEFAULT NULL AFTER `social_fund_status`;
+ALTER TABLE `refund_application` ADD `social_fund_receipt_document` VARCHAR(100) NULL DEFAULT NULL AFTER `social_fund_document`;
+ALTER TABLE `refund_claimant` ADD `f4_certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `necta_details_confirmed`;
+ALTER TABLE `refund_application` ADD `liquidation_letter_document` VARCHAR(100) NULL DEFAULT NULL AFTER `liquidation_letter_number`;
+ALTER TABLE `refund_claimant_education_history` ADD `certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `completion_year`;
+ALTER TABLE `refund_application` ADD `death_certificate_number` VARCHAR(100) NULL DEFAULT NULL AFTER `liquidation_letter_document`, ADD `death_certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `death_certificate_number`;
+ALTER TABLE `refund_application` ADD `court_letter_number` VARCHAR(100) NULL DEFAULT NULL AFTER `death_certificate_document`, ADD `court_letter_certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `court_letter_number`;
+ALTER TABLE `refund_application` ADD `letter_family_session_document` VARCHAR(100) NULL DEFAULT NULL AFTER `court_letter_certificate_document`;
+
+##############12-02-2019#############
+ALTER TABLE `refund_status_reason_setting` CHANGE `status` `status` TINYINT(3) NULL DEFAULT NULL COMMENT '1:Valid, 2:Invalid,3:Waiting, 4:Incomplete';
+ALTER TABLE `refund_status_reason_setting` CHANGE `category` `category` TINYINT(2) NULL DEFAULT NULL COMMENT '1:Loan Refund Data Section, 2:Validation Section,3:Audit and Investigation';
+ALTER TABLE `refund_application` CHANGE `submitted` `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted, 2: Confirmed but not Submitted, 3: Submitted and Confirmed, 4: Attempted';
+ALTER TABLE `refund_application` CHANGE `submitted` `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted But Attempted, 2: Confirmed but not Submitted, 3: Submitted and Confirmed';
+ALTER TABLE `refund_claimant` ADD `f4type` TINYINT(2) NULL DEFAULT NULL COMMENT '1: necta, 2: non-necta' AFTER `phone_number`;
+ALTER TABLE `refund_verification_framework` CHANGE `refund_type_id` `refund_type_id` INT(11) NULL DEFAULT NULL COMMENT '1: NON-BENEFICIARY, 2: OVER-DEDUCTED, 3: DECEASED';
+ALTER TABLE `refund_verification_framework_item` CHANGE `last_updated_by` `updated_by` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `refund_verification_framework_item` CHANGE `last_updated_at` `updated_at` DATETIME NULL DEFAULT NULL;
 
 

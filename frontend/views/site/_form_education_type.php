@@ -3,6 +3,8 @@ use yii\helpers\Html;
 use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use yii\captcha\Captcha;
+use kartik\widgets\FileInput;
+$list = [1 => 'NECTA STUDENTS (For Claimants who did their form 4 Examinations in Tanzania)', 2 => 'NON NECTA STUDENTS (For Claimants who did form 4 Examinations overseas)'];
 $yearmax = date("Y");
 for ($y = 1982; $y <= $yearmax; $y++) {
     $year[$y] = $y;
@@ -11,9 +13,10 @@ $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 ?>
 <script>
-    function setRefundType2(type) {
+    function setRefundf4ed(type) {
         //alert(type);
-        if (type == 'NECTA') {
+        var educationCatV=$('#f4type_id input:checked').val();
+        if (educationCatV == 1) {
             document.getElementById("general").style.display = "block";
             document.getElementById("necta").style.display = "block";
             document.getElementById("nonnecta").style.display = "none";
@@ -22,7 +25,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
             $('#nonnecta_block_id').attr('style', 'display:none');
             $('#nonnecta_block_completionyear_id').attr('style', 'display:none');
 			$("#refundclaimant-f4indexno").attr('maxlength','10');
-        }else if (type == 'NONNECTA') {
+        }else if (educationCatV == 2) {
             document.getElementById("general").style.display = "block";
             document.getElementById("necta").style.display = "none";
             document.getElementById("nonnecta").style.display = "block";
@@ -48,42 +51,24 @@ $refundClaimantid = $session->get('refund_claimant_id');
 <div class="education-create">
         <div class="panel panel-info">
         <div class="panel-body">
-            <div class="col-lg-6">
-                <div class="panel panel-info">
-                    <div class="panel-heading">
-                    </div>
-                    <div class="panel-body">
-                        <p><b>NECTA STUDENTS </b>(For Claimants who did their form 4 Examinations in Tanzania) </p>
-                        <center>
-                            <label class="radio-inline"><button type="button"  class="btn btn-block btn-primary btn-lg" name="Education[is_necta]" onclick="setRefundType2('NECTA')" value="1" >NECTA[Completed in Tanzania]</label>
-                        </center>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="panel panel-info">
-                    <div class="panel-heading">
-
-                    </div>
-                    <div class="panel-body">
-                        <center>
-                            <p><b> NON NECTA STUDENTS </b>(For Claimants who did form 4 Examinations overseas) </p>
-                            <label class="radio-inline"><button type="button" class="btn btn-block btn-warning btn-lg" name="Education[is_necta]" onclick="setRefundType2('NONNECTA')" value="2" >NON - NECTA [Holders of Foreign Certificates]</label>
-                        </center>
-                    </div>
-                </div>
-            </div>
-
             <div class="col-lg-12">
-                <div style='display:none;' id="general">
                     <?php
                     $form = ActiveForm::begin([
                     'type' => ActiveForm::TYPE_VERTICAL,
+                    'options' => ['enctype' => 'multipart/form-data'],
                     'enableClientValidation' => TRUE,
-
                     ]);
                     ?>
+                    <?php
+                    echo $form->field($model, 'f4type')->label('SELECT YOUR F4 CATEGORY')->radioList($list,
+                        [
+                            'inline'=>true,
+                            'id'=>f4type_id,
+                            'onchange'=>'setRefundf4ed(this)',
+                        ]);
+                    ?>
+
+                <div style='display:none;' id="general">
                <div class="alert alert-info alert-dismissible" id="labelshow">
 
             <h4 class="necta" id="necta"><i class="icon fa fa-info"></i>  YOU ARE  APPLYING AS  NECTA  STUDENTS</h4>
@@ -135,6 +120,26 @@ $refundClaimantid = $session->get('refund_claimant_id');
                         ]
                     ]);
       ?>
+                    <?php
+                    echo $form->field($model, 'f4_certificate_document')->label('Certificate Document:')->widget(FileInput::classname(), [
+                        'options' => ['accept' => 'site/pdf'],
+                        'pluginOptions' => [
+                            'showCaption' => false,
+                            'showRemove' => TRUE,
+                            'showUpload' => false,
+                            // 'browseClass' => 'btn btn-primary btn-block',
+                            'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
+                            'browseLabel' =>  'Certificate Document (required format .pdf only)',
+                            'initialPreview'=>[
+                                "$model->f4_certificate_document",
+
+                            ],
+                            'initialCaption'=>$model->f4_certificate_document,
+                            'initialPreviewAsData'=>true,
+                        ],
+                        //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
+                    ]);
+                    ?>
 
                     <div class="text-right">
                         <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Submit', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

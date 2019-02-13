@@ -1643,12 +1643,4 @@ public static function checkCheckNumberExists($checkNumber){
             . "FROM  academic_year WHERE  is_current='1'")->one();
         return $detailsAcademicYear;
     }
-    public static function getStageChecked($refundClaimID){
-        $details_ = self::find()
-            ->select('f4indexno')
-            ->where(['refund_claimant_id'=>$refundClaimID])
-            ->one();
-        $results=count($details_->f4indexno);
-        return $results;
-    }
 }		

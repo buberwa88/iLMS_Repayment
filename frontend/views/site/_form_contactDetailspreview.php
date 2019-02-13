@@ -54,7 +54,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
       ?>
 	  <br/></br/>
 		<div class="rowQA">	 
-	 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
+	 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/index-contactdetails']);?></div>
 <div class="block pull-CENTER"><?php echo Html::submitButton($model->isNewRecord ? Yii::t('app', 'Update') : Yii::t('app', 'Update'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary', 'id' => 'create-button-id']
         );?></div>
 		<div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/index-tertiary-education']);?></div>

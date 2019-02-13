@@ -236,21 +236,25 @@ if ($beneficiaryOnstudy > 0) {
                                         //["label" => "Staff", "url" => Url::to(['/staff/index']), 'active' => (Yii::$app->controller->id =='staff'), "icon" => "users"],								
                                         ],
                                     ],
-                                    //end for operations
-                                    //here import GePG
-                                    /*
-                                      [
-                                      "label" => "Import",
-                                      "icon" => "gears",
-                                      "url" => "#",
-                                      "items" => [
-                                      ["label" => "Controll Numbers", "url" => Url::to(['/repayment/gepg-cnumber/upload-controll-number']), 'active' => (Yii::$app->controller->id == 'gepg-cnumber'&&Yii::$app->controller->action->id=='upload-controll-number')],
-                                      ["label" => "Payments", "url" => Url::to(['/repayment/gepg-receipt/upload-payments']), 'active' => (Yii::$app->controller->id == 'gepg-receipt'&&Yii::$app->controller->action->id == 'upload-payments')],
-                                      ["label" => "Reconciliation", "url" => Url::to(['/repayment/gepg-payment-reconciliation/upload-payment-recon']), 'active' => (Yii::$app->controller->id == 'gepg-payment-reconciliation')],
-                                      ],
-                                      ],
-                                     */
-                                    //End import GePG
+                                    [
+                                        "label" => "Refund",
+                                        'visible' =>yii::$app->user->can('/repayment/refund-application-operation/index'),
+                                        "icon" => "th",
+                                        "url" => "#",
+                                        "items" => [
+                                            ['label' => 'Unverified','url' =>['/repayment/refund-application-operation/unverifiedref'], 'active' => (Yii::$app->controller->id == 'refund-application-operation' && (Yii::$app->controller->action->id == 'unverifiedref' || Yii::$app->controller->action->id=='view-refund')),'visible' =>yii::$app->user->can('/repayment/refund-application-operation/unverifiedref')],
+                                            ['label' => 'Pending','url' =>['/application/application/pending-applications'], 'active' => (Yii::$app->controller->id == 'application'  && Yii::$app->controller->action->id == 'pending-applications'),'visible' =>yii::$app->user->can('/application/application/index')],
+                                            ['label' => 'Incomplete','url' =>['/application/application/incompleted-applications'], 'active' => (Yii::$app->controller->id == 'application'  && Yii::$app->controller->action->id == 'incompleted-applications'),'visible' =>yii::$app->user->can('/application/application/incompleted-applications')],
+                                            ['label' => 'Waiting','url' =>['/application/application/waiting-applications'], 'active' => (Yii::$app->controller->id == 'application'  && Yii::$app->controller->action->id == 'waiting-applications'),'visible' =>yii::$app->user->can('/application/application/index')],
+                                            ['label' => 'Invalid','url' =>['/application/application/invalid-applications'], 'active' => (Yii::$app->controller->id == 'application'  && Yii::$app->controller->action->id == 'invalid-applications'),'visible' =>yii::$app->user->can('/application/application/invalid-applications')],
+                                            ['label' => 'Complete','url' =>['/repayment/refund-application-operation/completeref'], 'active' => (Yii::$app->controller->id == 'refund-application-operation' && (Yii::$app->controller->action->id == 'completeref' || Yii::$app->controller->action->id=='view-refund')),'visible' =>yii::$app->user->can('/repayment/refund-application-operation/unverifiedref')],
+                                            ['label' => 'Submitted','url' =>['/application/application/submitted-applications'], 'active' => (Yii::$app->controller->id == 'application'  && Yii::$app->controller->action->id == 'submitted-applications'),'visible' =>yii::$app->user->can('/application/application/index')],
+                                            ['label' => 'Release Complete'.$overallNotification,'url' =>['/application/application/release-applications'], 'active' => (Yii::$app->controller->id == 'application'  && Yii::$app->controller->action->id == 'release-applications'),'visible' =>yii::$app->user->can('/application/application/index')],
+                                            ['label' => 'Assignment','url' =>['/application/verification-assignment'], 'active' => (Yii::$app->controller->id == 'verification-assignment' && Yii::$app->controller->action->id != 'index-verification-assigned' && Yii::$app->controller->action->id != 'reattachment' && Yii::$app->controller->action->id !='assign-reattached' && Yii::$app->controller->action->id !='reverse-bulkreattached'),'visible' =>yii::$app->user->can('/application/verification-assignment/index')],
+                                            ['label' => 'Reverse Refund','url' =>['/application/application/reverse-verification'], 'active' => (Yii::$app->controller->id == 'application'  && Yii::$app->controller->action->id == 'reverse-verification'),'visible' =>yii::$app->user->can('/application/application/reverse-verification')],
+
+                                        ],
+                                    ],
                                     [
                                         "label" => "Notifications" . $overallNotification,
                                         "icon" => "fa fa-bell-o",
@@ -286,6 +290,12 @@ if ($beneficiaryOnstudy > 0) {
 											["label" => "GePG Payment", "url" => Url::to(['/repayment/loan-repayment/gepg-payments']), 'active' => (Yii::$app->controller->id == 'loan-repayment' && (Yii::$app->controller->action->id == 'gepg-payments'))],
 											["label" => "Loan Summary", "url" => Url::to(['/repayment/employed-beneficiary/loanthrough-employers']), 'active' => (Yii::$app->controller->id == 'employed-beneficiary' && (Yii::$app->controller->action->id == 'loanthrough-employers'))],
 											["label" => "GePG Bill Proccessing Setting", "url" => Url::to(['/repayment/gepg-bill-processing-setting/index']), 'active' => (Yii::$app->controller->id == 'gepg-bill-processing-setting')],
+                                            
+                                            ["label" => "Refund Comment", "url" => Url::to(['/repayment/refund-comment/index']), 'active' => (Yii::$app->controller->id == 'refund-comment')],
+                                            ["label" => "Refund Operational Setting", "url" => Url::to(['/repayment/refund-internal-operational-setting/index']), 'active' => (Yii::$app->controller->id == 'refund-internal-operational-setting')],
+                                            ["label" => "Refund Letter Format", "url" => Url::to(['/repayment/refund-letter-format/index']), 'active' => (Yii::$app->controller->id == 'refund-letter-format')],
+                                            ["label" => "Refund Verification Framework", "url" => Url::to(['/repayment/refund-verification-framework/index']), 'active' => (Yii::$app->controller->id == 'refund-verification-framework')],
+                                            ["label" => "Refund Verification Framework", "url" => Url::to(['/repayment/refund-status-reason-setting/index']), 'active' => (Yii::$app->controller->id == 'refund-status-reason-setting')],
                                         ],
                                     ],
                                     [

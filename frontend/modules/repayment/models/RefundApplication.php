@@ -56,12 +56,41 @@ class RefundApplication extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+    public $f4indexno;
+    public $firstname;
+    public $middlename;
+    public $surname;
+	 public $letter_family_session_document2;
     public function rules()
     {
         return [
             [['refund_claimant_id', 'finaccial_year_id', 'academic_year_id', 'current_status', 'refund_verification_framework_id', 'bank_id', 'refund_type_id', 'created_by', 'updated_by', 'is_active', 'submitted'], 'integer'],
             [['refund_claimant_amount'], 'number'],
-            [['created_at', 'updated_at','trustee_phone_number','trustee_email','trustee_email'], 'safe'],
+			[['bank_account_number','bank_account_name','bank_name','branch','bank_card_document'], 'required','on'=>'refundBankDetailsAdd'],
+			[['death_certificate_number','death_certificate_document'], 'required','on'=>'refundDeathDetails'],
+			[['liquidation_letter_document','liquidation_letter_number'], 'required','on'=>'refundEmploymentDetails'],
+			[['court_letter_number','court_letter_certificate_document'], 'required','on'=>'refundCourtDetails'],
+			[['trustee_firstname', 'trustee_midlename', 'trustee_surname','letter_family_session_document'], 'required','on'=>'refundFamilySessionDetails'],
+			//[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
+			[['social_fund_status'], 'required','on'=>'refundSocialFundDetails'],
+            [['created_at', 'updated_at','trustee_phone_number','trustee_email','trustee_email','bank_name','branch','bank_card_document','social_fund_status','social_fund_document','social_fund_receipt_document','liquidation_letter_document','liquidation_letter_number','death_certificate_number','death_certificate_document','court_letter_number','court_letter_certificate_document','letter_family_session_document'], 'safe'],
+			[['death_certificate_document','court_letter_certificate_document','letter_family_session_document'], 'file', 'extensions'=>['pdf']],
+			[['bank_card_document'], 'file', 'extensions'=>['pdf']],
+			[['social_fund_document'], 'file', 'extensions'=>['pdf']],
+			[['social_fund_receipt_document'], 'file', 'extensions'=>['pdf']],
+			[['liquidation_letter_document'], 'file', 'extensions'=>['pdf']],
+			/*
+			[['social_fund_receipt_document','social_fund_document'], 'required', 'when' => function($model) {
+            return $model->social_fund_status == 1;
+        }],
+		*/
+		   
+		    [['social_fund_receipt_document','social_fund_document'], 'required', 'when' => function ($model) {
+				return $model->social_fund_status == 1;
+			}, 'whenClient' => "function (attribute, value) {
+				return $('#social_fund_status_id input:checked').val() == 1;
+			}"],
+			
             [['updated_at'], 'required'],
             [['application_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname'], 'string', 'max' => 45],
@@ -218,6 +247,31 @@ class RefundApplication extends \yii\db\ActiveRecord
 	public static function getRefundApplicationDetails($refundClaimantid){
 		return self::findOne($refundClaimantid);
 	}
+	
+	public static function getStageCheckedBankDetails($refundApplicationID){
+        $details_ = self::find()
+            ->select('bank_account_number')
+            ->where(['refund_application_id'=>$refundApplicationID])
+            ->one();
+			$results=count($details_->bank_account_number);
+        return $results;
+    }
+	public static function getStageCheckedApplicationGeneral($refundApplicationID){
+        return self::find()
+            ->select('refund_application.*')
+            ->where(['refund_application_id'=>$refundApplicationID])
+            ->one();
+			//$results=count($details_->bank_account_number);
+        //return $results;
+    }
+	public static function getStageCheckedSocialFund($refundApplicationID){
+        $details_ = self::find()
+            ->select('social_fund_status')
+            ->where(['refund_application_id'=>$refundApplicationID])
+            ->one();
+			$results=count($details_->social_fund_status);
+        return $results;
+    }
 	
 	
 }
