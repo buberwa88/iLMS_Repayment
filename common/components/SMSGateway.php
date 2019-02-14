@@ -48,7 +48,17 @@ class SMSGateway extends Component {
      */
 
     public function sendSMS($msisdn, $sms) {
-        if (strlen($msisdn) == 12 && !empty($sms)) {
+        if (!empty($sms)) {
+            if (strpos($msisdn, '0', 0) === 0) {
+                $msisdn = '255' . substr($msisdn, 1);
+            }
+
+            if (strpos($msisdn, '+', 0) === 0) {
+                $msisdn = substr($msisdn, 1);
+            }
+            if (!(strpos($msisdn, '255', 0) === 0)) {
+                $msisdn = '255' . substr($msisdn, 1);
+            }
             $json_request = '{
 		"channel":{
 		 "channel":' . $this->channel . ',

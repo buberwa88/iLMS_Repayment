@@ -2,6 +2,14 @@
 
 return [
     'necta_url' => 'http://localhost/necta_api/pub/results.php/necta',
+    ////SMS Gateway Configurations
+    'SMSGateway' => [
+        'url' => 'https://secure-gw.fasthub.co.tz/fasthub/messaging/json/api',
+        'channel' => '118334',
+        'source_sender' => 'HESLB',
+        'password' => 'Ud@sM#',
+        'method' => 'POST',
+    ],
     'GSPP' => [
         'api_base_uri' => 'http://192.168.5.194/gsppApipilot/api/',
         'api_base_uri_contrln' => 'http://192.168.5.194/GsppApiPilot/Api/',
@@ -19,7 +27,7 @@ return [
         'auth_certificate_pswd' => 'heslbolams',
         'auth_type' => 'cert', //GEPG authentication type
         'gepg_private_key' => "/var/www/html/ilms_repayment/frontend/web/sign/gepgclientprivatekey.pfx",
-		'gepg_content_verif_key' => "/var/www/html/ilms_repayment/frontend/web/sign/gepgpubliccertificatetoclients.pfx",
+        'gepg_content_verif_key' => "/var/www/html/ilms_repayment/frontend/web/sign/gepgpubliccertificatetoclients.pfx",
         'cert_signature_algorithm' => 'sha1WithRSAEncryption',
 //        'auth_username'=>'',
 //        'auth_password'=>'',
