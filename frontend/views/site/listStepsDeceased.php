@@ -20,7 +20,7 @@ $refund_application_id = $session->get('refund_application_id');
 <div class="education-create">
     <div class="panel panel-info">
         <div class="panel-heading">
-            <h4><i class="icon fa fa-info"></i>  YOU ARE  APPLYING FOR REFUND AS DECEASED </h4>
+            <h4><i class="icon fa fa-info"></i>  DECEASED - LOAN REFUND APPLICATION  #<?php echo $model->application_number; ?> </h4>
 
         </div>
         <div class="panel-body">

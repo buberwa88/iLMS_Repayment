@@ -26,17 +26,15 @@ use common\models\User;
  * @property \backend\modules\repayment\models\User $createdBy
  * @property \backend\modules\repayment\models\User $updatedBy
  */
-class RefundComment extends \yii\db\ActiveRecord
-{
+class RefundComment extends \yii\db\ActiveRecord {
+
     use \mootensai\relation\RelationTrait;
 
-
     /**
-    * This function helps \mootensai\relation\RelationTrait runs faster
-    * @return array relation names of this model
-    */
-    public function relationNames()
-    {
+     * This function helps \mootensai\relation\RelationTrait runs faster
+     * @return array relation names of this model
+     */
+    public function relationNames() {
         return [
             'refundApplicationOperations',
             'refundClaimantAttachments',
@@ -49,10 +47,10 @@ class RefundComment extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
+    public function rules() {
         return [
-            [['attachment_definition_id', 'created_by', 'updated_by', 'is_active'], 'integer'],
+            [['attachment_definition_id', 'created_by', 'updated_by', 'is_active', 'reason_type'], 'integer'],
+            [['attachment_definition_id', 'created_by', 'is_active', 'reason_type','comment'], 'required'],
             [['created_at', 'updated_at'], 'safe'],
             [['comment'], 'string', 'max' => 100]
         ];
@@ -61,70 +59,63 @@ class RefundComment extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public static function tableName()
-    {
-        return 'refund_comment';
+    public static function tableName() {
+        return 'refund_application_rejection_reason_setting';
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return [
             'refund_comment_id' => 'Refund Comment',
             'attachment_definition_id' => 'Attachment',
-            'comment' => 'Comment',
+            'reason_type' => 'Reason Type',
+            'comment' => 'Reason/Comment',
             'is_active' => 'Status',
         ];
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundApplicationOperations()
-    {
+    public function getRefundApplicationOperations() {
         return $this->hasMany(\backend\modules\repayment\models\RefundApplicationOperation::className(), ['refund_status_reason_setting_id' => 'refund_comment_id']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundClaimantAttachments()
-    {
+    public function getRefundClaimantAttachments() {
         return $this->hasMany(\backend\modules\repayment\models\RefundClaimantAttachment::className(), ['refund_comment_id' => 'refund_comment_id']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getAttachmentDefinition()
-    {
+    public function getAttachmentDefinition() {
         return $this->hasOne(AttachmentDefinition::className(), ['attachment_definition_id' => 'attachment_definition_id']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCreatedBy()
-    {
+    public function getCreatedBy() {
         return $this->hasOne(User::className(), ['user_id' => 'created_by']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUpdatedBy()
-    {
+    public function getUpdatedBy() {
         return $this->hasOne(User::className(), ['user_id' => 'updated_by']);
     }
-    
+
     /**
      * @inheritdoc
      * @return array mixed
      */
-    public function behaviors()
-    {
+    public function behaviors() {
         return [
             'timestamp' => [
                 'class' => TimestampBehavior::className(),
@@ -140,4 +131,5 @@ class RefundComment extends \yii\db\ActiveRecord
             ],
         ];
     }
+
 }

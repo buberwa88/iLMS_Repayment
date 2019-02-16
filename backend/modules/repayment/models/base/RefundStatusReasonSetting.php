@@ -22,17 +22,15 @@ use yii\behaviors\BlameableBehavior;
  * @property \backend\modules\repayment\models\User $createdBy
  * @property \backend\modules\repayment\models\User $updatedBy
  */
-class RefundStatusReasonSetting extends \yii\db\ActiveRecord
-{
+class RefundStatusReasonSetting extends \yii\db\ActiveRecord {
+
     use \mootensai\relation\RelationTrait;
 
-
     /**
-    * This function helps \mootensai\relation\RelationTrait runs faster
-    * @return array relation names of this model
-    */
-    public function relationNames()
-    {
+     * This function helps \mootensai\relation\RelationTrait runs faster
+     * @return array relation names of this model
+     */
+    public function relationNames() {
         return [
             'refundApplicationProgresses',
             'createdBy',
@@ -43,10 +41,9 @@ class RefundStatusReasonSetting extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
+    public function rules() {
         return [
-            [['status', 'category', 'created_by', 'updated_by'], 'integer'],
+            [['status', 'category', 'created_by'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['reason'], 'string', 'max' => 200]
         ];
@@ -55,54 +52,48 @@ class RefundStatusReasonSetting extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public static function tableName()
-    {
+    public static function tableName() {
         return 'refund_status_reason_setting';
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return [
             'refund_status_reason_setting_id' => 'Refund Status Reason Setting ID',
-            'status' => 'Status',
+            'status' => 'Status Type',
             'reason' => 'Reason',
-            'category' => 'Category',
+            'category' => 'Reason Category',
         ];
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundApplicationProgresses()
-    {
+    public function getRefundApplicationProgresses() {
         return $this->hasMany(\backend\modules\repayment\models\RefundApplicationProgress::className(), ['refund_status_reason_setting_id' => 'refund_status_reason_setting_id']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCreatedBy()
-    {
+    public function getCreatedBy() {
         return $this->hasOne(\backend\modules\repayment\models\User::className(), ['user_id' => 'created_by']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUpdatedBy()
-    {
+    public function getUpdatedBy() {
         return $this->hasOne(\backend\modules\repayment\models\User::className(), ['user_id' => 'updated_by']);
     }
-    
+
     /**
      * @inheritdoc
      * @return array mixed
      */
-    public function behaviors()
-    {
+    public function behaviors() {
         return [
             'timestamp' => [
                 'class' => TimestampBehavior::className(),
@@ -118,4 +109,5 @@ class RefundStatusReasonSetting extends \yii\db\ActiveRecord
             ],
         ];
     }
+
 }

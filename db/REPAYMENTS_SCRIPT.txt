@@ -470,4 +470,7 @@ ALTER TABLE `refund_application_operation` CHANGE `current_verification_response
 
 ####################16-02-2019_2##################
 ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification, 6: Valid, 7: Need Denial Letter';
+RENAME TABLE `ilms_repayment`.`refund_comment` TO `ilms_repayment`.`refund_application_rejection_setting`;
+RENAME TABLE `ilms_repayment`.`refund_application_rejection_setting` TO `ilms_repayment`.`refund_application_rejection_reason_setting`;
+ALTER TABLE `refund_application_rejection_reason_setting` ADD `reason_type` INT(2) NOT NULL AFTER `attachment_definition_id`;
 
