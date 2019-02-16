@@ -23,7 +23,25 @@ $this->params['breadcrumbs'][] = $this->title;
 $list = [1 => 'Confirm'];
 $list2 = backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationStatusResponse();
 ?>
+<script type="text/javascript">
+    function ShowStopDedStatus() {
+        var stopDeductionConfirm = document.getElementById("verificationStatus_id");
+        var stopDeductionConfirmV = stopDeductionConfirm.value;
 
+        //alert (claim_category_value);
+        if (stopDeductionConfirmV == '1') {
+            document.getElementById('stopdeduction_show').style.display = 'block';
+            document.getElementById('denial_letter_show').style.display = 'none';
+        } else if (stopDeductionConfirmV == '2') {
+            document.getElementById('denial_letter_show').style.display = 'block';
+            document.getElementById('stopdeduction_show').style.display = 'none';
+    }else{
+            document.getElementById('stopdeduction_show').style.display = 'none';
+            document.getElementById('denial_letter_show').style.display = 'none';
+
+        }
+    }
+</script>
 <style>
     img {
     border: 1px solid #ddd;
@@ -223,7 +241,7 @@ img:hover {
                echo Form::widget([ // fields with labels
                    'model'=>$modelRefundAppOper,
                    'form'=>$form,
-                   'columns'=>3,
+                   'columns'=>2,
                    'attributes'=>[
                        //'verificationStatus'=>['label'=>'Verification Status:', 'options'=>['placeholder'=>'Enter.']],
 
@@ -235,7 +253,7 @@ img:hover {
                                'options' => [
                                    'prompt' => ' Select ',
                                    'id' => 'verificationStatus_id',
-                                   //'onchange'=>'ShowStopDedStatus()',
+                                   'onchange'=>'ShowStopDedStatus()',
                                ],
                                'pluginOptions' => [
                                    'allowClear' => true
@@ -260,26 +278,33 @@ img:hover {
                                ],
                            ],
                        ],
-                       'needStopDeductionOrNot' => ['type' => Form::INPUT_WIDGET,
-                           'widgetClass' => \kartik\select2\Select2::className(),
-                           'label' => 'Verification Response',
-                           'options' => [
-                               'data' => $list2,
-                               'options' => [
-                                   'prompt' => ' Select ',
-                                   'id' => 'needStopDeductionOrNot_id',
-                                   //'onchange'=>'ShowStopDedStatus()',
-                               ],
-                               'pluginOptions' => [
-                                   'allowClear' => true
-                               ],
-                           ],
-                       ],
 
                        //'refund_statusreasonsettingid'=>['label'=>'Comment', 'options'=>['placeholder'=>'Enter.']],
                      ]
                ]);
                ?>
+               <?php if($social_fund_status ==2 && $refund_type_id==1){ ?>
+               <div id="stopdeduction_show" style="display:none">
+               <?php
+               echo $form->field($modelRefundAppOper, 'needStopDeductionOrNot')->label('Need Permanent Stop Deduction.')->radioList($list,
+                   [
+                       'inline'=>true,
+                       'id'=>social_fund_status_id,
+                       //'onchange'=>'ShowFundStatus(this)',
+                   ]);
+               ?>
+               </div>
+                   <div id="denial_letter_show" style="display:none">
+                       <?php
+                       echo $form->field($modelRefundAppOper, 'needNeedDenialLetter')->label('Need Denial Letter.')->radioList($list2,
+                           [
+                               'inline'=>true,
+                               'id'=>needNeedDenialLetter_id,
+                               //'onchange'=>'ShowFundStatus(this)',
+                           ]);
+                       ?>
+                   </div>
+               <?php } ?>
                <?= $form->field($modelRefundAppOper, 'narration')->label('Narration')->textInput() ?>
                <?= $form->field($modelRefundAppOper, 'refund_application_id')->label(FALSE)->hiddenInput(["value" =>$application_id1]) ?>
                <?= $form->field($modelRefundAppOper, 'refundType')->label(FALSE)->hiddenInput(["value" =>$refund_type_id,'id' => 'refundType_id']) ?>

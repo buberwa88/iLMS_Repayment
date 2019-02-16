@@ -61,18 +61,47 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
     public $refundType;
     public $retiredStatus;
     public $needStopDeductionOrNot;
+    public $needNeedDenialLetter;
     public function rules()
     {
         return [
             [['refund_application_id', 'refund_internal_operational_id', 'status', 'refund_status_reason_setting_id', 'assignee', 'assigned_by', 'last_verified_by', 'is_current_stage', 'created_by', 'updated_by', 'is_active'], 'integer'],
             [['assigned_at', 'date_verified', 'created_at', 'updated_at','general_status','current_verification_response'], 'safe'],
             [['created_at'], 'required'],
-            [['verificationStatus','refund_statusreasonsettingid'], 'required','on'=>'refundApplicationOeration'],
+            //['needStopDeductionOrNot', 'validateNeedPermanentStopDeduction'],
+            [['verificationStatus','refund_statusreasonsettingid','needStopDeductionOrNot'], 'required','on'=>'refundApplicationOeration'],
             //[['access_role'], 'string', 'max' => 50],
             [['narration'], 'string', 'max' => 500],
+            /*
 			[['needStopDeductionOrNot'], 'required', 'when' => function($model) {
-            return $model->refundType == 1 && $model->retiredStatus == 1;
-        }],
+            if($model->verificationStatus==1 && $model->refundType==1 && $model->retiredStatus==2) {
+                return $model->verificationStatus == 1;
+            }
+        }],needNeedDenialLetter
+*/
+            /*
+            [['needStopDeductionOrNot'], 'required', 'when' => function ($model) {
+                if($model->verificationStatus==1 && $model->refundType==1 && $model->retiredStatus==2){
+                    return 1;
+                }
+            },
+                'whenClient' => "function (attribute, value) {
+                    if ($('#verificationStatus_id').val() == 1 && $('#refundType_id').val() == 1 && $('#retiredStatus_id').val() == 2) {
+                           return 1;
+                        }
+                  }"],
+            [['needNeedDenialLetter'], 'required', 'when' => function ($model) {
+                if($model->verificationStatus==2 && $model->refundType==1 && $model->retiredStatus==2){
+                    return 1;
+                }
+            },
+                'whenClient' => "function (attribute, value) {
+                    if ($('#verificationStatus_id').val() == 2 && $('#refundType_id').val() == 1 && $('#retiredStatus_id').val() == 2) {
+                           return 1;
+                        }
+                  }"],
+            */
+
             [['assigned_by'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\User::className(), 'targetAttribute' => ['assigned_by' => 'user_id']],
             [['assignee'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\User::className(), 'targetAttribute' => ['assignee' => 'user_id']],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
@@ -110,6 +139,8 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
             'is_active' => 'Is Active',
             'verificationStatus'=>'Verification Status',
             'refund_statusreasonsettingid'=>'Comment',
+            'needStopDeductionOrNot'=>'Verification Response',
+            'needNeedDenialLetter'=>'Need Denial Letter',
         ];
     }
 
@@ -217,5 +248,35 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
                     'created_at'=>date("Y-m-d H:i:s"),
                 ])->execute();
         }
+
+    public function validateNeedPermanentStopDeduction($attribute, $params) {
+        //applicationCode
+        //if ($attribute && $this->verificationStatus && $this->refundType && $this->retiredStatus) {
+            if (($this->verificationStatus==1 && $this->refundType==1 && $this->retiredStatus==2) && $this->needStopDeductionOrNot==''){
+                $this->addError($this->needStopDeductionOrNot,'Please Confirm');
+                return FALSE;
+            }
+            return true;
+        //}
+        return true;
+    }
+    public static function insertRefundapplicationoperation_inoperation($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse)
+    {
+        Yii::$app->db->createCommand()
+            ->insert('refund_application_operation', [
+                'refund_application_id' => $refund_application_id,
+                'refund_internal_operational_id' => $refund_internal_operational_id,
+                'access_role_master' => $access_role_master,
+                'access_role_child' => $access_role_child,
+                'created_at'=>date("Y-m-d H:i:s"),
+                'status'=>$verificationStatus,
+                'refund_status_reason_setting_id'=>$refundStatusReasonSettingId,
+                'narration'=>$narration,
+                'last_verified_by'=>$lastVerifiedBy,
+                'date_verified'=>$dataVerified,
+                'general_status'=>$generalStatus,
+                'current_verification_response'=>$currentVerificationResponse,
+            ])->execute();
+    }
 
 }

@@ -403,13 +403,12 @@ class RefundApplicationOperationController extends Controller
         if ($modelRefundAppOper->load(Yii::$app->request->post()) && $modelRefundAppOper->validate()) {
             $id=$modelRefundAppOper->refund_application_id;
             $refOperatDetailsID =\backend\modules\repayment\models\RefundApplicationOperation::find()->where(['refund_application_id'=>$id,'is_current_stage'=>1])->one()->refund_application_operation_id;
+            //echo $refOperatDetailsID;exit;
 
             $refApplicOperat = \backend\modules\repayment\models\RefundApplicationOperation::findOne($refOperatDetailsID);
-            $refApplicOperat->status=$modelRefundAppOper->verificationStatus;
-            $refApplicOperat->refund_status_reason_setting_id=$modelRefundAppOper->refund_statusreasonsettingid;
-            $refApplicOperat->narration=$modelRefundAppOper->narration;
-            $refApplicOperat->last_verified_by=Yii::$app->user->identity->user_id;
-            $refApplicOperat->date_verified=date("Y-m-d H:i:s");
+            $currentFlow_id=$refApplicOperat->refund_internal_operational_id;
+            $currentVerificationResponse=$modelRefundAppOper->needStopDeductionOrNot;
+
             if($modelRefundAppOper->verificationStatus==1) {
                 if($modelRefundAppOper->refundType == 1) {
                     if ($modelRefundAppOper->needStopDeductionOrNot == 1) {
@@ -423,14 +422,39 @@ class RefundApplicationOperationController extends Controller
             }else{
                 $refApplicOperat->current_verification_response = 5;
             }
+            $refApplicOperat->is_current_stage=0;
             $refApplicOperat->save(false);
             //After insert set is_current_stage=0 of the previous stage
-            if($modelRefundAppOper->verificationStatus==1){
+ $refund_application_id=$modelRefundAppOper->refund_application_id;
+ $verificationStatus=$modelRefundAppOper->verificationStatus;$refundStatusReasonSettingId=$modelRefundAppOper->refund_statusreasonsettingid;
+ $narration=$modelRefundAppOper->narration;
+ $lastVerifiedBy=Yii::$app->user->identity->user_id;
+ $dataVerified=date("Y-m-d H:i:s");
+ $generalStatus=1;
+
+            if($modelRefundAppOper->verificationStatus==1 || $modelRefundAppOper->verificationStatus==2){
                 //insert to the refund flow
-                $refApplicOperat->current_verification_response=$modelRefundAppOper->needStopDeductionOrNot;
+                //$refApplicOperat->current_verification_response=$modelRefundAppOper->needStopDeductionOrNot;
+                //$currentFlow_id=$refApplicOperat->refund_internal_operational_id;
+                $statusResponse='REFUND_DATA_SECTION';
+                $orderList_ASC_DESC='';
+                $condition='';
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $access_role_master=$resultsRefundInterOperSett->access_role_master;
+                $access_role_child=$resultsRefundInterOperSett->access_role_child;
+                $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
+                \backend\modules\repayment\models\RefundApplicationOperation::insertRefundapplicationoperation_inoperation($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse);
 
             }else{
                 //indsert to the next flow if not to audit depart, else send to refund data sesection for response
+                $statusResponse='';
+                $orderList_ASC_DESC=' ASC  ';
+                $condition=' > ';
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $access_role_master=$resultsRefundInterOperSett->access_role_master;
+                $access_role_child=$resultsRefundInterOperSett->access_role_child;
+                $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
+                \backend\modules\repayment\models\RefundApplicationOperation::insertRefundapplicationoperation_inoperation($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse);
             }
             $sms="Information added!";
             Yii::$app->getSession()->setFlash('success', $sms);

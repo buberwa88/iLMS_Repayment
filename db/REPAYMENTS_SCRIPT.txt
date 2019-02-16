@@ -468,3 +468,6 @@ ALTER TABLE `refund_application_operation` ADD `general_status` TINYINT(2) NULL 
 ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification';
 ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification, 6: Valid';
 
+####################16-02-2019_2##################
+ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification, 6: Valid, 7: Need Denial Letter';
+

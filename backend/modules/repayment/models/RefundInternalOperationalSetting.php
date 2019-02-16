@@ -16,6 +16,14 @@ class RefundInternalOperationalSetting extends BaseRefundInternalOperationalSett
     const STATUS_VALID = 1;
     const STATUS_INVALID = 2;
     const STATUS_NEED_FURTHER_VERIFICATION = 3;
+
+    const VERIFICATION_RESPONSE_TEMP_STOP_DEDUCT = 1;
+    const VERIFICATION_RESPONSE_PERMANENT_STOP_DEDUCT = 2;
+    const VERIFICATION_RESPONSE_INVEST_TEMP_STOP_DEDUCT = 3;
+    const VERIFICATION_RESPONSE_INVEST_NO_STOP_DEDUCT = 4;
+    const VERIFICATION_RESPONSE_NEED_FURTHER_VERFICATION = 5;
+    const VERIFICATION_RESPONSE_CONCLUDED_VALID = 6;
+    const VERIFICATION_RESPONSE_NEED_DENIAL_LETTER = 7;
     public function rules()
     {
         return array_replace_recursive(parent::rules(),
@@ -36,6 +44,25 @@ class RefundInternalOperationalSetting extends BaseRefundInternalOperationalSett
             self::STATUS_VALID => 'Valid',
             self::STATUS_INVALID => 'Invalid',
             self::STATUS_NEED_FURTHER_VERIFICATION => 'Need Further Verification',
+        );
+    }
+    public static function getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition){
+        if($statusResponse=='REFUND_DATA_SECTION') {
+            $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  access_role_master='loan_recovery_data_section' AND is_active='1'")->one();
+        }else{
+            $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  refund_internal_operational_id $condition $currentFlow_id AND  is_active='1' ORDER BY refund_internal_operational_id $orderList_ASC_DESC")->one();
+        }
+        return $refundInterOperSetting;
+    }
+    static function getVerificationStatusResponse() {
+        return array(
+            self::VERIFICATION_RESPONSE_TEMP_STOP_DEDUCT => 'Issue temporary stop deduction',
+            self::VERIFICATION_RESPONSE_PERMANENT_STOP_DEDUCT => 'Issue permanent stop deduction',
+            self::VERIFICATION_RESPONSE_INVEST_TEMP_STOP_DEDUCT => 'Need Invest. with temporary stop deduction',
+            self::VERIFICATION_RESPONSE_INVEST_NO_STOP_DEDUCT => 'Need invest. with no stop deduction',
+            self::VERIFICATION_RESPONSE_NEED_FURTHER_VERFICATION => 'Need Further Verification',
+            self::VERIFICATION_RESPONSE_CONCLUDED_VALID => 'Concluded Valid',
+            self::VERIFICATION_RESPONSE_NEED_DENIAL_LETTER => 'Need Denial Letter',
         );
     }
 }
