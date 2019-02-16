@@ -604,7 +604,7 @@ class DefaultController extends Controller {
           if ($model->hasErrors()) {
             $activeTab = 'login_tab_id';
         }
-            if($_GET["activeTab"]!=""){
+            if(isset($_GET["activeTab"]) && $_GET["activeTab"]!=""){
              $activeTab=$_GET["activeTab"];    
             }
      ##############################################################registration form here#################################

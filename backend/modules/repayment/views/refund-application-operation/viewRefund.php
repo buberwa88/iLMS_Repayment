@@ -60,7 +60,7 @@ img:hover {
         <div class="col-xs-6">
             <div class="box box-primary">
               <div class="box-header">
-                    <h3 class="box-title">CLAIMANT MATCHING STATUS</h3>
+                    <h3 class="box-title">CLAIMANT DETAILS MATCHING STATUS</h3>
               </div>     
                <?php $fullname = $model->refundClaimant->firstname.' '.$model->refundClaimant->middlename.' '.$model->refundClaimant->surname;
 			   $application_id1=$application_id;
@@ -146,19 +146,14 @@ img:hover {
 		  	  }else{
 		   $checkFrameworkID=$model->refund_verification_framework_id;
 			  } ?>
-                <?php if($released==NULL OR $released==''){ 
-				if($model->resubmit=='1'){
-				?>
-				<a href="<?= Yii::$app->urlManager->createUrl(['/application/application/reattached-applications'])?>" class="btn btn-primary pull-right" style="margin-right: 5px;">Back to the list</a>	
-				<?php	
-				}else{
+                <?php if($released==3){
 				?>
                  <?php $form = ActiveForm::begin(['action' => ['final-submitform','id'=>$model->refund_application_id,'frameworkID'=>$checkFrameworkID]]); ?>
                     <div class="text-right">
                         
         <?= Html::submitButton($model->isNewRecord ? 'Back to the list' : 'Back to the list', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
                          <?php ActiveForm::end(); ?>
-				<?php }} ?>
+				<?php } ?>
     </div>   
 </div>
 </div>          

@@ -28,6 +28,19 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+	 const F4_CERTIFICATE_DOCUMENT='F4CERT';	 
+	 const Salary_PAY_Slip='SSP';
+	 const Bank_Card='BCRD';
+	 const Letter_from_social_security='LFSS';
+	 const Liquidation_letter='LLT';
+	 const Letter_from_court='LFC';
+	 const Letter_of_family_session='LOFS';
+	 const RECEIPT_FROM_SOCIAL_FUND='RFSSC';	 
+	 const College_Education_Certificate_Document='COECD';
+	 const Bachelor_Education_Certificate_Document='BECD';
+	 const Masters_Education_Certificate_Document='MAECD';
+	 const Death_Certificate_Document='DCFD';
+
     public static function tableName()
     {
         return 'refund_claimant_attachment';
@@ -99,4 +112,14 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
     {
         return $this->hasOne(\frontend\modules\repayment\models\User::className(), ['user_id' => 'last_verified_by']);
     }
+	public static function insertClaimantAttachment($refund_application_id,$attachment_code,$attachment_path){
+		$getAttachmentDef = \backend\modules\application\models\AttachmentDefinition::findBySql("SELECT attachment_definition_id FROM  attachment_definition WHERE  attachment_code='$attachment_code' AND is_active='1'")->one();
+		$attachment_definition_id=$getAttachmentDef->attachment_definition_id;
+		Yii::$app->db->createCommand()
+                    ->insert('refund_claimant_attachment', [
+                        'refund_application_id' => $refund_application_id,
+                        'attachment_definition_id' => $attachment_definition_id,
+                        'attachment_path' => $attachment_path,
+                    ])->execute();
+	}
 }

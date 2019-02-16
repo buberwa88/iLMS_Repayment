@@ -32,6 +32,7 @@ class AttachmentDefinition extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+	 public $attachment_code;
     public function rules()
     {
         return [

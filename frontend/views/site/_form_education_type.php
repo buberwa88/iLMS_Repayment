@@ -4,7 +4,7 @@ use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use yii\captcha\Captcha;
 use kartik\widgets\FileInput;
-$list = [1 => 'NECTA STUDENTS (For Claimants who did their form 4 Examinations in Tanzania)', 2 => 'NON NECTA STUDENTS (For Claimants who did form 4 Examinations overseas)'];
+$list = [1 => 'NECTA STUDENTS [Completed in Tanzania]', 2 => 'NON NECTA STUDENTS [Holders of Foreign Certificates]'];
 $yearmax = date("Y");
 for ($y = 1982; $y <= $yearmax; $y++) {
     $year[$y] = $y;
@@ -20,6 +20,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
             document.getElementById("general").style.display = "block";
             document.getElementById("necta").style.display = "block";
             document.getElementById("nonnecta").style.display = "none";
+            document.getElementById("f4certificateDoc").style.display = "none";
             $("#school_block_id").attr('maxlength','16');
             $('#school_block_id').attr('style', 'display:block');
             $('#nonnecta_block_id').attr('style', 'display:none');
@@ -29,6 +30,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
             document.getElementById("general").style.display = "block";
             document.getElementById("necta").style.display = "none";
             document.getElementById("nonnecta").style.display = "block";
+            document.getElementById("f4certificateDoc").style.display = "block";
 			$("#refundclaimant-f4indexno").attr('maxlength','16');
             $('#nonnecta_block_id').attr('style', 'display:block');
             $('#school_block_id').attr('style', 'display:block');
@@ -74,8 +76,6 @@ $refundClaimantid = $session->get('refund_claimant_id');
             <h4 class="necta" id="necta"><i class="icon fa fa-info"></i>  YOU ARE  APPLYING AS  NECTA  STUDENTS</h4>
             <h4 class="nonnecta" id="nonnecta"><i class="icon fa fa-info"></i>YOU ARE APPLYING AS  NON NECTA STUDENTS</h4>
         </div>
-
-     <?= $form->field($model, 'is_necta')->label(false)->hiddenInput(['value'=>22,'maxlength' => true]) ?>
         <?php
         echo Form::widget([
             'model' => $model,
@@ -114,14 +114,15 @@ $refundClaimantid = $session->get('refund_claimant_id');
                         'columns' => 2,
                         'id' => "nonnecta_block_id",
                         'attributes' => [
-       'necta_firstname' => ['type' => Form::INPUT_TEXT, 'label' => 'First Name', 'options' => ['placeholder' => 'Enter ']],
-       'necta_middlename' => ['type' => Form::INPUT_TEXT, 'label' => 'Middle Name', 'options' => ['placeholder' => 'Enter .']],
-       'necta_surname' => ['type' => Form::INPUT_TEXT, 'label' => 'Last Name', 'options' => ['placeholder' => 'Enter .']],
+       'firstname' => ['type' => Form::INPUT_TEXT, 'label' => 'First Name', 'options' => ['placeholder' => 'Enter ']],
+       'middlename' => ['type' => Form::INPUT_TEXT, 'label' => 'Middle Name', 'options' => ['placeholder' => 'Enter .']],
+       'surname' => ['type' => Form::INPUT_TEXT, 'label' => 'Last Name', 'options' => ['placeholder' => 'Enter .']],
                         ]
                     ]);
       ?>
+                    <div style='display:none;' id="f4certificateDoc">
                     <?php
-                    echo $form->field($model, 'f4_certificate_document')->label('Certificate Document:')->widget(FileInput::classname(), [
+                    echo $form->field($model, 'f4_certificate_document')->label('F4 Certificate Document:')->widget(FileInput::classname(), [
                         'options' => ['accept' => 'site/pdf'],
                         'pluginOptions' => [
                             'showCaption' => false,
@@ -140,6 +141,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
                         //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
                     ]);
                     ?>
+                    </div>
 
                     <div class="text-right">
                         <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Submit', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

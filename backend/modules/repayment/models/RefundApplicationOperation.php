@@ -50,14 +50,29 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+    public $f4indexno;
+    public $firstname;
+    public $middlename;
+    public $surname;
+    public $refund_type_id;
+    public $current_status;
+    public $verificationStatus;
+    public $refund_statusreasonsettingid;
+    public $refundType;
+    public $retiredStatus;
+    public $needStopDeductionOrNot;
     public function rules()
     {
         return [
             [['refund_application_id', 'refund_internal_operational_id', 'status', 'refund_status_reason_setting_id', 'assignee', 'assigned_by', 'last_verified_by', 'is_current_stage', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['assigned_at', 'date_verified', 'created_at', 'updated_at'], 'safe'],
+            [['assigned_at', 'date_verified', 'created_at', 'updated_at','general_status','current_verification_response'], 'safe'],
             [['created_at'], 'required'],
-            [['access_role'], 'string', 'max' => 50],
+            [['verificationStatus','refund_statusreasonsettingid'], 'required','on'=>'refundApplicationOeration'],
+            //[['access_role'], 'string', 'max' => 50],
             [['narration'], 'string', 'max' => 500],
+			[['needStopDeductionOrNot'], 'required', 'when' => function($model) {
+            return $model->refundType == 1 && $model->retiredStatus == 1;
+        }],
             [['assigned_by'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\User::className(), 'targetAttribute' => ['assigned_by' => 'user_id']],
             [['assignee'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\User::className(), 'targetAttribute' => ['assignee' => 'user_id']],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\repayment\models\User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
@@ -78,7 +93,7 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
             'refund_application_operation_id' => 'Refund Application Operation ID',
             'refund_application_id' => 'Refund Application ID',
             'refund_internal_operational_id' => 'Refund Internal Operational ID',
-            'access_role' => 'Access Role',
+            //'access_role' => 'Access Role',
             'status' => 'Status',
             'refund_status_reason_setting_id' => 'Refund Status Reason Setting ID',
             'narration' => 'Narration',
@@ -93,6 +108,8 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
             'updated_at' => 'Updated At',
             'updated_by' => 'Updated By',
             'is_active' => 'Is Active',
+            'verificationStatus'=>'Verification Status',
+            'refund_statusreasonsettingid'=>'Comment',
         ];
     }
 
@@ -141,7 +158,7 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
      */
     public function getRefundStatusReasonSetting()
     {
-        return $this->hasOne(\backend\modules\repayment\models\RefundComment::className(), ['refund_comment_id' => 'refund_status_reason_setting_id']);
+        return $this->hasOne(\backend\modules\repayment\models\RefundStatusReasonSetting::className(), ['refund_status_reason_setting_id' => 'refund_status_reason_setting_id']);
     }
 
     /**
@@ -175,4 +192,30 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
     {
         return $this->hasMany(\backend\modules\repayment\models\RefundApplicationProgress::className(), ['refund_application_operation_id' => 'refund_application_operation_id']);
     }
+    public static function getTotalApplicationAttempted($loggedIn,$todate){
+        $applicationDetails = \frontend\modules\repayment\models\RefundApplication::findBySql("SELECT 
+                    COUNT(refund_application_id) AS 'totalApplication'	   
+                    FROM refund_application
+                    where  	refund_application.submitted=3 AND refund_application.assignee='$loggedIn' AND date_verified like '%$todate%' AND last_verified_by='$loggedIn'")->one();
+        return $applicationDetails->totalApplication;
+    }
+    public static function getTotalApplicationNotAttempted($loggedIn,$todate){
+        $applicationDetails = \frontend\modules\repayment\models\RefundApplication::findBySql("SELECT 
+                    COUNT(refund_application_id) AS 'totalApplication'	   
+                    FROM refund_application
+                    where  refund_application.submitted=3 AND assignee='$loggedIn'  AND (last_verified_by='' OR last_verified_by IS NULL)")->one();
+        return $applicationDetails->totalApplication;
+    }
+    public static function insertRefundapplicationoperation($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child)
+    {
+            Yii::$app->db->createCommand()
+                ->insert('refund_application_operation', [
+                    'refund_application_id' => $refund_application_id,
+                    'refund_internal_operational_id' => $refund_internal_operational_id,
+                    'access_role_master' => $access_role_master,
+                    'access_role_child' => $access_role_child,
+                    'created_at'=>date("Y-m-d H:i:s"),
+                ])->execute();
+        }
+
 }

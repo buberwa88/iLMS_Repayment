@@ -7,7 +7,7 @@ use kartik\grid\GridView;
 /* @var $searchModel backend\modules\application\models\ApplicationSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'List of Complete Refund Applications';
+$this->title = 'List of Invalid Refund Applications';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="application-index">
@@ -21,7 +21,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php
         echo $this->render('_verification_attempted');
         ?>
-    <?php  echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'completeref']); ?>
+    <?php  echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'invalidref']); ?>
      <?= GridView::widget([
         'dataProvider' => $dataProvider,
         //'filterModel' => $searchModel,

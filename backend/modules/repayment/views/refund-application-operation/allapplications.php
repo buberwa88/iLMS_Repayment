@@ -7,7 +7,7 @@ use kartik\grid\GridView;
 /* @var $searchModel backend\modules\application\models\ApplicationSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'List of Complete Refund Applications';
+$this->title = 'List of All Refund Applications';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="application-index">
@@ -19,9 +19,9 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
     <div class="panel-body">
         <?php
-        echo $this->render('_verification_attempted');
+        //echo $this->render('_verification_attempted');
         ?>
-    <?php  echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'completeref']); ?>
+    <?php  echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'invalidref']); ?>
      <?= GridView::widget([
         'dataProvider' => $dataProvider,
         //'filterModel' => $searchModel,
@@ -99,13 +99,6 @@ $this->params['breadcrumbs'][] = $this->title;
                'label'=>'',
                'value'=>function($model){
                   return Html::a("Application Details", ['/repayment/refund-application-operation/view-refund','id'=>$model->refund_application_id,'action' => 'view'], ['class'=>'label label-success']);
-               },
-               'format'=>'raw',
-             ],
-             [
-               'label'=>'',
-               'value'=>function($model){
-                  return Html::a("Verify", ['/repayment/refund-application-operation/view-refund','id'=>$model->refund_application_id], ['class'=>'label label-primary']);
                },
                'format'=>'raw',
              ],

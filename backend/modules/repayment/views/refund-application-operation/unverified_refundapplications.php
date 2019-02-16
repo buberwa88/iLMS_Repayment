@@ -7,7 +7,7 @@ use kartik\grid\GridView;
 /* @var $searchModel backend\modules\application\models\ApplicationSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'List of Unverified Refund Applications';
+$this->title = 'List of Un-previewed Refund Applications';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="application-index">
@@ -19,9 +19,9 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
     <div class="panel-body">
         <?php
-        //echo $this->render('_verification_attempted');
+        echo $this->render('_verification_attempted');
         ?>
-    <?php  //echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'unverified-applications']); ?>
+    <?php  echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'unverifiedref']); ?>
      <?= GridView::widget([
         'dataProvider' => $dataProvider,
         //'filterModel' => $searchModel,
@@ -77,7 +77,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'width' => '140px',
                         'value' => function ($model) {
                                    if($model->current_status ==0){
-                                     return Html::label("Unvarified", NULL, ['class'=>'label label-default']);
+                                     return Html::label("Un-previewed", NULL, ['class'=>'label label-default']);
                                     } else if($model->current_status==1) {
                                         return Html::label("Complete", NULL, ['class'=>'label label-success']);
                                     }

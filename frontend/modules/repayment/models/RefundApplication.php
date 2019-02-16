@@ -43,68 +43,57 @@ use Yii;
  * @property RefundApplicationOperation[] $refundApplicationOperations
  * @property RefundClaimantAttachment[] $refundClaimantAttachments
  */
-class RefundApplication extends \yii\db\ActiveRecord {
-
-    public $verificationCode;
-    public $pin;
-    public $f4indexno;
-    public $firstname;
-    public $middlename;
-    public $surname;
-    public $letter_family_session_document2;
-
-    /*
-     * Application Current Status values
-     * 
-     */
-
-    const APPLICATION_STATUS_SAVED = 0;
-    const APPLICATION_STATUS_CANCELLED = 1;
-    const APPLICATION_STATUS_SUMITTED = 2;
-
+class RefundApplication extends \yii\db\ActiveRecord
+{
     /**
      * @inheritdoc
      */
-    public static function tableName() {
+    public static function tableName()
+    {
         return 'refund_application';
     }
 
     /**
      * @inheritdoc
      */
-    public function rules() {
+    public $f4indexno;
+    public $firstname;
+    public $middlename;
+    public $surname;
+	 public $letter_family_session_document2;
+	 public $totalApplication;
+    public function rules()
+    {
         return [
             [['refund_claimant_id', 'finaccial_year_id', 'academic_year_id', 'current_status', 'refund_verification_framework_id', 'bank_id', 'refund_type_id', 'created_by', 'updated_by', 'is_active', 'submitted'], 'integer'],
             [['refund_claimant_amount'], 'number'],
-            [['bank_account_number', 'bank_account_name', 'bank_name', 'branch', 'bank_card_document'], 'required', 'on' => 'refundBankDetailsAdd'],
-            [['death_certificate_number', 'death_certificate_document'], 'required', 'on' => 'refundDeathDetails'],
-            [['liquidation_letter_document', 'liquidation_letter_number'], 'required', 'on' => 'refundEmploymentDetails'],
-            [['court_letter_number', 'court_letter_certificate_document'], 'required', 'on' => 'refundCourtDetails'],
-            [['trustee_firstname', 'trustee_midlename', 'trustee_surname', 'letter_family_session_document'], 'required', 'on' => 'refundFamilySessionDetails'],
-            //[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
-            [['social_fund_status'], 'required', 'on' => 'refundSocialFundDetails'],
-            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document'], 'safe'],
-            [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
-            [['bank_card_document'], 'file', 'extensions' => ['pdf']],
-            [['social_fund_document'], 'file', 'extensions' => ['pdf']],
-            [['social_fund_receipt_document'], 'file', 'extensions' => ['pdf']],
-            [['liquidation_letter_document'], 'file', 'extensions' => ['pdf']],
-            [['refund_claimant_id', 'finaccial_year_id', 'academic_year_id', 'current_status', 'refund_verification_framework_id', 'bank_id', 'refund_type_id', 'created_by', 'updated_by', 'is_active', 'submitted'], 'integer'],
-            [['refund_claimant_amount'], 'number'],
-            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email'], 'safe'],
-//            [['updated_at '], 'required'],
-            [['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
+			[['bank_account_number','bank_account_name','bank_name','branch','bank_card_document'], 'required','on'=>'refundBankDetailsAdd'],
+			[['death_certificate_number','death_certificate_document'], 'required','on'=>'refundDeathDetails'],
+			[['liquidation_letter_document','liquidation_letter_number'], 'required','on'=>'refundEmploymentDetails'],
+			[['court_letter_number','court_letter_certificate_document'], 'required','on'=>'refundCourtDetails'],
+			[['trustee_firstname', 'trustee_midlename', 'trustee_surname','letter_family_session_document'], 'required','on'=>'refundFamilySessionDetails'],
+			//[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
+			[['social_fund_status'], 'required','on'=>'refundSocialFundDetails'],
+            [['created_at', 'updated_at','trustee_phone_number','trustee_email','trustee_email','bank_name','branch','bank_card_document','social_fund_status','social_fund_document','social_fund_receipt_document','liquidation_letter_document','liquidation_letter_number','death_certificate_number','death_certificate_document','court_letter_number','court_letter_certificate_document','letter_family_session_document','assignee','date_verified','last_verified_by','assigned_by'], 'safe'],
+			[['death_certificate_document','court_letter_certificate_document','letter_family_session_document'], 'file', 'extensions'=>['pdf']],
+			[['bank_card_document'], 'file', 'extensions'=>['pdf']],
+			[['social_fund_document'], 'file', 'extensions'=>['pdf']],
+			[['social_fund_receipt_document'], 'file', 'extensions'=>['pdf']],
+			[['liquidation_letter_document'], 'file', 'extensions'=>['pdf']],
+			/*
+			[['social_fund_receipt_document','social_fund_document'], 'required', 'when' => function($model) {
             return $model->social_fund_status == 1;
-        }, 'whenClient' => "function (attribute, value) {
+        }],
+		*/
+		   
+		    [['social_fund_receipt_document','social_fund_document'], 'required', 'when' => function ($model) {
+				return $model->social_fund_status == 1;
+			}, 'whenClient' => "function (attribute, value) {
 				return $('#social_fund_status_id input:checked').val() == 1;
 			}"],
+			
             [['updated_at'], 'required'],
             [['application_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],
-            [['application_number', 'verificationCode'], 'string', 'max' => 50],
-            [['application_number', 'verificationCode'], 'required', 'on' => 'view-status'],
-            [['pin'], 'required', 'on' => 'refund-login'],
-            [['pin'], 'validatePin', 'on' => 'refund-login'],
-            [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname'], 'string', 'max' => 45],
             [['trustee_sex'], 'string', 'max' => 1],
             [['bank_account_name'], 'string', 'max' => 100],
@@ -122,24 +111,25 @@ class RefundApplication extends \yii\db\ActiveRecord {
     /**
      * @inheritdoc
      */
-    public function attributeLabels() {
+    public function attributeLabels()
+    {
         return [
-            'refund_application_id' => 'Application ID',
-            'refund_claimant_id' => 'Claimant ID',
-            'application_number' => 'Application #',
-            'refund_claimant_amount' => 'Refund Amount',
-            'finaccial_year_id' => 'Financial Year ID',
-            'academic_year_id' => 'Academic Year',
+            'refund_application_id' => 'Refund Application ID',
+            'refund_claimant_id' => 'Refund Claimant ID',
+            'application_number' => 'Application Number',
+            'refund_claimant_amount' => 'Refund Claimant Amount',
+            'finaccial_year_id' => 'Finaccial Year ID',
+            'academic_year_id' => 'Academic Year ID',
             'trustee_firstname' => 'Trustee Firstname',
             'trustee_midlename' => 'Trustee Midlename',
             'trustee_surname' => 'Trustee Surname',
             'trustee_sex' => 'Trustee Sex',
-            'current_status' => 'Status',
-            'refund_verification_framework_id' => 'Verification Framework ID',
+            'current_status' => 'Current Status',
+            'refund_verification_framework_id' => 'Refund Verification Framework ID',
             'check_number' => 'Check Number',
-            'bank_account_number' => 'Bank Account No',
+            'bank_account_number' => 'Bank Account Number',
             'bank_account_name' => 'Bank Account Name',
-            'bank_id' => 'Bank',
+            'bank_id' => 'Bank ID',
             'refund_type_id' => 'Refund Type ID',
             'liquidation_letter_number' => 'Liquidation Letter Number',
             'created_at' => 'Created At',
@@ -154,176 +144,135 @@ class RefundApplication extends \yii\db\ActiveRecord {
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getAcademicYear() {
+    public function getAcademicYear()
+    {
         return $this->hasOne(\common\models\AcademicYear::className(), ['academic_year_id' => 'academic_year_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getBank() {
+    public function getBank()
+    {
         return $this->hasOne(\backend\modules\application\models\Bank::className(), ['bank_id' => 'bank_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCreatedBy() {
+    public function getCreatedBy()
+    {
         return $this->hasOne(User::className(), ['user_id' => 'created_by']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getFinaccialYear() {
+    public function getFinaccialYear()
+    {
         return $this->hasOne(\backend\modules\disbursement\models\FinancialYear::className(), ['financial_year_id' => 'finaccial_year_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundClaimant() {
+    public function getRefundClaimant()
+    {
         return $this->hasOne(RefundClaimant::className(), ['refund_claimant_id' => 'refund_claimant_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundType() {
+    public function getRefundType()
+    {
         return $this->hasOne(\backend\modules\repayment\models\RefundType::className(), ['refund_type_id' => 'refund_type_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundVerificationFramework() {
+    public function getRefundVerificationFramework()
+    {
         return $this->hasOne(\backend\modules\repayment\models\RefundVerificationFramework::className(), ['refund_verification_framework_id' => 'refund_verification_framework_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUpdatedBy() {
+    public function getUpdatedBy()
+    {
         return $this->hasOne(User::className(), ['user_id' => 'updated_by']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundApplicationOperations() {
+    public function getRefundApplicationOperations()
+    {
         return $this->hasMany(\backend\modules\repayment\models\RefundApplicationInternalOperation::className(), ['refund_application_id' => 'refund_application_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundClaimantAttachments() {
+    public function getRefundClaimantAttachments()
+    {
         return $this->hasMany(\backend\modules\repayment\models\RefundClaimantAttachment::className(), ['refund_application_id' => 'refund_application_id']);
     }
+	public static function getStageChecked($level,$refund_claimant_id){
+        $status=1;
+        $models=\frontend\modules\repayment\models\RefundApplication::find()->where("refund_claimant_id='{$refund_claimant_id}'")->all();
 
-    public static function getStageChecked($level, $refund_claimant_id) {
-        $status = 1;
-        $models = \frontend\modules\repayment\models\RefundApplication::find()->where("refund_claimant_id='{$refund_claimant_id}'")->all();
-
-        if (count($models) > 0) {
+        if(count($models)>0){
             /*
-              foreach($models as $model){
-              if($model->under_sponsorship==1&&$model->sponsor_proof_document==""){
-              $status=$status*0;
-              }
-              ###################non-necta student
-              if($model->is_necta==2&&$model->certificate_document==""){
-              $status=$status*0;
-              }
-              ########################end ################
-              }
-             */
-            $status = $status * 0;
-        } else {
-            $status = $status * 0;
+            foreach($models as $model){
+                if($model->under_sponsorship==1&&$model->sponsor_proof_document==""){
+                    $status=$status*0;
+                }
+                ###################non-necta student
+                if($model->is_necta==2&&$model->certificate_document==""){
+                    $status=$status*0;
+                }
+                ########################end ################
+            }
+            */
+            $status=$status*0;
+        }
+        else{
+            $status=$status*0;
         }
 
         return $status;
     }
-
-    public static function getRefundApplicationDetails($refundClaimantid) {
-        return self::findOne($refundClaimantid);
-    }
-
-    function validateApplicationNo() {
-        if ($this->application_number) {
-            if (!self::find()->where(['application_number' => $this->application_number])->exists()) {
-                return $this->addError($this->application_number, 'Invalid Application Reference Number');
-                return FALSE;
-            }
-            return TRUE;
-        }
-        return FALSE;
-    }
-
-    function validatePin() {
-        if (\Yii::$app->session->has('user_otp_time')) {
-            $otp_time = strtotime(\Yii::$app->session->get('user_otp_time'));
-            $current_time = strtotime(date('Y-m-d H:i:s', time()));
-            $time_difference = floor(($current_time - $otp_time) / (60 * 60));
-            if ($this->pin && $time_difference > 60) {
-                $this->addError($this->pin, 'PIN has Exipired, Please create a new PIN');
-                return FALSE;
-            }
-            return TRUE;
-        }
-        $this->addError($this->pin, 'PIN has Exipired, Please create a new PIN');
-        return FALSE;
-    }
-
-    static function getDetailsByApplicationNo($application_number) {
-        return self::find()->where(['application_number' => $application_number])->one();
-    }
-
-    public static function getRefundApplicationDetails($refundClaimantid) {
-        return self::findOne($refundClaimantid);
-    }
-
-    public static function getStageCheckedBankDetails($refundApplicationID) {
+	public static function getRefundApplicationDetails($refundClaimantid){
+		return self::findOne($refundClaimantid);
+	}
+	
+	public static function getStageCheckedBankDetails($refundApplicationID){
         $details_ = self::find()
-                ->select('bank_account_number')
-                ->where(['refund_application_id' => $refundApplicationID])
-                ->one();
-        $results = count($details_->bank_account_number);
+            ->select('bank_account_number')
+            ->where(['refund_application_id'=>$refundApplicationID])
+            ->one();
+			$results=count($details_->bank_account_number);
         return $results;
     }
-
-    public static function getStageCheckedApplicationGeneral($refundApplicationID) {
+	public static function getStageCheckedApplicationGeneral($refundApplicationID){
         return self::find()
-                        ->select('refund_application.*')
-                        ->where(['refund_application_id' => $refundApplicationID])
-                        ->one();
-        //$results=count($details_->bank_account_number);
+            ->select('refund_application.*')
+            ->where(['refund_application_id'=>$refundApplicationID])
+            ->one();
+			//$results=count($details_->bank_account_number);
         //return $results;
     }
-
-    public static function getStageCheckedSocialFund($refundApplicationID) {
+	public static function getStageCheckedSocialFund($refundApplicationID){
         $details_ = self::find()
-                ->select('social_fund_status')
-                ->where(['refund_application_id' => $refundApplicationID])
-                ->one();
-        $results = count($details_->social_fund_status);
+            ->select('social_fund_status')
+            ->where(['refund_application_id'=>$refundApplicationID])
+            ->one();
+			$results=count($details_->social_fund_status);
         return $results;
     }
-
-    function getApplicationStatus() {
-        return [
-            self::APPLICATION_STATUS_SAVED => 'Saved',
-            self::APPLICATION_STATUS_CANCELLED => 'Cancelled',
-            self::APPLICATION_STATUS_SUMITTED => 'Sumitted',
-        ];
-    }
-
-    public function getCurrentStutusName() {
-        $status = $this->getApplicationStatus();
-        if (is_array($status) && isset($status[$this->current_status])) {
-            return $status[$this->current_status];
-        }
-    }
-
+	
+	
 }

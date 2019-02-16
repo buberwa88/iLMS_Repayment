@@ -5,7 +5,8 @@ namespace backend\modules\repayment\controllers;
 use Yii;
 use backend\modules\repayment\models\RefundStatusReasonSetting;
 use backend\modules\repayment\models\RefundStatusReasonSettingSearch;
-use yii\web\Controller;
+//use yii\web\Controller;
+use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -182,4 +183,5 @@ class RefundStatusReasonSettingController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+    
 }

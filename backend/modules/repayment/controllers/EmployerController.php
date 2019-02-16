@@ -752,5 +752,17 @@ public function actionUpdateInformation($id)
             }
         }
     }
+	public function actionSettingReasons() {
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $status = $parents[0];
+                $out = \backend\modules\repayment\models\RefundStatusReasonSetting::getRefundStatusReasonSett($status);
+                echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
+                return;
+            }
+        }
+    }
 		  
 }

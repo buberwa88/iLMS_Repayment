@@ -70,6 +70,11 @@ class RefundClaimant extends \yii\db\ActiveRecord
             [['firstname', 'middlename', 'surname', 'necta_firstname', 'necta_middlename', 'necta_surname'], 'string', 'max' => 45],
             [['sex', 'necta_sex'], 'string', 'max' => 1],
             [['firstname', 'middlename', 'surname'], 'match','not' => true,'pattern' => '/[^a-zA-Z_-]/','message' => 'Only Characters  Are Allowed...'],
+			[['f4_certificate_document'], 'required', 'when' => function ($model) {
+				return $model->f4type == 2;
+			}, 'whenClient' => "function (attribute, value) {
+				return $('#f4type_id input:checked').val() == 2;
+			}"],
             ['phone_number', 'checkphonenumber'],
             ['applicationCode', 'validateApplicationCode'],
             ['email', 'email'],

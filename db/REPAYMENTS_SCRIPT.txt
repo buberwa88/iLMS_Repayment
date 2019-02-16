@@ -455,4 +455,16 @@ ALTER TABLE `refund_verification_framework` CHANGE `refund_type_id` `refund_type
 ALTER TABLE `refund_verification_framework_item` CHANGE `last_updated_by` `updated_by` INT(11) NULL DEFAULT NULL;
 ALTER TABLE `refund_verification_framework_item` CHANGE `last_updated_at` `updated_at` DATETIME NULL DEFAULT NULL;
 
+=======14-02-2019================
+ALTER TABLE `refund_application` ADD `assignee` INT(11) NULL DEFAULT NULL AFTER `submitted`, ADD `date_verified` DATETIME NULL DEFAULT NULL AFTER `assignee`, ADD `last_verified_by` INT(11) NULL DEFAULT NULL AFTER `date_verified`;
+ALTER TABLE `refund_application` ADD `assigned_by` INT(11) NULL DEFAULT NULL AFTER `last_verified_by`;
+ALTER TABLE `attachment_definition` ADD `attachment_code` VARCHAR(50) NULL DEFAULT NULL AFTER `is_active`;
+
+#########15-02-2019#####
+ALTER TABLE `refund_application_operation` CHANGE `access_role` `access_role_master` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_application_operation` ADD `access_role_child` VARCHAR(50) NULL DEFAULT NULL AFTER `access_role_master`;
+############16-02-2019########
+ALTER TABLE `refund_application_operation` ADD `general_status` TINYINT(2) NULL DEFAULT '1' COMMENT '1: Onprogress, 2: Concluded' AFTER `is_active`, ADD `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with permanent stop deduction' AFTER `general_status`;
+ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification';
+ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification, 6: Valid';
 

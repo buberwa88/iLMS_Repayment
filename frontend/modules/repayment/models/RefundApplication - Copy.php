@@ -44,7 +44,6 @@ use Yii;
  */
 class RefundApplication extends \yii\db\ActiveRecord
 {
-
     /**
      * @inheritdoc
      */

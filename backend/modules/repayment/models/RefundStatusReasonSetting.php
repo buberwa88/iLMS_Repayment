@@ -22,5 +22,11 @@ class RefundStatusReasonSetting extends BaseRefundStatusReasonSetting
             [['reason'], 'string', 'max' => 200]
         ]);
     }
+    public static function getRefundStatusReasonSett($status) {
+        $data2 = \backend\modules\repayment\models\RefundStatusReasonSetting::findBySql(" SELECT refund_status_reason_setting_id AS id, reason AS name FROM refund_status_reason_setting WHERE status='$status'")->asArray()->all();
+        $value2 = (count($data2) == 0) ? ['' => ''] : $data2;
+        return $value2;
+
+    }
 	
 }

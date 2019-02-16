@@ -5,7 +5,8 @@ namespace backend\modules\repayment\controllers;
 use Yii;
 use backend\modules\repayment\models\RefundApplicationOperation;
 use backend\modules\repayment\models\RefundApplicationOperationSearch;
-use yii\web\Controller;
+//use yii\web\Controller;
+use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -165,7 +166,7 @@ class RefundApplicationOperationController extends Controller
                     // here for logs
                     $old_data=\yii\helpers\Json::encode($applicant_attachment->oldAttributes);
                     //end for logs
-                    $applicant_attachment->save();
+                    $applicant_attachment->save(false);
                     // here for logs
                     $new_data=\yii\helpers\Json::encode($applicant_attachment->attributes);
                     $model_logs=\common\models\base\Logs::CreateLogall($applicant_attachment->refund_claimant_attachment_id,$old_data,$new_data,"refund_claimant_attachment","UPDATE",1);
@@ -185,7 +186,7 @@ class RefundApplicationOperationController extends Controller
                     // here for logs
                     $old_data=\yii\helpers\Json::encode($applicantAttachmentModel->oldAttributes);
                     //end for logs
-                    $applicantAttachmentModel->save();
+                    $applicantAttachmentModel->save(false);
                     // here for logs
                     $new_data=\yii\helpers\Json::encode($applicantAttachmentModel->attributes);
                     $model_logs=\common\models\base\Logs::CreateLogall($applicantAttachmentModel->refund_claimant_attachment_id,$old_data,$new_data,"refund_claimant_attachment","UPDATE",1);
@@ -198,7 +199,7 @@ class RefundApplicationOperationController extends Controller
                     // here for logs
                     $old_data=\yii\helpers\Json::encode($vreificationFrameworkResults->oldAttributes);
                     //end for logs
-                    $vreificationFrameworkResults->save();
+                    $vreificationFrameworkResults->save(false);
                     // here for logs
                     $new_data=\yii\helpers\Json::encode($vreificationFrameworkResults->attributes);
                     $model_logs=\common\models\base\Logs::CreateLogall($vreificationFrameworkResults->refund_application_id,$old_data,$new_data,"refund_application","UPDATE",1);
@@ -209,19 +210,21 @@ class RefundApplicationOperationController extends Controller
                 $userAttempted = Yii::$app->user->identity->user_id;
                 $date_verified=$vreificationFrameworkResultsAttemptedBy->updated_at;
                 $todate=date("Y-m-d");
-                if(($vreificationFrameworkResultsAttemptedBy->updated_by != $userAttempted) && ($date_verified !=$todate)){
+                //if(($vreificationFrameworkResultsAttemptedBy->updated_by != $userAttempted) && ($date_verified !=$todate)){
                     $userAttempted = Yii::$app->user->identity->user_id;
                     $vreificationFrameworkResultsAttemptedBy->updated_by=$userAttempted;
                     $vreificationFrameworkResultsAttemptedBy->updated_at=date("Y-m-d H:i:s");
+                    $vreificationFrameworkResultsAttemptedBy->last_verified_by=$userAttempted;
+                    $vreificationFrameworkResultsAttemptedBy->date_verified=date("Y-m-d H:i:s");
                     // here for logs
                     $old_data=\yii\helpers\Json::encode($vreificationFrameworkResultsAttemptedBy->oldAttributes);
                     //end for logs
-                    $vreificationFrameworkResultsAttemptedBy->save();
+                    $vreificationFrameworkResultsAttemptedBy->save(false);
                     // here for logs
                     $new_data=\yii\helpers\Json::encode($vreificationFrameworkResultsAttemptedBy->attributes);
                     $model_logs=\common\models\base\Logs::CreateLogall($vreificationFrameworkResultsAttemptedBy->refund_application_id,$old_data,$new_data,"refund_application","UPDATE",1);
                     //end for logs
-                }
+                //}
                 $this->checkApplicationStatus($verificationFrameworkIDP,$id);
             }
 
@@ -317,17 +320,173 @@ class RefundApplicationOperationController extends Controller
             $model_logs=\common\models\base\Logs::CreateLogall($modelApplication->refund_application_id,$old_data,$new_data,"refund_application","UPDATE",1);
             //end for logs
         }
-        // return $this->redirect(['view','id' => $applicationId,'action' => 'view']);
+        // Automatic send refund to next level if overall status is 1
+        if($status==1) {
+            $resultsSetting=\backend\modules\repayment\models\RefundInternalOperationalSetting::getSettingDetails();
+            $refund_application_id=$applicationId; $refund_internal_operational_id=$resultsSetting->refund_internal_operational_id; $access_role_master=$resultsSetting->access_role_master; $access_role_child=$resultsSetting->access_role_child;
+            //check if exists
+            $applicationDetails = \backend\modules\repayment\models\RefundApplicationOperation::findBySql("SELECT * FROM refund_application_operation
+                    where  refund_application_id='$refund_application_id'")->count();
+            //end
+            if ($applicationDetails ==0) {
+                \backend\modules\repayment\models\RefundApplicationOperation::insertRefundapplicationoperation($refund_application_id, $refund_internal_operational_id, $access_role_master, $access_role_child);
+            }
+        }
         return $this->redirect(['view-refund','id' => $applicationId]);
 
     }
     public function actionCompleteref() {
         $searchModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
-        $current_status = 1;
+        $current_status = [1];
         $dataProvider = $searchModel->searchVerification(Yii::$app->request->queryParams,$current_status);
         return $this->render('complete_refundapplications', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+    }
+    public function actionPendingref() {
+        $searchModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
+        $current_status = [5];
+        $dataProvider = $searchModel->searchVerification(Yii::$app->request->queryParams,$current_status);
+        return $this->render('pending_refundapplications', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionInvalidref() {
+        $searchModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
+        $current_status = [4];
+        $dataProvider = $searchModel->searchVerification(Yii::$app->request->queryParams,$current_status);
+        return $this->render('invalid_refundapplications', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionIncompleteref() {
+        $searchModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
+        $current_status = [2];
+        $dataProvider = $searchModel->searchVerification(Yii::$app->request->queryParams,$current_status);
+        return $this->render('incomplete_refundapplications', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionAllapplications() {
+        $searchModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
+        $current_status = [0,1,2,3,4,5];
+        $dataProvider = $searchModel->searchVerification(Yii::$app->request->queryParams,$current_status);
+        return $this->render('allapplications', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionFinalSubmitform($frameworkID,$id) {
+        if($frameworkID !=0 && $id !=''){
+            $this->checkApplicationStatus($frameworkID,$id);
+        }
+        return $this->redirect(['unverifiedref']);
+
+    }
+    public function actionVerifyapplication() {
+        $searchModel = new \backend\modules\repayment\models\RefundApplicationOperationSearch();
+        //$current_status = [4];
+        $dataProvider = $searchModel->searchVerification(Yii::$app->request->queryParams);
+        return $this->render('verifyapplication', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+    public function actionViewRefundlevel($id=null) {
+           $modelRefundAppOper = new RefundApplicationOperation();
+        $modelRefundAppOper->scenario='refundApplicationOeration';
+        $modelRefundAppOper->created_at=date("Y-m-d H:i:s");
+        if ($modelRefundAppOper->load(Yii::$app->request->post()) && $modelRefundAppOper->validate()) {
+            $id=$modelRefundAppOper->refund_application_id;
+            $refOperatDetailsID =\backend\modules\repayment\models\RefundApplicationOperation::find()->where(['refund_application_id'=>$id,'is_current_stage'=>1])->one()->refund_application_operation_id;
+
+            $refApplicOperat = \backend\modules\repayment\models\RefundApplicationOperation::findOne($refOperatDetailsID);
+            $refApplicOperat->status=$modelRefundAppOper->verificationStatus;
+            $refApplicOperat->refund_status_reason_setting_id=$modelRefundAppOper->refund_statusreasonsettingid;
+            $refApplicOperat->narration=$modelRefundAppOper->narration;
+            $refApplicOperat->last_verified_by=Yii::$app->user->identity->user_id;
+            $refApplicOperat->date_verified=date("Y-m-d H:i:s");
+            if($modelRefundAppOper->verificationStatus==1) {
+                if($modelRefundAppOper->refundType == 1) {
+                    if ($modelRefundAppOper->needStopDeductionOrNot == 1) {
+                        $refApplicOperat->current_verification_response = 2;
+                    }else{
+                        $refApplicOperat->current_verification_response = 6;
+                    }
+                }else{
+                    $refApplicOperat->current_verification_response = 6;
+                }
+            }else{
+                $refApplicOperat->current_verification_response = 5;
+            }
+            $refApplicOperat->save(false);
+            //After insert set is_current_stage=0 of the previous stage
+            if($modelRefundAppOper->verificationStatus==1){
+                //insert to the refund flow
+                $refApplicOperat->current_verification_response=$modelRefundAppOper->needStopDeductionOrNot;
+
+            }else{
+                //indsert to the next flow if not to audit depart, else send to refund data sesection for response
+            }
+            $sms="Information added!";
+            Yii::$app->getSession()->setFlash('success', $sms);
+            return $this->redirect(['view-refundlevel', 'id' => $id]);
+        }else {
+
+            $model = \frontend\modules\repayment\models\RefundApplication::findOne($id);
+            $resultRefundApplicatOperatCount = \backend\modules\repayment\models\RefundApplicationOperation::find()->where(['refund_application_id' => $id])->count();
+
+            $condition = $model->refund_application_id;
+            $applicationID = $model->refund_application_id;
+            $applicantCategory = $model->refund_type_id;
+            $released = $resultRefundApplicatOperatCount;
+            $verificationStatus = $model->current_status;
+            $social_fund_status=$model->social_fund_status;
+            $refund_type_id=$model->refund_type_id;
+
+            $verification_framework_id = $model->refund_verification_framework_id;
+            if ($verification_framework_id == '') {
+                $verificationF = \backend\modules\repayment\models\RefundVerificationFramework::getActiveFramework($applicantCategory);
+                $verificationFrameworkID = $verificationF->refund_verification_framework_id;
+            } else {
+                $verificationFrameworkID = $verification_framework_id;
+            }
+            $dataProvider = \backend\modules\repayment\models\RefundVerificationFrameworkItem::getVerificationAttachments($applicationID, $verificationFrameworkID);
+
+
+            return $this->render('viewRefundlevel', [
+                'dataProvider' => $dataProvider,
+                'model' => $model,
+                'application_id' => $condition,
+                'released' => $released,
+                'verificationStatus' => $verificationStatus,
+                'modelRefundAppOper' => $modelRefundAppOper,
+                'social_fund_status'=>$social_fund_status,
+                'refund_type_id'=>$refund_type_id,
+            ]);
+        }
+
+    }
+    public function actionCreateref() {
+        $modelRefundAppOper = new RefundApplicationOperation();
+        $modelRefundAppOper->scenario='refundApplicationOeration';
+        if ($modelRefundAppOper->load(Yii::$app->request->post()) && $modelRefundAppOper->validate()) {
+            $id=$modelRefundAppOper->refund_application_id;
+            $refOperatDetailsID =\backend\modules\repayment\models\RefundApplicationOperation::find()->where(['refund_application_id'=>$id,'is_current_stage'=>1])->one()->refund_application_operation_id;
+
+            $refApplicOperat = \backend\modules\repayment\models\RefundApplicationOperation::findOne($refOperatDetailsID);
+            $refApplicOperat->status=$modelRefundAppOper->verificationStatus;
+            $refApplicOperat->refund_status_reason_setting_id=$modelRefundAppOper->refund_statusreasonsettingid;
+            $refApplicOperat->narration=$modelRefundAppOper->narration;
+            $refApplicOperat->save(false);
+        }else {
+            return $this->render('refundTest', [
+                'modelRefundAppOper' => $modelRefundAppOper,
+            ]);
+        }
     }
 }
