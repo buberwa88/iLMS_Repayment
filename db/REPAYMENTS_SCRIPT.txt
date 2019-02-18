@@ -470,7 +470,13 @@ ALTER TABLE `refund_application_operation` CHANGE `current_verification_response
 
 ####################16-02-2019_2##################
 ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification, 6: Valid, 7: Need Denial Letter';
-RENAME TABLE `ilms_repayment`.`refund_comment` TO `ilms_repayment`.`refund_application_rejection_setting`;
-RENAME TABLE `ilms_repayment`.`refund_application_rejection_setting` TO `ilms_repayment`.`refund_application_rejection_reason_setting`;
+RENAME TABLE `olams_uat3`.`refund_comment` TO `olams_uat3`.`refund_application_rejection_setting`;
+RENAME TABLE `olams_uat3`.`refund_application_rejection_setting` TO `olams_uat3`.`refund_application_rejection_reason_setting`;
 ALTER TABLE `refund_application_rejection_reason_setting` ADD `reason_type` INT(2) NOT NULL AFTER `attachment_definition_id`;
+
+################17-02-2019####################
+ALTER TABLE `refund_status_reason_setting` CHANGE `status` `status` TINYINT(3) NULL DEFAULT NULL COMMENT '1:Valid, 2:Invalid,3:Further Verification, 4: Need Investigation';
+ALTER TABLE `refund_status_reason_setting` ADD `access_role_master` VARCHAR(50) NULL DEFAULT NULL AFTER `status`, ADD `access_role_child` VARCHAR(50) NULL DEFAULT NULL AFTER `access_role_master`;
+ALTER TABLE `refund_application_operation` ADD `previous_internal_operational_id` INT(11) NULL DEFAULT NULL AFTER `refund_internal_operational_id`;
+
 

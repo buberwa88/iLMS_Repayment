@@ -764,5 +764,17 @@ public function actionUpdateInformation($id)
             }
         }
     }
+    public function actionVerificationResponse($refund_type_id,$retired_status) {
+        $out = [];
+        if (isset($_POST['depdrop_parents'])) {
+            $parents = $_POST['depdrop_parents'];
+            if ($parents != null) {
+                $status = $parents[0];
+                $out = \backend\modules\repayment\models\RefundVerificationResponseSetting::getRefundStatusResponseSetting($status,$refund_type_id,$retired_status);
+                echo \yii\helpers\Json::encode(['output' => $out, 'selected' => '']);
+                return;
+            }
+        }
+    }
 		  
 }

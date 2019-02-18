@@ -72,7 +72,7 @@ use kartik\widgets\Select2;
             'refund_comment_id' => [
                 'label' => 'Comment',
                 'type' => Form::INPUT_DROPDOWN_LIST,
-                'items' => ArrayHelper::map(\backend\modules\repayment\models\RefundComment::findBySql('SELECT  refund_comment.refund_comment_id  AS "refund_comment_id",refund_comment.comment AS "Name" FROM `refund_comment` WHERE refund_comment.attachment_definition_id="'.$model->attachment_definition_id.'" AND refund_comment.is_active="1"')->asArray()->all(), 'refund_comment_id', 'Name'), 'options' => ['prompt' => '-- Select --'],
+                'items' => ArrayHelper::map(\backend\modules\repayment\models\RefundComment::findBySql('SELECT  refund_comment_id  AS "refund_comment_id",comment AS "Name" FROM `refund_application_rejection_reason_setting` WHERE attachment_definition_id="'.$model->attachment_definition_id.'" AND is_active="1"')->asArray()->all(), 'refund_comment_id', 'Name'), 'options' => ['prompt' => '-- Select --'],
                 'options' => ['prompt' => '-- Select --'],
             ],
 

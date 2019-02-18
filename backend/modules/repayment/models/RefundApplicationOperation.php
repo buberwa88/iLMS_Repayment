@@ -62,11 +62,12 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
     public $retiredStatus;
     public $needStopDeductionOrNot;
     public $needNeedDenialLetter;
+    public $item_name;
     public function rules()
     {
         return [
             [['refund_application_id', 'refund_internal_operational_id', 'status', 'refund_status_reason_setting_id', 'assignee', 'assigned_by', 'last_verified_by', 'is_current_stage', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['assigned_at', 'date_verified', 'created_at', 'updated_at','general_status','current_verification_response'], 'safe'],
+            [['assigned_at', 'date_verified', 'created_at', 'updated_at','general_status','current_verification_response','previous_internal_operational_id'], 'safe'],
             [['created_at'], 'required'],
             //['needStopDeductionOrNot', 'validateNeedPermanentStopDeduction'],
             [['verificationStatus','refund_statusreasonsettingid','needStopDeductionOrNot'], 'required','on'=>'refundApplicationOeration'],
@@ -141,6 +142,7 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
             'refund_statusreasonsettingid'=>'Comment',
             'needStopDeductionOrNot'=>'Verification Response',
             'needNeedDenialLetter'=>'Need Denial Letter',
+			'previous_internal_operational_id'=>'previous_internal_operational_id',
         ];
     }
 
@@ -278,5 +280,31 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
                 'current_verification_response'=>$currentVerificationResponse,
             ])->execute();
     }
-
+    public static function insertRefundapplicationoperation_inoperationTemporaryLetter($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse)
+    {
+        Yii::$app->db->createCommand()
+            ->insert('refund_application_operation', [
+                'refund_application_id' => $refund_application_id,
+                'refund_internal_operational_id' => $refund_internal_operational_id,
+                'access_role_master' => $access_role_master,
+                'access_role_child' => $access_role_child,
+                'created_at'=>date("Y-m-d H:i:s"),
+                'status'=>$verificationStatus,
+                'refund_status_reason_setting_id'=>$refundStatusReasonSettingId,
+                'narration'=>$narration,
+                'last_verified_by'=>$lastVerifiedBy,
+                'date_verified'=>$dataVerified,
+                'general_status'=>$generalStatus,
+                'is_current_stage'=>0,
+                'current_verification_response'=>$currentVerificationResponse,
+            ])->execute();
+    }
+    public static function getUserRoleByUserID($user_id){
+        return self::findBySql('SELECT GROUP_CONCAT(item_name) as item_name FROM auth_assignment WHERE user_id="'.$user_id.'"')->one();
+    }
+    public static function getApplicationDEtails($RefundApplicationId){
+        $applicationDetails = \frontend\modules\repayment\models\RefundApplication::findBySql("SELECT 
+                    *   FROM refund_application INNER JOIN refund_claimant ON refund_claimant.refund_claimant_id=refund_application.refund_claimant_id    where  	refund_application.refund_application_id='$RefundApplicationId'")->one();
+        return $applicationDetails;
+    }
 }

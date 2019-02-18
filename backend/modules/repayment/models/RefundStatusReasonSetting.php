@@ -24,7 +24,7 @@ class RefundStatusReasonSetting extends BaseRefundStatusReasonSetting {
     public function rules() {
         return array_replace_recursive(parent::rules(), [
             [['status', 'category', 'reason'], 'required'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at','access_role_master','access_role_child'], 'safe'],
             [['reason'], 'string', 'max' => 200]
         ]);
     }
@@ -65,5 +65,6 @@ class RefundStatusReasonSetting extends BaseRefundStatusReasonSetting {
         }
         return NULL;
     }
+
 
 }

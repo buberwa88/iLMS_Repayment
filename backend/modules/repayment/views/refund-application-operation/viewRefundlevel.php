@@ -15,13 +15,21 @@ use backend\modules\repayment\models\RefundApplicationOperation;
 
 /* @var $this yii\web\View */
 /* @var $model backend\modules\application\models\Application */
+$detailsRefundApplication=\backend\modules\repayment\models\RefundApplicationOperation::getApplicationDEtails($application_id);
 
-$this->title ="Refund Application Verification";
+$this->title ="Refund Application Verification # ".$detailsRefundApplication->application_number;
+
 //$this->params['breadcrumbs'][] = ['label' => 'Applications', 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => 'Refund', 'url' => Yii::$app->request->referrer];
 $this->params['breadcrumbs'][] = $this->title;
 $list = [1 => 'Confirm'];
-$list2 = backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationStatusResponse();
+if($access_role_master=='audit_investigation_department'){
+    $verificationStatus = \backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationStatusAuditSection();
+}else{
+    $verificationStatus = \backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationStatus();
+}
+
+
 ?>
 
 <style>
@@ -83,6 +91,42 @@ img:hover {
         </div>
         
     </div>
+       <div class="row" style="margin: 1%;">
+           <div class="col-xs-12">
+               <div class="box box-primary">
+                   <div class="box-header">
+                       <h3 class="box-title"><b>CLAIMANT LOAN</b></h3>
+                   </div>
+                   <table class="table table-condensed">
+                       <tr>
+                           <td>Total Loan:</td>
+                           <td><b><?php
+                                  //$applicantID=30;
+                                   $applicantID=$detailsRefundApplication->refundClaimant->applicant_id;
+                                   $date=date("Y-m-d");
+                                   $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+                                   echo number_format(backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicantID,$date,$loan_given_to),2); ?></b></td>
+                           <td>Amount Paid:</td>
+                           <td><b><?php
+                                  echo  number_format(\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($applicantID,$date,$loan_given_to),2);
+                                   ?></b></td>
+                           <td>Balance:</td>
+                           <td><b><?php
+                                  echo number_format(\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($applicantID,$date,$loan_given_to),2);
+                                   ?></b></td>
+                           <td><?php
+                               if($applicantID > 0){
+                              echo Html::a('VIEW DETAIL', ['/repayment/loan-beneficiary/view-loanee-details', 'id' =>$applicantID]);
+                               }
+                               ?></td>
+                       </tr>
+                   </table>
+
+
+
+               </div>
+           </div>
+       </div>
    <div class="row" style="margin: 1%;">
       <div class="col-xs-12">
             <div class="box box-primary">
@@ -211,13 +255,14 @@ img:hover {
            </div>
        </div>
 
-
+       <?php if($currentStageStatus == 1){  ?>
        <div class="row" style="margin: 1%;">
        <div class="col-xs-12">
            <div class="box box-primary">
                <div class="box-header">
                    <h3 class="box-title"><b>VERIFY APPLICATION</b></h3>
                </div>
+
                <?php $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL]); ?>
                <?php
                echo Form::widget([ // fields with labels
@@ -231,7 +276,7 @@ img:hover {
                            'widgetClass' => \kartik\select2\Select2::className(),
                            'label' => 'Verification Status',
                            'options' => [
-                               'data' => \backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationStatus(),
+                               'data' => $verificationStatus,
                                'options' => [
                                    'prompt' => ' Select ',
                                    'id' => 'verificationStatus_id',
@@ -260,21 +305,25 @@ img:hover {
                                ],
                            ],
                        ],
+
                        'needStopDeductionOrNot' => ['type' => Form::INPUT_WIDGET,
                            'widgetClass' => \kartik\select2\Select2::className(),
                            'label' => 'Verification Response',
+                           'widgetClass' => DepDrop::className(),
                            'options' => [
-                               'data' => $list2,
+                               'data' => ArrayHelper::map(backend\modules\repayment\models\RefundVerificationResponseSetting::find()->all(), 'refund_verification_response_setting_id', 'reason'),
                                'options' => [
                                    'prompt' => ' Select ',
                                    'id' => 'needStopDeductionOrNot_id',
-                                   //'onchange'=>'ShowStopDedStatus()',
                                ],
                                'pluginOptions' => [
-                                   'allowClear' => true
+                                   'depends' => ['verificationStatus_id'],
+                                   'placeholder' => 'Select ',
+                                   'url' => Url::to(['/repayment/employer/verification-response','refund_type_id'=>$refund_type_id,'retired_status'=>$social_fund_status]),
                                ],
                            ],
                        ],
+
 
                        //'refund_statusreasonsettingid'=>['label'=>'Comment', 'options'=>['placeholder'=>'Enter.']],
                      ]
@@ -293,10 +342,12 @@ img:hover {
 
                    ActiveForm::end();
                    ?>
+
                </div>
            </div>
        </div>
 </div>
+       <?php } ?>
    </div>
    </div>
 </div>
