@@ -479,4 +479,9 @@ ALTER TABLE `refund_status_reason_setting` CHANGE `status` `status` TINYINT(3) N
 ALTER TABLE `refund_status_reason_setting` ADD `access_role_master` VARCHAR(50) NULL DEFAULT NULL AFTER `status`, ADD `access_role_child` VARCHAR(50) NULL DEFAULT NULL AFTER `access_role_master`;
 ALTER TABLE `refund_application_operation` ADD `previous_internal_operational_id` INT(11) NULL DEFAULT NULL AFTER `refund_internal_operational_id`;
 
+##############18-02-2019###################
+ALTER TABLE `refund_application` ADD `verification_response` TINYINT(2) NULL DEFAULT NULL AFTER `assigned_by`;
+ALTER TABLE `refund_application` CHANGE `current_status` `current_status` TINYINT(2) NULL DEFAULT '0' COMMENT '0: Unverified, 1: Preview Complete, 6: Verification Onprogress, 7: Verification Complete';
+ALTER TABLE `refund_application` ADD `current_level` INT(11) NULL DEFAULT NULL AFTER `verification_response`;
+
 

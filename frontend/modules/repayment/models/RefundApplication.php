@@ -87,7 +87,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['pin'], 'required', 'on' => 'refund-login'],
             [['pin'], 'validatePin', 'on' => 'refund-login'],
             [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
-            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by'], 'safe'],
+            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by','verification_response','current_level'], 'safe'],
             [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
             [['bank_card_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_document'], 'file', 'extensions' => ['pdf']],
@@ -148,6 +148,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
             'updated_by' => 'Updated By',
             'is_active' => 'Is Active',
             'submitted' => 'Submitted',
+			'verification_response'=>'Verification Response',
+			'current_level'=>'Current Level',
         ];
     }
 
@@ -163,6 +165,9 @@ class RefundApplication extends \yii\db\ActiveRecord {
      */
     public function getBank() {
         return $this->hasOne(\backend\modules\application\models\Bank::className(), ['bank_id' => 'bank_id']);
+    }
+	public function getRefundInternalOperationalSetting() {
+        return $this->hasOne(\backend\modules\repayment\models\RefundInternalOperationalSetting::className(), ['refund_internal_operational_id' => 'current_level']);
     }
 
     /**

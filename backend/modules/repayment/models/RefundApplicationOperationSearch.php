@@ -88,15 +88,15 @@ class RefundApplicationOperationSearch extends RefundApplicationOperation
 
     return $dataProvider;
 }
-    public function searchVerification($params)
+    public function searchVerification($params,$roles)
     {
-        //$query = RefundApplicationOperation::find();
-        $loggedin = Yii::$app->user->identity->user_id;
         $query = RefundApplicationOperation::find()
-            ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id');
-            //->where(['refund_application.current_status'=>$condition]);
-
-        // add conditions that should always apply here
+            ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_application.verification_response,refund_application.current_level')
+            ->where(['or',
+                ['in','refund_application_operation.access_role_master',$roles],
+                ['in','refund_application_operation.access_role_child',$roles],
+            ])
+            ->groupBy(['refund_application_operation.refund_application_id']);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -113,6 +113,7 @@ class RefundApplicationOperationSearch extends RefundApplicationOperation
         // grid filtering conditions
         $query->joinwith("refundApplication");
         $query->joinwith(["refundApplication","refundApplication.refundClaimant"]);
+        $query->joinwith(["refundApplication","refundApplication.refundInternalOperationalSetting"]);
         $query->andFilterWhere([
             'refund_application_operation_id' => $this->refund_application_operation_id,
             'refund_application_id' => $this->refund_application_id,
@@ -130,9 +131,14 @@ class RefundApplicationOperationSearch extends RefundApplicationOperation
             'updated_at' => $this->updated_at,
             'updated_by' => $this->updated_by,
             'is_active' => $this->is_active,
+            'refund_application.refund_type_id'=>$this->refund_type_id,
         ]);
 
         $query->andFilterWhere(['like', 'status', $this->status])
+            ->andFilterWhere(['like', 'refund_claimant.firstname', $this->firstname])
+            ->andFilterWhere(['like', 'refund_claimant.middlename', $this->middlename])
+            ->andFilterWhere(['like', 'refund_claimant.surname', $this->surname])
+            ->andFilterWhere(['like', 'refund_claimant.f4indexno', $this->f4indexno])
             ->andFilterWhere(['like', 'narration', $this->narration]);
 
         return $dataProvider;

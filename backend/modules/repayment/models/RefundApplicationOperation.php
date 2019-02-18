@@ -201,6 +201,14 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
     {
         return $this->hasOne(\backend\modules\repayment\models\RefundInternalOperationalSetting::className(), ['refund_internal_operational_id' => 'refund_internal_operational_id']);
     }
+    public function getRefundInternalOperationalPrevious()
+    {
+        return $this->hasOne(\backend\modules\repayment\models\RefundInternalOperationalSetting::className(), ['refund_internal_operational_id' => 'previous_internal_operational_id']);
+    }
+    public function getVerificationResponse()
+    {
+        return $this->hasOne(\backend\modules\repayment\models\RefundVerificationResponseSetting::className(), ['refund_verification_response_setting_id' => 'current_verification_response']);
+    }
 
     /**
      * @return \yii\db\ActiveQuery
@@ -241,6 +249,7 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
     }
     public static function insertRefundapplicationoperation($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child)
     {
+        $currentVerificationResponse=-1;
             Yii::$app->db->createCommand()
                 ->insert('refund_application_operation', [
                     'refund_application_id' => $refund_application_id,
@@ -249,6 +258,7 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
                     'access_role_child' => $access_role_child,
                     'created_at'=>date("Y-m-d H:i:s"),
                 ])->execute();
+        self::updateCurrentVerificationLevel($refund_internal_operational_id,$refund_application_id,$currentVerificationResponse);
         }
 
     public function validateNeedPermanentStopDeduction($attribute, $params) {
@@ -262,7 +272,7 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
         //}
         return true;
     }
-    public static function insertRefundapplicationoperation_inoperation($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse)
+    public static function insertRefundapplicationoperation_inoperation($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse,$previousInterOperatID)
     {
         Yii::$app->db->createCommand()
             ->insert('refund_application_operation', [
@@ -278,9 +288,11 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
                 'date_verified'=>$dataVerified,
                 'general_status'=>$generalStatus,
                 'current_verification_response'=>$currentVerificationResponse,
+                'previous_internal_operational_id'=>$previousInterOperatID,
             ])->execute();
+        self::updateCurrentVerificationLevel($refund_internal_operational_id,$refund_application_id,$currentVerificationResponse);
     }
-    public static function insertRefundapplicationoperation_inoperationTemporaryLetter($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse)
+    public static function insertRefundapplicationoperation_inoperationTemporaryLetter($refund_application_id,$refund_internal_operational_id,$access_role_master,$access_role_child,$verificationStatus,$refundStatusReasonSettingId,$narration,$lastVerifiedBy,$dataVerified,$generalStatus,$currentVerificationResponse,$previousInterOperatID)
     {
         Yii::$app->db->createCommand()
             ->insert('refund_application_operation', [
@@ -297,7 +309,9 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
                 'general_status'=>$generalStatus,
                 'is_current_stage'=>0,
                 'current_verification_response'=>$currentVerificationResponse,
+                'previous_internal_operational_id'=>$previousInterOperatID,
             ])->execute();
+        self::updateCurrentVerificationLevel($refund_internal_operational_id,$refund_application_id,$currentVerificationResponse);
     }
     public static function getUserRoleByUserID($user_id){
         return self::findBySql('SELECT GROUP_CONCAT(item_name) as item_name FROM auth_assignment WHERE user_id="'.$user_id.'"')->one();
@@ -306,5 +320,8 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
         $applicationDetails = \frontend\modules\repayment\models\RefundApplication::findBySql("SELECT 
                     *   FROM refund_application INNER JOIN refund_claimant ON refund_claimant.refund_claimant_id=refund_application.refund_claimant_id    where  	refund_application.refund_application_id='$RefundApplicationId'")->one();
         return $applicationDetails;
+    }
+    public static function updateCurrentVerificationLevel($refund_internal_operational_id,$refund_application_id,$currentVerificationResponse){
+        \frontend\modules\repayment\models\RefundApplication::updateAll(['current_level' =>$refund_internal_operational_id,'verification_response'=>$currentVerificationResponse], 'refund_application_id ="'.$refund_application_id.'"');
     }
 }

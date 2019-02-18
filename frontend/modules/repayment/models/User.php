@@ -81,6 +81,9 @@ class User extends ActiveRecord implements IdentityInterface
 	public $district;
 	public $ward_id;
 
+    public $validated;
+	public $staffLevel;
+
     public static function tableName()
     {
         return '{{%user}}';
@@ -109,6 +112,7 @@ class User extends ActiveRecord implements IdentityInterface
 			[['firstname', 'surname','phone_number'], 'required','on'=>'update_contact_person'],
 			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'employer_contact_person'],
 			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'password', 'confirm_password','phone_number','confirm_email','employer_type_id','region','district','ward_id'], 'required', 'on'=>['employer_registration']],
+			[['firstname', 'surname', 'email_address', 'password','confirm_password','phone_number','staffLevel'], 'required', 'on'=>'add_staffs'],
 			[['firstname', 'surname', 'middlename', 'password_hash', 'password', 'confirm_password','phone_number','employer_type_id','region','district','ward_id'], 'required', 'on'=>['heslb_employer_registration']],
 			[['firstname', 'surname', 'middlename', 'email_address','phone_number'], 'required', 'on'=>'employer_update_information'],
 			[['password_hash','confirm_password'], 'required', 'on'=>'employer_change_password'],
@@ -186,6 +190,7 @@ class User extends ActiveRecord implements IdentityInterface
             'employer_id'=>'employer_id',
 			'phone_number_employer'=>'Work Phone No.',
 			'verifyCode'=>'Type below the blue characters:',
+			'staffLevel'=>'Role',
         ];
     }
 

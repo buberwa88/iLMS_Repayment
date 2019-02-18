@@ -18,8 +18,21 @@ use backend\modules\repayment\models\RefundApplicationOperation;
 $detailsRefundApplication=\backend\modules\repayment\models\RefundApplicationOperation::getApplicationDEtails($application_id);
 if($model->verification_response==-1){
 $currentResonse="Waiting";
+$sendasx=0;
+$showSend=0;
 }else{
-$currentResonse=\backend\modules\repayment\models\RefundVerificationResponseSetting::findOne($model->verification_response)->reason;
+$currentResonse1=\backend\modules\repayment\models\RefundVerificationResponseSetting::findOne($model->verification_response);
+$currentResonse=$currentResonse1->reason;
+$response_code=$currentResonse1->response_code;
+$sendasx=1;
+$Temporary_stop_Deduction_letter=\backend\modules\repayment\models\RefundVerificationResponseSetting::Temporary_stop_Deduction_letter;
+$Permanent_stop_deduction_letter=\backend\modules\repayment\models\RefundVerificationResponseSetting::Permanent_stop_deduction_letter;
+$Issue_denial_letter=\backend\modules\repayment\models\RefundVerificationResponseSetting::Issue_denial_letter;
+if($response_code==$Temporary_stop_Deduction_letter || $response_code==$Permanent_stop_deduction_letter ||  $response_code==$Issue_denial_letter){
+$showSend=1;
+}else{
+$showSend=0;
+}
 }
 
 $this->title ="Refund Application Verification # ".$detailsRefundApplication->application_number;
@@ -94,6 +107,7 @@ img:hover {
               </p>
           </div>
         </div>
+        
     </div>
        <div class="row" style="margin: 1%;">
            <div class="col-xs-12">
@@ -105,6 +119,13 @@ img:hover {
                        <tr>
                            <td>Status:</td>
                            <td><b><?php echo $currentResonse; ?></b></td>
+                           <td><?php
+                               if($sendasx==1){
+                                   if($showSend==1){
+                                   echo Html::a('VIEW AND SEND', ['/repayment/loan-beneficiary/view-loanee-details', 'id' =>$applicantID]);
+                                   }
+                               }
+                               ?></td>
                        </tr>
                    </table>
                </div>
@@ -283,97 +304,27 @@ img:hover {
 
        <?php if($currentStageStatus == 1){  ?>
        <div class="row" style="margin: 1%;">
-       <div class="col-xs-12">
-           <div class="box box-primary">
-               <div class="box-header">
-                   <h3 class="box-title"><b>VERIFY APPLICATION</b></h3>
-               </div>
-
-               <?php $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL]); ?>
-               <?php
-               echo Form::widget([ // fields with labels
-                   'model'=>$modelRefundAppOper,
-                   'form'=>$form,
-                   'columns'=>3,
-                   'attributes'=>[
-                       //'verificationStatus'=>['label'=>'Verification Status:', 'options'=>['placeholder'=>'Enter.']],
-
-                       'verificationStatus' => ['type' => Form::INPUT_WIDGET,
-                           'widgetClass' => \kartik\select2\Select2::className(),
-                           'label' => 'Verification Status',
-                           'options' => [
-                               'data' => $verificationStatus,
-                               'options' => [
-                                   'prompt' => ' Select ',
-                                   'id' => 'verificationStatus_id',
-                                   //'onchange'=>'ShowStopDedStatus()',
-                               ],
-                               'pluginOptions' => [
-                                   'allowClear' => true
-                               ],
-                           ],
-                       ],
-
-                       'refund_statusreasonsettingid' => ['type' => Form::INPUT_WIDGET,
-                           'widgetClass' => \kartik\select2\Select2::className(),
-                           'label' => 'Comment',
-                           'widgetClass' => DepDrop::className(),
-                           'options' => [
-                               'data' => ArrayHelper::map(backend\modules\repayment\models\RefundStatusReasonSetting::find()->all(), 'refund_status_reason_setting_id', 'reason'),
-                               'options' => [
-                                   'prompt' => ' Select ',
-                                   'id' => 'refund_statusreasonsettingid_id',
-                               ],
-                               'pluginOptions' => [
-                                   'depends' => ['verificationStatus_id'],
-                                   'placeholder' => 'Select ',
-                                   'url' => Url::to(['/repayment/employer/setting-reasons']),
-                               ],
-                           ],
-                       ],
-
-                       'needStopDeductionOrNot' => ['type' => Form::INPUT_WIDGET,
-                           'widgetClass' => \kartik\select2\Select2::className(),
-                           'label' => 'Verification Response',
-                           'widgetClass' => DepDrop::className(),
-                           'options' => [
-                               'data' => ArrayHelper::map(backend\modules\repayment\models\RefundVerificationResponseSetting::find()->all(), 'refund_verification_response_setting_id', 'reason'),
-                               'options' => [
-                                   'prompt' => ' Select ',
-                                   'id' => 'needStopDeductionOrNot_id',
-                               ],
-                               'pluginOptions' => [
-                                   'depends' => ['verificationStatus_id'],
-                                   'placeholder' => 'Select ',
-                                   'url' => Url::to(['/repayment/employer/verification-response','refund_type_id'=>$refund_type_id,'retired_status'=>$social_fund_status]),
-                               ],
-                           ],
-                       ],
-
-
-                       //'refund_statusreasonsettingid'=>['label'=>'Comment', 'options'=>['placeholder'=>'Enter.']],
-                     ]
-               ]);
-               ?>
-               <?= $form->field($modelRefundAppOper, 'narration')->label('Narration')->textInput() ?>
-               <?= $form->field($modelRefundAppOper, 'refund_application_id')->label(FALSE)->hiddenInput(["value" =>$application_id1]) ?>
-               <?= $form->field($modelRefundAppOper, 'refundType')->label(FALSE)->hiddenInput(["value" =>$refund_type_id,'id' => 'refundType_id']) ?>
-               <?= $form->field($modelRefundAppOper, 'retiredStatus')->label(FALSE)->hiddenInput(["value" =>$social_fund_status,'id' => 'retiredStatus_id']) ?>
-               <?= $form->field($modelRefundAppOper, 'previous_internal_operational_id')->label(FALSE)->hiddenInput(["value" =>$previous_internal_operational_id]) ?>
-               <div class="text-right">
-                   <?= Html::submitButton($modelRefundAppOper->isNewRecord ? 'SAVE' : 'SAVE', ['class' => $modelRefundAppOper->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
-
-                   <?php
-                   echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-                   echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/refund-application-operation/verifyapplication','id'=>$application_id1], ['class' => 'btn btn-warning']);
-
-                   ActiveForm::end();
-                   ?>
-
+           <div class="col-xs-12">
+               <div class="box box-primary">
+                   <div class="box-header">
+                       <h3 class="box-title"><b>VERIFICATION RESPONSE</b></h3>
+                   </div>
+                   <table class="table table-condensed">
+                       <tr>
+                           <td>Status:</td>
+                           <td><b><?php echo $currentResonse; ?></b></td>
+                           <td><?php
+                               if($sendasx==1){
+                                   if($showSend==1){
+                               echo Html::a('VIEW AND SEND', ['/repayment/loan-beneficiary/view-loanee-details', 'id' => $applicantID]);
+                               }
+                               }
+                               ?></td>
+                       </tr>
+                   </table>
                </div>
            </div>
        </div>
-</div>
        <?php } ?>
    </div>
    </div>

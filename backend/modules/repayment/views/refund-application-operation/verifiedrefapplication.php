@@ -7,7 +7,7 @@ use kartik\grid\GridView;
 /* @var $searchModel backend\modules\application\models\ApplicationSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'List of Refund Applications';
+$this->title = 'List of Verified Refund Applications';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="application-index">
@@ -21,7 +21,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <?php
         //echo $this->render('_verification_attempted');
         ?>
-    <?php  echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'verifyapplication']); ?>
+    <?php  echo $this->render('_search_application_verification', ['model' => $searchModel,'action'=>'verifiedrefappl']); ?>
      <?= GridView::widget([
         'dataProvider' => $dataProvider,
         //'filterModel' => $searchModel,
@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'label'=>"First Name",
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a($model->firstname, ['/repayment/refund-application-operation/view-refundlevel','id'=>$model->refund_application_id]);
+                            return Html::a($model->firstname, ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id]);
                         },
                     ],
                     [
@@ -41,7 +41,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'label'=>"Middle Name",
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a($model->middlename, ['/repayment/refund-application-operation/view-refundlevel','id'=>$model->refund_application_id]);
+                            return Html::a($model->middlename, ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id]);
                         },
                     ],
                     [
@@ -49,7 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'label'=>"Last Name",
                         'format' => 'raw',
                         'value' => function ($model) {
-                            return Html::a($model->surname, ['/repayment/refund-application-operation/view-refundlevel','id'=>$model->refund_application_id]);
+                            return Html::a($model->surname, ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id]);
                         },
                     ],
             [
@@ -59,24 +59,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value' => function ($model) {
                     if($model->refund_type_id ==1){
                         //return "Non Beneficiary";
-                        return Html::a("Non Beneficiary", ['/repayment/refund-application-operation/view-refundlevel','id'=>$model->refund_application_id]);
+                        return Html::a("Non Beneficiary", ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id]);
                     } else if($model->refund_type_id==2) {
                         //return "Over Deducted";
-                        return Html::a("Over Deducted", ['/repayment/refund-application-operation/view-refundlevel','id'=>$model->refund_application_id]);
+                        return Html::a("Over Deducted", ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id]);
                     }
                     else if($model->refund_type_id==3) {
                         //return "Deceased";
-                        return Html::a("Deceased", ['/repayment/refund-application-operation/view-refundlevel','id'=>$model->refund_application_id]);
+                        return Html::a("Deceased", ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id]);
                     }
-                },
-                'format' => 'raw'
-            ],
-            [
-                'attribute' => 'current_level',
-                'label'=>'Current Level',
-                'width' => '140px',
-                'value' => function ($model) {
-                    return $model->refundApplication->refundInternalOperationalSetting->name;
                 },
                 'format' => 'raw'
             ],
@@ -102,7 +93,7 @@ $this->params['breadcrumbs'][] = $this->title;
              [
                'label'=>'',
                'value'=>function($model){
-                  return Html::a("Verify", ['/repayment/refund-application-operation/view-refundlevel','id'=>$model->refund_application_id], ['class'=>'label label-primary']);
+                  return Html::a("View", ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id], ['class'=>'label label-primary']);
                },
                'format'=>'raw',
              ],
