@@ -756,7 +756,7 @@ class SiteController extends Controller {
         $modelRefundApplication = new \frontend\modules\repayment\models\RefundApplication();
         $modelRefundContactPerson = new \frontend\modules\repayment\models\RefundContactPerson();
         $model->scenario = 'refundRegistration';
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+        if ($model->load(Yii::$app->request->post())) {
             $todate = date("Y-m-d H:i:s");
             $model->created_at = $todate;
             $model->updated_at = $todate;
@@ -775,6 +775,7 @@ class SiteController extends Controller {
                 $modelRefundApplication->academic_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
                 $modelRefundApplication->trustee_phone_number = $model->phone_number;
                 $modelRefundApplication->trustee_email = $model->email;
+                if($model->refund_type_confirmed_nonb==1){$modelRefundApplication->refund_type_confirmed=2;}else if($model->refund_type_confirmed_overded==1){$modelRefundApplication->refund_type_confirmed=2;}else if($model->refund_type_confirmed_deceased==1){$modelRefundApplication->refund_type_confirmed=2;}
                 $modelRefundApplication->save(false);
 
                 $modelRefundContactPerson->firstname = $model->firstname;
@@ -825,7 +826,7 @@ class SiteController extends Controller {
         $this->layout = "main_public";
         $model = new \frontend\modules\repayment\models\RefundClaimant();
         $model->scenario = 'refundApplicationCodeVerification';
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+        if ($model->load(Yii::$app->request->post())) {
             //set session	
             $session = Yii::$app->session;
             $refundClaimantid = $session->get('refund_claimant_id');
@@ -833,11 +834,11 @@ class SiteController extends Controller {
             //end set session
             $refundType = $model->getRefuntTypePerClaimant($refund_application_id)->refund_type_id;
             if ($refundType == 1) {
-                return $this->redirect(['list-steps-nonbeneficiary', 'id' => $refundClaimantid]);
+                return $this->redirect(['list-steps-nonbeneficiary', 'id' => $refund_application_id]);
             } else if ($refundType == 2) {
-                return $this->redirect(['list-steps-overdeducted', 'id' => $refundClaimantid]);
+                return $this->redirect(['list-steps-overdeducted', 'id' => $refund_application_id]);
             } else if ($refundType == 3) {
-                return $this->redirect(['list-steps-deceased', 'id' => $refundClaimantid]);
+                return $this->redirect(['list-steps-deceased', 'id' => $refund_application_id]);
             }
         } else {
             return $this->render('confirmApplicationno', [

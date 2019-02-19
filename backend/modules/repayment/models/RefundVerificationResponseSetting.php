@@ -38,6 +38,7 @@ class RefundVerificationResponseSetting extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+    public $id;
     public function rules()
     {
         return [
@@ -91,5 +92,10 @@ class RefundVerificationResponseSetting extends \yii\db\ActiveRecord
             $responseDetails = self::findBySql("SELECT response_code FROM  refund_verification_response_setting WHERE  refund_verification_response_setting_id='$verificationResponse_id' AND  is_active='1'")->one();
 
         return $responseDetails;
+    }
+
+    public static function getRefundVerificationResponseSettingByCodeConcat($groupCode){
+        $codesID= self::findBySql("SELECT GROUP_CONCAT(refund_verification_response_setting_id) as id FROM refund_verification_response_setting WHERE response_code IN($groupCode)")->one();
+        return $codesID->id;
     }
 }

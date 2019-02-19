@@ -14,6 +14,7 @@ use yii\grid\GridView;
 use kartik\tabs\TabsX;
 use kartik\detail\DetailView;
 use frontend\modules\repayment\models\RefundClaimantEmployment;
+use frontend\modules\repayment\models\RefundApplication;
 //set session
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
@@ -23,7 +24,23 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
-
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refund_type_id = $resultsCheckResultsGeneral->refund_type_id;
+$resultsCheckCount = RefundApplication::getStageCheckedBankDetails($refund_application_id);
+if ($resultsCheckCount > 0 && $refund_type_id==1) {
+    $link='site/index-bankdetails';
+}
+if($resultsCheckCount == 0 && $refund_type_id==1) {
+    $link='site/create-refund-bankdetails';
+}
+/*
+if ($resultsCheckCount > 0 && $refund_type_id==2) {
+    $link='site/index-bankdetails';
+}
+*/
+if(($resultsCheckCount == 0 || $resultsCheckCount > 0)&& $refund_type_id==2) {
+    $link='site/create-repaymentdetails';
+}
 $this->title = 'Step 3: Employment Details';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -49,9 +66,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label' => 'Employer Name',
-                                'value'=>$model->employer_name,
-                                //'labelColOptions'=>['style'=>'width:20%'],
-                                //'valueColOptions'=>['style'=>'width:30%'],
+                                //'value'=>$model->employer_name,
+                                'value'=>call_user_func(function ($data) {
+                                    if($data->employer_name !=''){
+    return \frontend\modules\repayment\models\Employer::getEmployerCategory($data->employer_name)->employer_name;
+                                    }else{
+                                        return '';
+                                    }
+                                }, $model),
+                                'format' => 'raw',
                             ],
 
                         ],
@@ -145,7 +168,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link]);?></div>
             </div>
         </div>
     </div>

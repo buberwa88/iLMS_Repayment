@@ -24,7 +24,13 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
-
+$resultsCheckCount = RefundApplication::getStageCheckedBankDetails($refund_application_id);
+if ($resultsCheckCount > 0) {
+$link='site/index-bankdetails';
+}
+if($resultsCheckCount == 0) {
+$link='site/create-refund-bankdetails';
+}
 $this->title = 'Step 4: Bank Details ';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -120,7 +126,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/index-contactdetails']);?></div>
             </div>
         </div>
     </div>

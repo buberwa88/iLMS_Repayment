@@ -72,7 +72,7 @@ $refund_application_id = $session->get('refund_application_id');
 
             <?php
             echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-            echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/list-steps-nonbeneficiary','id'=>$refundClaimantid], ['class' => 'btn btn-warning']);
+            echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/list-steps-overdeducted'], ['class' => 'btn btn-warning']);
 
             ActiveForm::end();
             ?>

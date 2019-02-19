@@ -494,5 +494,6 @@ ALTER TABLE `refund_letter_format` ADD `letter_reference_no` VARCHAR(200) NULL A
 ###############18-02-2019_2###########
 ALTER TABLE `refund_application` ADD `soccialFundDocument` TINYINT(2) NULL DEFAULT NULL AFTER `social_fund_status`;
 ALTER TABLE `refund_application` CHANGE `current_status` `current_status` TINYINT(2) NULL DEFAULT '0' COMMENT '0: Unverified, 1: Preview Complete,2: Incomplete,3: Waiting,4: Invalid,5: Pending, 6: Verification Onprogress, 7: Verification Complete';
+ALTER TABLE `refund_application` ADD `refund_type_confirmed` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Unconfirmed: 2: Confirmed' AFTER `current_level`;
 
 

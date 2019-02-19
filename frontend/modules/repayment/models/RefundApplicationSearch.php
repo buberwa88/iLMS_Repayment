@@ -150,12 +150,169 @@ class RefundApplicationSearch extends RefundApplication
     }
     public function searchVerifiedRefundAppl($params,$currentLevel)
     {
-        //$query = RefundApplication::find();
 
-        $loggedin = Yii::$app->user->identity->user_id;
         $query = RefundApplication::find()
             ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
             ->where(['refund_application.current_level'=>$currentLevel]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->joinwith("refundClaimant");
+        $query->andFilterWhere([
+            'refund_application_id' => $this->refund_application_id,
+            'refund_claimant_id' => $this->refund_claimant_id,
+            'refund_claimant_amount' => $this->refund_claimant_amount,
+            'finaccial_year_id' => $this->finaccial_year_id,
+            'academic_year_id' => $this->academic_year_id,
+            'current_status' => $this->current_status,
+            'refund_verification_framework_id' => $this->refund_verification_framework_id,
+            'bank_id' => $this->bank_id,
+            'refund_type_id' => $this->refund_type_id,
+            'created_at' => $this->created_at,
+            'created_by' => $this->created_by,
+            'updated_at' => $this->updated_at,
+            'updated_by' => $this->updated_by,
+            'is_active' => $this->is_active,
+            'submitted' => $this->submitted,
+        ]);
+
+        $query->andFilterWhere(['like', 'application_number', $this->application_number])
+            ->andFilterWhere(['like', 'trustee_firstname', $this->trustee_firstname])
+            ->andFilterWhere(['like', 'trustee_midlename', $this->trustee_midlename])
+            ->andFilterWhere(['like', 'trustee_surname', $this->trustee_surname])
+            ->andFilterWhere(['like', 'trustee_sex', $this->trustee_sex])
+            ->andFilterWhere(['like', 'check_number', $this->check_number])
+            ->andFilterWhere(['like', 'bank_account_number', $this->bank_account_number])
+            ->andFilterWhere(['like', 'bank_account_name', $this->bank_account_name])
+            ->andFilterWhere(['like', 'liquidation_letter_number', $this->liquidation_letter_number]);
+
+        return $dataProvider;
+    }
+    public function searchVerifiedRefundWaitingLetter($params,$currentLevel,$codeResponseID)
+    {
+
+        $query = RefundApplication::find()
+            ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+            ->where(['refund_application.current_level'=>$currentLevel,'refund_application.verification_response'=>$codeResponseID]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->joinwith("refundClaimant");
+        $query->andFilterWhere([
+            'refund_application_id' => $this->refund_application_id,
+            'refund_claimant_id' => $this->refund_claimant_id,
+            'refund_claimant_amount' => $this->refund_claimant_amount,
+            'finaccial_year_id' => $this->finaccial_year_id,
+            'academic_year_id' => $this->academic_year_id,
+            'current_status' => $this->current_status,
+            'refund_verification_framework_id' => $this->refund_verification_framework_id,
+            'bank_id' => $this->bank_id,
+            'refund_type_id' => $this->refund_type_id,
+            'created_at' => $this->created_at,
+            'created_by' => $this->created_by,
+            'updated_at' => $this->updated_at,
+            'updated_by' => $this->updated_by,
+            'is_active' => $this->is_active,
+            'submitted' => $this->submitted,
+        ]);
+
+        $query->andFilterWhere(['like', 'application_number', $this->application_number])
+            ->andFilterWhere(['like', 'trustee_firstname', $this->trustee_firstname])
+            ->andFilterWhere(['like', 'trustee_midlename', $this->trustee_midlename])
+            ->andFilterWhere(['like', 'trustee_surname', $this->trustee_surname])
+            ->andFilterWhere(['like', 'trustee_sex', $this->trustee_sex])
+            ->andFilterWhere(['like', 'check_number', $this->check_number])
+            ->andFilterWhere(['like', 'bank_account_number', $this->bank_account_number])
+            ->andFilterWhere(['like', 'bank_account_name', $this->bank_account_name])
+            ->andFilterWhere(['like', 'liquidation_letter_number', $this->liquidation_letter_number]);
+
+        return $dataProvider;
+    }
+    public function searchVerifiedRefundWaitingPayment($params,$currentLevel,$PayListStatus)
+    {
+
+        $query = RefundApplication::find()
+            ->select('refund_application.refund_claimant_amount,refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+            ->where(['refund_application.current_level'=>$currentLevel,'refund_application.current_status'=>$PayListStatus]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->joinwith("refundClaimant");
+        $query->andFilterWhere([
+            'refund_application_id' => $this->refund_application_id,
+            'refund_claimant_id' => $this->refund_claimant_id,
+            'refund_claimant_amount' => $this->refund_claimant_amount,
+            'finaccial_year_id' => $this->finaccial_year_id,
+            'academic_year_id' => $this->academic_year_id,
+            'current_status' => $this->current_status,
+            'refund_verification_framework_id' => $this->refund_verification_framework_id,
+            'bank_id' => $this->bank_id,
+            'refund_type_id' => $this->refund_type_id,
+            'created_at' => $this->created_at,
+            'created_by' => $this->created_by,
+            'updated_at' => $this->updated_at,
+            'updated_by' => $this->updated_by,
+            'is_active' => $this->is_active,
+            'submitted' => $this->submitted,
+        ]);
+
+        $query->andFilterWhere(['like', 'application_number', $this->application_number])
+            ->andFilterWhere(['like', 'trustee_firstname', $this->trustee_firstname])
+            ->andFilterWhere(['like', 'trustee_midlename', $this->trustee_midlename])
+            ->andFilterWhere(['like', 'trustee_surname', $this->trustee_surname])
+            ->andFilterWhere(['like', 'trustee_sex', $this->trustee_sex])
+            ->andFilterWhere(['like', 'check_number', $this->check_number])
+            ->andFilterWhere(['like', 'bank_account_number', $this->bank_account_number])
+            ->andFilterWhere(['like', 'bank_account_name', $this->bank_account_name])
+            ->andFilterWhere(['like', 'liquidation_letter_number', $this->liquidation_letter_number]);
+
+        return $dataProvider;
+    }
+    public function searchVerifiedRefundPaid($params,$PayListStatus)
+    {
+
+        $query = RefundApplication::find()
+            ->select('refund_application.refund_claimant_amount,refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+            ->where(['refund_application.current_status'=>$PayListStatus]);
 
         // add conditions that should always apply here
 

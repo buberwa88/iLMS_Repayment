@@ -298,7 +298,7 @@ $employerDetails=Employer::findBySql("SELECT salary_source FROM employer WHERE  
 public static function getEmployerCategory($employerID)
 {
 						
-						$employerDetails2=Employer::findBySql("SELECT employer.employer_id AS employer_id,employer_type.employer_type_id AS employer_type_id,employer_type.employer_type AS employer_type,salary_source FROM employer INNER JOIN employer_type ON employer.employer_type_id=employer_type.employer_type_id "
+						$employerDetails2=Employer::findBySql("SELECT employer.employer_id AS employer_id,employer_type.employer_type_id AS employer_type_id,employer_type.employer_type AS employer_type,salary_source,employer.employer_name FROM employer INNER JOIN employer_type ON employer.employer_type_id=employer_type.employer_type_id "
                         . " WHERE  employer.employer_id='$employerID'")->one();
     return 	$employerDetails2;
 }

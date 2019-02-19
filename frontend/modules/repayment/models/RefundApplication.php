@@ -58,6 +58,9 @@ class RefundApplication extends \yii\db\ActiveRecord {
     const Verification_Onprogress = 6;
     const Verification_Complete = 7;
 
+    const PAY_LIST_WAITING_QUEUE = 8;
+    const PAID_APPLICATION = 9;
+
     /**
      * @inheritdoc
      */
@@ -76,6 +79,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
     public $surname;
     public $letter_family_session_document2;
     public $totalApplication;
+    public $refundTypeExpalnation;
+    public $refund_type_confirmed;
 
     public function rules() {
         return [
@@ -92,8 +97,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['pin'], 'required', 'on' => 'refund-login'],
             [['pin'], 'validatePin', 'on' => 'refund-login'],
             [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
-            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by','verification_response','current_level','soccialFundDocument'], 'safe'],
-            [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document','soccialFundDocument'], 'file', 'extensions' => ['pdf']],
+            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by','verification_response','current_level','soccialFundDocument','refundTypeExpalnation','refund_type_confirmed'], 'safe'],
+            [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
             [['bank_card_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_receipt_document'], 'file', 'extensions' => ['pdf']],
@@ -104,12 +109,12 @@ class RefundApplication extends \yii\db\ActiveRecord {
               }],
              */
             [['soccialFundDocument'], 'required', 'when' => function ($model) {
-            return $model->social_fund_status == 1;
+            return  1;
         }, 'whenClient' => "function (attribute, value) {
 				return $('#social_fund_status_id input:checked').val() == 1;
 			}"],
 			[['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
-            return $model->soccialFundDocument == 1;
+            return 1;
         }, 'whenClient' => "function (attribute, value) {
 				return $('#soccialFundDocument_id input:checked').val() == 1;
 			}"],
@@ -162,6 +167,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
 			'current_level'=>'Current Level',
 			'soccialFundDocument'=>'soccialFundDocument',
             'trustee_email'=>'Email',
+            'refund_type_confirmed'=>'refund_type_confirmed',
         ];
     }
 

@@ -56,6 +56,11 @@ class RefundClaimant extends \yii\db\ActiveRecord
     public $is_necta;
     public $f4indexno_non_necta;
     public $f4_completion_year_nonnecta;
+    public $refundTypeExpalnation;
+    public $refund_type_confirmed;
+    public $refund_type_confirmed_nonb;
+    public $refund_type_confirmed_overded;
+    public $refund_type_confirmed_deceased;
     public function rules()
     {
         return [
@@ -65,7 +70,8 @@ class RefundClaimant extends \yii\db\ActiveRecord
             ['verifyCode', 'captcha','on'=>['refundRegistration','refundApplicationCodeVerification']],
             //[['f4indexno','f4_completion_year'], 'required','on'=>'refundf4educationnecta'],
             [['f4indexno','necta_firstname','necta_middlename','necta_surname','f4_completion_year'], 'required','on'=>'refundf4education'],
-            [['created_at', 'updated_at','sex','refundClaimantid','f4_certificate_document','f4type'], 'safe'],
+            [['created_at', 'updated_at','sex','refundClaimantid','f4_certificate_document','f4type','refundTypeExpalnation',
+              'refund_type_confirmed','refund_type_confirmed_nonb','refund_type_confirmed_overded','refund_type_confirmed_deceased'], 'safe'],
 			[['f4_certificate_document'], 'file', 'extensions'=>['pdf']],
             [['firstname', 'middlename', 'surname', 'necta_firstname', 'necta_middlename', 'necta_surname'], 'string', 'max' => 45],
             [['sex', 'necta_sex'], 'string', 'max' => 1],
@@ -75,6 +81,29 @@ class RefundClaimant extends \yii\db\ActiveRecord
 			}, 'whenClient' => "function (attribute, value) {
 				return $('#f4type_id input:checked').val() == 2;
 			}"],
+
+            ['refund_type_confirmed_nonb', 'required', 'when' => function ($model) {
+                return  1;
+            }, 'whenClient' => "function (attribute, value) {
+    if ($('#refund_type_id').val() == 1) {
+                           return 1;
+                        }
+}"],
+            ['refund_type_confirmed_overded', 'required', 'when' => function ($model) {
+                return  1;
+            }, 'whenClient' => "function (attribute, value) {
+    if ($('#refund_type_id').val() == 2) {
+                           return 1;
+                        }
+}"],
+            ['refund_type_confirmed_deceased', 'required', 'when' => function ($model) {
+                return  1;
+            }, 'whenClient' => "function (attribute, value) {
+    if ($('#refund_type_id').val() == 3) {
+                           return 1;
+                        }
+}"],
+
             ['phone_number', 'checkphonenumber'],
             ['applicationCode', 'validateApplicationCode'],
             ['email', 'email'],
@@ -112,6 +141,11 @@ class RefundClaimant extends \yii\db\ActiveRecord
             'updated_by' => 'Updated By',
             'verifyCode'=>'Enter Text: ',
             'applicationCode'=>'Code:',
+            'refundTypeExpalnation'=>'refundTypeExpalnation',
+            'refund_type_confirmed'=>'refund_type_confirmed',
+            'refund_type_confirmed_nonb'=>'Confirm the Refund Type Selected!',
+            'refund_type_confirmed_overded'=>'Confirm the Refund Type Selected!',
+            'refund_type_confirmed_deceased'=>'Confirm the Refund Type Selected!',
         ];
     }
 

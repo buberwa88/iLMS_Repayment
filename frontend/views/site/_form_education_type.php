@@ -74,7 +74,8 @@ $refundClaimantid = $session->get('refund_claimant_id');
                <div class="alert alert-info alert-dismissible" id="labelshow">
 
             <h4 class="necta" id="necta"><i class="icon fa fa-info"></i>  YOU ARE  APPLYING AS  NECTA  STUDENTS</h4>
-            <h4 class="nonnecta" id="nonnecta"><i class="icon fa fa-info"></i>YOU ARE APPLYING AS  NON NECTA STUDENTS</h4>
+            <h4 class="nonnecta" id="nonnecta">
+                <i class="icon fa fa-info"></i>YOU ARE APPLYING AS  NON NECTA STUDENTS</h4>
         </div>
         <?php
         echo Form::widget([
@@ -138,8 +139,8 @@ $refundClaimantid = $session->get('refund_claimant_id');
                             'initialCaption'=>$model->f4_certificate_document,
                             'initialPreviewAsData'=>true,
                         ],
-                        //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
-                    ]);
+
+                    ])->hint('Attach the Certificate Document Having the Same Information as Provided Above');
                     ?>
                     </div>
 
