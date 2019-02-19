@@ -484,4 +484,9 @@ ALTER TABLE `refund_application` ADD `verification_response` TINYINT(2) NULL DEF
 ALTER TABLE `refund_application` CHANGE `current_status` `current_status` TINYINT(2) NULL DEFAULT '0' COMMENT '0: Unverified, 1: Preview Complete, 6: Verification Onprogress, 7: Verification Complete';
 ALTER TABLE `refund_application` ADD `current_level` INT(11) NULL DEFAULT NULL AFTER `verification_response`;
 
-
+########## 19-02-2019##########
+ALTER TABLE `refund_letter_format` CHANGE `letter_heading` `letter_heading` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` CHANGE `header` `header` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` CHANGE `footer` `footer` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` CHANGE `letter_heading` `letter_heading` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` ADD `letter_reference_no` VARCHAR(200) NULL AFTER `letter_name`;

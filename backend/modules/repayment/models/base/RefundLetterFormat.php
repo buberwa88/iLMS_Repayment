@@ -25,17 +25,18 @@ use yii\behaviors\BlameableBehavior;
  * @property \backend\modules\repayment\models\User $createdBy
  * @property \backend\modules\repayment\models\User $updatedBy
  */
-class RefundLetterFormat extends \yii\db\ActiveRecord
-{
+class RefundLetterFormat extends \yii\db\ActiveRecord {
+
+    const STATUS_ACTIVE = 1;
+    const STATUS_INACTIVE = 0;
+
     use \mootensai\relation\RelationTrait;
 
-
     /**
-    * This function helps \mootensai\relation\RelationTrait runs faster
-    * @return array relation names of this model
-    */
-    public function relationNames()
-    {
+     * This function helps \mootensai\relation\RelationTrait runs faster
+     * @return array relation names of this model
+     */
+    public function relationNames() {
         return [
             'refundApplicationOperationLetters',
             'createdBy',
@@ -46,71 +47,66 @@ class RefundLetterFormat extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
+    public function rules() {
         return [
+            [['letter_name', 'letter_reference_no', 'header', 'footer', 'letter_heading', 'letter_body', 'created_by'], 'required'],
             [['letter_body'], 'string'],
-            [['created_at', 'updated_at','letter_code'], 'safe'],
+            [['letter_name', 'letter_heading', 'letter_body'], 'unique'],
+            [['letter_name', 'letter_reference_no', 'letter_heading'], 'string', 'max' => 200],
+            [['created_at', 'updated_at'], 'safe'],
             [['created_by', 'updated_by', 'is_active'], 'integer'],
-            [['letter_name', 'header', 'footer'], 'string', 'max' => 200],
-            [['letter_heading'], 'string', 'max' => 50]
         ];
     }
 
     /**
      * @inheritdoc
      */
-    public static function tableName()
-    {
+    public static function tableName() {
         return 'refund_letter_format';
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return [
-            'refund_letter_format_id' => 'Refund Letter Format ID',
-            'letter_name' => 'Letter Name',
-            'header' => 'Header',
-            'footer' => 'Footer',
-            'letter_heading' => 'Letter Heading',
+            'refund_letter_format_id' => 'Letter Format ID',
+            'letter_name' => 'Name',
+            'letter_reference_no' => 'Reference No',
+            'header' => 'Letter Header',
+            'footer' => 'Letter Footer',
+            'letter_heading' => 'Letter Subject',
             'letter_body' => 'Letter Body',
-            'is_active' => 'Is Active',
+            'is_active' => 'Status',
         ];
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundApplicationOperationLetters()
-    {
+    public function getRefundApplicationOperationLetters() {
         return $this->hasMany(\backend\modules\repayment\models\RefundApplicationOperationLetter::className(), ['refund_letter_format_id' => 'refund_letter_format_id']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCreatedBy()
-    {
+    public function getCreatedBy() {
         return $this->hasOne(\backend\modules\repayment\models\User::className(), ['user_id' => 'created_by']);
     }
-        
+
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUpdatedBy()
-    {
+    public function getUpdatedBy() {
         return $this->hasOne(\backend\modules\repayment\models\User::className(), ['user_id' => 'updated_by']);
     }
-    
+
     /**
      * @inheritdoc
      * @return array mixed
      */
-    public function behaviors()
-    {
+    public function behaviors() {
         return [
             'timestamp' => [
                 'class' => TimestampBehavior::className(),
@@ -126,4 +122,20 @@ class RefundLetterFormat extends \yii\db\ActiveRecord
             ],
         ];
     }
+
+    function getStatusOptions() {
+        return [
+            self::STATUS_ACTIVE => 'Active',
+            self::STATUS_INACTIVE => 'In-Active'
+        ];
+    }
+
+    function getStatusName() {
+        $status = $this->getStatusOptions();
+        if (isset($status[$this->is_active])) {
+            return $status[$this->is_active];
+        }
+        return NULL;
+    }
+
 }

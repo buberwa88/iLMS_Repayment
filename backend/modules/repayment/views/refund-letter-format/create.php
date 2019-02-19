@@ -6,9 +6,9 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\modules\repayment\models\RefundLetterFormat */
 
-$this->title = 'Create Refund Letter Format';
-$this->params['breadcrumbs'][] = ['label' => 'Refund Letter Format', 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
+$this->title = 'Create/Add Refund Letter Configuration';
+$this->params['breadcrumbs'][] = ['label' => 'Refund Letter Configuration', 'url' => ['index']];
+$this->params['breadcrumbs'][] = 'Create/Add Letter ';
 ?>
 <div class="refund-letter-format-create">
  <div class="panel panel-info">
