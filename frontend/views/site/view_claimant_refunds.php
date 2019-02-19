@@ -27,7 +27,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     'application_number',
                     'refund_claimant_amount',
 //                    'academic_year_id',
-                    ['label' => 'Trustee Name',
+                    //['label' => 'Trustee Name',
+                    ['label' => 'Name',
                         'value' => function ($model) {
                             return $model->trustee_firstname . ' ' . $model->trustee_midlename . ' ' . $model->trustee_surname;
                         }

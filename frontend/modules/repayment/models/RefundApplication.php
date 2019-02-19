@@ -50,8 +50,13 @@ class RefundApplication extends \yii\db\ActiveRecord {
      */
 
     const APPLICATION_STATUS_SAVED = 0;
-    const APPLICATION_STATUS_CANCELLED = 1;
-    const APPLICATION_STATUS_SUMITTED = 2;
+    const Preview_Complete = 1;
+    const Incomplete = 2;
+    const Waiting = 3;
+    const Invalid = 4;
+    const Pending = 5;
+    const Verification_Onprogress = 6;
+    const Verification_Complete = 7;
 
     /**
      * @inheritdoc
@@ -88,7 +93,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['pin'], 'validatePin', 'on' => 'refund-login'],
             [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
             [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by','verification_response','current_level','soccialFundDocument'], 'safe'],
-            [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
+            [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document','soccialFundDocument'], 'file', 'extensions' => ['pdf']],
             [['bank_card_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_receipt_document'], 'file', 'extensions' => ['pdf']],
@@ -104,7 +109,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
 				return $('#social_fund_status_id input:checked').val() == 1;
 			}"],
 			[['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
-            return $model->soccialFundDocument_id == 1;
+            return $model->soccialFundDocument == 1;
         }, 'whenClient' => "function (attribute, value) {
 				return $('#soccialFundDocument_id input:checked').val() == 1;
 			}"],
@@ -132,7 +137,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             'refund_application_id' => 'Refund Application ID',
             'refund_claimant_id' => 'Refund Claimant ID',
             'application_number' => 'Application Number',
-            'refund_claimant_amount' => 'Refund Claimant Amount',
+            'refund_claimant_amount' => 'Refund Amount',
             'finaccial_year_id' => 'Finaccial Year ID',
             'academic_year_id' => 'Academic Year ID',
             'trustee_firstname' => 'Trustee Firstname',
@@ -156,6 +161,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
 			'verification_response'=>'Verification Response',
 			'current_level'=>'Current Level',
 			'soccialFundDocument'=>'soccialFundDocument',
+            'trustee_email'=>'Email',
         ];
     }
 
@@ -325,8 +331,13 @@ class RefundApplication extends \yii\db\ActiveRecord {
     function getApplicationStatus() {
         return [
             self::APPLICATION_STATUS_SAVED => 'Saved',
-            self::APPLICATION_STATUS_CANCELLED => 'Cancelled',
-            self::APPLICATION_STATUS_SUMITTED => 'Sumitted',
+            self::Preview_Complete => 'Preview Complete',
+            self::Incomplete => 'Incomplete',
+            self::Waiting => 'Waiting',
+            self::Invalid => 'Invalid',
+            self::Pending => 'Pending',
+            self::Verification_Onprogress => 'Verification Onprogress',
+            self::Verification_Complete => 'Verification Complete',
         ];
     }
 

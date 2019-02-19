@@ -411,7 +411,7 @@ class RefundApplicationOperationController extends Controller
             $refApplicOperat = \backend\modules\repayment\models\RefundApplicationOperation::findOne($refOperatDetailsID);
             $currentFlow_id=$refApplicOperat->refund_internal_operational_id;
             $currentVerificationResponse=$modelRefundAppOper->needStopDeductionOrNot;
-            $refApplicOperat->current_verification_response=$currentVerificationResponse;
+            //$refApplicOperat->current_verification_response=$currentVerificationResponse;
 
             $refApplicOperat->is_current_stage=0;
             $refApplicOperat->save(false);

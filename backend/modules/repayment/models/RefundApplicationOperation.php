@@ -322,6 +322,6 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
         return $applicationDetails;
     }
     public static function updateCurrentVerificationLevel($refund_internal_operational_id,$refund_application_id,$currentVerificationResponse){
-        \frontend\modules\repayment\models\RefundApplication::updateAll(['current_level' =>$refund_internal_operational_id,'verification_response'=>$currentVerificationResponse], 'refund_application_id ="'.$refund_application_id.'"');
+        \frontend\modules\repayment\models\RefundApplication::updateAll(['current_level' =>$refund_internal_operational_id,'verification_response'=>$currentVerificationResponse,'current_status'=>6], 'refund_application_id ="'.$refund_application_id.'"');
     }
 }

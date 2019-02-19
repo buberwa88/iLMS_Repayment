@@ -1645,6 +1645,7 @@ class SiteController extends Controller {
                     $sms_gateway->sendSMS($trustee_phone_number, 'Refund request access code ' . $user_otp);
                 }
                //sending email
+                /*
                 if (!empty($trustee_email)) {
                     //sending email to receipient
                     $mail_client = new \common\components\MailClient();
@@ -1654,6 +1655,32 @@ class SiteController extends Controller {
                     $mail_client->subject = 'HESLB: Loan Refund Access Token';
                     $mail_client->sendMail();
                 }
+                */
+
+                ####################here send email#####################
+                $headers = '';
+                if (fsockopen("www.google.com", 80)) {
+                    //$url = Yii::$app->params['emailReturnUrl'].'employer-activate-account&id='.$variableToget;
+                    $message = "Dear " . $trustee_firstname . " " . $trustee_midlename . " " . $trustee_surname . ",\nYour Loan Refund Access Token is:\r\n" . $user_otp . "\r\nThis email has been sent by Higher Education Students' Loan Board(HESLB).\r\nIf you believe you have received it by mistake, please ignore and sorry for inconvenience.";
+                    $subject = "HESLB: Loan Refund Access Token";
+                    $headers .= "MIME-Version: 1.0\r\n";
+                    $headers .= "From: HESLB ";
+
+                    if (mail($trustee_email, $subject, $message, $headers)) {
+                        return $this->redirect(['refund-login']);
+                    } else {
+                        $sms = "<p>Email not sent!<br/>
+                   Kindly contact HESLB for assistance. </p>";
+                        Yii::$app->getSession()->setFlash('danger', $sms);
+                        return $this->redirect(['view-refund']);
+                    }
+                } else {
+                    echo '<p class="messageSuccessFailed"><em>YOU HAVE NO INTERNET CONNECTION: Can not send  SMS!</em></p>';
+                    $sms = "<p>Token not Sent, Kindly Contact HESLB for Assistance. </p>";
+                    Yii::$app->getSession()->setFlash('success', $sms);
+                    return $this->redirect(['view-refund']);
+                }
+                ##################################end send email##################################
 
                 $this->redirect(['/site/refund-login']);
             }

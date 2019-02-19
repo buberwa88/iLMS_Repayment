@@ -18,7 +18,7 @@ use yii\captcha\Captcha;
     <?php
     $form = ActiveForm::begin(['type' => ActiveForm::TYPE_VERTICAL]);
     ?>
-    <p>Please Enter PIN sent to your Mobile Number</p>
+    <p>Please Enter PIN sent to your Mobile Number or Email</p>
     <?php
     echo Form::widget([ // fields with labels
         'model' => $model,
