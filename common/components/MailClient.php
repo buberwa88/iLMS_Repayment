@@ -20,8 +20,7 @@ class MailClient {
     public $mail_body;
 
     public function __construct($config = []) {
-     //   parent::__construct($config);
-     
+        //   parent::__construct($config);
     }
 
     /*
@@ -30,27 +29,7 @@ class MailClient {
      */
 
     public function sendMail($type = NULL) {
-    /*    $mailer = New \yii\swiftmailer\Mailer();
-     //   $mailer->compose();
-        $mailer->compose()->setFrom($this->from)
-                ->setTo($this->to)
-                ->setSubject($this->subject);
-
-        if ($this->bcc) {
-            $mailer->setBcc($this->bcc);
-        }
-        if ($this->cc) {
-            $mailer->setCcc($this->cc);
-        }
-        if ($type == 'html') {
-            $mailer->setHtmlBody('<b>HTML content</b>');
-        } else {
-            $mailer->setTextBody($this->mail_body);
-        }
-
-        return $mailer->sendMessage();
-        */
-        return \Yii::$app->mail->compose()
+        return \Yii::$app->mailer->compose($type)
                         ->setFrom($this->from)
                         ->setTo($this->to)
                         ->setSubject($this->subject)

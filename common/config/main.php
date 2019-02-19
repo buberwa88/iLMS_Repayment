@@ -14,8 +14,6 @@ return [
         ],
     ],
     'components' => [
-
-
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
@@ -69,8 +67,26 @@ return [
                 ],
             ],
         ],
-        'mail' => [
+//        'mail' => [
+//            'class' => 'yii\swiftmailer\Mailer',
+//            'transport' => [
+//                'class' => 'Swift_SmtpTransport',
+//                'host' => 'smtp.gmail.com',
+//                'username' => 'testlb.98@gmail.com',
+//                'password' => 'test123456',
+//                'port' => '587',
+//                'encryption' => 'tls',
+//            ],
+//            'messageConfig' => [
+//                'from' => 'testlb.98@gmail.com' // sender address goes here
+//            ]
+//        ],
+        'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
+            'messageConfig' => [
+                'from' => 'testlb.98@gmail.com' // sender address goes here
+            ],
+            'useFileTransport' => false,
             'transport' => [
                 'class' => 'Swift_SmtpTransport',
                 'host' => 'smtp.gmail.com',
@@ -79,9 +95,6 @@ return [
                 'port' => '587',
                 'encryption' => 'tls',
             ],
-            'messageConfig' => [
-                'from' => 'testlb.98@gmail.com' // sender address goes here
-            ]
         ],
     ],
         /* 'as beforeRequest'=>[

@@ -1643,16 +1643,16 @@ class SiteController extends Controller {
                     $sms_gateway = New \common\components\SMSGateway($config);
                     $sms_gateway->sendSMS($trustee_phone_number, 'Refund request access code ' . $user_otp);
                 }
-//sending email
-                /*  if (!empty($trustee_email)) {
-                  //sending email to receipient
-                  $mail_client = new \common\components\MailClient();
-                  $mail_client->from = Yii::$app->params['mail']['messageConfig']['from'];
-                  $mail_client->to = $trustee_email;
-                  $mail_client->mail_body = 'Refund request access code ' . $user_otp;
-                  $mail_client->subject = 'HESLB: Loan Refund Access Token';
-                  $mail_client->sendMail();
-                  } */
+               //sending email
+                if (!empty($trustee_email)) {
+                    //sending email to receipient
+                    $mail_client = new \common\components\MailClient();
+                    $mail_client->from = Yii::$app->params['mail']['messageConfig']['from'];
+                    $mail_client->to = $trustee_email;
+                    $mail_client->mail_body = 'Refund request access code ' . $user_otp;
+                    $mail_client->subject = 'HESLB: Loan Refund Access Token';
+                    $mail_client->sendMail();
+                }
 
                 $this->redirect(['/site/refund-login']);
             }
