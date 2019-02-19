@@ -490,3 +490,8 @@ ALTER TABLE `refund_letter_format` CHANGE `header` `header` TINYTEXT CHARACTER S
 ALTER TABLE `refund_letter_format` CHANGE `footer` `footer` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 ALTER TABLE `refund_letter_format` CHANGE `letter_heading` `letter_heading` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 ALTER TABLE `refund_letter_format` ADD `letter_reference_no` VARCHAR(200) NULL AFTER `letter_name`;
+
+###############18-02-2019_2###########
+ALTER TABLE `refund_application` ADD `soccialFundDocument` TINYINT(2) NULL DEFAULT NULL AFTER `social_fund_status`;
+
+

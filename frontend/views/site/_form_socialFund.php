@@ -35,6 +35,19 @@ $refund_application_id = $session->get('refund_application_id');
         //alert(element);
         var social_fund_statusV=$('#social_fund_status_id input:checked').val();
         if (social_fund_statusV==1) {
+            document.getElementById('soccialFundDocument_show').style.display = 'block';
+        } else if(social_fund_statusV==2){
+            $('#social_fund_document_id').val('');
+            $('#social_fund_receipt_document_id').val('');
+            document.getElementById('soccialFundDocument_show').style.display = 'none';
+        }else {
+            document.getElementById('soccialFundDocument_show').style.display = 'none';
+        }
+    }
+	function ShowFundStatusDocument(element){
+        //alert(element);
+        var social_fund_statusV=$('#soccialFundDocument_id input:checked').val();
+        if (social_fund_statusV==1) {
             document.getElementById('employed_show').style.display = 'block';
         } else if(social_fund_statusV==2){
             $('#social_fund_document_id').val('');
@@ -71,6 +84,16 @@ $refund_application_id = $session->get('refund_application_id');
         'onchange'=>'ShowFundStatus(this)',
         ]);
     ?>
+	<div id="soccialFundDocument_show" style="display:none">
+	<?php
+    echo $form->field($model, 'soccialFundDocument')->label('Do You Have Social Security Fund and Receipt Document?')->radioList($list,
+        [
+        'inline'=>true,
+        'id'=>soccialFundDocument_id,
+        'onchange'=>'ShowFundStatusDocument(this)',
+        ]);
+    ?>
+	</div>
     <br/>
     <div id="employed_show" style="display:none">
         <legend><small><strong>Provide the below Detail(s)</strong></small></legend>

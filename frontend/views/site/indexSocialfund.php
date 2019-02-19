@@ -64,7 +64,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label'=>'Social security fund document',
-                                'visible'=>$model->social_fund_status ==1,
+                                'visible'=>$model->social_fund_status ==1 && $model->soccialFundDocument==1,
                                 'value'=>call_user_func(function ($data) {
                                     if($data->social_fund_document !=''){
                                         return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->social_fund_document . '")','class'=>'label label-primary']);
@@ -82,7 +82,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label'=>'Receipt document',
-                                'visible'=>$model->social_fund_status ==1,
+                                'visible'=>$model->social_fund_status ==1 && $model->soccialFundDocument==1,
                 'value'=>call_user_func(function ($data) {
                     if($data->social_fund_receipt_document !=''){
                         return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->social_fund_receipt_document . '")','class'=>'label label-primary']);

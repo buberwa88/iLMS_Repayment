@@ -1200,7 +1200,7 @@ class SiteController extends Controller {
         if ($model->load(Yii::$app->request->post())) {
 
             $datime = date("Y_m_d_H_i_s");
-            if ($model->social_fund_status == 1) {
+            if ($model->social_fund_status == 1  && $model->soccialFundDocument==1) {
                 $model->social_fund_document = UploadedFile::getInstance($model, 'social_fund_document');
                 $model->social_fund_receipt_document = UploadedFile::getInstance($model, 'social_fund_receipt_document');
 
@@ -1219,6 +1219,7 @@ class SiteController extends Controller {
                 $modelRefundresults->social_fund_status = $model->social_fund_status;
                 $modelRefundresults->social_fund_document = $model->social_fund_document;
                 $modelRefundresults->social_fund_receipt_document = $model->social_fund_receipt_document;
+				$modelRefundresults->soccialFundDocument=$model->soccialFundDocument;
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::RECEIPT_FROM_SOCIAL_FUND;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->social_fund_receipt_document);

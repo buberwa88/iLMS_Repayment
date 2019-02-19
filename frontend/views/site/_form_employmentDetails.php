@@ -18,34 +18,22 @@ use frontend\modules\repayment\models\EmployerSearch;
 $list = [1 => 'Yes', 2 => 'No'];
 ?>
 <script type="text/javascript">
-    // window.onload = function() {
-    //     document.getElementById('employed_show').style.display = 'block';
-    //         if(ShowemployementDetails(element)) {
-    //             document.getElementById('showBackNext').style.display = 'none';
-    //         }else{
-    //             document.getElementById('showBackNext').style.display = 'block';
-    //         }
-    //
-    // };
-
     function ShowemployementDetails(element){
         //alert(element);
         var employmentStatusV=$('#employmentStatus_id input:checked').val();
         if (employmentStatusV==1) {
             document.getElementById('employed_show').style.display = 'block';
+            document.getElementById('employmentStatusV').style.display = 'block'
             document.getElementById('employment_detail_block_id').style.display = 'block';
             //document.getElementById('payment_slip_doc_block_id').style.display = 'block';
             $('#employer_name_id').attr('style', 'display:block');
             $('#employeeID_id').attr('style', 'display:block');
             $('#start_date_id').attr('style', 'display:block');
             $('#end_date_id').attr('style', 'display:block');
-            document.getElementById('showBackNext').style.display = 'none';
-            //$('#second_slip_document_id').attr('style', 'display:block');
-            //$('#first_slip_document_id').attr('style', 'display:block');
         } else if(employmentStatusV==2){
             document.getElementById('employed_show').style.display = 'block';
+            document.getElementById('employmentStatusV').style.display = 'none';
             document.getElementById('employment_detail_block_id').style.display = 'none';
-            //document.getElementById('payment_slip_doc_block_id').style.display = 'block';
             $('#employer_name_id').val('');
             $('#employeeID_id').val('');
             $('#start_date_id').val('');
@@ -54,19 +42,15 @@ $list = [1 => 'Yes', 2 => 'No'];
             $('#employeeID_id').attr('style', 'display:none');
             $('#start_date_id').attr('style', 'display:none');
             $('#end_date_id').attr('style', 'display:none');
-            document.getElementById('showBackNext').style.display = 'none';
-            //$('#second_slip_document_id').attr('style', 'display:block');
-            //$('#first_slip_document_id').attr('style', 'display:block');
         }else {
             // reset values
             $('#employer_name_id').val('');
             $('#employeeID_id').val('');
             $('#start_date_id').val('');
             $('#end_date_id').val('');
-            //$('#first_slip_document_id').val('');
-            //$('#second_slip_document_id').val('');
+
             document.getElementById('employed_show').style.display = 'none';
-            document.getElementById('showBackNext').style.display = 'block';
+            document.getElementById('employmentStatusV').style.display = 'none';
         }
     }
 </script>
@@ -105,7 +89,19 @@ $list = [1 => 'Yes', 2 => 'No'];
         'columns'=>1,
         'id'=>'employment_detail_block_id',
         'attributes'=>[
-            'employer_name'=>['label'=>'Employer Name:', 'options'=>['placeholder'=>'Enter.','id' => 'employer_name_id']],
+            //'employer_name'=>['label'=>'Employer Name:', 'options'=>['placeholder'=>'Enter.','id' => 'employer_name_id']],
+
+            'employer_name' => [
+                'type' => Form::INPUT_DROPDOWN_LIST,
+                'label'=>'Employer Name:',
+                'items' =>ArrayHelper::map(\frontend\modules\repayment\models\Employer::find()->AsArray()->all(),'employer_id', 'employer_name'),
+                'options' => [
+                    'prompt' => 'Select',
+                    'id' => 'employer_name_id',
+                    //'onchange'=>'ShowHideDiv()',
+                ],
+            ],
+
             'employee_id'=>['label'=>'Employee ID/Check number:', 'options'=>['placeholder'=>'Enter.','id' => 'employeeID_id']],
             //'start_date'=>['label'=>'Start Date:', 'options'=>['placeholder'=>'Enter.','id' => 'start_date_id']],
             //'end_date'=>['label'=>'End Date:', 'options'=>['placeholder'=>'Enter.','id' => 'end_date_id']],
@@ -113,6 +109,7 @@ $list = [1 => 'Yes', 2 => 'No'];
         ]
     ]);
     ?>
+        <div id="employmentStatusV" style="display:none">
         <?= $form->field($model, 'start_date')->widget(DatePicker::classname(), [
             'name' => 'start_date',
             //'value' => date('Y-m-d', strtotime('+2 days')),
@@ -141,6 +138,7 @@ $list = [1 => 'Yes', 2 => 'No'];
             ],
         ]);
         ?>
+        </div>
         <?php
         echo $form->field($model, 'first_slip_document')->label('Salary/Pay Slip Document:')->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf'],

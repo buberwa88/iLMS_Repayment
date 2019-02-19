@@ -47,7 +47,12 @@ class RefundClaimantEmployment extends \yii\db\ActiveRecord
             [['matching_status'], 'string', 'max' => 200],
 			[['first_slip_document'], 'file', 'extensions'=>['pdf']],
 			[['second_slip_document'], 'file', 'extensions'=>['pdf']],
-			[['employer_name', 'employee_id', 'start_date', 'end_date','employment_status','first_slip_document','second_slip_document'], 'required','on'=>'refundEmploymentDetails'],
+            [['start_date', 'end_date','employer_name','employee_id'], 'required', 'when' => function ($model) {
+                return $model->employment_status == 1;
+            }, 'whenClient' => "function (attribute, value) {
+				return $('#employmentStatus_id input:checked').val() == 1;
+			}"],
+			[['employment_status','first_slip_document','second_slip_document'], 'required','on'=>'refundEmploymentDetails'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['refund_application_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundApplication::className(), 'targetAttribute' => ['refund_application_id' => 'refund_application_id']],
             [['refund_claimant_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundClaimant::className(), 'targetAttribute' => ['refund_claimant_id' => 'refund_claimant_id']],
