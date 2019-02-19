@@ -76,7 +76,7 @@ class RefundLetterFormatController extends Controller {
         if ($model->load(Yii::$app->request->post())) {
             $model->attributes = \Yii::$app->request->post();
             $model->created_by = \Yii::$app->user->id;
-         
+
             if ($model->save()) {
                 return $this->redirect(['view', 'id' => $model->refund_letter_format_id]);
             }
@@ -93,19 +93,15 @@ class RefundLetterFormatController extends Controller {
      * @return mixed
      */
     public function actionUpdate($id) {
-        if (Yii::$app->request->post('_asnew') == '1') {
-            $model = new RefundLetterFormat();
-        } else {
-            $model = $this->findModel($id);
+        $model = $this->findModel($id);
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->save()) {
+                return $this->redirect(['view', 'id' => $model->refund_letter_format_id]);
+            }
         }
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->refund_letter_format_id]);
-        } else {
-            return $this->render('update', [
-                        'model' => $model,
-            ]);
-        }
+        return $this->render('update', [
+                    'model' => $model,
+        ]);
     }
 
     /**
