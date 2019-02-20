@@ -100,8 +100,8 @@ img:hover {
                            $verificationStatus1=$verificationStatus;
 			   ?>   
                <p>
-                 &nbsp;F4index #:-<b></b><br/>
-                  Claimant Names:-<b></b><br/>
+                 &nbsp;F4index #:-<b><?php if($model->refundClaimant->applicant_id > 0){echo "Count 1";} ?></b><br/>
+                  Claimant Names:-<b><?php if($model->refundClaimant->applicant_id > 0){echo "Count 1";} ?></b><br/>
                  &nbsp;Previous Refund Exists:- <b></b><br/>
                  <br/><br/><br/>
               </p>

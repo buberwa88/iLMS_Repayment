@@ -110,7 +110,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/refund-applicationview','refundApplicationID' => $refund_application_id]);?></div>
             </div>
         </div>
     </div>

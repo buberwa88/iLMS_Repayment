@@ -79,7 +79,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                            <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?=$modelRefundClaimant->f4_certificate_document;?>);">VIEW</a>
                                            <?php
                                        } else {
-                                           return "No Document";
+                                           echo "No Document";
                                        }
                                        ?></td>
                                </tr>
@@ -123,7 +123,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                            <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?=$educationHistory->certificate_document;?>);">VIEW</a>
                                            <?php
                                        } else {
-                                           return "No Document";
+                                           echo "No Document";
                                        }
                                        ?></td>
                                </tr>
@@ -168,7 +168,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?=$employmentDetails->first_slip_document;?>);">VIEW</a>
                                                <?php
                                            } else {
-                                               return "No Document";
+                                               echo "No Document";
                                            }
                                            ?></td>
                                        <td>Second Salary/Pay Slip Document</td>
@@ -178,7 +178,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?=$employmentDetails->second_slip_document;?>);">VIEW</a>
                                                <?php
                                            } else {
-                                               return "No Document";
+                                               echo "No Document";
                                            }
                                            ?></td>
                                    </tr>
@@ -225,7 +225,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                    <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?=$modelRefundApplication->bank_card_document;?>);">VIEW</a>
                                                    <?php
                                                } else {
-                                                   return "No Document";
+                                                   echo "No Document";
                                                }
                                                ?></td>
                                        </tr>
@@ -316,7 +316,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                    <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?=$modelRefundApplication->social_fund_receipt_document;?>);">VIEW</a>
                                                    <?php
                                                } else {
-                                                   return "No Document";
+                                                   echo "No Document";
                                                }
                                                ?></td>
                                        </tr>

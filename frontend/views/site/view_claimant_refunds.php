@@ -6,6 +6,7 @@ use yii\grid\GridView;
 $session = Yii::$app->session;
 $refund_claim_id = $session->get('refund_claimant_id');
 $this->title = Yii::t('app', 'Loan Refund Applications');
+$refund_application_id = $session->get('refund_application_id');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="allocation-setting-index">
@@ -51,11 +52,21 @@ $this->params['breadcrumbs'][] = $this->title;
                             return strtoupper($model->getCurrentStutusName());
                         }
                     ],
+					[
+               'label'=>'',
+               'value'=>function($model){
+                  //return Html::a("Application Details", ['/repayment/refund-application-operation/view-refund','id'=>$model->refund_application_id,'action' => 'view'], ['class'=>'label label-success']);
+				  return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'refundApplicationID' => $model->refund_application_id]);
+               },
+               'format'=>'raw',
+             ],
+					/*
                     ['class' => 'yii\grid\ActionColumn',
                         'template' => '{view}',
                         'buttons' => [
+						
                             'view' => function ($url, $model) {
-                                $url = yii\helpers\Url::to(['site/refund-applicationview', 'id' => $model->refund_application_id]);
+                                $url = yii\helpers\Url::to(['site/refund-applicationview', 'refundApplicationID' => $model->refund_application_id]);
                                 return Html::a('<span class="glyphicon glyphicon-search"></span>', $url, [
                                             'title' => 'View Details',
                                             'data-method' => 'get',
@@ -63,6 +74,16 @@ $this->params['breadcrumbs'][] = $this->title;
                             }
                                 ]
                             ],
+							*/
+							/*
+							[
+               'label'=>'',
+               'value'=>function($model) use($refund_application_id){
+                  return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'refundApplicationID' => $refund_application_id]);
+               },
+               'format'=>'raw',
+             ],
+			 */
                         ],
                     ]);
                     ?>

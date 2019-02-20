@@ -44,10 +44,6 @@ $this->registerJs($search);
         ],
        // 'refund_verification_framework_id',
         'verification_framework_title',
-        'verification_framework_desc',
-        'verification_framework_stage',
-        'support_document',
-   
         'is_active',
         [
             'class' => 'yii\grid\ActionColumn',

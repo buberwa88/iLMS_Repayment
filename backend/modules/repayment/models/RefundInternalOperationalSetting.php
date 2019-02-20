@@ -82,7 +82,7 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
             'refund_internal_operational_id' => 'Refund Internal Operational ID',
             'name' => 'Name',
             'code' => 'Code',
-            'access_role_master' => 'Access Role Master',
+            'access_role_master' => 'Access Role',
             'access_role_child' => 'Access Role Child',
             'flow_order_list' => 'Flow Order List',
             'created_at' => 'Created At',

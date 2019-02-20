@@ -19,13 +19,26 @@ use frontend\modules\repayment\models\RefundApplication;
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+if($refundTypeId==3){
+    $title="Step 7: Social Fund Details";
+    if(count($resultsCheckResultsGeneral->letter_family_session_document)==0){
+      $link="site/create-familysessiondetails";
+    }
+    if(count($resultsCheckResultsGeneral->letter_family_session_document)>0){
+        $link="site/index-familysessiondetails";
+    }
+}else{
+    $title="Step 6: Social Fund Details";
+}
 //end set session
 
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Step 6: Social Fund Details';
+$this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">
@@ -115,7 +128,13 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
+                <?php if($refundTypeId==3){
+                  ?>
+                    <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link]);?></div>
+                    <?php
+                }else{ ?>
                 <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/refund-applicationview','refundApplicationID' => $refund_application_id]);?></div>
+                <?php } ?>
             </div>
         </div>
     </div>

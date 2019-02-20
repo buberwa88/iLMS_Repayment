@@ -63,7 +63,11 @@ $list2 = [1 => 'Confirm the Refund Type Selected!'];
             'firstname'=>['label'=>'First Name:', 'options'=>['placeholder'=>'First Name']],
             'middlename'=>['label'=>'Middle Name:', 'options'=>['placeholder'=>'Middle Name']],
             'surname'=>['label'=>'Last Name:', 'options'=>['placeholder'=>'Last Name']],
-            'phone_number'=>['label'=>'Phone #:', 'options'=>['placeholder'=>'Phone #']],
+            //'phone_number'=>['label'=>'Phone #:', 'options'=>['placeholder'=>'Phone #']],
+			
+			'phone_number' => ['type' => Form::INPUT_TEXT, 'options' => ['maxlength'=>10,'placeholder' => '0*********','data-toggle' => 'tooltip',
+                'data-placement' => 'top', 'title' => 'Phone Number eg 07XXXXXXXX or 06XXXXXXXX or 0XXXXXXXXX']],
+				
             'email'=>['label'=>'Email Address:', 'options'=>['placeholder'=>'Email Address']],
             //'refund_type'=>['label'=>'Refund Type:', 'options'=>['placeholder'=>'Refund Type']],
             /*
@@ -135,7 +139,7 @@ $list2 = [1 => 'Confirm the Refund Type Selected!'];
         'captchaAction'=>'/site/captcha','id'=>'captcha_block_id'
     ]) ?>
     <div class="text-right">
-        <?= Html::submitButton($model->isNewRecord ? 'Sign Up' : 'Sign Up', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+        <?= Html::submitButton($model->isNewRecord ? 'Register' : 'Register', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 
         <?php
         echo Html::resetButton('Reset', ['class'=>'btn btn-default']);

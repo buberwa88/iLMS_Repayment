@@ -37,7 +37,7 @@ use yii\helpers\Html;
                         <strong>
                             <a href="index.php?r=site/refund-register">
                                 <button type="button" class="btn btn-primary btn-sm" style="width:80%;font-size:16px;">
-                                    NEW CLAIMANT REGISTRATION
+                                    NEW REFUND CLAIM REGISTRATION
                                 </button>
                             </a>
                         </strong>

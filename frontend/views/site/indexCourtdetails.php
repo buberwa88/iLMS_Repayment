@@ -19,6 +19,16 @@ use frontend\modules\repayment\models\RefundApplication;
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+$resultsCheckCount=RefundApplication::getStageCheckedBankDetails($refund_application_id);
+
+if($resultsCheckCount==0){
+    $link='site/create-refund-bankdetails';
+}
+if($resultsCheckCount >0){
+    $link='site/index-bankdetails';
+}
 //end set session
 
 /* @var $this yii\web\View */
@@ -90,7 +100,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/list-steps-nonbeneficiary','id'=>$refundClaimantid]);?></div>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link]);?></div>
             </div>
         </div>
     </div>

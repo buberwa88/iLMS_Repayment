@@ -77,7 +77,7 @@ class RefundVerificationFramework extends \yii\db\ActiveRecord
     {
         return [
             'refund_verification_framework_id' => 'Refund Verification Framework ID',
-            'verification_framework_title' => 'Verification Framework Title',
+            'verification_framework_title' => 'Framework Name',
             'verification_framework_desc' => 'Verification Framework Desc',
             'verification_framework_stage' => 'Verification Framework Stage',
             'support_document' => 'Support Document',

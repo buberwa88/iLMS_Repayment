@@ -26,6 +26,7 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $dataProvider yii\data\ActiveDataProvider */
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refund_type_id = $resultsCheckResultsGeneral->refund_type_id;
+$resultRefundApplicationGeneral=RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $resultsCheckCount = RefundApplication::getStageCheckedBankDetails($refund_application_id);
 if ($resultsCheckCount > 0 && $refund_type_id==1) {
     $link='site/index-bankdetails';
@@ -33,15 +34,24 @@ if ($resultsCheckCount > 0 && $refund_type_id==1) {
 if($resultsCheckCount == 0 && $refund_type_id==1) {
     $link='site/create-refund-bankdetails';
 }
+if($refund_type_id==1){
+    $heade="Step 3: Employment Details";
+}
+if($refund_type_id==2){
+    $heade="Step 1: Employment Details";
+}
+if(count($resultRefundApplicationGeneral->liquidation_letter_number)==0 && $refund_type_id==2){
+    $link='site/create-repaymentdetails';
+}
+if(count($resultRefundApplicationGeneral->liquidation_letter_number) >0 && $refund_type_id==2){
+    $link='site/index-repaymentdetails';
+}
 /*
 if ($resultsCheckCount > 0 && $refund_type_id==2) {
     $link='site/index-bankdetails';
 }
 */
-if(($resultsCheckCount == 0 || $resultsCheckCount > 0)&& $refund_type_id==2) {
-    $link='site/create-repaymentdetails';
-}
-$this->title = 'Step 3: Employment Details';
+$this->title = $heade;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">

@@ -10,6 +10,7 @@ for ($y = 1982; $y <= $yearmax; $y++) {
 }
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
+$refund_application_id = $session->get('refund_application_id');
 ?>
 <style>
 .rowQA {
@@ -77,7 +78,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
 	 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
 <div class="block pull-CENTER"><?php echo Html::submitButton($model->isNewRecord ? Yii::t('app', 'Save') : Yii::t('app', 'Save'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary', 'id' => 'create-button-id']
         );?></div>
-		<div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/index-tertiary-education']);?></div>
+		<div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/refund-applicationview','refundApplicationID' => $refund_application_id]);?></div>
 </div>
        <?php        
         ActiveForm::end();

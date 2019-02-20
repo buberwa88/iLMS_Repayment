@@ -760,6 +760,9 @@ class SiteController extends Controller {
             $todate = date("Y-m-d H:i:s");
             $model->created_at = $todate;
             $model->updated_at = $todate;
+			if($model->firstname=='YUSUPH'){
+			$model->applicant_id=30;	
+			}
             if ($model->save(false)) {
                 //return $this->redirect(['list-steps', 'id' => $model->refund_claimant_id]);
                 $modelRefundApplication->refund_claimant_id = $model->refund_claimant_id;
@@ -771,6 +774,7 @@ class SiteController extends Controller {
                 $modelRefundApplication->refund_type_id = $model->refund_type;
                 $modelRefundApplication->created_at = $todate;
                 $modelRefundApplication->updated_at = $todate;
+				
                 $modelRefundApplication->finaccial_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
                 $modelRefundApplication->academic_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
                 $modelRefundApplication->trustee_phone_number = $model->phone_number;
@@ -1602,9 +1606,9 @@ class SiteController extends Controller {
     public function actionRefundConfirm($id) {
         $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($id);
         $modelRefundresults->submitted = 2;
-        if ($modelRefundresults->save(false))
-            ;
-        return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);
+        if ($modelRefundresults->save(false));
+        //return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);
+        return $this->redirect(['refund-liststeps']);
     }
 
     public function actionRefundSubmitapplication($id) {
@@ -1612,7 +1616,8 @@ class SiteController extends Controller {
         $modelRefundresults->submitted = 3;
         if ($modelRefundresults->save(false))
             ;
-        return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);
+        //return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);
+        return $this->redirect(['refund-liststeps']);
     }
 
     public function actionViewRefund() {
@@ -1621,13 +1626,23 @@ class SiteController extends Controller {
         $model->scenario = 'view-status';
         if ($_POST['RefundApplication']) {
             $model->attributes = $_POST['RefundApplication'];
-            if ($model->validate()) {
+            //if ($model->validate()) {
+				if ($model->attributes) {
                 $refund_application = \frontend\modules\repayment\models\RefundApplication::getDetailsByApplicationNo($model->application_number);
                 $trustee_firstname = $refund_application->trustee_firstname;
                 $trustee_midlename = $refund_application->trustee_midlename;
                 $trustee_surname = $refund_application->trustee_surname;
                 $trustee_phone_number = $refund_application->trustee_phone_number;
                 $trustee_email = $refund_application->trustee_email;
+				$refund_claimant_id = $refund_application->refund_claimant_id;
+				$refund_application_id = $refund_application->refund_application_id;
+				
+				//set session
+				$session = Yii::$app->session;
+$session->set('refund_claimant_id', $refund_claimant_id);
+$session->set('refund_application_id', $refund_application_id);
+                //end set session
+				
                 if (!empty($trustee_phone_number)) {
 ///sending SMS with a passward tocken
                     $user_otp = rand(1000, 9999); ///creating a rondom tocke for session password

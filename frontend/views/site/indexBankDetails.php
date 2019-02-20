@@ -25,13 +25,22 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 $resultsCheckCount = RefundApplication::getStageCheckedBankDetails($refund_application_id);
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 if ($resultsCheckCount > 0) {
 $link='site/index-bankdetails';
 }
 if($resultsCheckCount == 0) {
 $link='site/create-refund-bankdetails';
 }
-$this->title = 'Step 4: Bank Details ';
+if($refundTypeId==3){
+    $title="Step 5: Bank Details";
+}else if($refundTypeId==1){
+    $title="Step 4: Bank Details";
+}else if($refundTypeId==2){
+	$title="Step 3: Bank Details";
+}
+$this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">

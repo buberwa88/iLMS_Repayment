@@ -36,7 +36,7 @@ class RefundContactPerson extends \yii\db\ActiveRecord
             [['refund_application_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['firstname', 'middlename', 'surname'], 'string', 'max' => 45],
-            [['phone_number', 'email_address'], 'string', 'max' => 20],
+            [['phone_number', 'email_address'], 'string', 'max' => 50],
         ];
     }
 

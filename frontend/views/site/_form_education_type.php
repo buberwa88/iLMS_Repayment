@@ -4,6 +4,7 @@ use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use yii\captcha\Captcha;
 use kartik\widgets\FileInput;
+use frontend\modules\repayment\models\RefundApplication;
 $list = [1 => 'NECTA STUDENTS [Completed in Tanzania]', 2 => 'NON NECTA STUDENTS [Holders of Foreign Certificates]'];
 $yearmax = date("Y");
 for ($y = 1982; $y <= $yearmax; $y++) {
@@ -11,6 +12,18 @@ for ($y = 1982; $y <= $yearmax; $y++) {
 }
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
+$refund_application_id = $session->get('refund_application_id');
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+if($refundTypeId==1){
+    $cancel="site/list-steps-nonbeneficiary";
+}
+if($refundTypeId==2){
+    $cancel="site/list-steps-overdeducted";
+}
+if($refundTypeId==3){
+    $cancel="site/list-steps-deceased";
+}
 ?>
 <script>
     function setRefundf4ed(type) {
@@ -149,7 +162,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
 
                         <?php
                         echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-                        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/list-steps-nonbeneficiary','id'=>$refundClaimantid], ['class' => 'btn btn-warning']);
+                        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", [$cancel], ['class' => 'btn btn-warning']);
 
                         ActiveForm::end();
                         ?>

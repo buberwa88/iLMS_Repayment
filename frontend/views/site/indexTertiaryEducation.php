@@ -5,6 +5,7 @@ use yii\grid\GridView;
 use kartik\tabs\TabsX;
 use kartik\detail\DetailView;
 use frontend\modules\repayment\models\RefundClaimantEducationHistory;
+use frontend\modules\repayment\models\RefundApplication;
 //set session
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
@@ -14,6 +15,22 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
+
+$resultsCheckCountSocialFund = RefundApplication::getStageCheckedSocialFund($refund_application_id);
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+
+$link='site/index-employment-details';
+
+
+if(count($resultsCheckResultsGeneral->death_certificate_number)==0 && $refundTypeId==3){
+    $link='site/create-deathdetails';
+}
+if(count($resultsCheckResultsGeneral->death_certificate_number)>0 && $refundTypeId==3){
+    $link='site/index-deathdetails';
+}
+
+
 
 $this->title = 'Step 2: Tertiary Education Details';
 $this->params['breadcrumbs'][] = $this->title;
@@ -129,7 +146,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/index-employment-details']);?></div>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link]);?></div>
             </div>
 </div>
 </div>

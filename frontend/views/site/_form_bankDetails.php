@@ -10,7 +10,7 @@ use kartik\widgets\PasswordInput;
 use yii\captcha\Captcha;
 use kartik\date\DatePicker;
 use kartik\widgets\FileInput;
-use frontend\modules\repayment\models\EmployerSearch;
+use frontend\modules\repayment\models\RefundApplication;
 
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\RefundEducationHistory */
@@ -18,6 +18,11 @@ use frontend\modules\repayment\models\EmployerSearch;
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+
+$cancel="site/refund-liststeps";
+
 ?>
 <style>
     .rowQA {
@@ -75,7 +80,7 @@ $refund_application_id = $session->get('refund_application_id');
 
             <?php
             echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-            echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/list-steps-nonbeneficiary','id'=>$refundClaimantid], ['class' => 'btn btn-warning']);
+            echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", [$cancel], ['class' => 'btn btn-warning']);
 
             ActiveForm::end();
             ?>

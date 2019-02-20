@@ -34,7 +34,7 @@ $this->registerJs($search);
         'name',
         'code',
         'access_role_master',
-        'access_role_child',
+        //'access_role_child',
         'flow_order_list',
         'is_active',
         [

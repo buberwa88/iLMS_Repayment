@@ -23,6 +23,7 @@ $incomplete = $resultsCheckResultsGeneral->submitted;
     <div class="panel panel-info">
         <div class="panel-heading">
             <h4><i class="icon fa fa-info"></i>  OVER DEDUCTED - LOAN REFUND APPLICATION  #<?php echo $model->application_number; ?>
+                <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $refund_claim_id]) ?>" class="btn btn-primary pull-right" style="margin-right: 5px;"><i class="fa  fa-power-off"></i> Logout</a>
             </h4>
 
         </div>
@@ -59,7 +60,7 @@ $incomplete = $resultsCheckResultsGeneral->submitted;
             <?php
             if(count($resultRefundApplicationGeneral->liquidation_letter_number) >0){
                 ?>
-                <li class="list-group-item"><?= yii\helpers\Html::a("Step 2: Repayment Details ",['site/index-repaymentdetails']);?><label class='label  <?= count($resultRefundApplicationGeneral->liquidation_letter_number)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=count($resultRefundApplicationGeneral->liquidation_letter_number)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
+                <li class="list-group-item"><?= $resultsCheckResultsGeneral->submitted != 3 ? yii\helpers\Html::a("Step 2: Repayment Details ",['site/index-repaymentdetails']) : "Step 2: Repayment Details ";?><label class='label  <?= count($resultRefundApplicationGeneral->liquidation_letter_number)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=count($resultRefundApplicationGeneral->liquidation_letter_number)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
             <?php } ?>
 
             <?php if ($resultsCheckCount == 0) { ?>
@@ -70,15 +71,31 @@ $incomplete = $resultsCheckResultsGeneral->submitted;
             <?php } ?>
 
 
-            <li class="list-group-item"><?= yii\helpers\Html::a("Step 4: Contacts Details ",['site/index-contactdetails']);?><label class='label  <?= RefundContactPerson::getStageChecked($refund_application_id)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundContactPerson::getStageChecked($refund_application_id)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
+            <li class="list-group-item"><?= $resultsCheckResultsGeneral->submitted != 3 ? yii\helpers\Html::a("Step 4: Contacts Details ",['site/index-contactdetails']) : "Step 4: Contacts Details ";?><label class='label  <?= RefundContactPerson::getStageChecked($refund_application_id)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundContactPerson::getStageChecked($refund_application_id)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
             <?php if($resultsCheckCountSocialFund==0){ ?>
                 <li class="list-group-item"><?= yii\helpers\Html::a("Step 5: Social Fund Details ",['site/create-securityfund']);?><label class='label  <?= RefundApplication::getStageCheckedSocialFund($refund_application_id)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundApplication::getStageCheckedSocialFund($refund_application_id)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
             <?php } ?>
             <?php if($resultsCheckCountSocialFund > 0){ ?>
-                <li class="list-group-item"><?= yii\helpers\Html::a("Step 5: Social Fund Details ",['site/index-socialfund']);?><label class='label  <?= RefundApplication::getStageCheckedSocialFund($refund_application_id)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundApplication::getStageCheckedSocialFund($refund_application_id)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
+                <li class="list-group-item"><?= $resultsCheckResultsGeneral->submitted != 3 ? yii\helpers\Html::a("Step 5: Social Fund Details ",['site/index-socialfund']) : "Step 5: Social Fund Details ";?><label class='label  <?= RefundApplication::getStageCheckedSocialFund($refund_application_id)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundApplication::getStageCheckedSocialFund($refund_application_id)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
             <?php } ?>
-            <li class="list-group-item"><?= yii\helpers\Html::a("Step 6: Preview ",['/application/education/olevel-view']);?><label class='label  <?= $olevel>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundApplication::getStageChecked("OLEVEL", '90')>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
-            <li class="list-group-item"><?= yii\helpers\Html::a("Step 7: Submit ",['/application/education/olevel-view']);?><label class='label  <?= $olevel>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundApplication::getStageChecked("OLEVEL", '90')>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
+            <li class="list-group-item"><?= yii\helpers\Html::a("Step 6: Preview and Confirm ", ['site/refund-applicationview', 'refundApplicationID' => $refund_application_id]); ?><label class='label  <?= $resultsCheckResultsGeneral->submitted > 1 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= $resultsCheckResultsGeneral->submitted > 1 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
+            <?php if ($resultsCheckResultsGeneral->submitted > 1) { ?>
+                <li class="list-group-item"><?=
+                    $resultsCheckResultsGeneral->submitted != 3 ? yii\helpers\Html::a("Step 7: Submit ", ['site/refund-submitapplication', 'id' => $refund_application_id], [
+                        //'class' => 'btn btn-info',
+                        'data' => [
+                            'confirm' => 'Are you sure you want to submit your refund application?',
+                            'method' => 'post',
+                        ],
+                    ]) : "Step 8: Submit ";
+                    ?><label class='label  <?= $resultsCheckResultsGeneral->submitted == 3 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= $resultsCheckResultsGeneral->submitted == 3 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
+
+            <?php }else{ ?>
+
+                <li class="list-group-item"><?="Step 7: Submit "; ?><label class='label  <?= RefundApplication::getStageCheckedBankDetails($refund_application_id) == -45 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= RefundApplication::getStageCheckedBankDetails($refund_application_id) == -45 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
+
+            <?php  } ?>
+
             </ul>
         </div>
     </div>

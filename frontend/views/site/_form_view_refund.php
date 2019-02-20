@@ -28,6 +28,7 @@ use yii\captcha\Captcha;
         ]
     ]);
     ?>
+	<?= $form->field($model, 'soccialFundDocument')->label(FALSE)->hiddenInput(["value" =>1]) ?>
     <?=
     $form->field($model, 'verificationCode')->widget(Captcha::className(), [
         'captchaAction' => '/site/captcha', 'id' => 'captcha_block_id'

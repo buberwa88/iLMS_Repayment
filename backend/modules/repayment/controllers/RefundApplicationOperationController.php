@@ -337,7 +337,7 @@ class RefundApplicationOperationController extends Controller
     }
     public function actionCompleteref() {
         $searchModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
-        $current_status = [1];
+        $current_status = [1,6,7,8,9];
         $dataProvider = $searchModel->searchVerification(Yii::$app->request->queryParams,$current_status);
         return $this->render('complete_refundapplications', [
             'searchModel' => $searchModel,

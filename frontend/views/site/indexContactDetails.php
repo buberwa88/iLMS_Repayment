@@ -32,7 +32,17 @@ if ($resultsCheckCountSocialFund > 0) {
 if($resultsCheckCountSocialFund == 0) {
     $link='site/create-securityfund';
 }
-$this->title = 'Step 5: Contacts Details';
+
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+if($refundTypeId==3){
+    $title="Step 6: Contacts Details";
+}else if($refundTypeId==1){
+    $title="Step 5: Contacts Details";
+}else if($refundTypeId==2){
+	$title="Step 4: Contacts Details";
+}
+$this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">
