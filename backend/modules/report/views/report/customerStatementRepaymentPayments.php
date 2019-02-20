@@ -59,21 +59,21 @@ $programmeResultd=\common\models\LoanBeneficiary::getAllProgrammeStudiedGeneral(
          <td <?php echo $style1; ?>>TOTAL LOAN : </td>
          <td <?php echo $style4; ?>><?php 
          $totalLoan=\backend\modules\repayment\models\LoanSummaryDetail::getTotalLoanBeneficiaryOriginal($applicant_id,$date,$loan_given_to);
-         echo number_format($totalLoan); ?></td></tr>
+         echo number_format($totalLoan,2); ?></td></tr>
          <tr>
              <td <?php echo $style2; ?>>GENDER:&nbsp;&nbsp;&nbsp;</td>
              <td <?php echo $style3; ?>><?php echo $getProgramme->sex; ?></td>
              <td <?php echo $style1; ?>>REPAYMENT :</td>
              <td <?php echo $style4; ?>><?php 
              $repayment=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($applicant_id,$date,$loan_given_to);
-             echo number_format($repayment); ?></td></tr>
+             echo number_format($repayment,2); ?></td></tr>
          <tr>
              <td <?php echo $style2; ?>>INSTITUTION(S):&nbsp;&nbsp;&nbsp;</td>
              <td <?php echo $style3; ?>><?php echo $getProgramme->institution_code; ?></td>
              <td <?php 
              $balance=\frontend\modules\repayment\models\LoanRepaymentDetail::getOutstandingOriginalLoan($applicant_id,$date,$loan_given_to);
              echo $style1; ?>>LOAN BALANCE :</td>
-             <td <?php echo $style4; ?>><?php echo number_format($balance); ?></td>
+             <td <?php echo $style4; ?>><?php echo number_format($balance,2); ?></td>
          </tr></table>
 <?php
 
@@ -93,8 +93,8 @@ foreach ($getPaymentsOfLoanee AS $values){
     <td <?php echo $style5DataEmpC; ?>><?php echo $values->employer_code; ?></td>
     <td <?php echo $style5DataEmpC; ?>><?php echo $values->short_name; ?></td>
     <td <?php echo $style5DataPayD; ?>><?php echo date("d-m-Y",strtotime($values->payment_date)); ?></td>
-    <td <?php echo $style5DataAmount; ?>><?php echo number_format($values->amount); ?></td>
-    <td <?php echo $style5DataAmount; ?>><?php echo number_format($totalLoan-$amountDeduct); ?></td>
+    <td <?php echo $style5DataAmount; ?>><?php echo number_format($values->amount,2); ?></td>
+    <td <?php echo $style5DataAmount; ?>><?php echo number_format(($totalLoan-$amountDeduct),2); ?></td>
 </tr>
 <?php
 ++$sno;

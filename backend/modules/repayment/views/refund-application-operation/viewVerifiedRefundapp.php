@@ -109,6 +109,25 @@ img:hover {
         </div>
         
     </div>
+       <?php if($model->refund_type_id==1 || $model->refund_type_id==2){ ?>
+           <div class="row" style="margin: 1%;">
+               <div class="col-xs-12">
+                   <div class="box box-primary">
+                       <div class="box-header">
+                           <h3 class="box-title"><b>CHECK #/EMPLOYEE ID DETAILS</b></h3>
+                       </div>
+                       <table class="table table-condensed">
+                           <tr>
+                               <td>Full Name:</td>
+                               <td><b><?php echo $model->refundClaimant->applicant->user->firstname." ".$model->refundClaimant->applicant->user->middlename." ".$model->refundClaimant->applicant->user->surname; ?></b></td>
+                               <td>F4index #:</td>
+                               <td><b><?php echo $model->refundClaimant->applicant->f4indexno; ?></b></td>
+                           </tr>
+                       </table>
+                   </div>
+               </div>
+           </div>
+       <?php } ?>
        <div class="row" style="margin: 1%;">
            <div class="col-xs-12">
                <div class="box box-primary">

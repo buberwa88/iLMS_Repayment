@@ -132,7 +132,9 @@ $Permanent_stop_deduction_letter=\backend\modules\repayment\models\RefundVerific
 $Issue_denial_letter=\backend\modules\repayment\models\RefundVerificationResponseSetting::Issue_denial_letter;
         $groupCode='"'.$Temporary_stop_Deduction_letter.'"'.",".'"'.$Permanent_stop_deduction_letter.'"'.",".'"'.$Issue_denial_letter.'"';
         $codeResponseID1=\backend\modules\repayment\models\RefundVerificationResponseSetting::getRefundVerificationResponseSettingByCodeConcat($groupCode);
-        $codeResponseID=[$codeResponseID1];
+        //echo $currentLevel;exit;
+        //$codeResponseID=[$codeResponseID1];
+        $codeResponseID=explode(',',$codeResponseID1);
         $searchModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
         $dataProvider = $searchModel->searchVerifiedRefundWaitingLetter(Yii::$app->request->queryParams,$currentLevel,$codeResponseID);
         return $this->render('waitingLetter', [

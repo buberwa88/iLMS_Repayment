@@ -19,13 +19,20 @@ use frontend\modules\repayment\models\RefundApplication;
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+if($refundTypeId==3){
+    $title="Step 1: Deceased's Form 4 Education";
+}else{
+    $title="Step 1: Form 4 Education";
+}
 //end set session
 
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Step 1: Form 4 Education';
+$this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">

@@ -10,6 +10,13 @@ use frontend\modules\repayment\models\RefundApplication;
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
+$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+if($refundTypeId==3){
+    $title="Step 2: Deceased's Tertiary Education Details";
+}else{
+    $title="Step 2: Tertiary Education Details";
+}
 //end set session
 
 /* @var $this yii\web\View */
@@ -32,7 +39,7 @@ if(count($resultsCheckResultsGeneral->death_certificate_number)>0 && $refundType
 
 
 
-$this->title = 'Step 2: Tertiary Education Details';
+$this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">

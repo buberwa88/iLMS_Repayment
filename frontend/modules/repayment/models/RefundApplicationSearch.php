@@ -203,7 +203,8 @@ class RefundApplicationSearch extends RefundApplication
     }
     public function searchVerifiedRefundWaitingLetter($params,$currentLevel,$codeResponseID)
     {
-
+        //$codeResponseID=[1,3,5];
+        //print_r($codeResponseID);exit;
         $query = RefundApplication::find()
             ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
             ->where(['refund_application.current_level'=>$currentLevel,'refund_application.verification_response'=>$codeResponseID]);

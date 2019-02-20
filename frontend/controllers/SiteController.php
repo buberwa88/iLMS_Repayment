@@ -763,6 +763,7 @@ class SiteController extends Controller {
 			if($model->firstname=='YUSUPH'){
 			$model->applicant_id=30;	
 			}
+
             if ($model->save(false)) {
                 //return $this->redirect(['list-steps', 'id' => $model->refund_claimant_id]);
                 $modelRefundApplication->refund_claimant_id = $model->refund_claimant_id;
@@ -781,6 +782,14 @@ class SiteController extends Controller {
                 $modelRefundApplication->trustee_email = $model->email;
                 if($model->refund_type_confirmed_nonb==1){$modelRefundApplication->refund_type_confirmed=2;}else if($model->refund_type_confirmed_overded==1){$modelRefundApplication->refund_type_confirmed=2;}else if($model->refund_type_confirmed_deceased==1){$modelRefundApplication->refund_type_confirmed=2;}
                 $modelRefundApplication->save(false);
+
+                    if($model->refund_type==3){
+$detailsClaimant=\frontend\modules\repayment\models\RefundClaimant::findOne($model->refund_claimant_id);
+$detailsClaimant->firstname=null;
+$detailsClaimant->middlename=null;
+$detailsClaimant->surname=null;
+$detailsClaimant->save(false);
+                    }
 
                 $modelRefundContactPerson->firstname = $model->firstname;
                 $modelRefundContactPerson->middlename = $model->middlename;

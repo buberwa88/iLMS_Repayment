@@ -72,29 +72,27 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format' => 'raw'
             ],
             [
-                'attribute' => 'refund_claimant_amount',
+                'attribute'=>'refund_claimant_amount',
                 'label'=>"Amount",
-                'format' => 'raw',
-                'value' => function ($model) {
-                    return $model->current_status ==-1 ?  Html::a($model->refund_claimant_amount, ['/repayment/refund-application-operation/view-verifref','id'=>$model->refund_application_id]) : $model->refund_claimant_amount;
+                'format'=>'raw',
+                'value' =>function($model)
+                {
+                    return $model->refund_claimant_amount;
                 },
+                'format'=>['decimal',2],
+                'hAlign' => 'right',
             ],
                    [
                      'attribute' => 'current_status',
                        'label'=>'Status',
                         'width' => '140px',
                         'value' => function ($model) {
-                                   if($model->current_status ==0){
-                                     return $model->current_status ==-1 ?  Html::label("Unvarified", NULL, ['class'=>'label label-default']) : "Unvarified";
-                                    } else if($model->current_status==1) {
-                                        return $model->current_status ==-1 ?  Html::label("Preview Complete", NULL, ['class'=>'label label-success']) : "Preview Complete";
+                                   if($model->current_status ==8){
+                                     return $model->current_status ==-1 ?  Html::label("Waiting", NULL, ['class'=>'label label-default']) : "Waiting";
+                                    } else {
+                                        return $model->current_status ==-1 ?  Html::label("Paid", NULL, ['class'=>'label label-success']) : "Paid";
                                     }
-                                   else if($model->current_status==6) {
-                                        return $model->current_status ==-1 ?  Html::label("Verification Onprogress", NULL, ['class'=>'label label-warning']) : "Verification Onprogress";
-                                    }
-                                  else if($model->current_status==7) {
-                                        return $model->current_status ==-1 ?  tml::label("Verification Complete", NULL, ['class'=>'label label-primary']):"Verification Complete";
-                                    }
+
                         },
                         'format' => 'raw'
                     ],

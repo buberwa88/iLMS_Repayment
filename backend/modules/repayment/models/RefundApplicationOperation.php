@@ -322,6 +322,16 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
         return $applicationDetails;
     }
     public static function updateCurrentVerificationLevel($refund_internal_operational_id,$refund_application_id,$currentVerificationResponse){
-        \frontend\modules\repayment\models\RefundApplication::updateAll(['current_level' =>$refund_internal_operational_id,'verification_response'=>$currentVerificationResponse,'current_status'=>6], 'refund_application_id ="'.$refund_application_id.'"');
+        if($currentVerificationResponse==1 || $currentVerificationResponse==2){
+            $current_status=8;
+            $details=self::getApplicationDEtails($refund_application_id);
+            $date=date("Y-m-d");
+            $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;
+            $refund_claimant_amount=\frontend\modules\repayment\models\LoanRepaymentDetail::getAmountTotalPaidLoanee($details->refundClaimant->applicant_id,$date,$loan_given_to);
+        }else{
+            $current_status=6;
+            $refund_claimant_amount=null;
+        }
+        \frontend\modules\repayment\models\RefundApplication::updateAll(['current_level' =>$refund_internal_operational_id,'verification_response'=>$currentVerificationResponse,'current_status'=>$current_status,'refund_claimant_amount'=>$refund_claimant_amount], 'refund_application_id ="'.$refund_application_id.'"');
     }
 }

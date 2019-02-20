@@ -71,7 +71,7 @@ img:hover {
                 ?>
                 <p>
                     &nbsp;Full Name:-<b><?= $fullname;?></b><br/>
-                    &nbsp;Form IV Index No:- <b><?= $model->refundClaimant->f4indexno;?></b><br/>
+                    &nbsp;Form IV Index No:- <b><?php echo $model->refundClaimant->f4indexno.".".$model->refundClaimant->f4_completion_year;?></b><br/>
                     <br/><br/><br/>
                 </p>
             </div>
@@ -87,7 +87,7 @@ img:hover {
                            $verificationStatus1=$verificationStatus;
 			   ?>   
                <p>
-                 &nbsp;F4index #:-<b><?php if($model->refundClaimant->applicant_id > 0){echo "Count 1";} ?></b><br/>
+                 &nbsp;F4index #:-<b><?php if($model->refundClaimant->applicant_id > 0){echo "";} ?></b><br/>
                   Claimant Names:-<b><?php if($model->refundClaimant->applicant_id > 0){echo "Count 1";} ?></b><br/>
                  &nbsp;Previous Refund Exists:- <b></b><br/>
                  <br/><br/><br/>
@@ -95,6 +95,25 @@ img:hover {
           </div>
         </div>
     </div>
+       <?php if($model->refund_type_id==1 || $model->refund_type_id==2){ ?>
+       <div class="row" style="margin: 1%;">
+           <div class="col-xs-12">
+               <div class="box box-primary">
+                   <div class="box-header">
+                       <h3 class="box-title"><b>CHECK #/EMPLOYEE ID DETAILS</b></h3>
+                   </div>
+                   <table class="table table-condensed">
+                       <tr>
+                           <td>Full Name:</td>
+                           <td><b><?php echo $model->refundClaimant->applicant->user->firstname." ".$model->refundClaimant->applicant->user->middlename." ".$model->refundClaimant->applicant->user->surname; ?></b></td>
+                           <td>F4index #:</td>
+                           <td><b><?php echo $model->refundClaimant->applicant->f4indexno; ?></b></td>
+                       </tr>
+                   </table>
+               </div>
+           </div>
+       </div>
+       <?php } ?>
        <div class="row" style="margin: 1%;">
            <div class="col-xs-12">
                <div class="box box-primary">

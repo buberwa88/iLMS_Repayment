@@ -75,7 +75,7 @@ if($refundTypeId==3){
                     ]);
                     ?>
                     <?php
-                    echo $form->field($model, 'f4type')->label('SELECT YOUR F4 CATEGORY')->radioList($list,
+                    echo $form->field($model, 'f4type')->label('SELECT F4 CATEGORY')->radioList($list,
                         [
                             'inline'=>true,
                             'id'=>f4type_id,
