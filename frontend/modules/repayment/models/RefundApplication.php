@@ -57,7 +57,6 @@ class RefundApplication extends \yii\db\ActiveRecord {
     const Pending = 5;
     const Verification_Onprogress = 6;
     const Verification_Complete = 7;
-
     const PAY_LIST_WAITING_QUEUE = 8;
     const PAID_APPLICATION = 9;
 
@@ -86,6 +85,10 @@ class RefundApplication extends \yii\db\ActiveRecord {
         return [
             [['refund_claimant_id', 'finaccial_year_id', 'academic_year_id', 'current_status', 'refund_verification_framework_id', 'bank_id', 'refund_type_id', 'created_by', 'updated_by', 'is_active', 'submitted'], 'integer'],
             [['refund_claimant_amount'], 'number'],
+            [['application_number', 'verificationCode'], 'required', 'on' => 'view-status'],
+            [['pin'], 'required', 'on' => 'refund-login'],
+            [['pin'], 'validatePin', 'on' => 'refund-login'],
+            [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
             [['bank_account_number', 'bank_account_name', 'bank_name', 'branch', 'bank_card_document'], 'required', 'on' => 'refundBankDetailsAdd'],
             [['death_certificate_number', 'death_certificate_document'], 'required', 'on' => 'refundDeathDetails'],
             [['liquidation_letter_document', 'liquidation_letter_number'], 'required', 'on' => 'refundEmploymentDetails'],
@@ -93,11 +96,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname', 'letter_family_session_document'], 'required', 'on' => 'refundFamilySessionDetails'],
             //[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
             [['social_fund_status'], 'required', 'on' => 'refundSocialFundDetails'],
-            [['application_number', 'verificationCode'], 'required', 'on' => 'view-status'],
-            [['pin'], 'required', 'on' => 'refund-login'],
-            [['pin'], 'validatePin', 'on' => 'refund-login'],
-            [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
-            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by','verification_response','current_level','soccialFundDocument','refundTypeExpalnation','refund_type_confirmed'], 'safe'],
+            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by', 'verification_response', 'current_level', 'soccialFundDocument', 'refundTypeExpalnation', 'refund_type_confirmed'], 'safe'],
             [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
             [['bank_card_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_document'], 'file', 'extensions' => ['pdf']],
@@ -117,8 +116,19 @@ class RefundApplication extends \yii\db\ActiveRecord {
 			
 			[['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
             return $model->soccialFundDocument == 1;
-        }, 'whenClient' => "function (attribute, value) {				
-				return $('#soccialFundDocument_id input:checked').val() == 1;                
+        },
+//                'whenClient' => "function (attribute, value) {				
+//				return $('#soccialFundDocument_id input:checked').val() == 1;                
+//
+//            return 1;
+//        },
+                'whenClient' => "function (attribute, value) {
+				return $('#social_fund_status_id input:checked').val() == 1;
+			}"],
+            [['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
+            return 1;
+        }, 'whenClient' => "function (attribute, value) {
+				return $('#soccialFundDocument_id input:checked').val() == 1;
 			}"],
 			
 //            [['updated_at'], 'required'],
@@ -166,11 +176,11 @@ class RefundApplication extends \yii\db\ActiveRecord {
             'updated_by' => 'Updated By',
             'is_active' => 'Is Active',
             'submitted' => 'Submitted',
-			'verification_response'=>'Verification Response',
-			'current_level'=>'Current Level',
-			'soccialFundDocument'=>'soccialFundDocument',
-            'trustee_email'=>'Email',
-            'refund_type_confirmed'=>'refund_type_confirmed',
+            'verification_response' => 'Verification Response',
+            'current_level' => 'Current Level',
+            'soccialFundDocument' => 'soccialFundDocument',
+            'trustee_email' => 'Email',
+            'refund_type_confirmed' => 'refund_type_confirmed',
         ];
     }
 
@@ -187,7 +197,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
     public function getBank() {
         return $this->hasOne(\backend\modules\application\models\Bank::className(), ['bank_id' => 'bank_id']);
     }
-	public function getRefundInternalOperationalSetting() {
+
+    public function getRefundInternalOperationalSetting() {
         return $this->hasOne(\backend\modules\repayment\models\RefundInternalOperationalSetting::className(), ['refund_internal_operational_id' => 'current_level']);
     }
 
@@ -235,12 +246,13 @@ class RefundApplication extends \yii\db\ActiveRecord {
 
     function validateApplicationNo() {
         if ($this->application_number) {
-            if (!self::find()->where(['application_number' => $this->application_number])->exists()) {
-                return $this->addError($this->application_number, 'Invalid Application Reference Number');
-                return FALSE;
+            if (self::find()->where(['application_number' => $this->application_number])->exists()) {
+                return TRUE;
             }
-            return TRUE;
+            $this->addError('application_number', 'Invalid Application/Reference No');
+            return FALSE;
         }
+        $this->addError('application_number', 'Invalid Wrong Application/Reference No');
         return FALSE;
     }
 

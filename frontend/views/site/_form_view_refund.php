@@ -1,5 +1,4 @@
 <?php
-
 use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use yii\helpers\Html;
@@ -24,7 +23,7 @@ use yii\captcha\Captcha;
         'form' => $form,
         'columns' => 2,
         'attributes' => [
-            'application_number' => ['label' => 'Refund Application No:', 'options' => ['placeholder' => 'Enter Refund Applicaton No']],
+            'application_number' => ['label' => 'Refund Application No:', 'options' => ['placeholder' => 'Enter your refund applicaton No']],
         ]
     ]);
     ?>

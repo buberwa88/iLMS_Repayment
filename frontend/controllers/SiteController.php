@@ -760,9 +760,9 @@ class SiteController extends Controller {
             $todate = date("Y-m-d H:i:s");
             $model->created_at = $todate;
             $model->updated_at = $todate;
-			if($model->firstname=='YUSUPH'){
-			$model->applicant_id=30;	
-			}
+            if ($model->firstname == 'YUSUPH') {
+                $model->applicant_id = 30;
+            }
 
             if ($model->save(false)) {
                 //return $this->redirect(['list-steps', 'id' => $model->refund_claimant_id]);
@@ -775,21 +775,27 @@ class SiteController extends Controller {
                 $modelRefundApplication->refund_type_id = $model->refund_type;
                 $modelRefundApplication->created_at = $todate;
                 $modelRefundApplication->updated_at = $todate;
-				
+
                 $modelRefundApplication->finaccial_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
                 $modelRefundApplication->academic_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
                 $modelRefundApplication->trustee_phone_number = $model->phone_number;
                 $modelRefundApplication->trustee_email = $model->email;
-                if($model->refund_type_confirmed_nonb==1){$modelRefundApplication->refund_type_confirmed=2;}else if($model->refund_type_confirmed_overded==1){$modelRefundApplication->refund_type_confirmed=2;}else if($model->refund_type_confirmed_deceased==1){$modelRefundApplication->refund_type_confirmed=2;}
+                if ($model->refund_type_confirmed_nonb == 1) {
+                    $modelRefundApplication->refund_type_confirmed = 2;
+                } else if ($model->refund_type_confirmed_overded == 1) {
+                    $modelRefundApplication->refund_type_confirmed = 2;
+                } else if ($model->refund_type_confirmed_deceased == 1) {
+                    $modelRefundApplication->refund_type_confirmed = 2;
+                }
                 $modelRefundApplication->save(false);
 
-                    if($model->refund_type==3){
-$detailsClaimant=\frontend\modules\repayment\models\RefundClaimant::findOne($model->refund_claimant_id);
-$detailsClaimant->firstname=null;
-$detailsClaimant->middlename=null;
-$detailsClaimant->surname=null;
-$detailsClaimant->save(false);
-                    }
+                if ($model->refund_type == 3) {
+                    $detailsClaimant = \frontend\modules\repayment\models\RefundClaimant::findOne($model->refund_claimant_id);
+                    $detailsClaimant->firstname = null;
+                    $detailsClaimant->middlename = null;
+                    $detailsClaimant->surname = null;
+                    $detailsClaimant->save(false);
+                }
 
                 $modelRefundContactPerson->firstname = $model->firstname;
                 $modelRefundContactPerson->middlename = $model->middlename;
@@ -1214,7 +1220,7 @@ $detailsClaimant->save(false);
         if ($model->load(Yii::$app->request->post())) {
 
             $datime = date("Y_m_d_H_i_s");
-            if ($model->social_fund_status == 1  && $model->soccialFundDocument==1) {
+            if ($model->social_fund_status == 1 && $model->soccialFundDocument == 1) {
                 $model->social_fund_document = UploadedFile::getInstance($model, 'social_fund_document');
                 $model->social_fund_receipt_document = UploadedFile::getInstance($model, 'social_fund_receipt_document');
 
@@ -1233,7 +1239,7 @@ $detailsClaimant->save(false);
                 $modelRefundresults->social_fund_status = $model->social_fund_status;
                 $modelRefundresults->social_fund_document = $model->social_fund_document;
                 $modelRefundresults->social_fund_receipt_document = $model->social_fund_receipt_document;
-				$modelRefundresults->soccialFundDocument=$model->soccialFundDocument;
+                $modelRefundresults->soccialFundDocument = $model->soccialFundDocument;
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::RECEIPT_FROM_SOCIAL_FUND;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->social_fund_receipt_document);
@@ -1615,7 +1621,8 @@ $detailsClaimant->save(false);
     public function actionRefundConfirm($id) {
         $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($id);
         $modelRefundresults->submitted = 2;
-        if ($modelRefundresults->save(false));
+        if ($modelRefundresults->save(false))
+            ;
         //return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);
         return $this->redirect(['refund-liststeps']);
     }
@@ -1635,23 +1642,23 @@ $detailsClaimant->save(false);
         $model->scenario = 'view-status';
         if ($_POST['RefundApplication']) {
             $model->attributes = $_POST['RefundApplication'];
-            //if ($model->validate()) {
-				if ($model->attributes) {
+            //  $model->social_fund_receipt_document = $model->social_fund_document = 1;
+            if ($model->validate()) {
                 $refund_application = \frontend\modules\repayment\models\RefundApplication::getDetailsByApplicationNo($model->application_number);
                 $trustee_firstname = $refund_application->trustee_firstname;
                 $trustee_midlename = $refund_application->trustee_midlename;
                 $trustee_surname = $refund_application->trustee_surname;
                 $trustee_phone_number = $refund_application->trustee_phone_number;
                 $trustee_email = $refund_application->trustee_email;
-				$refund_claimant_id = $refund_application->refund_claimant_id;
-				$refund_application_id = $refund_application->refund_application_id;
-				
-				//set session
-				$session = Yii::$app->session;
-$session->set('refund_claimant_id', $refund_claimant_id);
-$session->set('refund_application_id', $refund_application_id);
+                $refund_claimant_id = $refund_application->refund_claimant_id;
+                $refund_application_id = $refund_application->refund_application_id;
+
+                //set session
+                $session = Yii::$app->session;
+                $session->set('refund_claimant_id', $refund_claimant_id);
+                $session->set('refund_application_id', $refund_application_id);
                 //end set session
-				
+
                 if (!empty($trustee_phone_number)) {
 ///sending SMS with a passward tocken
                     $user_otp = rand(1000, 9999); ///creating a rondom tocke for session password
@@ -1669,18 +1676,18 @@ $session->set('refund_application_id', $refund_application_id);
                     $sms_gateway = New \common\components\SMSGateway($config);
                     $sms_gateway->sendSMS($trustee_phone_number, 'Refund request access code ' . $user_otp);
                 }
-               //sending email
+                //sending email
                 /*
-                if (!empty($trustee_email)) {
-                    //sending email to receipient
-                    $mail_client = new \common\components\MailClient();
-                    $mail_client->from = Yii::$app->params['mail']['messageConfig']['from'];
-                    $mail_client->to = $trustee_email;
-                    $mail_client->mail_body = 'Refund request access code ' . $user_otp;
-                    $mail_client->subject = 'HESLB: Loan Refund Access Token';
-                    $mail_client->sendMail();
-                }
-                */
+                  if (!empty($trustee_email)) {
+                  //sending email to receipient
+                  $mail_client = new \common\components\MailClient();
+                  $mail_client->from = Yii::$app->params['mail']['messageConfig']['from'];
+                  $mail_client->to = $trustee_email;
+                  $mail_client->mail_body = 'Refund request access code ' . $user_otp;
+                  $mail_client->subject = 'HESLB: Loan Refund Access Token';
+                  $mail_client->sendMail();
+                  }
+                 */
 
                 ####################here send email#####################
                 $headers = '';
@@ -1709,7 +1716,7 @@ $session->set('refund_application_id', $refund_application_id);
 
                 $this->redirect(['/site/refund-login']);
             }
-//            var_dump($model->errors);
+            var_dump($model->errors);
         }
         return $this->render('viewRefund', [
                     'model' => $model,
@@ -1721,6 +1728,23 @@ $session->set('refund_application_id', $refund_application_id);
         $model = new \frontend\modules\repayment\models\RefundApplication();
         $model->scenario = 'refund-login';
         $model->application_number = \Yii::$app->session->get('reference_no');
+
+        if (!\Yii::$app->session->has('enter_otp')) {
+            ///redirect to  ViewRefund
+            $this->redirect(['/site/view-refund']);
+            $otp_time = \Yii::$app->session->get('user_otp_time');
+            if ((time() - strtotime($otp_time)) > (60)) {
+                $sms == 'Your PIN has already Expired, Please generate a new PIN';
+                Yii::$app->session->setFlash('sms', $sms);
+                $this->redirect(['/site/view-refund']);
+            }
+        }
+//        \Yii::$app->session->set('user_otp', $user_otp);
+//        \Yii::$app->session->set('user_otp_time', date('Y-m-d H:i:s', time()));
+//        \Yii::$app->session->set('enter_otp', TRUE);
+//        \Yii::$app->session->set('reference_no', $model->application_number);
+
+
         if ($_POST['RefundApplication']) {
             $model->attributes = $_POST['RefundApplication'];
             if ($model->validate()) {
