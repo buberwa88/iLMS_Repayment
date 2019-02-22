@@ -111,25 +111,28 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['soccialFundDocument'], 'required', 'when' => function ($model) {
             return $model->social_fund_status == 1;
         }, 'whenClient' => "function (attribute, value) { 
-             return $('#social_fund_status_id input:checked').val() == 1;				
+             if ($('#social_fund_status_id').val() == 1) {
+             return $('#social_fund_status_id input:checked').val() == 1;
+             }				
 			}"],
 			
 			[['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
             return $model->soccialFundDocument == 1;
         },
-//                'whenClient' => "function (attribute, value) {				
-//				return $('#soccialFundDocument_id input:checked').val() == 1;                
-//
-//            return 1;
-//        },
                 'whenClient' => "function (attribute, value) {
+                if ($('#social_fund_status_id').val() == 1) {
 				return $('#social_fund_status_id input:checked').val() == 1;
+				}
 			}"],
+
             [['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
-            return 1;
+                return $model->soccialFundDocument == 1;
         }, 'whenClient' => "function (attribute, value) {
+        if ($('#soccialFundDocument_id').val() == 1) {
 				return $('#soccialFundDocument_id input:checked').val() == 1;
+				}
 			}"],
+
 			
 //            [['updated_at'], 'required'],
             [['application_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],

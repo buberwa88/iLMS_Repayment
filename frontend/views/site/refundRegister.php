@@ -14,12 +14,13 @@ use yii\helpers\Html;
             <font size="4">
                 Welcome!
                 <br/>
-                This registration form is for loan refund claimants. Please complete the form below for registration into the iLMS.
+<!--                This registration form is for loan refund claimants. Please complete the form below for registration into the iLMS.-->
+                Kindly choose the refund type to get registration into iLMS.
             </font>
         </div>
         <div class="panel-body">
 
-    <?= $this->render('_form_refund_register', [
+    <?= $this->render('_form_refund_category', [
        'model' => $model,
     ]) ?>
 

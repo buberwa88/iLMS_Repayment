@@ -3,6 +3,7 @@
 namespace frontend\modules\repayment\models;
 
 use Yii;
+use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "refund_claimant".
@@ -65,44 +66,52 @@ class RefundClaimant extends \yii\db\ActiveRecord
     {
         return [
             //[['applicant_id', 'f4_completion_year', 'necta_details_confirmed', 'created_by', 'updated_by'], 'integer'],
-            [['email','refund_type','firstname','middlename','surname','phone_number','verifyCode'], 'required','on'=>'refundRegistration'],
+            [['refund_type','firstname','surname','phone_number','verifyCode'], 'required','on'=>'refundRegistration'],
             [['applicationCode','verifyCode','refundClaimantid'], 'required','on'=>'refundApplicationCodeVerification'],
             ['verifyCode', 'captcha','on'=>['refundRegistration','refundApplicationCodeVerification']],
             //[['f4indexno','f4_completion_year'], 'required','on'=>'refundf4educationnecta'],
-            [['f4indexno','necta_firstname','necta_middlename','necta_surname','f4_completion_year'], 'required','on'=>'refundf4education'],
+            [['f4indexno','firstname','middlename','surname','f4_completion_year'], 'required','on'=>'refundf4education'],
             [['created_at', 'updated_at','sex','refundClaimantid','f4_certificate_document','f4type','refundTypeExpalnation',
-              'refund_type_confirmed','refund_type_confirmed_nonb','refund_type_confirmed_overded','refund_type_confirmed_deceased'], 'safe'],
-			[['f4_certificate_document'], 'file', 'extensions'=>['pdf']],
+              'refund_type_confirmed','refund_type_confirmed_nonb','refund_type_confirmed_overded','refund_type_confirmed_deceased','middlename','email'], 'safe'],
+			//[['f4_certificate_document'], 'file', 'extensions'=>['pdf']],
+            [['f4_certificate_document'], 'file', 'skipOnEmpty' => false, 'extensions' => 'pdf'],
             [['firstname', 'middlename', 'surname', 'necta_firstname', 'necta_middlename', 'necta_surname'], 'string', 'max' => 45],
             [['sex', 'necta_sex'], 'string', 'max' => 1],
             [['firstname', 'middlename', 'surname'], 'match','not' => true,'pattern' => '/[^a-zA-Z_-]/','message' => 'Only Characters  Are Allowed...'],
 			[['f4_certificate_document'], 'required', 'when' => function ($model) {
-				return $model->f4type == 2;
+                if ($model->f4type==2) {
+                    return $model->f4type==2;
+            }
 			}, 'whenClient' => "function (attribute, value) {
+			if ($('#f4type_id input:checked').val() == 2) {
 				return $('#f4type_id input:checked').val() == 2;
+				}
 			}"],
 
             ['refund_type_confirmed_nonb', 'required', 'when' => function ($model) {
-                return  1;
+                return $model->refund_type == 1;
             }, 'whenClient' => "function (attribute, value) {
     if ($('#refund_type_id').val() == 1) {
-                           return 1;
+                           return $('#refund_type_id').val() == 1;
                         }
 }"],
-            ['refund_type_confirmed_overded', 'required', 'when' => function ($model) {
-                return  1;
-            }, 'whenClient' => "function (attribute, value) {
-    if ($('#refund_type_id').val() == 2) {
-                           return 1;
-                        }
-}"],
-            ['refund_type_confirmed_deceased', 'required', 'when' => function ($model) {
-                return  1;
-            }, 'whenClient' => "function (attribute, value) {
-    if ($('#refund_type_id').val() == 3) {
-                           return 1;
-                        }
-}"],
+            /*
+             ['refund_type_confirmed_overded', 'required', 'when' => function ($model) {
+                 return $model->refund_type == 2;
+             }, 'whenClient' => "function (attribute, value) {
+     if ($('#refund_type_id').val() == 2) {
+                            return $('#refund_type_id').val() == 2;
+                         }
+ }"],
+
+             ['refund_type_confirmed_deceased', 'required', 'when' => function ($model) {
+                 return  1;
+             }, 'whenClient' => "function (attribute, value) {
+     if ($('#refund_type_id').val() == 3) {
+                            return 1;
+                         }
+ }"],
+             */
 
             ['phone_number', 'checkphonenumber'],
             ['applicationCode', 'validateApplicationCode'],

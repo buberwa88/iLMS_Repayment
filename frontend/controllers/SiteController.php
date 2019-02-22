@@ -756,13 +756,14 @@ class SiteController extends Controller {
         $modelRefundApplication = new \frontend\modules\repayment\models\RefundApplication();
         $modelRefundContactPerson = new \frontend\modules\repayment\models\RefundContactPerson();
         $model->scenario = 'refundRegistration';
-        if ($model->load(Yii::$app->request->post())) {
+        if ($model->load(Yii::$app->request->post()) && $model->validate()){
             $todate = date("Y-m-d H:i:s");
             $model->created_at = $todate;
             $model->updated_at = $todate;
             if ($model->firstname == 'YUSUPH') {
                 $model->applicant_id = 30;
             }
+            $model->phone_number=str_replace(" ","",$model->phone_number);
 
             if ($model->save(false)) {
                 //return $this->redirect(['list-steps', 'id' => $model->refund_claimant_id]);
@@ -780,13 +781,7 @@ class SiteController extends Controller {
                 $modelRefundApplication->academic_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
                 $modelRefundApplication->trustee_phone_number = $model->phone_number;
                 $modelRefundApplication->trustee_email = $model->email;
-                if ($model->refund_type_confirmed_nonb == 1) {
-                    $modelRefundApplication->refund_type_confirmed = 2;
-                } else if ($model->refund_type_confirmed_overded == 1) {
-                    $modelRefundApplication->refund_type_confirmed = 2;
-                } else if ($model->refund_type_confirmed_deceased == 1) {
-                    $modelRefundApplication->refund_type_confirmed = 2;
-                }
+                $modelRefundApplication->refund_type_confirmed=$model->refund_type_confirmed_nonb;
                 $modelRefundApplication->save(false);
 
                 if ($model->refund_type == 3) {
@@ -932,9 +927,9 @@ class SiteController extends Controller {
         $model = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
         $model->scenario = 'refundf4education';
         if ($model->load(Yii::$app->request->post())) {
-
             $datime = date("Y_m_d_H_i_s");
             $model->f4_certificate_document = UploadedFile::getInstance($model, 'f4_certificate_document');
+            if($model->validate()){
             $model->f4_certificate_document->saveAs(Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension);
             $model->f4_certificate_document = Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension;
 
@@ -960,6 +955,8 @@ class SiteController extends Controller {
                 Yii::$app->getSession()->setFlash('error', $sms);
                 return $this->redirect(['indexf4educationdetails']);
             }
+        }
+            var_dump($model->errors);
         } else {
             return $this->render('createRefundf4education', [
                         'model' => $model,
@@ -1716,7 +1713,7 @@ class SiteController extends Controller {
 
                 $this->redirect(['/site/refund-login']);
             }
-            var_dump($model->errors);
+            //var_dump($model->errors);
         }
         return $this->render('viewRefund', [
                     'model' => $model,
