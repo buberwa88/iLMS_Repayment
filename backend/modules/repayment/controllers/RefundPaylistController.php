@@ -37,14 +37,26 @@ class RefundPaylistController extends Controller {
      */
     public function actionIndex() {
         $this->layout = "main_private";
-
-        $searchModel = new RefundPaylistSearch();
-
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        ///
+        ///paylist models
+        $paylistModel = new RefundPaylistSearch();
+        $paylists = $paylistModel->search(Yii::$app->request->queryParams);
+        ///
+        ///pending application models for paylist creation
+        $pendingModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
+        $pending_refunds = $pendingModel->searchPendingRefunds(Yii::$app->request->queryParams);
+        ///
+        ///paid models
+        $paidModel = new RefundPaylistDetails();
+        $paid_refunds = $paidModel->searchPaidRefunds(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-                    'searchModel' => $searchModel,
-                    'dataProvider' => $dataProvider,
+                    'paylistModel' => $paylistModel,
+                    'paylists' => $paylists,
+                    'pendingModel' => $pendingModel,
+                    'pending_refunds' => $pending_refunds,
+                    'paidModel' => $paidModel,
+                    'paid_refunds' => $paid_refunds
         ]);
     }
 

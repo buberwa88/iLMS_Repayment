@@ -8,7 +8,7 @@ use kartik\grid\GridView;
 /* @var $searchModel backend\modules\repayment\models\RefundPaylistSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Refund Paylists';
+$this->title = 'Manage Refund Pay Lists';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-paylist-index">
@@ -18,45 +18,31 @@ $this->params['breadcrumbs'][] = $this->title;
             <?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-            <p>
-                <?= Html::a('Create/Add Refund Paylist', ['create'], ['class' => 'btn btn-success']) ?>
-
-            </p>
-            <?=
-            GridView::widget([
-                'dataProvider' => $dataProvider,
-                'filterModel' => $searchModel,
-                'columns' => [
-                    ['class' => 'yii\grid\SerialColumn'],
-                    'paylist_number',
-                    'paylist_name',
-//                    [
-//                        'attribute' => 'date_created',
-//                        'value' => function($model) {
-//                            return Date('D, d-M-Y', strtotime($model->date_created));
-//                        },
-//                    ],
-                    'paylist_description:html',
+            <?php
+            echo kartik\tabs\TabsX::widget([
+                'items' => [
                     [
-                        'attribute' => 'paylist_total_amount',
-                        'value' => function($model) {
-                            return number_format(backend\modules\repayment\models\RefundPaylistDetails::getPayListTotalAmountById($model->refund_paylist_id));
-                        }],
-                    [
-                        'attribute' => 'status',
-                        'value' => function($model) {
-                            return $model->getStatusName();
-                        },
+                        'label' => 'Pending Refund (For Pay List)',
+                        'content' => $this->render('_refund_pending_paylist', ['model' => $model, 'dataProvider' => $pending_refunds, 'pendingModel' => $pendingModel]),
+                        'id' => 'atab1',
+                        'active' => ($active == 'atab1') ? true : false,
                     ],
-                    // 'created_by',
-                    // 'date_updated',
-                    // 'updated_by',
-                    // 'status',
-                    ['class' => 'yii\grid\ActionColumn',
-                        'template' => '{view}',
-                    // 'visible' => ($model->status == \backend\modules\repayment\models\RefundPaylist::STATUS_CREATED) ? TRUE : FALSE
+                    [
+                        'label' => 'Refunds Pay Lists',
+                        'content' => $this->render('_refund_paylists', ['model' => $model, 'dataProvider' => $paylists, 'paylistModel' => $paylistModel]),
+                        'id' => 'atab1',
+                        'active' => ($active == 'atab1') ? true : false,
+                    ],
+                    [
+                        'label' => 'Paid Refunds',
+                        'content' => $this->render('_refund_paid', ['model' => $model, 'dataProvider' => $paid_refunds, 'paidModel' => $paidModel]),
+                        'id' => 'atab1',
+                        'active' => ($active == 'atab1') ? true : false,
                     ],
                 ],
+                'position' => kartik\tabs\TabsX::POS_ABOVE,
+                'bordered' => true,
+                'encodeLabels' => false
             ]);
             ?>
         </div>

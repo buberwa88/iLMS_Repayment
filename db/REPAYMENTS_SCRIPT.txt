@@ -543,3 +543,4 @@ ALTER TABLE `refund_application` CHANGE `trustee_email` `trustee_email` VARCHAR(
 ALTER TABLE `refund_internal_operational_setting` ADD `flow_type` TINYINT(2) NOT NULL COMMENT '1: Flow for Application, 2: Flow for Pay List' AFTER `refund_internal_operational_id`;
 ALTER TABLE `refund_application` ADD `employer_letter_document` VARCHAR(100) NULL DEFAULT NULL AFTER `letter_family_session_document`;
 ALTER TABLE `refund_application` ADD `educationAttained` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Form IV certificate and above, 2: Below Form IV' AFTER `refund_type_confirmed`;
+ALTER TABLE `refund_paylist_details` ADD `payment_bank_account_name` VARCHAR(100) NOT NULL AFTER `financial_year_id`, ADD `payment_bank_account_number` VARCHAR(100) NOT NULL AFTER `payment_bank_account_name`, ADD `payment_bank_name` VARCHAR(100) NOT NULL AFTER `payment_bank_account_number`, ADD `payment_bank_branch` VARCHAR(100) NOT NULL AFTER `payment_bank_name`;

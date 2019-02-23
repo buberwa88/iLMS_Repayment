@@ -2,6 +2,7 @@
 
 namespace backend\modules\repayment\models;
 
+use common\models\User;
 use Yii;
 
 /**
@@ -23,13 +24,12 @@ use Yii;
  * @property User $createdBy
  * @property User $updatedBy
  */
-class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
-{
+class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
+
     /**
      * @inheritdoc
      */
-    public static function tableName()
-    {
+    public static function tableName() {
         return 'refund_internal_operational_setting';
     }
 
@@ -40,25 +40,23 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
     const STATUS_INVALID = 2;
     const STATUS_NEED_FURTHER_VERIFICATION = 3;
     const VERIFICATION_STATUS_NEED_INVESTIGATION = 4;
-
     const loan_recovery_data_section_c = 'LRDS';
     const validation_section_c = 'VLSC';
     const audit_investigation_department_c = 'AIND';
     const director_loan_recovery_repayment_c = 'DLRR';
     const executive_director_c = 'ED';
-	const account_section_c = 'AS';
-	
-	//configuration for application and pay list flow
+    const account_section_c = 'AS';
+    //configuration for application and pay list flow
     const FLOW_TYPE_APPLICATION = 1;
-	const FLOW_TYPE_PAY_LIST = 2;
-	
-
+    const FLOW_TYPE_PAY_LIST = 2;
+    //////
+    /////refund application stages/sections 
     const loan_recovery_data_section = 'loan_recovery_data_section';
     const loan_recovery_data_section_officer = 'loan_recovery_data_section_officer';
     const validation_section = 'validation_section';
-    const validation_section_officer ='validation_section_officer';
+    const validation_section_officer = 'validation_section_officer';
     const audit_investigation_department = 'audit_investigation_department';
-    const audit_investigation_department_officer='audit_investigation_department_officer';
+    const audit_investigation_department_officer = 'audit_investigation_department_officer';
     const director_loan_recovery_repayment = 'director_loan_recovery_repayment';
     const director_loan_recovery_repayment_officer = 'director_loan_recovery_repayment_officer';
     const executive_director = 'executive_director';
@@ -66,13 +64,14 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
     const account_section = 'account_section';
     const account_section_officer = 'account_section_officer';
 
-    public function rules()
-    {
+    public function rules() {
         return [
-            [['flow_order_list', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['created_at', 'updated_at','flow_type'], 'safe'],
+            [['flow_type', 'flow_order_list', 'name', 'code', 'access_role_master', 'access_role_child', '', 'created_by', 'is_active'], 'required'],
+            [['flow_type', 'flow_order_list', 'created_by', 'updated_by', 'is_active'], 'integer'],
+            [['created_at', 'updated_at', 'flow_type'], 'safe'],
             [['name', 'access_role_master', 'access_role_child'], 'string', 'max' => 100],
             [['code'], 'string', 'max' => 50],
+            [['code'], 'unique'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'user_id']],
         ];
@@ -81,53 +80,48 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return [
             'refund_internal_operational_id' => 'Refund Internal Operational ID',
             'name' => 'Name',
             'code' => 'Code',
             'access_role_master' => 'Access Role',
             'access_role_child' => 'Access Role Child',
-            'flow_order_list' => 'Flow Order List',
+            'flow_order_list' => 'List Order',
             'created_at' => 'Created At',
             'created_by' => 'Created By',
             'updated_at' => 'Updated At',
             'updated_by' => 'Updated By',
-            'is_active' => 'Is Active',
-			'flow_type'=>'flow_type',
+            'is_active' => 'Status',
+            'flow_type' => 'Flow Type',
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundApplicationOperations()
-    {
+    public function getRefundApplicationOperations() {
         return $this->hasMany(RefundApplicationOperation::className(), ['refund_internal_operational_id' => 'refund_internal_operational_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCreatedBy()
-    {
+    public function getCreatedBy() {
         return $this->hasOne(User::className(), ['user_id' => 'created_by']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUpdatedBy()
-    {
+    public function getUpdatedBy() {
         return $this->hasOne(User::className(), ['user_id' => 'updated_by']);
     }
 
-    public static function getSettingDetails()
-    {
-        $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  flow_order_list='2' AND is_active='1' AND is_active='1'")->one();
-        return $refundInterOperSetting;
+    public static function getSettingDetails() {
+        return self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  flow_order_list='2' AND is_active='1' AND is_active='1'")->one();
     }
+
     static function getVerificationStatus() {
         return array(
             self::STATUS_VALID => 'Valid',
@@ -135,16 +129,18 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
             self::STATUS_NEED_FURTHER_VERIFICATION => 'Need Further Verification',
         );
     }
-    public static function getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition){
-        if($statusResponse=='REFUND_DATA_SECTION') {
+
+    public static function getNextFlow($currentFlow_id, $statusResponse, $orderList_ASC_DESC, $condition) {
+        if ($statusResponse == 'REFUND_DATA_SECTION') {
             $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  access_role_master='loan_recovery_data_section' AND is_active='1'")->one();
-        }else if($statusResponse=='AUDIT_INVEST_SECTION') {
+        } else if ($statusResponse == 'AUDIT_INVEST_SECTION') {
             $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  access_role_master='audit_investigation_department' AND is_active='1'")->one();
-        } else{
+        } else {
             $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  refund_internal_operational_id $condition $currentFlow_id AND  is_active='1' ORDER BY refund_internal_operational_id $orderList_ASC_DESC")->one();
         }
         return $refundInterOperSetting;
     }
+
     static function getVerificationStatusResponse() {
         return array(
             self::VERIFICATION_RESPONSE_TEMP_STOP_DEDUCT => 'Issue temporary stop deduction',
@@ -156,14 +152,15 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
             self::VERIFICATION_RESPONSE_NEED_DENIAL_LETTER => 'Need Denial Letter',
         );
     }
+
     static function getVerificationStatusAuditSection() {
         return array(
             self::STATUS_VALID => 'Valid',
             self::STATUS_INVALID => 'Invalid',
             self::VERIFICATION_STATUS_NEED_INVESTIGATION => 'Need Investigation',
-
         );
     }
+
     static function getUserRoles() {
         return array(
             self::loan_recovery_data_section => 'Loan Recovery Data Section-Supervisor',
@@ -177,7 +174,38 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
             self::executive_director => 'Executive Director',
             //self::executive_director_officer => 'Need Further Verification',
             self::account_section => 'Account Section',
-            //self::account_section_officer => 'Need Further Verification',
+                //self::account_section_officer => 'Need Further Verification',
         );
     }
+
+    function getFlowTypes() {
+        return [
+            self::FLOW_TYPE_APPLICATION => 'Application',
+            self::FLOW_TYPE_PAY_LIST => 'Pay List'
+        ];
+    }
+
+    function getFlowTypeName() {
+        $types = $this->getFlowTypes();
+        if (isset($types[$this->flow_type])) {
+            return $types[$this->flow_type];
+        }
+        return NULL;
+    }
+
+    function getStatusList() {
+        return [
+            1 => 'active',
+            0 => 'In Active'
+        ];
+    }
+
+    function getStatusName() {
+        $status = $this->getStatusList();
+        if (isset($status[$this->is_active])) {
+            return $status[$this->is_active];
+        }
+        return NULL;
+    }
+
 }

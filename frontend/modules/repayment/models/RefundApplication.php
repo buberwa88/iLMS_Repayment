@@ -58,7 +58,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
     const Verification_Onprogress = 6;
     const Verification_Complete = 7;
     const PAY_LIST_WAITING_QUEUE = 8;
-    const PAID_APPLICATION = 9;
+    const APPLICATION_IN_PALIST = 9;
+    const PAID_APPLICATION = 10;
 
     /**
      * @inheritdoc
@@ -107,7 +108,6 @@ class RefundApplication extends \yii\db\ActiveRecord {
               return $model->social_fund_status == 1;
               }],
              */
-			 
             [['soccialFundDocument'], 'required', 'when' => function ($model) {
             return $model->social_fund_status == 1;
         }, 'whenClient' => "function (attribute, value) { 
@@ -115,8 +115,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
              return $('#social_fund_status_id input:checked').val() == 1;
              }				
 			}"],
-			
-			[['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
+            [['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
             return $model->soccialFundDocument == 1;
         },
                 'whenClient' => "function (attribute, value) {
@@ -124,16 +123,13 @@ class RefundApplication extends \yii\db\ActiveRecord {
 				return $('#social_fund_status_id input:checked').val() == 1;
 				}
 			}"],
-
             [['social_fund_receipt_document', 'social_fund_document'], 'required', 'when' => function ($model) {
-                return $model->soccialFundDocument == 1;
+            return $model->soccialFundDocument == 1;
         }, 'whenClient' => "function (attribute, value) {
         if ($('#soccialFundDocument_id').val() == 1) {
 				return $('#soccialFundDocument_id input:checked').val() == 1;
 				}
 			}"],
-
-			
 //            [['updated_at'], 'required'],
             [['application_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname'], 'string', 'max' => 45],
@@ -372,6 +368,10 @@ class RefundApplication extends \yii\db\ActiveRecord {
         if (is_array($status) && isset($status[$this->current_status])) {
             return $status[$this->current_status];
         }
+    }
+
+    static function pendindApplicationForPaylistExist() {
+        return self::find()->where(['current_status' => self::PAY_LIST_WAITING_QUEUE])->exists();
     }
 
 }

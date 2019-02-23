@@ -2,6 +2,7 @@
 
 namespace backend\modules\repayment\models;
 
+use yii\data\ActiveDataProvider;
 use Yii;
 
 /**
@@ -25,6 +26,7 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
     const STATUS_CREATED = 0;
     const STATUS_VERIFIED = 1;
     const STATUS_APPROVED = 2;
+    const STATUS_PAID = 3;
 
     /**
      * @inheritdoc
@@ -38,7 +40,7 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
      */
     public function rules() {
         return [
-            [['refund_paylist_id', 'refund_application_reference_number', 'refund_claimant_id', 'application_id', 'claimant_name', 'refund_claimant_amount', 'academic_year_id', 'financial_year_id', 'status'], 'required'],
+            [['refund_paylist_id', 'refund_application_reference_number', 'refund_claimant_id', 'application_id', 'claimant_name', 'refund_claimant_amount', 'academic_year_id', 'financial_year_id', 'status', 'payment_bank_account_name', 'payment_bank_account_number', 'payment_bank_name'], 'required'],
             [['refund_paylist_id', 'refund_claimant_id', 'academic_year_id', 'financial_year_id', 'status'], 'integer'],
             [['refund_claimant_amount'], 'number'],
             [['refund_claimant_amount'], 'compare', 'compareValue' => 0, 'operator' => '>'],
@@ -70,11 +72,19 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
         ];
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPaylist() {
+        return $this->hasOne(RefundPaylist::className(), ['refund_paylist_id' => 'refund_paylist_id']);
+    }
+
     function getStatusOptions() {
         return [
             self::STATUS_CREATED => 'Created',
             self::STATUS_VERIFIED => 'Verified',
             self::STATUS_APPROVED => 'Approved',
+            self::STATUS_PAID => 'Paid'
         ];
     }
 
@@ -124,6 +134,35 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
             return $data->refund_claimant_amount;
         }
         return 0;
+    }
+
+    public function searchPaidRefunds($params) {
+        $query = RefundPaylistDetails::find()
+                ->where(['status' => self::STATUS_PAID]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+        $query->orderBy('refund_paylist_id DESC');
+        $this->load($params);
+
+        if (!$this->validate()) {
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->andFilterWhere([
+            'financial_year_id' => $this->financial_year_id,
+        ]);
+
+        $query->andFilterWhere(['like', 'refund_application_reference_number', $this->refund_application_reference_number])
+                ->andFilterWhere(['like', 'phone_number', $this->phone_number])
+                ->andfilterWhere(['like', 'application_id', $this->application_id])
+                ->andFilterWhere(['like', 'claimant_name', $this->claimant_name]);
+
+        return $dataProvider;
     }
 
 }

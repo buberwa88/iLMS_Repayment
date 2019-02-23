@@ -1,5 +1,4 @@
 <?php
-
 /* @var $this yii\web\View */
 /* @var $searchModel backend\modules\repayment\models\RefundInternalOperationalSettingSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -17,49 +16,52 @@ $search = "$('.search-button').click(function(){
 $this->registerJs($search);
 ?>
 <div class="refund-internal-operational-setting-index">
- <div class="panel panel-info">
-                        <div class="panel-heading">
-						<?= Html::encode($this->title) ?>
-                        </div>
-                        <div class="panel-body">
-    <p>
-        <?= Html::a('Create Refund Internal Operational Setting', ['create'], ['class' => 'btn btn-success']) ?>
-       
-    </p>
-    
-    <?php 
-    $gridColumn = [
-        ['class' => 'yii\grid\SerialColumn'],
-       //'refund_internal_operational_id',
-        'name',
-        //'code',
-        //'access_role_master',
-        //'access_role_child',
-        'flow_order_list',
-        //'is_active',
-        [
-            'class' => 'yii\grid\ActionColumn',
-            'template' => '{save-as-new} {view} {update} {delete}',
-            'buttons' => [
-                'save-as-new' => function ($url) {
-                    return Html::a('<span class="glyphicon glyphicon-copy"></span>', $url, ['title' => 'Save As New']);
-                },
-            ],
-        ],
-    ]; 
-    ?>
-    <?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
-        'columns' => $gridColumn,
-        'pjax' => true,
-        'pjaxSettings' => ['options' => ['id' => 'kv-pjax-container-refund-internal-operational-setting']],
-        
-        'export' => false,
-        // your toolbar can include the additional full export menu
-    
-    ]); ?>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <?= Html::encode($this->title) ?>
+        </div>
+        <div class="panel-body">
+            <p>
+                <?= Html::a('Create/Add Refund Operational Setting', ['create'], ['class' => 'btn btn-success']) ?>
+            </p>
 
-</div>
-</div>
+            <?php
+            $gridColumn = [
+                ['class' => 'yii\grid\SerialColumn'],
+                //'refund_internal_operational_id',
+                'name',
+                [
+                    'attribute' => 'flow_type',
+                    'value' => function($model) {
+                        return$model->getFlowTypeName();
+                    }
+                ],
+                'code',
+                'flow_order_list',
+                [
+                    'attribute' => 'is_active',
+                    'value' => function($model) {
+                        return$model->getStatusName();
+                    }
+                ],
+                [
+                    'class' => 'yii\grid\ActionColumn',
+                    'template' => '{view} {update} {delete}',
+                ],
+            ];
+            ?>
+            <?=
+            GridView::widget([
+                'dataProvider' => $dataProvider,
+                'filterModel' => $searchModel,
+                'columns' => $gridColumn,
+                'pjax' => true,
+                'pjaxSettings' => ['options' => ['id' => 'kv-pjax-container-refund-internal-operational-setting']],
+                'export' => false,
+                    // your toolbar can include the additional full export menu
+            ]);
+            ?>
+
+        </div>
+    </div>
 </div>
