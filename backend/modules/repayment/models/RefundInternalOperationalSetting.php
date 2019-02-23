@@ -46,7 +46,12 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
     const audit_investigation_department_c = 'AIND';
     const director_loan_recovery_repayment_c = 'DLRR';
     const executive_director_c = 'ED';
-    const account_section_c = 'AS';
+	const account_section_c = 'AS';
+	
+	//configuration for application and pay list flow
+    const FLOW_TYPE_APPLICATION = 1;
+	const FLOW_TYPE_PAY_LIST = 2;
+	
 
     const loan_recovery_data_section = 'loan_recovery_data_section';
     const loan_recovery_data_section_officer = 'loan_recovery_data_section_officer';
@@ -65,7 +70,7 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
     {
         return [
             [['flow_order_list', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at','flow_type'], 'safe'],
             [['name', 'access_role_master', 'access_role_child'], 'string', 'max' => 100],
             [['code'], 'string', 'max' => 50],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
@@ -90,6 +95,7 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord
             'updated_at' => 'Updated At',
             'updated_by' => 'Updated By',
             'is_active' => 'Is Active',
+			'flow_type'=>'flow_type',
         ];
     }
 
