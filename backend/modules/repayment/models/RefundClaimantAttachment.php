@@ -40,6 +40,7 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
 	 const Bachelor_Education_Certificate_Document='BECD';
 	 const Masters_Education_Certificate_Document='MAECD';
 	 const Death_Certificate_Document='DCFD';
+    const Employer_letter_Document='EMPLD';
 
     public static function tableName()
     {

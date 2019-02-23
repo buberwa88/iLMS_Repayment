@@ -96,7 +96,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname', 'letter_family_session_document'], 'required', 'on' => 'refundFamilySessionDetails'],
             //[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
             [['social_fund_status'], 'required', 'on' => 'refundSocialFundDetails'],
-            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by', 'verification_response', 'current_level', 'soccialFundDocument', 'refundTypeExpalnation', 'refund_type_confirmed'], 'safe'],
+            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by', 'verification_response', 'current_level', 'soccialFundDocument', 'refundTypeExpalnation', 'refund_type_confirmed','employer_letter_document','educationAttained'], 'safe'],
             [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
             [['bank_card_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_document'], 'file', 'extensions' => ['pdf']],
@@ -184,6 +184,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
             'soccialFundDocument' => 'soccialFundDocument',
             'trustee_email' => 'Email',
             'refund_type_confirmed' => 'refund_type_confirmed',
+            'employer_letter_document'=>'employer_letter_document',
+            'educationAttained'=>'educationAttained',
         ];
     }
 

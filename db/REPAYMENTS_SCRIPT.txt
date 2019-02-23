@@ -541,3 +541,5 @@ ALTER TABLE `refund_application` CHANGE `trustee_email` `trustee_email` VARCHAR(
 
 #########23-02-2019####################
 ALTER TABLE `refund_internal_operational_setting` ADD `flow_type` TINYINT(2) NOT NULL COMMENT '1: Flow for Application, 2: Flow for Pay List' AFTER `refund_internal_operational_id`;
+ALTER TABLE `refund_application` ADD `employer_letter_document` VARCHAR(100) NULL DEFAULT NULL AFTER `letter_family_session_document`;
+ALTER TABLE `refund_application` ADD `educationAttained` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Form IV certificate and above, 2: Below Form IV' AFTER `refund_type_confirmed`;
