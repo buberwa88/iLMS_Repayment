@@ -9,7 +9,7 @@ use backend\modules\repayment\models\RefundPaylist;
 /* @var $searchModel backend\modules\repayment\models\RefundPaylistSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Refund Paylist Details';
+$this->title = 'Refund Pay list';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-paylist-view">
@@ -81,27 +81,29 @@ $this->params['breadcrumbs'][] = $this->title;
             kartik\detail\DetailView::widget([
                 'model' => $model,
                 'attributes' => [
-                    'paylist_number',
-                    'paylist_name',
-                    'paylist_description:html',
-                    'date_created',
-                    'created_by',
-                    'date_updated',
-                    'updated_by',
-                    [
-                        'attribute' => 'status',
-                        'value' => strtoupper($model->getStatusName())
+                    ['attribute' => 'paylist_number',
+                        'label' => 'Pay list #'
+                    ],
+                    ['attribute' => 'paylist_name',
+                        'label' => 'Name/Description #',
+                        'value' => $model->paylist_name . ': ' . $model->paylist_description,
+                        'format' => 'html'
                     ],
                     [
                         'attribute' => 'paylist_total_amount',
                         'value' => number_format(backend\modules\repayment\models\RefundPaylistDetails::getPayListTotalAmountById($model->refund_paylist_id)),
-                    ]
+                    ], [
+                        'attribute' => 'status',
+                        'value' => strtoupper($model->getStatusName())
+                    ],
+                    [
+                        'attribute' => 'date_created',
+                        'value' => date('D, d-M-Y @ H:i:s', strtotime($model->date_created)),
+                    ],
                 ],
             ])
             ?>
 
-        </div>
-        <div class="panel-body">
             <p style="font-weight: bold">CLAIMANT LIST</p>
             <?=
             GridView::widget([
@@ -109,12 +111,45 @@ $this->params['breadcrumbs'][] = $this->title;
 //            'filterModel' => $paylist_details_model,
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
-                    'refund_application_reference_number',
-                    'claimant_name',
-//                'claimant_f4indexno',
-                    'refund_claimant_amount',
-//                'academic_year_id',
-//                'financial_year_id',
+                    [
+                        'attribute' => 'refund_application_reference_number',
+                        'label' => 'Application #',
+                        'value' => function($model) {
+                            return strtoupper($model->refund_application_reference_number);
+                        },
+                        'vAlign' => 'middle',
+                    ],
+                    [
+                        'attribute' => 'claimant_name',
+                        'label' => 'Claimant',
+                        'value' => function($model) {
+                            return strtoupper($model->claimant_name);
+                        },
+                        'vAlign' => 'left',
+                    ],
+                    'claimant_f4indexno',
+                    [
+                        'attribute' => 'refund_claimant_amount',
+                        'label' => 'Amount',
+                        'vAlign' => 'right',
+                        'value' => function($model) {
+                            return number_format($model->refund_claimant_amount);
+                        },
+                    ],
+                    [
+                        'attribute' => 'payment_bank_account_number',
+                        'label' => 'Bank Account',
+                        'value' => function($model) {
+                            return $model->payment_bank_account_number;
+                        }
+                    ],
+                    [
+                        'attribute' => 'payment_bank_name',
+                        'label' => 'Bank Name',
+                        'value' => function($model) {
+                            return $model->payment_bank_name . ' ' . (($model->payment_bank_branch) ? $model->payment_bank_branch : '');
+                        }
+                    ],
                     [
                         'attribute' => 'status',
                         'value' => function($model) {

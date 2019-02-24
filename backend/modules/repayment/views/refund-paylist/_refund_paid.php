@@ -13,20 +13,20 @@
             },
         ],
         [
-            'attribute' => 'claimant_name',
-            'label' => 'Claimant',
-            'value' => function($model) {
-                return strtoupper($model->claimant_name);
-            },
-            'vAlign' => 'left',
-        ],
-        [
             'attribute' => 'refund_application_reference_number',
             'label' => 'Application #',
             'value' => function($model) {
                 return strtoupper($model->refund_application_reference_number);
             },
             'vAlign' => 'middle',
+        ],
+        [
+            'attribute' => 'claimant_name',
+            'label' => 'Claimant',
+            'value' => function($model) {
+                return strtoupper($model->claimant_name);
+            },
+            'vAlign' => 'left',
         ],
         [
             'attribute' => 'refund_claimant_amount',
@@ -51,12 +51,14 @@
         ],
         [
             'attribute' => 'payment_bank_account_number',
+            'label' => 'Bank Account',
             'value' => function($model) {
                 return $model->payment_bank_account_number;
             }
         ],
         [
             'attribute' => 'payment_bank_name',
+            'label' => 'Bank Name',
             'value' => function($model) {
                 return $model->payment_bank_name . ' ' . (($model->payment_bank_branch) ? $model->payment_bank_branch : '');
             }

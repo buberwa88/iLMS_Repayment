@@ -368,6 +368,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
         if (is_array($status) && isset($status[$this->current_status])) {
             return $status[$this->current_status];
         }
+        return Null;
     }
 
     static function pendindApplicationForPaylistExist() {

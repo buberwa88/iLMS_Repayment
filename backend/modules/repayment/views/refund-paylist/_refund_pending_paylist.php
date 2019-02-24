@@ -8,7 +8,7 @@
 
 </p>
 
-<h2 class="header" style="font-size: 20px;font-weight: bold;margin-top: 0px;"> Paid Refunds </h2>
+<h2 class="header" style="font-size: 20px;font-weight: bold;margin-top: 0px;"> Pending Refunds </h2>
 <?=
 \kartik\grid\GridView::widget([
     'dataProvider' => $dataProvider,
@@ -30,8 +30,15 @@
             },
         ],
         [
+            'attribute' => 'f4indexno',
+            'label' => 'F4 Index #',
+            'value' => function($model) {
+                return strtoupper($model->refundClaimant->f4indexno);
+            },
+        ],
+        [
             'attribute' => 'check_number',
-            'label' => 'Employee ID',
+            'label' => 'Cheque#',
             'value' => function($model) {
                 return strtoupper($model->check_number);
             },
@@ -57,13 +64,13 @@
                 return number_format($model->refund_claimant_amount);
             },
         ],
-        [
-            'attribute' => 'trustee_phone_number',
-            'label' => 'Trustee #',
-            'value' => function($model) {
-                return strtoupper($model->trustee_firstname . ' ' . $model->trustee_midlename . ' ' . $model->trustee_surname);
-            },
-        ],
+//        [
+//            'attribute' => 'trustee_phone_number',
+//            'label' => 'Trustee #',
+//            'value' => function($model) {
+//                return strtoupper($model->trustee_firstname . ' ' . $model->trustee_midlename . ' ' . $model->trustee_surname);
+//            },
+//        ],
         [
             'attribute' => 'payment_bank_account_number',
             'label' => 'Payment Bank',
