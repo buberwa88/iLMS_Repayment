@@ -21,6 +21,7 @@ class RefundPaylist extends \yii\db\ActiveRecord {
 
     public $paylist_claimant;
     public $paylist_total_amount;
+    public $rejection_narration;
 
     const STATUS_CREATED = 0;
     const STATUS_REVIEWED = 1;
@@ -42,7 +43,7 @@ class RefundPaylist extends \yii\db\ActiveRecord {
             [['paylist_name', 'paylist_number'], 'unique'],
             [['paylist_claimant'], 'validateClaimantList', 'on' => 'paylist-creation'],
             [['paylist_description'], 'string'],
-            [['date_created', 'date_updated', 'paylist_total_amount'], 'safe'],
+            [['date_created', 'date_updated', 'paylist_total_amount','current_level'], 'safe'],
             [['created_by', 'updated_by', 'status'], 'integer'],
             [['paylist_name'], 'string', 'max' => 255],
             [['paylist_number'], 'string', 'max' => 50],
@@ -64,7 +65,8 @@ class RefundPaylist extends \yii\db\ActiveRecord {
             'updated_by' => 'Updated By',
             'status' => 'Status',
             'paylist_claimant' => 'Claimants',
-            'paylist_total_amount'=>'Total Amount'
+            'paylist_total_amount'=>'Total Amount',
+            'current_level'=>'Current Level',
         ];
     }
 

@@ -416,6 +416,9 @@ class RefundApplicationOperationController extends Controller
             $refApplicOperat->is_current_stage=0;
             $refApplicOperat->save(false);
             //After insert set is_current_stage=0 of the previous stage
+            $flow_type=\backend\modules\repayment\models\RefundInternalOperationalSetting::FLOW_TYPE_APPLICATION;
+            $internalOperatSettV=\backend\modules\repayment\models\RefundInternalOperationalSetting::findOne($currentFlow_id);
+            $current_flow_order_list=$internalOperatSettV->flow_order_list;
  $refund_application_id=$modelRefundAppOper->refund_application_id;
  $verificationStatus=$modelRefundAppOper->verificationStatus;$refundStatusReasonSettingId=$modelRefundAppOper->refund_statusreasonsettingid;
  $narration=$modelRefundAppOper->narration;
@@ -440,7 +443,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='REFUND_DATA_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -451,7 +454,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='AUDIT_INVEST_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -460,7 +463,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='REFUND_DATA_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -470,7 +473,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='AUDIT_INVEST_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -479,7 +482,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='';
                 $orderList_ASC_DESC=' ASC  ';
                 $condition=' > ';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -595,12 +598,15 @@ if($responseICode->response_code==$denialLetterCode){
 
             $refApplicOperat = \backend\modules\repayment\models\RefundApplicationOperation::findOne($refOperatDetailsID);
             $currentFlow_id=$refApplicOperat->refund_internal_operational_id;
+            $internalOperatSettV=\backend\modules\repayment\models\RefundInternalOperationalSetting::findOne($currentFlow_id);
+            $current_flow_order_list=$internalOperatSettV->flow_order_list;
             $currentVerificationResponse=$modelRefundAppOper->needStopDeductionOrNot;
             $refApplicOperat->current_verification_response=$currentVerificationResponse;
 
             $refApplicOperat->is_current_stage=0;
             $refApplicOperat->save(false);
             //After insert set is_current_stage=0 of the previous stage
+            $flow_type=\backend\modules\repayment\models\RefundInternalOperationalSetting::FLOW_TYPE_APPLICATION;
             $refund_application_id=$modelRefundAppOper->refund_application_id;
             $verificationStatus=$modelRefundAppOper->verificationStatus;$refundStatusReasonSettingId=$modelRefundAppOper->refund_statusreasonsettingid;
             $narration=$modelRefundAppOper->narration;
@@ -625,7 +631,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='REFUND_DATA_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -636,7 +642,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='AUDIT_INVEST_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -645,7 +651,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='REFUND_DATA_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -655,7 +661,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='AUDIT_INVEST_SECTION';
                 $orderList_ASC_DESC='';
                 $condition='';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
@@ -664,7 +670,7 @@ if($responseICode->response_code==$denialLetterCode){
                 $statusResponse='';
                 $orderList_ASC_DESC=' ASC  ';
                 $condition=' > ';
-                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition);
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
                 $access_role_master=$resultsRefundInterOperSett->access_role_master;
                 $access_role_child=$resultsRefundInterOperSett->access_role_child;
                 $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;

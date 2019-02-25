@@ -47,17 +47,30 @@ class RefundPaylistController extends Controller {
         $pending_refunds = $pendingModel->searchPendingRefunds(Yii::$app->request->queryParams);
         ///
         ///paid models
+        $check=0;
         $paidModel = new RefundPaylistDetails();
         $paid_refunds = $paidModel->searchPaidRefunds(Yii::$app->request->queryParams);
-
-        return $this->render('index', [
-                    'paylistModel' => $paylistModel,
-                    'paylists' => $paylists,
-                    'pendingModel' => $pendingModel,
-                    'pending_refunds' => $pending_refunds,
-                    'paidModel' => $paidModel,
-                    'paid_refunds' => $paid_refunds
-        ]);
+        if($check==0) {
+            return $this->render('index_executive', [
+                'model' => $paylistModel,
+                'dataProvider' => $paylists,
+                'paylistModel' => $paylistModel,
+                'paylists' => $paylists,
+                'pendingModel' => $pendingModel,
+                'pending_refunds' => $pending_refunds,
+                'paidModel' => $paidModel,
+                'paid_refunds' => $paid_refunds
+            ]);
+        }else{
+            return $this->render('index', [
+                'paylistModel' => $paylistModel,
+                'paylists' => $paylists,
+                'pendingModel' => $pendingModel,
+                'pending_refunds' => $pending_refunds,
+                'paidModel' => $paidModel,
+                'paid_refunds' => $paid_refunds
+            ]);
+        }
     }
 
     /**
@@ -67,10 +80,14 @@ class RefundPaylistController extends Controller {
      */
     public function actionView($id) {
         $model = $this->findModel($id);
+        $PaylistOperationModel = new \backend\modules\repayment\models\RefundPaylistOperationSearch();
+        $dataProviderPaylistOperation = $PaylistOperationModel->search(Yii::$app->request->queryParams);
         $paylist_details_model = new \backend\modules\repayment\models\RefundPaylistDetails;
-        $paylist_model->refund_paylist_id = $id;
+        $paylist_details_model->refund_paylist_id = $id;
         return $this->render('view', [
-                    'model' => $model, 'paylist_details_model' => $paylist_details_model
+                    'model' => $model,
+            'paylist_details_model' => $paylist_details_model,
+            'dataProviderPaylistOperation'=>$dataProviderPaylistOperation,
         ]);
     }
 
@@ -205,6 +222,42 @@ class RefundPaylistController extends Controller {
             }
         }
         $this->redirect(['/repayment/refund-paylist/view', 'id' => $id]);
+    }
+
+    public function actionPaylistapproval($id=null) {
+
+        if($id !='') {
+            $lastVerifiedBy=Yii::$app->user->identity->user_id;
+            $dataVerified=date("Y-m-d H:i:s");
+            $generalStatus=1;
+            $narration='Approved';
+            $refund_paylist_id=$id;
+            $resultsV = \backend\modules\repayment\models\RefundPaylist::findOne($id);
+            $current_level=$resultsV->current_level;
+            $currentFlow_id=$current_level;
+            $internalOperatSettV=\backend\modules\repayment\models\RefundInternalOperationalSetting::findOne($current_level);
+            $current_flow_order_list=$internalOperatSettV->flow_order_list;
+            $previous_internal_operational_id=$currentFlow_id;
+            $status=\backend\modules\repayment\models\RefundPaylistOperation::Approved;
+            $flow_type=\backend\modules\repayment\models\RefundInternalOperationalSetting::FLOW_TYPE_PAY_LIST;
+            $statusResponse='';
+            $orderList_ASC_DESC=' ASC  ';
+            $condition=' > ';
+            $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
+            $access_role_master=$resultsRefundInterOperSett->access_role_master;
+            $access_role_child=$resultsRefundInterOperSett->access_role_child;
+            $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
+
+            \backend\modules\repayment\models\RefundPaylistOperation::insertRefundPaylistOperation($refund_paylist_id, $refund_internal_operational_id, $previous_internal_operational_id, $access_role_master, $access_role_child, $status, $narration, $lastVerifiedBy, $dataVerified, $generalStatus);
+        }else{
+            if (Yii::$app->request->post()) {
+                $request = Yii::$app->request->post();
+                $rejection_narration = $request['rejection_narration'];
+                $refund_paylist_id = $request['refund_paylist_id'];
+            }
+        }
+        return $this->redirect(['view', 'id' => $id]);
+
     }
 
 }

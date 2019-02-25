@@ -40,7 +40,7 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
      */
     public function rules() {
         return [
-            [['refund_paylist_id', 'refund_application_reference_number', 'refund_claimant_id', 'application_id', 'claimant_name', 'refund_claimant_amount', 'academic_year_id', 'financial_year_id', 'status', 'payment_bank_account_name', 'payment_bank_account_number', 'payment_bank_name'], 'required'],
+            [['refund_paylist_id', 'refund_application_reference_number', 'refund_claimant_id', 'refund_application_id', 'claimant_name', 'refund_claimant_amount', 'academic_year_id', 'financial_year_id', 'status', 'payment_bank_account_name', 'payment_bank_account_number', 'payment_bank_name'], 'required'],
             [['refund_paylist_id', 'refund_claimant_id', 'academic_year_id', 'financial_year_id', 'status'], 'integer'],
             [['refund_claimant_amount'], 'number'],
             [['refund_claimant_amount'], 'compare', 'compareValue' => 0, 'operator' => '>'],
@@ -60,7 +60,7 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
             'refund_paylist_id' => 'Paylist ID',
             'refund_application_reference_number' => 'Reference Number',
             'refund_claimant_id' => 'Claimant',
-            'application_id' => 'Application ID',
+            'refund_application_id' => 'Refund Application ID',
             'claimant_f4indexno' => 'F4indexno',
             'claimant_name' => 'Claimant Name',
             'refund_claimant_amount' => 'Refund Amount',
@@ -116,7 +116,7 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
             'refund_paylist_id' => $this->refund_paylist_id,
             'status' => $this->status,
             'refund_claimant_id' => $this->refund_claimant_id,
-            'application_id' => $this->application_id
+            'refund_application_id' => $this->refund_application_id
         ]);
 
         $query->andFilterWhere(['like', 'claimant_f4indexno', $this->claimant_f4indexno])
@@ -159,7 +159,7 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
 
         $query->andFilterWhere(['like', 'refund_application_reference_number', $this->refund_application_reference_number])
                 ->andFilterWhere(['like', 'phone_number', $this->phone_number])
-                ->andfilterWhere(['like', 'application_id', $this->application_id])
+                ->andfilterWhere(['like', 'refund_application_id', $this->refund_application_id])
                 ->andFilterWhere(['like', 'claimant_name', $this->claimant_name]);
 
         return $dataProvider;

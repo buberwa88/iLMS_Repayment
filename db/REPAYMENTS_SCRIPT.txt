@@ -544,3 +544,73 @@ ALTER TABLE `refund_internal_operational_setting` ADD `flow_type` TINYINT(2) NOT
 ALTER TABLE `refund_application` ADD `employer_letter_document` VARCHAR(100) NULL DEFAULT NULL AFTER `letter_family_session_document`;
 ALTER TABLE `refund_application` ADD `educationAttained` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Form IV certificate and above, 2: Below Form IV' AFTER `refund_type_confirmed`;
 ALTER TABLE `refund_paylist_details` ADD `payment_bank_account_name` VARCHAR(100) NOT NULL AFTER `financial_year_id`, ADD `payment_bank_account_number` VARCHAR(100) NOT NULL AFTER `payment_bank_account_name`, ADD `payment_bank_name` VARCHAR(100) NOT NULL AFTER `payment_bank_account_number`, ADD `payment_bank_branch` VARCHAR(100) NOT NULL AFTER `payment_bank_name`;
+
+##########25-02-2019#####################
+ALTER TABLE `refund_paylist_details` CHANGE `application_id` `refund_application_id` INT(11) NOT NULL;
+ALTER TABLE `refund_paylist` ADD `current_level` INT(11) NULL DEFAULT NULL AFTER `status`;
+
+
+CREATE TABLE `refund_paylist_operation` (
+  `refund_application_operation_id` int(11) NOT NULL,
+  `refund_paylist_id` int(11) DEFAULT NULL,
+  `refund_internal_operational_id` int(11) DEFAULT NULL,
+  `previous_internal_operational_id` int(11) DEFAULT NULL,
+  `access_role_master` varchar(50) DEFAULT NULL,
+  `access_role_child` varchar(50) DEFAULT NULL,
+  `status` int(11) NOT NULL DEFAULT '1' COMMENT '1: Recommended for approval, 2: Rejected, 3: Approved',
+  `narration` varchar(500) DEFAULT NULL,
+  `assignee` int(11) DEFAULT NULL,
+  `assigned_at` datetime DEFAULT NULL,
+  `assigned_by` int(11) DEFAULT NULL,
+  `last_verified_by` int(11) DEFAULT NULL,
+  `is_current_stage` tinyint(2) NOT NULL DEFAULT '1' COMMENT '1: Current Stage, 0: Not Current Stage',
+  `date_verified` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `is_active` tinyint(2) NOT NULL DEFAULT '1' COMMENT '0: InActive, 1: Active',
+  `general_status` tinyint(2) DEFAULT '1' COMMENT '1: Onprogress, 2: Concluded'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `refund_paylist_operation`
+--
+ALTER TABLE `refund_paylist_operation`
+  ADD PRIMARY KEY (`refund_application_operation_id`),
+  ADD KEY `assignedByref3_idfk` (`assigned_by`),
+  ADD KEY `createdByref3_idfk` (`created_by`),
+  ADD KEY `assigneeref3_idfk` (`assignee`),
+  ADD KEY `lastVerifiedByref3_idfk` (`last_verified_by`),
+  ADD KEY `refundApplication3_idfk` (`refund_paylist_id`),
+  ADD KEY `refundInternalOper3_idfk` (`refund_internal_operational_id`),
+  ADD KEY `updatedBy3_idfk` (`updated_by`),
+  ADD KEY `refund_paylist_operation_idrefInteropprev` (`previous_internal_operational_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `refund_paylist_operation`
+--
+ALTER TABLE `refund_paylist_operation`
+  MODIFY `refund_application_operation_id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `refund_paylist_operation`
+--
+ALTER TABLE `refund_paylist_operation`
+  ADD CONSTRAINT `refund_paylist_operation_ibfk_1` FOREIGN KEY (`refund_paylist_id`) REFERENCES `refund_paylist` (`refund_paylist_id`),
+  ADD CONSTRAINT `refund_paylist_operation_idrefInterop` FOREIGN KEY (`refund_internal_operational_id`) REFERENCES `refund_internal_operational_setting` (`refund_internal_operational_id`),
+  ADD CONSTRAINT `refund_paylist_operation_idrefInteropprev` FOREIGN KEY (`previous_internal_operational_id`) REFERENCES `refund_internal_operational_setting` (`refund_internal_operational_id`);
+COMMIT;
+
+====================================================

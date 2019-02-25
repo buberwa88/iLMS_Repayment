@@ -64,6 +64,7 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
     const account_section = 'account_section';
     const account_section_officer = 'account_section_officer';
 
+
     public function rules() {
         return [
             [['flow_type', 'flow_order_list', 'name', 'code', 'access_role_master', 'access_role_child', '', 'created_by', 'is_active'], 'required'],
@@ -130,13 +131,17 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
         );
     }
 
-    public static function getNextFlow($currentFlow_id, $statusResponse, $orderList_ASC_DESC, $condition) {
-        if ($statusResponse == 'REFUND_DATA_SECTION') {
-            $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  access_role_master='loan_recovery_data_section' AND is_active='1'")->one();
-        } else if ($statusResponse == 'AUDIT_INVEST_SECTION') {
-            $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  access_role_master='audit_investigation_department' AND is_active='1'")->one();
-        } else {
-            $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  refund_internal_operational_id $condition $currentFlow_id AND  is_active='1' ORDER BY refund_internal_operational_id $orderList_ASC_DESC")->one();
+    public static function getNextFlow($currentFlow_id, $statusResponse, $orderList_ASC_DESC, $condition,$flow_type,$current_flow_order_list) {
+        if($flow_type==1) {
+            if ($statusResponse == 'REFUND_DATA_SECTION') {
+                $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  access_role_master='loan_recovery_data_section' AND is_active='1' AND flow_type='$flow_type'")->one();
+            } else if ($statusResponse == 'AUDIT_INVEST_SECTION') {
+                $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  access_role_master='audit_investigation_department' AND is_active='1' AND flow_type='$flow_type'")->one();
+            } else {
+                $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  refund_internal_operational_id $condition $currentFlow_id AND  is_active='1' AND flow_type='$flow_type' ORDER BY flow_order_list $orderList_ASC_DESC")->one();
+            }
+        }else if($flow_type==2){
+            $refundInterOperSetting = self::findBySql("SELECT * FROM  refund_internal_operational_setting WHERE  flow_order_list $condition $current_flow_order_list AND  is_active='1' AND flow_type='$flow_type' ORDER BY flow_order_list $orderList_ASC_DESC")->one();
         }
         return $refundInterOperSetting;
     }

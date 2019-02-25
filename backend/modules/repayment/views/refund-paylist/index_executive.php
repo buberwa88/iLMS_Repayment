@@ -1,5 +1,19 @@
-<h2 class="header" style="font-size: 20px;font-weight: bold;margin-top: 0px;"> Refund Pay Lists </h2>
+<?php
 
+use yii\helpers\Html;
+use kartik\export\ExportMenu;
+use kartik\grid\GridView;
+
+$this->title = 'Refund Pay Lists Executive';
+$this->params['breadcrumbs'][] = $this->title;
+?>
+<div class="refund-paylist-index">
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <?= Html::encode($this->title) ?>
+        </div>
+        <div class="panel-body">
 <?=
 \kartik\grid\GridView::widget([
     'dataProvider' => $dataProvider,
@@ -37,3 +51,6 @@
     ],
 ]);
 ?>
+        </div>
+    </div>
+</div>
