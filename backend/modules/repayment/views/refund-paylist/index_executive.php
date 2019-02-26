@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use kartik\export\ExportMenu;
 use kartik\grid\GridView;
 
-$this->title = 'Refund Pay Lists Executive';
+$this->title = 'Refund Pay Lists';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-paylist-index">
@@ -38,6 +38,12 @@ $this->params['breadcrumbs'][] = $this->title;
             'attribute' => 'status',
             'value' => function($model) {
                 return $model->getStatusName();
+            },
+        ],
+        [
+            'attribute' => 'current_level',
+            'value' => function($model) {
+                return $model->refundInternalOperational->name;
             },
         ],
         // 'created_by',

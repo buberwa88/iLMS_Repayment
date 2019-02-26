@@ -144,4 +144,8 @@ class RefundPaylistOperation extends \yii\db\ActiveRecord
     public static function updatePaylist($refund_paylist_id) {
         self::updateAll(['is_current_stage' => 0], 'refund_paylist_id ="' . $refund_paylist_id . '"');
     }
+    public static function getPaylistOperationCurrentStage($refund_paylist_id,$finalValue){
+       return self::findBySql("SELECT is_current_stage,refund_internal_operational_id,status  FROM refund_paylist_operation
+                    where  	refund_paylist_id='$refund_paylist_id' AND (access_role_master IN($finalValue) OR access_role_child  IN($finalValue)) ORDER BY refund_application_operation_id DESC")->one();
+    }
 }

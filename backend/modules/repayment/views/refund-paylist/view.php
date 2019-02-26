@@ -34,34 +34,41 @@ $this->params['breadcrumbs'][] = $this->title;
             <?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-                <?php if ($model->status == RefundPaylist::STATUS_CREATED) { ?>
-                    <?= Html::a('Update', ['update', 'id' => $model->refund_paylist_id], ['class' => 'btn btn-primary']) ?>
-                    <?=
-                    Html::a('Delete', ['delete', 'id' => $model->refund_paylist_id], [
-                        'class' => 'btn btn-danger',
-                        'data' => [
-                            'confirm' => 'Are you sure you want to delete this item?',
-                            'method' => 'post',
-                        ],
-                    ])
-                    ?>
-                    <?php
-                }
-
-                if ($model->status == RefundPaylist::STATUS_CREATED && $model->hasPaylistItems()) {
-                    ?>
-                    <?=
-                    Html::a('Confirm & Sumbit for Approval', ['confirm-paylist', 'id' => $model->refund_paylist_id], [
-                        'class' => 'btn btn-warning',
-                        'data' => [
-                            'confirm' => 'Are you sure you want to Confirm & Submit for Approval?',
-                            'method' => 'post',
-                        ],
-                    ]);
-                }
+            <?php //echo $currentStageStatus; ?>
+            <?php if($isPaylistClosedCount ==0){
+            if(($ispayListOperatExistCount == 0 || $isCurremtStageRejection == 2) && $currentStageCountLevel > 0 && $currentStageStatus==1){
+            ?>
+            <?php if ($model->status == RefundPaylist::STATUS_CREATED) { ?>
+            <?= Html::a('Update', ['update', 'id' => $model->refund_paylist_id], ['class' => 'btn btn-primary']) ?>
+            <?=
+            Html::a('Delete', ['delete', 'id' => $model->refund_paylist_id], [
+                'class' => 'btn btn-danger',
+                'data' => [
+                    'confirm' => 'Are you sure you want to delete this item?',
+                    'method' => 'post',
+                ],
+            ])
+            ?>
+            <?php
+            }
+            }
+            if (($ispayListOperatExistCount == 0 || $isCurremtStageRejection == 2) && $currentStageCountLevel > 0 && $currentStageStatus==1) {
+            //if ($model->status == RefundPaylist::STATUS_CREATED && $model->hasPaylistItems()) {
+            ?>
+            <?=
+            Html::a('Confirm & Sumbit for Approval', ['confirm-submitapproval', 'id' => $model->refund_paylist_id], [
+                'class' => 'btn btn-warning',
+                'data' => [
+                    'confirm' => 'Are you sure you want to Confirm & Submit for Approval?',
+                    'method' => 'post',
+                ],
+            ]);
+            //}
+            }
                 ?>
 <!--                here for approval and rejection-->
             <?php
+                if($currentStageStatus==1 && $accountSectionLevel==0 && $currentStageCountLevel == 0){
             if ($model->status == RefundPaylist::STATUS_CREATED && $model->hasPaylistItems()) {
                 ?>
                 <?=
@@ -107,6 +114,24 @@ $this->params['breadcrumbs'][] = $this->title;
             ?>
 <!--                end for approval and rejection-->
 
+         <?php } ?>
+
+
+            <?php
+            if($currentStageStatus==1 && $accountSectionLevel==1 && $currentStageCountLevel == 0) {
+                if ($model->status == RefundPaylist::STATUS_CREATED && $model->hasPaylistItems()) {
+                    ?>
+                    <?=
+                    Html::a('Confirm Payment', ['paylistapproval', 'id' => $model->refund_paylist_id], [
+                        'class' => 'btn btn-success',
+                        'data' => [
+                            'confirm' => 'Are you sure you want to approve & submit the pay list?',
+                            'method' => 'post',
+                        ],
+                    ]);
+                }
+            }
+                ?>
 
         <?php
                 ////submit button
@@ -138,6 +163,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php
             }
             ?>
+            <?php } ?>
             <?=
             kartik\detail\DetailView::widget([
                 'model' => $model,

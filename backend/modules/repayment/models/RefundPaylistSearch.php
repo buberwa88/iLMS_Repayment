@@ -18,7 +18,7 @@ class RefundPaylistSearch extends RefundPaylist {
     public function rules() {
         return [
             [['refund_paylist_id', 'created_by', 'updated_by', 'status'], 'integer'],
-            [['paylist_name', 'paylist_description', 'paylist_number', 'date_created', 'date_updated'], 'safe'],
+            [['paylist_name', 'paylist_description', 'paylist_number', 'date_created', 'date_updated','current_level','paylist_total_amount'], 'safe'],
         ];
     }
 

@@ -124,6 +124,13 @@ class RefundPaylist extends \yii\db\ActiveRecord {
     function getPaylistItems() {
         return RefundPaylistDetails::find()->where(['refund_paylist_id' => $this->refund_paylist_id])->all();
     }
+    public function getRefundInternalOperational()
+    {
+        return $this->hasOne(RefundInternalOperationalSetting::className(), ['refund_internal_operational_id' => 'current_level']);
+    }
+    public static function currentStageLevelPaylist($refund_paylist_id){
+        return  self::find()->where(['refund_paylist_id'=>$refund_paylist_id])->one();
+    }
 
    
 

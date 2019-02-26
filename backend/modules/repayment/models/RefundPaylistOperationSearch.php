@@ -85,10 +85,20 @@ class RefundPaylistOperationSearch extends RefundPaylistOperation
         return $dataProvider;
     }
 
-    public function searchPaylistOperation($params)
+    public function searchPaylistOperation($params,$refund_paylist_id)
     {
-        $query = RefundPaylistOperation::find();
+        //$query = RefundPaylistOperation::find();
 
+        $query = RefundPaylistOperation::find()
+            ->select('refund_paylist_operation.previous_internal_operational_id,refund_paylist_operation.refund_internal_operational_id, refund_paylist_operation.narration,refund_paylist_operation.status')
+            ->where(['refund_paylist_id'=>$refund_paylist_id]);
+        /*
+            ->where(['or',
+                ['in','refund_application_operation.access_role_master',$roles],
+                ['in','refund_application_operation.access_role_child',$roles],
+            ])
+            ->groupBy(['refund_application_operation.refund_application_id']);
+        */
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([

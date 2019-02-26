@@ -6,7 +6,8 @@ use Yii;
 use backend\modules\repayment\models\RefundPaylist;
 use backend\modules\repayment\models\RefundPaylistDetails;
 use backend\modules\repayment\models\RefundPaylistSearch;
-use yii\web\Controller;
+//use yii\web\Controller;
+use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -80,14 +81,82 @@ class RefundPaylistController extends Controller {
      */
     public function actionView($id) {
         $model = $this->findModel($id);
+        $refund_paylist_id=$id;
+        $currentStageLevelRoleMaster=\backend\modules\repayment\models\RefundInternalOperationalSetting::loan_recovery_data_section;
+        $account_section=\backend\modules\repayment\models\RefundInternalOperationalSetting::account_section;
+        $user_id=Yii::$app->user->identity->user_id;
+        $allRoles1=\backend\modules\repayment\models\RefundApplicationOperation::getUserRoleByUserID($user_id);
+        $allRoles=$allRoles1->item_name;
         $PaylistOperationModel = new \backend\modules\repayment\models\RefundPaylistOperationSearch();
-        $dataProviderPaylistOperation = $PaylistOperationModel->search(Yii::$app->request->queryParams);
+        $dataProviderPaylistOperation = $PaylistOperationModel->searchPaylistOperation(Yii::$app->request->queryParams,$refund_paylist_id);
         $paylist_details_model = new \backend\modules\repayment\models\RefundPaylistDetails;
         $paylist_details_model->refund_paylist_id = $id;
+        $checkIfClosed = \backend\modules\repayment\models\RefundPaylistOperation::find()->where(['refund_paylist_id' => $refund_paylist_id,'general_status'=>2])->count();
+        $isPaylistClosedCount=$checkIfClosed;
+
+        $checkifExists = \backend\modules\repayment\models\RefundPaylistOperation::find()->where(['refund_paylist_id' => $refund_paylist_id])->count();
+        $ispayListOperatExistCount=$checkifExists;
+        $finalValue='';
+        $countCommas=substr_count($allRoles,",");
+        for($i=0;$i<=$countCommas;){
+            $arrayFound=explode(",",$allRoles);
+            if($i==$countCommas){
+                $val='"';
+            }else{
+                $val='",';
+            }
+            $value='"'.$arrayFound[$i].$val;
+            $finalValue.=$value;
+            $i++;
+        }
+        $myCurrentStageActive = \backend\modules\repayment\models\RefundPaylistOperation::getPaylistOperationCurrentStage($refund_paylist_id,$finalValue);
+        $isAcurrentStageOnProgress=$myCurrentStageActive->is_current_stage;
+        $currentLevelID=$myCurrentStageActive->refund_internal_operational_id;
+        $isCurremtStageRejection=$myCurrentStageActive->status;
+
+        $myCurrentStageActivePaylist = \backend\modules\repayment\models\RefundPaylist::currentStageLevelPaylist($refund_paylist_id);
+        $currentLevelID2=$myCurrentStageActivePaylist->current_level;
+        if($currentLevelID ==''){
+            $currentLevelID=$currentLevelID2;
+
+        }
+
+        //$currentStageCountLevel = \backend\modules\repayment\models\RefundInternalOperationalSetting::currentStageLevel($currentLevelID);
+        //$access_role_master=$currentStageCountLevel->access_role_master;
+        $foundAccountSection=strpos($finalValue,$account_section);
+
+        $foundFirstLEVEL=strpos($finalValue,$currentStageLevelRoleMaster);
+        if($foundFirstLEVEL > 0) {
+            $currentStageCountLevel = 1;
+            if (strcmp($isAcurrentStageOnProgress,0)==0 || strcmp($isAcurrentStageOnProgress,1)==0) {
+                $isAcurrentStageOnProgress=$isAcurrentStageOnProgress;
+        }else{
+
+                $isAcurrentStageOnProgress = 1;
+            }
+        }else{
+            $currentStageCountLevel=0;
+            $isAcurrentStageOnProgress=$isAcurrentStageOnProgress;
+        }
+
+        if($foundAccountSection > 0){
+            $accountSectionFound=1;
+        }else{
+            $accountSectionFound=0;
+        }
+
+
         return $this->render('view', [
                     'model' => $model,
             'paylist_details_model' => $paylist_details_model,
             'dataProviderPaylistOperation'=>$dataProviderPaylistOperation,
+            'isPaylistClosedCount'=>$isPaylistClosedCount,
+            'currentStageStatus'=>$isAcurrentStageOnProgress,
+            'ispayListOperatExistCount'=>$ispayListOperatExistCount,
+            'isCurremtStageRejection'=>$isCurremtStageRejection,
+            'currentStageCountLevel'=>$currentStageCountLevel,
+            'accountSectionLevel'=>$accountSectionFound,
+            //'currentRoleMaster'=>$finalValue,
         ]);
     }
 
@@ -280,6 +349,36 @@ class RefundPaylistController extends Controller {
 
                 \backend\modules\repayment\models\RefundPaylistOperation::insertRefundPaylistOperation($refund_paylist_id, $refund_internal_operational_id, $previous_internal_operational_id, $access_role_master, $access_role_child, $status, $narration, $lastVerifiedBy, $dataVerified, $generalStatus);
             }
+        }
+        return $this->redirect(['view', 'id' => $id]);
+
+    }
+    public function actionConfirmSubmitapproval($id) {
+
+        if($id !='') {
+            $lastVerifiedBy = Yii::$app->user->identity->user_id;
+            $dataVerified = date("Y-m-d H:i:s");
+            $generalStatus = 1;
+            $narration = 'Request for Approved';
+            $refund_paylist_id = $id;
+            $resultsV = \backend\modules\repayment\models\RefundPaylist::findOne($id);
+            $current_level = $resultsV->current_level;
+            $currentFlow_id = $current_level;
+            \backend\modules\repayment\models\RefundPaylistOperation::updatePaylist($refund_paylist_id);
+            $internalOperatSettV=\backend\modules\repayment\models\RefundInternalOperationalSetting::findOne($current_level);
+            $current_flow_order_list=$internalOperatSettV->flow_order_list;
+            $previous_internal_operational_id=$currentFlow_id;
+            $status=\backend\modules\repayment\models\RefundPaylistOperation::Recommended_for_approval;
+            $flow_type=\backend\modules\repayment\models\RefundInternalOperationalSetting::FLOW_TYPE_PAY_LIST;
+            $statusResponse='';
+            $orderList_ASC_DESC=' ASC  ';
+            $condition=' > ';
+            $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
+            $access_role_master=$resultsRefundInterOperSett->access_role_master;
+            $access_role_child=$resultsRefundInterOperSett->access_role_child;
+            $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
+
+            \backend\modules\repayment\models\RefundPaylistOperation::insertRefundPaylistOperation($refund_paylist_id, $refund_internal_operational_id, $previous_internal_operational_id, $access_role_master, $access_role_child, $status, $narration, $lastVerifiedBy, $dataVerified, $generalStatus);
         }
         return $this->redirect(['view', 'id' => $id]);
 

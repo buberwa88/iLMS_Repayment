@@ -212,5 +212,8 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
         }
         return NULL;
     }
+    public static function currentStageLevel($currentLevelID){
+      return  self::find()->where(['refund_internal_operational_id' =>$currentLevelID,'flow_type'=>2,'is_active'=>1])->one();
+    }
 
 }
