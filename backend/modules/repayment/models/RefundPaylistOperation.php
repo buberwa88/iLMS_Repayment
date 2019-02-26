@@ -141,4 +141,7 @@ class RefundPaylistOperation extends \yii\db\ActiveRecord
     {
         \backend\modules\repayment\models\RefundPaylist::updateAll(['current_level' => $refund_internal_operational_id], 'refund_paylist_id ="' . $refund_paylist_id . '"');
     }
+    public static function updatePaylist($refund_paylist_id) {
+        self::updateAll(['is_current_stage' => 0], 'refund_paylist_id ="' . $refund_paylist_id . '"');
+    }
 }

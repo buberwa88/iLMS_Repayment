@@ -227,14 +227,15 @@ class RefundPaylistController extends Controller {
     public function actionPaylistapproval($id=null) {
 
         if($id !='') {
-            $lastVerifiedBy=Yii::$app->user->identity->user_id;
-            $dataVerified=date("Y-m-d H:i:s");
-            $generalStatus=1;
-            $narration='Approved';
-            $refund_paylist_id=$id;
+            $lastVerifiedBy = Yii::$app->user->identity->user_id;
+            $dataVerified = date("Y-m-d H:i:s");
+            $generalStatus = 1;
+            $narration = 'Approved';
+            $refund_paylist_id = $id;
             $resultsV = \backend\modules\repayment\models\RefundPaylist::findOne($id);
-            $current_level=$resultsV->current_level;
-            $currentFlow_id=$current_level;
+            $current_level = $resultsV->current_level;
+            $currentFlow_id = $current_level;
+            \backend\modules\repayment\models\RefundPaylistOperation::updatePaylist($refund_paylist_id);
             $internalOperatSettV=\backend\modules\repayment\models\RefundInternalOperationalSetting::findOne($current_level);
             $current_flow_order_list=$internalOperatSettV->flow_order_list;
             $previous_internal_operational_id=$currentFlow_id;
@@ -252,8 +253,32 @@ class RefundPaylistController extends Controller {
         }else{
             if (Yii::$app->request->post()) {
                 $request = Yii::$app->request->post();
-                $rejection_narration = $request['rejection_narration'];
+                $narration = $request['rejection_narration'];
                 $refund_paylist_id = $request['refund_paylist_id'];
+                $id=$refund_paylist_id;
+                $lastVerifiedBy=Yii::$app->user->identity->user_id;
+                $dataVerified=date("Y-m-d H:i:s");
+                $generalStatus=1;
+
+                $resultsV = \backend\modules\repayment\models\RefundPaylist::findOne($refund_paylist_id);
+                $current_level=$resultsV->current_level;
+                $currentFlow_id=$current_level;
+                \backend\modules\repayment\models\RefundPaylistOperation::updatePaylist($refund_paylist_id);
+                $internalOperatSettV=\backend\modules\repayment\models\RefundInternalOperationalSetting::findOne($current_level);
+                $current_flow_order_list=$internalOperatSettV->flow_order_list;
+                $previous_internal_operational_id=$currentFlow_id;
+                $status=\backend\modules\repayment\models\RefundPaylistOperation::Rejected;
+                $flow_type=\backend\modules\repayment\models\RefundInternalOperationalSetting::FLOW_TYPE_PAY_LIST;
+                $statusResponse='';
+                $orderList_ASC_DESC=' DESC  ';
+                $condition=' < ';
+                $resultsRefundInterOperSett=\backend\modules\repayment\models\RefundInternalOperationalSetting::getNextFlow($currentFlow_id,$statusResponse,$orderList_ASC_DESC,$condition,$flow_type,$current_flow_order_list);
+                $access_role_master=$resultsRefundInterOperSett->access_role_master;
+                $access_role_child=$resultsRefundInterOperSett->access_role_child;
+                $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
+
+
+                \backend\modules\repayment\models\RefundPaylistOperation::insertRefundPaylistOperation($refund_paylist_id, $refund_internal_operational_id, $previous_internal_operational_id, $access_role_master, $access_role_child, $status, $narration, $lastVerifiedBy, $dataVerified, $generalStatus);
             }
         }
         return $this->redirect(['view', 'id' => $id]);

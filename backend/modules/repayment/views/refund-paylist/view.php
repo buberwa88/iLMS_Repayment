@@ -165,6 +165,49 @@ $this->params['breadcrumbs'][] = $this->title;
             ])
             ?>
 
+            <p style="font-weight: bold">APPROVAL STATUS</p>
+            <?= GridView::widget([
+                'dataProvider' => $dataProviderPaylistOperation,
+                //'filterModel' => $searchModelPaylistOperation,
+                'columns' => [
+                    ['class' => 'yii\grid\SerialColumn'],
+                    [
+                        'attribute' => 'previous_internal_operational_id',
+                        'label' => 'From Level',
+                        'value' => function($model) {
+                            return $model->previousInternalOperational->name;
+                        }
+                    ],
+                    [
+                        'attribute' => 'refund_internal_operational_id',
+                        'label' => 'To Level',
+                        'value' => function($model) {
+                            return $model->refundInternalOperational->name;
+                        }
+                    ],
+                    [
+                        'attribute' => 'narration',
+                        'label' => 'Comment',
+                        'value' => function($model) {
+                            return $model->narration;
+                        }
+                    ],
+                    [
+                        'attribute' => 'status',
+                        'label' => 'Status',
+                        'value' => function($model) {
+                            if($model->status==1){
+                                return   "Recommended for approval";
+                            }else if($model->status==2){
+                                return "Rejected";
+                            }else if($model->status==3){
+                                return "Approved";
+                            }
+                        }
+                    ],
+                ],
+            ]); ?>
+
             <p style="font-weight: bold">CLAIMANT LIST</p>
             <?=
             GridView::widget([
@@ -224,49 +267,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 ],
             ]);
             ?>
-
-            <p style="font-weight: bold">APPROVAL STATUS</p>
-            <?= GridView::widget([
-                'dataProvider' => $dataProviderPaylistOperation,
-                //'filterModel' => $searchModelPaylistOperation,
-                'columns' => [
-                    ['class' => 'yii\grid\SerialColumn'],
-                    [
-                        'attribute' => 'previous_internal_operational_id',
-                        'label' => 'From Level',
-                        'value' => function($model) {
-                            return $model->previousInternalOperational->name;
-                        }
-                    ],
-                    [
-                        'attribute' => 'refund_internal_operational_id',
-                        'label' => 'To Level',
-                        'value' => function($model) {
-                            return $model->refundInternalOperational->name;
-                        }
-                    ],
-                    [
-                        'attribute' => 'narration',
-                        'label' => 'Comment',
-                        'value' => function($model) {
-                            return $model->narration;
-                        }
-                    ],
-                    [
-                        'attribute' => 'status',
-                        'label' => 'Status',
-                        'value' => function($model) {
-                           if($model->status==1){
-                            return   "Recommended for approval";
-                           }else if($model->status==2){
-                               return "Rejected";
-                           }else if($model->status==3){
-                               return "Approved";
-                           }
-                        }
-                    ],
-                ],
-            ]); ?>
         </div>
     </div>
 </div>
