@@ -22,6 +22,7 @@ class RefundPaylist extends \yii\db\ActiveRecord {
     public $paylist_claimant;
     public $paylist_total_amount;
     public $rejection_narration;
+    public $refund_application_id;
 
     const STATUS_CREATED = 0;
     const STATUS_REVIEWED = 1;
@@ -43,7 +44,7 @@ class RefundPaylist extends \yii\db\ActiveRecord {
             [['paylist_name', 'paylist_number'], 'unique'],
             [['paylist_claimant'], 'validateClaimantList', 'on' => 'paylist-creation'],
             [['paylist_description'], 'string'],
-            [['date_created', 'date_updated', 'paylist_total_amount','current_level'], 'safe'],
+            [['date_created', 'date_updated', 'paylist_total_amount','current_level','cheque_number','pay_description'], 'safe'],
             [['created_by', 'updated_by', 'status'], 'integer'],
             [['paylist_name'], 'string', 'max' => 255],
             [['paylist_number'], 'string', 'max' => 50],
@@ -72,8 +73,11 @@ class RefundPaylist extends \yii\db\ActiveRecord {
 
     function getStatusOptions() {
         return [
-            self::STATUS_CREATED => 'Created',
-            self::STATUS_REVIEWED => 'Reviewed',
+            //self::STATUS_CREATED => 'Created',
+            //self::STATUS_REVIEWED => 'Reviewed',
+            //self::STATUS_APPROVED => 'Approved',
+            self::STATUS_CREATED => 'Pending',
+            self::STATUS_REVIEWED => 'Paid',
             self::STATUS_APPROVED => 'Approved',
         ];
     }
@@ -130,6 +134,21 @@ class RefundPaylist extends \yii\db\ActiveRecord {
     }
     public static function currentStageLevelPaylist($refund_paylist_id){
         return  self::find()->where(['refund_paylist_id'=>$refund_paylist_id])->one();
+    }
+
+    public static function updateAllPaidRefundApplication($refund_paylist_id){
+
+        $applicationDetails = self::findBySql("SELECT 
+                    refund_application_id   FROM refund_paylist_details  where  refund_paylist_id ='$refund_paylist_id'")->all();
+
+        if(count($applicationDetails) > 0) {
+            foreach($applicationDetails AS $resultPaylistPaid){
+                $refund_application_id=$resultPaylistPaid->refund_application_id;
+                \frontend\modules\repayment\models\RefundApplication::updateAll(['current_status' =>10], 'refund_application_id ="' . $refund_application_id . '"');
+                \backend\modules\repayment\models\RefundApplicationOperation::updateAll(['is_current_stage' =>0,'general_status'=>2], 'refund_application_id ="' . $refund_application_id . '"');
+                \backend\modules\repayment\models\RefundPaylistOperation::updateAll(['is_current_stage' =>0,'general_status'=>2], 'refund_paylist_id ="' . $refund_paylist_id . '"');
+            }
+        }
     }
 
    

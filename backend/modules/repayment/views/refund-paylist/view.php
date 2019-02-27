@@ -10,6 +10,17 @@
             return false;
         }
     }
+    function validateConfirmPayment() {
+        var cheque_number = document.getElementById("cheque_number_id").value.trim();
+        //alert(autstandingAmount);
+        if(cheque_number !==''){
+            return true;
+        }else{
+            var smsalert="Cheque # can not be blank";
+            alert (smsalert);
+            return false;
+        }
+    }
 </script>
 
 <?php
@@ -69,7 +80,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <!--                here for approval and rejection-->
             <?php
                 if($currentStageStatus==1 && $accountSectionLevel==0 && $currentStageCountLevel == 0){
-            if ($model->status == RefundPaylist::STATUS_CREATED && $model->hasPaylistItems()) {
+            //if ($model->status == RefundPaylist::STATUS_CREATED && $model->hasPaylistItems()) {
                 ?>
                 <?=
                 Html::a('Approve & Submit', ['paylistapproval', 'id' => $model->refund_paylist_id], [
@@ -79,7 +90,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'method' => 'post',
                     ],
                 ]);
-            }
+            //}
             ?>
 
   <?php
@@ -119,33 +130,37 @@ $this->params['breadcrumbs'][] = $this->title;
 
             <?php
             if($currentStageStatus==1 && $accountSectionLevel==1 && $currentStageCountLevel == 0) {
-                if ($model->status == RefundPaylist::STATUS_CREATED && $model->hasPaylistItems()) {
-                    ?>
-                    <?=
-                    Html::a('Confirm Payment', ['paylistapproval', 'id' => $model->refund_paylist_id], [
-                        'class' => 'btn btn-success',
-                        'data' => [
-                            'confirm' => 'Are you sure you want to approve & submit the pay list?',
-                            'method' => 'post',
-                        ],
-                    ]);
-                }
-            }
+                Modal::begin([
+                    'header' => '<h4>Confirm Pay list Payment</h4>',
+                    'toggleButton' =>   ['label' => 'Confirm Payment', 'style'=>'margin-left:4px', 'class' => 'btn btn-success'],
+                ]);
+            ?>
+                <?= Html::beginForm("index.php?r=repayment/refund-paylist/confirmpayment"); ?>
+                <label>Pay list #:<?php echo " ".$model->paylist_number; ?></label>
+                <br/><br/>
+                <label>Cheque #:</label>
+                <?=
+            Html::textInput('cheque_number', null, ['size'=>20,'class'=>'form-control','id'=>'cheque_number_id','options'=>['size'=>'20']])
                 ?>
-
-        <?php
-                ////submit button
-                if ($model->status == RefundPaylist::STATUS_REVIEWED && $model->hasPaylistItems()) {
+                <label>Narration:</label>
+                <?=
+                Html::textArea('pay_description', null, ['size'=>20,'rows'=>4,'cols'=>50,'class'=>'form-control','options'=>['size'=>'20']])
+                ?>
+            <?=Html::hiddenInput('refund_paylist_id', $model->refund_paylist_id,['class'=>'form-control'])?>
+                <br/>
+                <div class="text-right" >
+                    <?php //if($model->hasErrors()){ ?>
+                    <?= Html::submitButton('Confirm', ['class'=>'btn btn-primary','onclick'=>'return  validateConfirmPayment()']) ?>
+                    <?php //} ?>
+                    <?php
+                    echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
+                    echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/refund-paylist/view','id'=>$model->refund_paylist_id], ['class' => 'btn btn-warning']);
                     ?>
-                    <?=
-                    Html::a('Approve Paylist', ['approve-paylist', 'id' => $model->refund_paylist_id], [
-                        'class' => 'btn btn-success',
-                        'data' => [
-                            'confirm' => 'Are you sure you want to Approve this Paylist?',
-                            'method' => 'post',
-                        ],
-                    ]);
-                }
+                </div>
+                <?= Html::endForm(); ?>
+            <?php
+            Modal::end();
+            }
                 ?>
             </p>
             <?php

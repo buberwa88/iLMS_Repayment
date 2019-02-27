@@ -613,4 +613,8 @@ ALTER TABLE `refund_paylist_operation`
   ADD CONSTRAINT `refund_paylist_operation_idrefInteropprev` FOREIGN KEY (`previous_internal_operational_id`) REFERENCES `refund_internal_operational_setting` (`refund_internal_operational_id`);
 COMMIT;
 
-====================================================
+===========26-02-2019==============================
+ALTER TABLE `refund_paylist` ADD `cheque_number` VARCHAR(100) NULL DEFAULT NULL AFTER `current_level`;
+ALTER TABLE `refund_paylist` ADD `pay_description` VARCHAR(200) NULL DEFAULT NULL AFTER `cheque_number`;
+ALTER TABLE `refund_paylist` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `pay_description`;
+ALTER TABLE `refund_paylist` CHANGE `status` `status` INT(2) NOT NULL COMMENT '1: Paid, 0: Not paid';

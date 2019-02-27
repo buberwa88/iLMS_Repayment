@@ -384,4 +384,29 @@ class RefundPaylistController extends Controller {
 
     }
 
+    public function actionConfirmpayment() {
+            if (Yii::$app->request->post()) {
+                $request = Yii::$app->request->post();
+                $cheque_number = $request['cheque_number'];
+                $pay_description = $request['pay_description'];
+                $refund_paylist_id = $request['refund_paylist_id'];
+                $id=$refund_paylist_id;
+                $updated_by=Yii::$app->user->identity->user_id;
+                $updated_at=date("Y-m-d H:i:s");
+                $resultsV = \backend\modules\repayment\models\RefundPaylist::findOne($refund_paylist_id);
+                $resultsV->cheque_number=$cheque_number;
+                $resultsV->pay_description=$pay_description;
+                $resultsV->updated_by=$updated_by;
+                $resultsV->updated_at=$updated_at;
+                $resultsV->status=1;
+                if($resultsV->save(false)){
+    \backend\modules\repayment\models\RefundPaylist::updateAllPaidRefundApplication($refund_paylist_id);
+                }
+            }
+
+        //return $this->redirect(['view', 'id' => $id]);
+            return $this->redirect(['index']);
+
+    }
+
 }
