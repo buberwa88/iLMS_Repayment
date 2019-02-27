@@ -1,3 +1,16 @@
+<script type="text/javascript">
+    function claimantNamesChangedStatus(element){
+        //alert(element);
+        var namesChangedStatusV=$('#claimant_names_changed_status_id input:checked').val();
+        if (namesChangedStatusV==1) {
+            document.getElementById('showNamesChanged').style.display = 'block';
+        } else if(namesChangedStatusV==2){
+            document.getElementById('showNamesChanged').style.display = 'none';
+        }else {
+            document.getElementById('showNamesChanged').style.display = 'none';
+        }
+    }
+</script>
 <?php
 
 use kartik\widgets\ActiveForm;
@@ -15,6 +28,7 @@ use frontend\modules\repayment\models\RefundApplication;
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\RefundEducationHistory */
 /* @var $form yii\widgets\ActiveForm */
+$list = [1 => 'Yes', 2 => 'No'];
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
@@ -75,6 +89,37 @@ $cancel="site/refund-liststeps";
             //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
         ]);
         ?>
+    <?php
+    echo $form->field($model, 'claimant_names_changed_status')->label('Have you changed you names?')->radioList($list,
+        [
+            'inline'=>true,
+            'id'=>claimant_names_changed_status_id,
+            'onchange'=>'claimantNamesChangedStatus(this)',
+        ]);
+    ?>
+    <br/>
+    <div id="showNamesChanged" style="display:none">
+        <?php
+        echo $form->field($model, 'deed_pole_document')->label('Deed Pole Document:')->widget(FileInput::classname(), [
+            'options' => ['accept' => 'site/pdf'],
+            'pluginOptions' => [
+                'showCaption' => false,
+                'showRemove' => TRUE,
+                'showUpload' => false,
+                // 'browseClass' => 'btn btn-primary btn-block',
+                'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
+                'browseLabel' =>  'Deed Pole Document (required format .pdf only)',
+                'initialPreview'=>[
+                    "$model->deed_pole_document",
+
+                ],
+                'initialCaption'=>$model->deed_pole_document,
+                'initialPreviewAsData'=>true,
+            ],
+            //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
+        ]);
+        ?>
+    </div>
         <div class="text-right">
             <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 

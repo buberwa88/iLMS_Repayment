@@ -60,9 +60,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-            <p>
-                <?= Html::a('Add New Employment Details ', ['create-employment-details'], ['class' => 'btn btn-success']) ?>
-            </p><br/><br/>
+
             <?php  $modelRefundClaimantEducationHistory = RefundClaimantEmployment::find()->where("refund_application_id={$refund_application_id}")->all();
 
 
@@ -76,6 +74,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label' => 'Employer Name',
+                                'visible'=>$model->employer_name !='',
                                 //'value'=>$model->employer_name,
                                 'value'=>call_user_func(function ($data) {
                                     if($data->employer_name !=''){
@@ -99,63 +98,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                 //'labelColOptions'=>['style'=>'width:20%'],
                                 //'valueColOptions'=>['style'=>'width:30%'],
                             ]
-                        ],
-                    ],
-                    [
-                        'columns' => [
-
-                            [
-                                'label'=>'Start Date',
-                                'value'=>$model->start_date,
-                                //'labelColOptions'=>['style'=>'width:20%'],
-                                //'valueColOptions'=>['style'=>'width:30%'],
-                            ]
-                        ],
-                    ],
-
-                    [
-                        'columns' => [
-
-                            [
-                                'label'=>'End Date',
-                                'value'=>$model->end_date,
-                                //'labelColOptions'=>['style'=>'width:20%'],
-                                //'valueColOptions'=>['style'=>'width:30%'],
-                            ],
-                        ],
-                    ],
-                    [
-                        'columns' => [
-
-                            [
-                                'label'=>'First Salary/Pay Slip Document',
-                                'value'=>call_user_func(function ($data) {
-                                    if($data->first_slip_document !=''){
-                                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->first_slip_document . '")','class'=>'label label-primary']);
-                                    }else{
-                                        return $data->first_slip_document;
-                                    }
-                                }, $model),
-                                'format' => 'raw',
-
-                            ],
-                        ],
-                    ],
-                    [
-                        'columns' => [
-
-                            [
-                                'label'=>'Second Salary/Pay Slip Document',
-                'value'=>call_user_func(function ($data) {
-                    if($data->second_slip_document !=''){
-                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->second_slip_document . '")','class'=>'label label-primary']);
-                    }else{
-                        return $data->second_slip_document;
-                    }
-                }, $model),
-                'format' => 'raw',
-
-                            ],
                         ],
                     ],
                 ];

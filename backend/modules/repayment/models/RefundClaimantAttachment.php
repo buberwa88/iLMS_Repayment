@@ -41,6 +41,7 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
 	 const Masters_Education_Certificate_Document='MAECD';
 	 const Death_Certificate_Document='DCFD';
     const Employer_letter_Document='EMPLD';
+    const Claimant_deed_pole_document='CDPD';
 
     public static function tableName()
     {

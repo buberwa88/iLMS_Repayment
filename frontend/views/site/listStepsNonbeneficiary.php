@@ -47,10 +47,16 @@ $incomplete = $resultsCheckResultsGeneral->submitted;
             $f4educationCaptured = RefundClaimant::getStageChecked($refund_claim_id);
             $resultsCheckCount = RefundApplication::getStageCheckedBankDetails($refund_application_id);
             $resultsCheckCountSocialFund = RefundApplication::getStageCheckedSocialFund($refund_application_id);
+            $resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked($refund_application_id);
             ?>
                 <li class="list-group-item"><?= yii\helpers\Html::a("Step 1: Primary/Form 4 Education", ['site/create-educationgeneral']); ?><label class='label  <?= RefundClaimant::getStageChecked($refund_claim_id) > 0 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= RefundClaimant::getStageChecked($refund_claim_id) > 0 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
             <li class="list-group-item"><?= $resultsCheckResultsGeneral->submitted != 3 ? yii\helpers\Html::a("Step 2: Tertiary Education Details ", ['site/index-tertiary-education']) : "Step 2: Tertiary Education Details "; ?><label class='label <?= RefundClaimantEducationHistory::getStageChecked($refund_application_id) > 0 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= RefundClaimantEducationHistory::getStageChecked($refund_application_id) > 0 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
+            <?php if ($resultsCheckCountEmploymentDetails == 0) { ?>
+            <li class="list-group-item"><?= $resultsCheckResultsGeneral->submitted != 3 ? yii\helpers\Html::a("Step 3: Employment Details ", ['site/create-employment-details']) : "Step 3: Employment Details "; ?><label class='label  <?= RefundClaimantEmployment::getStageChecked($refund_application_id) > 0 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= RefundClaimantEmployment::getStageChecked($refund_application_id) > 0 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
+            <?php } ?>
+            <?php if ($resultsCheckCountEmploymentDetails > 0) { ?>
             <li class="list-group-item"><?= $resultsCheckResultsGeneral->submitted != 3 ? yii\helpers\Html::a("Step 3: Employment Details ", ['site/index-employment-details']) : "Step 3: Employment Details "; ?><label class='label  <?= RefundClaimantEmployment::getStageChecked($refund_application_id) > 0 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= RefundClaimantEmployment::getStageChecked($refund_application_id) > 0 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
+            <?php } ?>
             <?php if ($resultsCheckCount == 0) { ?>
                 <li class="list-group-item"><?= yii\helpers\Html::a("Step 4: Bank Details ", ['site/create-refund-bankdetails']); ?><label class='label  <?= RefundApplication::getStageCheckedBankDetails($refund_application_id) > 0 ? "label-success" : "label-danger"; ?> pull-right'><span class="glyphicon <?= RefundApplication::getStageCheckedBankDetails($refund_application_id) > 0 ? "glyphicon-check" : "glyphicon-remove"; ?>"></span></label></li>
             <?php } ?>

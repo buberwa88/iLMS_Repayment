@@ -41,18 +41,29 @@ class RefundClaimantEmployment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['start_date', 'end_date', 'created_at', 'updated_at','first_slip_document','second_slip_document'], 'safe'],
+            [['start_date', 'end_date', 'created_at', 'updated_at','first_slip_document','second_slip_document','employed_gvt_private_status','employed_gvt_check_number_status','employment_status'], 'safe'],
             [['refund_claimant_id', 'refund_application_id', 'created_by', 'updated_by'], 'integer'],
             [['employer_name', 'employee_id'], 'string', 'max' => 100],
             [['matching_status'], 'string', 'max' => 200],
 			[['first_slip_document'], 'file', 'extensions'=>['pdf']],
 			[['second_slip_document'], 'file', 'extensions'=>['pdf']],
+            /*
             [['start_date', 'end_date','employer_name','employee_id'], 'required', 'when' => function ($model) {
                 return $model->employment_status == 1;
             }, 'whenClient' => "function (attribute, value) {
 				return $('#employmentStatus_id input:checked').val() == 1;
 			}"],
-			[['employment_status','first_slip_document','second_slip_document'], 'required','on'=>'refundEmploymentDetails'],
+            */
+
+            [['employed_gvt_check_number_status'], 'required', 'when' => function ($model) {
+                return $model->employed_gvt_check_number_status == 1;
+            }, 'whenClient' => "function (attribute, value) { 
+             if ($('#employed_gvt_private_status_id').val() == 1) {
+             return $('#employed_gvt_private_status_id input:checked').val() == 1;
+             }				
+			}"],
+			//[['employment_status','first_slip_document','second_slip_document'], 'required','on'=>'refundEmploymentDetails'],
+            [['employed_gvt_private_status','employee_id'], 'required','on'=>'refundEmploymentDetails'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['refund_application_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundApplication::className(), 'targetAttribute' => ['refund_application_id' => 'refund_application_id']],
             [['refund_claimant_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundClaimant::className(), 'targetAttribute' => ['refund_claimant_id' => 'refund_claimant_id']],

@@ -90,19 +90,20 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['pin'], 'required', 'on' => 'refund-login'],
             [['pin'], 'validatePin', 'on' => 'refund-login'],
             [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
-            [['bank_account_number', 'bank_account_name', 'bank_name', 'branch', 'bank_card_document'], 'required', 'on' => 'refundBankDetailsAdd'],
+            [['bank_account_number', 'bank_account_name', 'bank_name', 'branch', 'bank_card_document','claimant_names_changed_status'], 'required', 'on' => 'refundBankDetailsAdd'],
             [['death_certificate_number', 'death_certificate_document'], 'required', 'on' => 'refundDeathDetails'],
             [['liquidation_letter_document', 'liquidation_letter_number'], 'required', 'on' => 'refundEmploymentDetails'],
             [['court_letter_number', 'court_letter_certificate_document'], 'required', 'on' => 'refundCourtDetails'],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname', 'letter_family_session_document'], 'required', 'on' => 'refundFamilySessionDetails'],
             //[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
             [['social_fund_status'], 'required', 'on' => 'refundSocialFundDetails'],
-            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by', 'verification_response', 'current_level', 'soccialFundDocument', 'refundTypeExpalnation', 'refund_type_confirmed','employer_letter_document','educationAttained'], 'safe'],
+            [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by', 'verification_response', 'current_level', 'soccialFundDocument', 'refundTypeExpalnation', 'refund_type_confirmed','employer_letter_document','educationAttained','claimant_names_changed_status','deed_pole_document'], 'safe'],
             [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
             [['bank_card_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_receipt_document'], 'file', 'extensions' => ['pdf']],
             [['liquidation_letter_document'], 'file', 'extensions' => ['pdf']],
+            [['deed_pole_document'], 'file', 'extensions' => ['pdf']],
             /*
               [['social_fund_receipt_document','social_fund_document'], 'required', 'when' => function($model) {
               return $model->social_fund_status == 1;
@@ -128,6 +129,13 @@ class RefundApplication extends \yii\db\ActiveRecord {
         }, 'whenClient' => "function (attribute, value) {
         if ($('#soccialFundDocument_id').val() == 1) {
 				return $('#soccialFundDocument_id input:checked').val() == 1;
+				}
+			}"],
+            [['deed_pole_document'], 'required', 'when' => function ($model) {
+                return $model->claimant_names_changed_status == 1;
+            }, 'whenClient' => "function (attribute, value) {
+        if ($('#claimant_names_changed_status_id input:checked').val() == 1) {
+				return $('#claimant_names_changed_status_id input:checked').val() == 1;
 				}
 			}"],
 //            [['updated_at'], 'required'],
@@ -182,6 +190,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             'refund_type_confirmed' => 'refund_type_confirmed',
             'employer_letter_document'=>'employer_letter_document',
             'educationAttained'=>'educationAttained',
+            'claimant_names_changed_status'=>'Have you changed you names',
         ];
     }
 

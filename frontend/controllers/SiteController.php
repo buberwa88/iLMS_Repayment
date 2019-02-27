@@ -1136,26 +1136,33 @@ class SiteController extends Controller {
             $refundClaimantid = $session->get('refund_claimant_id');
             $refund_application_id = $session->get('refund_application_id');
             //end set session
-            $datime = date("Y_m_d_H_i_s");
-            $model->first_slip_document = UploadedFile::getInstance($model, 'first_slip_document');
-            $model->second_slip_document = UploadedFile::getInstance($model, 'second_slip_document');
+            //$datime = date("Y_m_d_H_i_s");
+            //$model->first_slip_document = UploadedFile::getInstance($model, 'first_slip_document');
+            //$model->second_slip_document = UploadedFile::getInstance($model, 'second_slip_document');
+            if ($model->validate()) {
+
+                if($model->employed_gvt_private_status==2){
+                    $model->employed_gvt_check_number_status=null;
+                }
+
             /*
               $model->support_document->saveAs('../../vframework_document/verification_support_document_'.$model->verification_framework_id.'_'.$datime.'.'.$model->support_document->extension);
               $model->support_document = 'vframework_document/verification_support_document_'.$model->verification_framework_id.'_'.$datime.'.'.$model->support_document->extension;
-             */
+
+
             $model->first_slip_document->saveAs(Yii::$app->params['refundAttachments'] . "first_slip_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->first_slip_document->extension);
             $model->first_slip_document = Yii::$app->params['refundAttachments'] . "first_slip_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->first_slip_document->extension;
 
             $model->second_slip_document->saveAs(Yii::$app->params['refundAttachments'] . "second_slip_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->second_slip_document->extension);
             $model->second_slip_document = Yii::$app->params['refundAttachments'] . "second_slip_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->second_slip_document->extension;
-
+*/
 
             if ($refundClaimantid != '' && $refund_application_id != '') {
                 $model->refund_application_id = $refund_application_id;
                 if ($model->save()) {
-                    $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Salary_PAY_Slip;
-                    \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->first_slip_document);
-                    \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->second_slip_document);
+                    //$attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Salary_PAY_Slip;
+                    //\backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->first_slip_document);
+                    //\backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->second_slip_document);
                     return $this->redirect(['index-employment-details']);
                 }
             } else {
@@ -1163,6 +1170,8 @@ class SiteController extends Controller {
                 Yii::$app->getSession()->setFlash('error', $sms);
                 return $this->redirect(['index-employment-details', 'id' => $refundClaimantid]);
             }
+        }
+            //var_dump($model->errors);
         } else {
             return $this->render('createEmploymentDetails', [
                         'model' => $model,
@@ -1224,19 +1233,36 @@ class SiteController extends Controller {
 
             $datime = date("Y_m_d_H_i_s");
             $model->bank_card_document = UploadedFile::getInstance($model, 'bank_card_document');
+            if($model->claimant_names_changed_status==1) {
+                $model->deed_pole_document = UploadedFile::getInstance($model, 'deed_pole_document');
+            }
             $model->bank_card_document->saveAs(Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension);
-            $model->bank_card_document = Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension;
+            if($model->claimant_names_changed_status==1) {
+                $model->deed_pole_document->saveAs(Yii::$app->params['refundAttachments'] . "deed_pole_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->deed_pole_document->extension);
+            }
 
+            $model->bank_card_document = Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension;
+            if($model->claimant_names_changed_status==1) {
+                $model->deed_pole_document = Yii::$app->params['refundAttachments'] . "deed_pole_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->deed_pole_document->extension;
+            }
             if ($refund_application_id != '') {
                 $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
                 $modelRefundresults->bank_name = $model->bank_name;
                 $modelRefundresults->bank_account_number = $model->bank_account_number;
                 $modelRefundresults->bank_account_name = $model->bank_account_name;
+                if($model->claimant_names_changed_status==1) {
+                $modelRefundresults->deed_pole_document = $model->deed_pole_document;
+                $modelRefundresults->claimant_names_changed_status = $model->claimant_names_changed_status;
+                }
                 $modelRefundresults->branch = $model->branch;
                 $modelRefundresults->bank_card_document = $model->bank_card_document;
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Bank_Card;
+                    $attachment_code2 = \backend\modules\repayment\models\RefundClaimantAttachment::Claimant_deed_pole_document;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->bank_card_document);
+                    if($model->claimant_names_changed_status==1) {
+                        \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code2, $model->deed_pole_document);
+                    }
                     return $this->redirect(['index-bankdetails']);
                 }
             } else {
@@ -1779,16 +1805,23 @@ class SiteController extends Controller {
                     if (mail($trustee_email, $subject, $message, $headers)) {
                         return $this->redirect(['refund-login']);
                     } else {
+                        /*
                         $sms = "<p>Email not sent!<br/>
                    Kindly contact HESLB for assistance. </p>";
                         Yii::$app->getSession()->setFlash('danger', $sms);
                         return $this->redirect(['view-refund']);
+                        */
+                        return $this->redirect(['refund-login']);
                     }
                 } else {
-                    echo '<p class="messageSuccessFailed"><em>YOU HAVE NO INTERNET CONNECTION: Can not send  SMS!</em></p>';
+
+                    /*
+    echo '<p class="messageSuccessFailed"><em>YOU HAVE NO INTERNET CONNECTION: Can not send  SMS!</em></p>';
                     $sms = "<p>Token not Sent, Kindly Contact HESLB for Assistance. </p>";
                     Yii::$app->getSession()->setFlash('success', $sms);
                     return $this->redirect(['view-refund']);
+                    */
+                    return $this->redirect(['refund-login']);
                 }
                 ##################################end send email##################################
 
@@ -1803,6 +1836,7 @@ class SiteController extends Controller {
 
     public function actionRefundLogin() {
         $this->layout = "main_public";
+        $sms='';
         $model = new \frontend\modules\repayment\models\RefundApplication();
         $model->scenario = 'refund-login';
         $model->application_number = \Yii::$app->session->get('reference_no');
