@@ -89,6 +89,7 @@ $cancel="site/refund-liststeps";
             //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
         ]);
         ?>
+    <?php if($refundTypeId !=3){ ?>
     <?php
     echo $form->field($model, 'claimant_names_changed_status')->label('Have you changed you names?')->radioList($list,
         [
@@ -97,7 +98,11 @@ $cancel="site/refund-liststeps";
             'onchange'=>'claimantNamesChangedStatus(this)',
         ]);
     ?>
+        <?php } ?>
     <br/>
+    <?= $form->field($model, 'refundType')->label(FALSE)->hiddenInput(["value" =>$refundTypeId,'id' => 'refundType_id']) ?>
+    <br/>
+
     <div id="showNamesChanged" style="display:none">
         <?php
         echo $form->field($model, 'deed_pole_document')->label('Deed Pole Document:')->widget(FileInput::classname(), [

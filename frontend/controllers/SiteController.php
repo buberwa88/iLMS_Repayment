@@ -1252,8 +1252,8 @@ class SiteController extends Controller {
                 $modelRefundresults->bank_account_name = $model->bank_account_name;
                 if($model->claimant_names_changed_status==1) {
                 $modelRefundresults->deed_pole_document = $model->deed_pole_document;
-                $modelRefundresults->claimant_names_changed_status = $model->claimant_names_changed_status;
                 }
+                $modelRefundresults->claimant_names_changed_status = $model->claimant_names_changed_status;
                 $modelRefundresults->branch = $model->branch;
                 $modelRefundresults->bank_card_document = $model->bank_card_document;
                 if ($modelRefundresults->save(false)) {
