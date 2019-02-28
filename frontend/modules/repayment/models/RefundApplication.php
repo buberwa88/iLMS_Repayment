@@ -94,7 +94,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['bank_account_number', 'bank_account_name', 'bank_name', 'branch', 'bank_card_document'], 'required', 'on' => 'refundBankDetailsAdd'],
             [['death_certificate_number', 'death_certificate_document'], 'required', 'on' => 'refundDeathDetails'],
             [['liquidation_letter_document', 'liquidation_letter_number'], 'required', 'on' => 'refundEmploymentDetails'],
-            [['court_letter_number', 'court_letter_certificate_document'], 'required', 'on' => 'refundCourtDetails'],
+            [['court_letter_number', 'court_letter_certificate_document','letter_family_session_document'], 'required', 'on' => 'refundCourtDetails'],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname', 'letter_family_session_document'], 'required', 'on' => 'refundFamilySessionDetails'],
             //[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
             [['social_fund_status'], 'required', 'on' => 'refundSocialFundDetails'],

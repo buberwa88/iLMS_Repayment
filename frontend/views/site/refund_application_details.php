@@ -1061,7 +1061,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php $form = ActiveForm::begin(['action' => ['refund-confirm', 'id' => $model->refund_application_id]]); ?>
                 <div class="text-right">
 
-                    <?= Html::submitButton($model->isNewRecord ? 'Confirm the above details for Refund Submission' : 'Confirm the above details for Refund Submission', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+                    <?= Html::submitButton($model->isNewRecord ? 'Confirm and Submit Refund Application' : 'Confirm and Submit Refund Application', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary',
+                        'data' => [
+                        'confirm' => 'Are you sure you want to submit your refund application?',
+                        'method' => 'post',
+                    ],]) ?>
                     <?php ActiveForm::end(); ?>
                 <?php } ?>
                 <div class="rowQA">

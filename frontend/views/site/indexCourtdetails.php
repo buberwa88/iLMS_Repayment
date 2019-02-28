@@ -67,7 +67,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label'=>'Court Letter Document',
+                                'label'=>'Appointed estate admin confirmation document',
                 'value'=>call_user_func(function ($data) {
                     if($data->court_letter_certificate_document !=''){
                         return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->court_letter_certificate_document . '")','class'=>'label label-primary']);
@@ -76,6 +76,23 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 }, $model),
                 'format' => 'raw',
+
+                            ],
+                        ],
+                    ],
+                    [
+                        'columns' => [
+
+                            [
+                                'label'=>'Family Session Letter Document',
+                                'value'=>call_user_func(function ($data) {
+                                    if($data->letter_family_session_document !=''){
+                                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->letter_family_session_document . '")','class'=>'label label-primary']);
+                                    }else{
+                                        return $data->letter_family_session_document;
+                                    }
+                                }, $model),
+                                'format' => 'raw',
 
                             ],
                         ],

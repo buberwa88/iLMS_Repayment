@@ -1589,18 +1589,25 @@ class SiteController extends Controller {
             //end set session
             $datime = date("Y_m_d_H_i_s");
             $model->court_letter_certificate_document = UploadedFile::getInstance($model, 'court_letter_certificate_document');
+            $model->letter_family_session_document = UploadedFile::getInstance($model, 'letter_family_session_document');
 
             $model->court_letter_certificate_document->saveAs(Yii::$app->params['refundAttachments'] . "court_letter_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->court_letter_certificate_document->extension);
             $model->court_letter_certificate_document = Yii::$app->params['refundAttachments'] . "court_letter_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->court_letter_certificate_document->extension;
+
+            $model->letter_family_session_document->saveAs(Yii::$app->params['refundAttachments'] . "letter_family_session_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->letter_family_session_document->extension);
+            $model->letter_family_session_document = Yii::$app->params['refundAttachments'] . "letter_family_session_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->letter_family_session_document->extension;
 
 
             if ($refundClaimantid != '' && $refund_application_id != '') {
                 $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
                 $modelRefundresults->court_letter_certificate_document = $model->court_letter_certificate_document;
+                $modelRefundresults->letter_family_session_document = $model->letter_family_session_document;
                 $modelRefundresults->court_letter_number = $model->court_letter_number;
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Letter_from_court;
+                    $attachment_code2 = \backend\modules\repayment\models\RefundClaimantAttachment::Letter_of_family_session;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->court_letter_certificate_document);
+                    \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code2, $model->letter_family_session_document);
                     return $this->redirect(['index-courtdetails']);
                 }
             } else {
@@ -1724,7 +1731,7 @@ class SiteController extends Controller {
 
     public function actionRefundConfirm($id) {
         $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($id);
-        $modelRefundresults->submitted = 2;
+        $modelRefundresults->submitted = 3;
         if ($modelRefundresults->save(false))
             ;
         //return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);

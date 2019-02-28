@@ -47,8 +47,28 @@ $refund_application_id = $session->get('refund_application_id');
         ]
     ]);
     ?>
+    <?php
+    echo $form->field($model, 'letter_family_session_document')->label('Family Session Letter Document:')->widget(FileInput::classname(), [
+        'options' => ['accept' => 'site/pdf'],
+        'pluginOptions' => [
+            'showCaption' => false,
+            'showRemove' => TRUE,
+            'showUpload' => false,
+            // 'browseClass' => 'btn btn-primary btn-block',
+            'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
+            'browseLabel' =>  'Family Session Letter Document (required format .pdf only)',
+            'initialPreview'=>[
+                "$model->letter_family_session_document",
+
+            ],
+            'initialCaption'=>$model->letter_family_session_document,
+            'initialPreviewAsData'=>true,
+        ],
+        //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
+    ]);
+    ?>
         <?php
-        echo $form->field($model, 'court_letter_certificate_document')->label('Court Letter Document:')->widget(FileInput::classname(), [
+        echo $form->field($model, 'court_letter_certificate_document')->label('Appointed estate admin confirmation document:')->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf'],
             'pluginOptions' => [
                 'showCaption' => false,
@@ -56,7 +76,7 @@ $refund_application_id = $session->get('refund_application_id');
                 'showUpload' => false,
                 // 'browseClass' => 'btn btn-primary btn-block',
                 'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
-                'browseLabel' =>  'Court Letter Document (required format .pdf only)',
+                'browseLabel' =>  'Appointed estate admin confirmation document (required format .pdf only)',
                 'initialPreview'=>[
                     "$model->court_letter_certificate_document",
 
