@@ -625,3 +625,6 @@ ALTER TABLE `refund_claimant_employment` CHANGE `employed_gvt_private` `employed
 ALTER TABLE `refund_claimant_employment` CHANGE `employed_gvt_check_number` `employed_gvt_check_number_status` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Check number, 2: Employee ID';
 ALTER TABLE `refund_application` ADD `claimant_names_changed_status` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Names Changed, 2: Names not changed' AFTER `educationAttained`;
 ALTER TABLE `refund_application` ADD `deed_pole_document` VARCHAR(100) NULL DEFAULT NULL AFTER `claimant_names_changed_status`;
+
+===============01-03-2019=============
+ALTER TABLE `refund_type` ADD `type` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Non-Beneficiary, 2: Over deducted, 3: Deceased' AFTER `is_active`, ADD `minimum_steps` INT(11) NULL DEFAULT NULL AFTER `type`;

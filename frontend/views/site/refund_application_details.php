@@ -19,6 +19,7 @@ $refund_application_id = $session->get('refund_application_id');
 
 $modelRefundApplication = RefundApplication::find()->where("refund_application_id={$model->refund_application_id}")->one();
 $modelRefundClaimant = RefundClaimant::find()->where("refund_claimant_id={$modelRefundApplication->refund_claimant_id}")->one();
+
 $modelRefundClaimantEducHistory = RefundClaimantEducationHistory::find()->where("refund_application_id={$modelRefundApplication->refund_application_id}")->all();
 $modelRefundClaimantEmploymentDet = RefundClaimantEmployment::find()->where("refund_application_id={$modelRefundApplication->refund_application_id}")->all();
 $modelRefContactPers = RefundContactPerson::find()->where("refund_application_id={$model->refund_application_id}")->all();
@@ -29,6 +30,8 @@ if ($modelRefundApplication->refund_type_id == 1) {
 } else if ($modelRefundApplication->refund_type_id == 3) {
     $title = "DECEASED - REFUND APPLICATION #" . $model->application_number;
 }
+$refund_type=$modelRefundApplication->refund_type_id;
+$stepsCount=\frontend\modules\repayment\models\RefundSteps::getCountThestepsAttained($refund_application_id,$refund_type);
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($model->refund_application_id);
 $this->title = $title;
 //$this->params['breadcrumbs'][] = ['label' => 'Applications', 'url' => ['index']];
@@ -1057,7 +1060,11 @@ $this->params['breadcrumbs'][] = $this->title;
 <!--            END FOR DECEASED-->
 
 
-            <?php if ($resultsCheckResultsGeneral->submitted != 3 && $resultsCheckResultsGeneral->social_fund_status > 0) { ?>
+            <?php
+            //if ($resultsCheckResultsGeneral->submitted != 3 && $resultsCheckResultsGeneral->social_fund_status > 0) {
+            if($stepsCount==1){
+                if($resultsCheckResultsGeneral->submitted != 3){
+            ?>
                 <?php $form = ActiveForm::begin(['action' => ['refund-confirm', 'id' => $model->refund_application_id]]); ?>
                 <div class="text-right">
 
@@ -1067,7 +1074,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'method' => 'post',
                     ],]) ?>
                     <?php ActiveForm::end(); ?>
-                <?php } ?>
+                <?php } }?>
                 <div class="rowQA">
                     <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK TO THE LIST", ['site/refund-liststeps']); ?></div>
                 </div>

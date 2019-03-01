@@ -802,6 +802,13 @@ class SiteController extends Controller {
                 $modelRefundContactPerson->updated_at = $todate;
                 $modelRefundContactPerson->refund_application_id = $modelRefundApplication->refund_application_id;
                 $modelRefundContactPerson->save(false);
+                $refund_application_id=$modelRefundContactPerson->refund_application_id;
+                //////
+                $refund_type=$model->refund_type;
+                $generalStepCode=\backend\modules\repayment\models\RefundType::Contact_details_check;
+                $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                /////
 
                 ####################here send email#####################
                 $headers = '';
@@ -951,6 +958,13 @@ class SiteController extends Controller {
                     //$attachment_code='F4CERT';
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $modelRefundresults->f4_certificate_document);
+                    //////
+  $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                    $refund_type=$modelRefundApplication_n->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::Primary_f4_details_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['indexf4educationdetails']);
                 }
             } else {
@@ -1029,6 +1043,13 @@ class SiteController extends Controller {
                             $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
                             \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $modelRefundApplication->employer_letter_document);
                         }
+                        //////
+                        $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                        $refund_type=$modelRefundApplication_n->refund_type_id;
+                        $generalStepCode=\backend\modules\repayment\models\RefundType::Primary_f4_details_check;
+                        $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                        \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                        /////
                         return $this->redirect(['indexf4educationdetails']);
                     }
                 } else {
@@ -1096,6 +1117,13 @@ class SiteController extends Controller {
                         $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::College_Education_Certificate_Document;
                     }
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->certificate_document);
+                    //////
+                    $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                    $refund_type=$modelRefundApplication_n->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::Tertiary_education_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-tertiary-education']);
                 }
             } else {
@@ -1163,6 +1191,13 @@ class SiteController extends Controller {
                     //$attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Salary_PAY_Slip;
                     //\backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->first_slip_document);
                     //\backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->second_slip_document);
+                    //////
+                    $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                    $refund_type=$modelRefundApplication_n->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::Employment_details_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-employment-details']);
                 }
             } else {
@@ -1263,6 +1298,13 @@ class SiteController extends Controller {
                     if($model->claimant_names_changed_status==1) {
                         \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code2, $model->deed_pole_document);
                     }
+                    //////
+                    $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                    $refund_type=$modelRefundApplication_n->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::Bank_details_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-bankdetails']);
                 }
             } else {
@@ -1347,6 +1389,13 @@ class SiteController extends Controller {
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::RECEIPT_FROM_SOCIAL_FUND;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->social_fund_receipt_document);
+                    //////
+                    $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                    $refund_type=$modelRefundApplication_n->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::Social_fund_details_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-socialfund']);
                 }
             } else {
@@ -1493,6 +1542,12 @@ class SiteController extends Controller {
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Liquidation_letter;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->liquidation_letter_document);
+                    //////
+                    $refund_type=$modelRefundresults->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::Repayment_details_check;
+$step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+ \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-repaymentdetails']);
                 }
             } else {
@@ -1547,6 +1602,13 @@ class SiteController extends Controller {
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Death_Certificate_Document;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->death_certificate_document);
+
+                    //////
+                    $refund_type=$modelRefundresults->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::Death_details_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-deathdetails']);
                 }
             } else {
@@ -1608,6 +1670,12 @@ class SiteController extends Controller {
                     $attachment_code2 = \backend\modules\repayment\models\RefundClaimantAttachment::Letter_of_family_session;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->court_letter_certificate_document);
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code2, $model->letter_family_session_document);
+                    //////
+                    $refund_type=$modelRefundresults->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::COURT_details_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-courtdetails']);
                 }
             } else {
@@ -1664,6 +1732,13 @@ class SiteController extends Controller {
                 if ($modelRefundresults->save(false)) {
                     $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Letter_of_family_session;
                     \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->letter_family_session_document);
+                    //////
+                    $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                    $refund_type=$modelRefundApplication_n->refund_type_id;
+                    $generalStepCode=\backend\modules\repayment\models\RefundType::COURT_details_check;
+                    $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type,$generalStepCode);
+                    \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id,$refund_type,$step_code);
+                    /////
                     return $this->redirect(['index-familysessiondetails']);
                 }
             } else {
