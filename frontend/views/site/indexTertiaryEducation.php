@@ -6,18 +6,46 @@ use kartik\tabs\TabsX;
 use kartik\detail\DetailView;
 use frontend\modules\repayment\models\RefundClaimantEducationHistory;
 use frontend\modules\repayment\models\RefundApplication;
+use frontend\modules\repayment\models\RefundClaimantEmployment;
 //set session
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+$resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked($refund_application_id);
+/*
 if($refundTypeId==3){
     $title="Step 2: Deceased's Tertiary Education Details";
 }else{
     $title="Step 2: Tertiary Education Details";
 }
-//end set session
+*/
+//label sequences
+if($educationAttained==2){
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}else if($educationAttained==1){
+    $step3=3;$step4=4;$step5=5;$step6=6;$step7=7;
+}else{
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}
+
+if($refundTypeId==3){
+    $link="site/create-familysessiondetails";
+}else if($refundTypeId==1){
+    $title="Step ".$step3.": Tertiary Education Details";
+
+    if ($resultsCheckCountEmploymentDetails == 0) {
+        $link = 'site/create-employment-details';
+    }else{
+        $link = 'site/index-employment-details';
+    }
+}else if($refundTypeId==2){
+    $title="Step ".$step3.": Tertiary Education Details";
+}else{
+    $title="Step ".$step3.": Tertiary Education Details";
+}
+//end label step sequence
 
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
@@ -26,7 +54,7 @@ if($refundTypeId==3){
 $resultsCheckCountSocialFund = RefundApplication::getStageCheckedSocialFund($refund_application_id);
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
-
+/*
 $link='site/index-employment-details';
 
 
@@ -36,7 +64,7 @@ if(count($resultsCheckResultsGeneral->death_certificate_number)==0 && $refundTyp
 if(count($resultsCheckResultsGeneral->death_certificate_number)>0 && $refundTypeId==3){
     $link='site/index-deathdetails';
 }
-
+*/
 
 
 $this->title = $title;

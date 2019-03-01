@@ -26,7 +26,18 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $dataProvider yii\data\ActiveDataProvider */
 $resultsCheckCount = RefundApplication::getStageCheckedBankDetails($refund_application_id);
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$resultsCheckCountSocialFund = RefundApplication::getStageCheckedSocialFund($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+$educationAttained=$resultsCheckResultsGeneral->educationAttained;
+
+if($educationAttained==2){
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}else if($educationAttained==1){
+    $step3=3;$step4=4;$step5=5;$step6=6;$step7=7;
+}else{
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}
+
 if ($resultsCheckCount > 0) {
 $link='site/index-bankdetails';
 }
@@ -35,10 +46,26 @@ $link='site/create-refund-bankdetails';
 }
 if($refundTypeId==3){
     $title="Step 5: Bank Details";
+    if ($resultsCheckCountSocialFund == 0) {
+        $link='site/create-securityfund';
+    }else{
+        $link='site/index-socialfund';
+    }
 }else if($refundTypeId==1){
-    $title="Step 4: Bank Details";
+    $title="Step ".$step5.": Bank Details";
+    if ($resultsCheckCountSocialFund == 0) {
+        $link='site/create-securityfund';
+    }else{
+        $link='site/index-socialfund';
+    }
 }else if($refundTypeId==2){
-	$title="Step 3: Bank Details";
+	$title="Step 4: Bank Details";
+    if ($resultsCheckCountSocialFund == 0) {
+        $link='site/create-securityfund';
+    }else{
+        $link='site/index-socialfund';
+    }
+
 }
 $this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
@@ -135,7 +162,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/index-contactdetails']);?></div>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link]);?></div>
             </div>
         </div>
     </div>

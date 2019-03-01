@@ -15,16 +15,44 @@ use kartik\tabs\TabsX;
 use kartik\detail\DetailView;
 use frontend\modules\repayment\models\RefundClaimant;
 use frontend\modules\repayment\models\RefundApplication;
+use frontend\modules\repayment\models\RefundClaimantEmployment;
 //set session
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+$resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked($refund_application_id);
+//$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+//if($refundTypeId==3){
+    //$title="Step 1: Deceased's Form 4 Education";
+//}else{
+    //$title="Step 1: Form 4 Education";
+//}
+
+
+//$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 if($refundTypeId==3){
-    $title="Step 1: Deceased's Form 4 Education";
-}else{
-    $title="Step 1: Form 4 Education";
+    $title="Step 2: Deceased's Primary/Form 4 Education";
+    if(count($resultsCheckResultsGeneral->death_certificate_number)==0) {
+        $link = 'site/create-deathdetails';
+    }
+    if(count($resultsCheckResultsGeneral->death_certificate_number)>0){
+        $link = 'site/index-deathdetails';
+    }
+}else if($refundTypeId==1){
+    $title="Step 2: Primary/Form 4 Education";
+    if ($resultsCheckResultsGeneral->educationAttained == 1) {
+        $link = 'site/index-tertiary-education';
+    }else{
+        if ($resultsCheckCountEmploymentDetails == 0) {
+            $link = 'site/create-employment-details';
+        }else{
+            $link = 'site/index-employment-details';
+        }
+    }
+}else if($refundTypeId==2){
+    $title="Step 2: Primary/Form 4 Education";
 }
 //end set session
 
@@ -161,7 +189,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/index-tertiary-education']);?></div>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link]);?></div>
             </div>
         </div>
     </div>

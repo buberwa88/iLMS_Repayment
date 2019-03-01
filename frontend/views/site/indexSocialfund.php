@@ -21,18 +21,31 @@ $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+$educationAttained=$resultsCheckResultsGeneral->educationAttained;
+
+
+//label sequences
+if($educationAttained==2){
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}else if($educationAttained==1){
+    $step3=3;$step4=4;$step5=5;$step6=6;$step7=7;
+}else{
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}
+
 if($refundTypeId==3){
-    $title="Step 7: Social Fund Details";
-    if(count($resultsCheckResultsGeneral->letter_family_session_document)==0){
-      $link="site/create-familysessiondetails";
-    }
-    if(count($resultsCheckResultsGeneral->letter_family_session_document)>0){
-        $link="site/index-familysessiondetails";
-    }
+    $title="Step 6: Social Fund Details";
+    $link="site/refund-applicationview";
+}else if($refundTypeId==1){
+    $title="Step ".$step6.": Social Fund Details";
+    $link="site/refund-applicationview";
+}else if($refundTypeId==2){
+    $title="Step 5: Social Fund Details";
+    $link="site/refund-applicationview";
 }else{
     $title="Step 6: Social Fund Details";
 }
-//end set session
+//end label step sequence
 
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
@@ -128,13 +141,12 @@ $this->params['breadcrumbs'][] = $this->title;
             <br/></br/>
             <div class="rowQA">
                 <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-                <?php if($refundTypeId==3){
+                <?php //if($refundTypeId==3){
                   ?>
-                    <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link]);?></div>
                     <?php
-                }else{ ?>
-                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/refund-applicationview','refundApplicationID' => $refund_application_id]);?></div>
-                <?php } ?>
+                //}else{ ?>
+                <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",[$link,'refundApplicationID' => $refund_application_id]);?></div>
+                <?php //} ?>
             </div>
         </div>
     </div>

@@ -16,6 +16,7 @@ use kartik\detail\DetailView;
 use frontend\modules\repayment\models\RefundClaimantEmployment;
 use frontend\modules\repayment\models\RefundContactPerson;
 use frontend\modules\repayment\models\RefundApplication;
+
 //set session
 $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
@@ -26,21 +27,40 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 $resultsCheckCountSocialFund = RefundApplication::getStageCheckedSocialFund($refund_application_id);
+$resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked($refund_application_id);
+/*
 if ($resultsCheckCountSocialFund > 0) {
     $link='site/index-socialfund';
 }
 if($resultsCheckCountSocialFund == 0) {
     $link='site/create-securityfund';
 }
+*/
 
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 if($refundTypeId==3){
-    $title="Step 6: Contacts Details";
+    $title="Step 1: Contacts Details";
+    if ($resultsCheckResultsGeneral->educationAttained > 0) {
+        $link = 'site/indexf4educationdetails';
+    }else{
+        $link = 'site/create-educationgeneral';
+    }
 }else if($refundTypeId==1){
-    $title="Step 5: Contacts Details";
+    $title="Step 1: Contacts Details";
+    if ($resultsCheckResultsGeneral->educationAttained > 0) {
+        $link = 'site/indexf4educationdetails';
+    }else{
+        $link = 'site/create-educationgeneral';
+    }
 }else if($refundTypeId==2){
-	$title="Step 4: Contacts Details";
+	$title="Step 1: Contacts Details";
+    if($resultsCheckCountEmploymentDetails == 0) {
+    $link = 'site/create-employment-details';
+    }
+    if ($resultsCheckCountEmploymentDetails > 0) {
+        $link =  "site/index-employment-details";
+    }
 }
 $this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;

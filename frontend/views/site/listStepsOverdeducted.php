@@ -50,6 +50,7 @@ $incomplete = $resultsCheckResultsGeneral->submitted;
             $resultsCheckCount=RefundApplication::getStageCheckedBankDetails($refund_application_id);
             $resultsCheckCountSocialFund=RefundApplication::getStageCheckedSocialFund($refund_application_id);
             $resultRefundApplicationGeneral=RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
+            $resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked($refund_application_id);
             ?>
             <li class="list-group-item"><?= $resultsCheckResultsGeneral->submitted != 3 ?  yii\helpers\Html::a("Step 1: Contacts Details ",['site/index-contactdetails']) : "Step 1: Contacts Details ";?><label class='label  <?= RefundContactPerson::getStageChecked($refund_application_id)>0?"label-success":"label-danger";?> pull-right'><span class="glyphicon <?=RefundContactPerson::getStageChecked($refund_application_id)>0?"glyphicon-check":"glyphicon-remove";?>"></span></label></li>
 

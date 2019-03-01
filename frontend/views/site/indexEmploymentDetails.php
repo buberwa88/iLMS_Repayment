@@ -28,6 +28,16 @@ $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGener
 $refund_type_id = $resultsCheckResultsGeneral->refund_type_id;
 $resultRefundApplicationGeneral=RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $resultsCheckCount = RefundApplication::getStageCheckedBankDetails($refund_application_id);
+$educationAttained=$resultsCheckResultsGeneral->educationAttained;
+
+if($educationAttained==2){
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}else if($educationAttained==1){
+    $step3=3;$step4=4;$step5=5;$step6=6;$step7=7;
+}else{
+    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+}
+
 if ($resultsCheckCount > 0 && $refund_type_id==1) {
     $link='site/index-bankdetails';
 }
@@ -35,10 +45,10 @@ if($resultsCheckCount == 0 && $refund_type_id==1) {
     $link='site/create-refund-bankdetails';
 }
 if($refund_type_id==1){
-    $heade="Step 3: Employment Details";
+    $title="Step ".$step4.": Employment Details";
 }
 if($refund_type_id==2){
-    $heade="Step 1: Employment Details";
+    $title="Step 2: Employment Details";
 }
 if(count($resultRefundApplicationGeneral->liquidation_letter_number)==0 && $refund_type_id==2){
     $link='site/create-repaymentdetails';
@@ -51,7 +61,7 @@ if ($resultsCheckCount > 0 && $refund_type_id==2) {
     $link='site/index-bankdetails';
 }
 */
-$this->title = $heade;
+$this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="refund-education-history-create">

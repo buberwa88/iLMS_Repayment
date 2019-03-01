@@ -29,8 +29,6 @@ for ($y = 1982; $y <= $yearmax; $y++) {
 }
     $cancel="site/refund-liststeps";
 
-
-
 ?>
 <script type="text/javascript">
     function generalShow(element){

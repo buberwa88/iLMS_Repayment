@@ -11,9 +11,9 @@ $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 if($refundTypeId==3){
-    $title="Step 1: Deceased's Primary/Form 4 Education";
+    $title="Step 2: Deceased's Primary/Form 4 Education";
 }else{
-    $title="Step 1: Primary/Form 4 Education";
+    $title="Step 2: Primary/Form 4 Education";
 }
 
 $this->title = $title;

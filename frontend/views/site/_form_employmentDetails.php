@@ -16,6 +16,7 @@ use kartik\widgets\FileInput;
 /* @var $form yii\widgets\ActiveForm */
 $list = [1 => 'Government', 2 => 'Private'];
 $list2 = [1 => 'Check Number', 2 => 'Employee ID'];
+$cancel="site/refund-liststeps";
 ?>
 <script type="text/javascript">
     function ShowemployementDetails(element){
@@ -161,7 +162,7 @@ $list2 = [1 => 'Check Number', 2 => 'Employee ID'];
 
             <?php
             echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-            echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/index-employment-details'], ['class' => 'btn btn-warning']);
+            echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", [$cancel], ['class' => 'btn btn-warning']);
 
             ActiveForm::end();
             ?>
