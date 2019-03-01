@@ -628,3 +628,31 @@ ALTER TABLE `refund_application` ADD `deed_pole_document` VARCHAR(100) NULL DEFA
 
 ===============01-03-2019=============
 ALTER TABLE `refund_type` ADD `type` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Non-Beneficiary, 2: Over deducted, 3: Deceased' AFTER `is_active`, ADD `minimum_steps` INT(11) NULL DEFAULT NULL AFTER `type`;
+
+CREATE TABLE `refund_steps` (
+  `refund_steps_id` int(11) NOT NULL,
+  `refund_type` tinyint(2) DEFAULT NULL COMMENT '1: Non-Beneficiary, 2: Over deducted, 3: Deceased',
+  `refund_application_id` int(11) DEFAULT NULL,
+  `step_code` varchar(50) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `refund_steps`
+--
+ALTER TABLE `refund_steps`
+  ADD PRIMARY KEY (`refund_steps_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `refund_steps`
+--
+ALTER TABLE `refund_steps`
+  MODIFY `refund_steps_id` int(11) NOT NULL AUTO_INCREMENT;COMMIT;

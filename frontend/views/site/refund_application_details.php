@@ -31,6 +31,7 @@ if ($modelRefundApplication->refund_type_id == 1) {
     $title = "DECEASED - REFUND APPLICATION #" . $model->application_number;
 }
 $refund_type=$modelRefundApplication->refund_type_id;
+$educationAttained=$modelRefundApplication->educationAttained;
 $stepsCount=\frontend\modules\repayment\models\RefundSteps::getCountThestepsAttained($refund_application_id,$refund_type);
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($model->refund_application_id);
 $this->title = $title;
@@ -64,8 +65,18 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
 
         <div class="panel-body">
-            <?php  if($resultsCheckResultsGeneral->refund_type_id==1){ ?>
-            <!--CLAIMNANT PARTICULARS-->
+            <?php  if($resultsCheckResultsGeneral->refund_type_id==1){
+
+                if($educationAttained==2){
+                    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+                }else if($educationAttained==1){
+                    $step3=3;$step4=4;$step5=5;$step6=6;$step7=7;
+                }else{
+                    $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
+                }
+
+                ?>
+                <!--CLAIMNANT PARTICULARS-->
             <div class="row" style="margin: 1%;">
                 <div class="col-xs-12">
                     <div class="box box-primary">
@@ -82,25 +93,67 @@ $this->params['breadcrumbs'][] = $this->title;
                                         <td style="width: 10%;">Name: </td>
                                         <td><b><?= strtoupper($modelRefundClaimant->firstname . ' ' . $modelRefundClaimant->middlename . ' ' . $modelRefundClaimant->surname); ?></b></td>
                                     </tr>
+                                    <?php if($educationAttained==1){ ?>
                                     <tr>
                                         <td style="width: 10%">f4 Index #: </td>
                                         <td style="width: 10%"><b><?= strtoupper($modelRefundClaimant->f4indexno); ?></b></td>
                                         <td style="width: 10%">Completion Year: </td>
                                         <td style="width: 10%"><b><?= strtoupper($modelRefundClaimant->f4_completion_year); ?></b></td>
                                     </tr>
+                                    <?php } ?>
                                 </table>
                             </div>
                             <!-- /.box-body -->
                         </div>
                     </div>
                 </div>
-            </div>            
+            </div>
+                <div class="row" style="margin: 1%;">
+                    <div class="col-xs-12">
+                        <div class="box box-primary">
+                            <div class="box-header">
+                                <h3 class="box-title"><b>Step 1: Contacts Details</b></h3>
+                                <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
+                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+                                <?php } ?>
+                            </div>
+
+                            <div class="box">
+                                <!-- /.box-header -->
+                                <div class="box-body no-padding">
+                                    <table class="table table-condensed">
+                                        <?php
+                                        foreach ($modelRefContactPers AS $contactPersDetails) {
+                                            //if(!$educationHistory->certificate_document){
+                                            ?>
+
+                                            <tr>
+                                                <td>First Name: </td>
+                                                <td><b><?= $contactPersDetails->firstname; ?></b></td>
+                                                <td>Middle Name: </td>
+                                                <td><b><?= $contactPersDetails->middlename; ?></b></td>
+                                                <td>Last Name: </td>
+                                                <td><b><?= $contactPersDetails->surname; ?></b></td>
+                                                <td>Phone Number: </td>
+                                                <td><b><?= $contactPersDetails->phone_number; ?></b></td>
+                                                <td>Email: </td>
+                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
+                                            <?php //} ?>
+                                        <?php }
+                                        ?>
+                                    </table>
+                                </div>
+                                <!-- /.box-body -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <div class="row" style="margin: 1%;">
                 <div class="col-xs-12">
                     <div class="box box-primary">
                         <div class="box-header">
-                            <h3 class="box-title"><b>Step 1: Form 4 Education</b> </h3>
+                            <h3 class="box-title"><b>Step 2: Primary/Form 4 Education</b> </h3>
                             <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                 <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                             <?php } ?>
@@ -117,6 +170,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                         <td><b><?= $modelRefundClaimant->middlename; ?></b></td>
                                         <td>Last Name: </td>
                                         <td><b><?= $modelRefundClaimant->surname; ?></b></td>
+                <?php if($educationAttained==1){ ?>
                                         <td>Academic Certificate Document:</td>
                                         <td ><?php
                                             if ($modelRefundClaimant->f4_certificate_document != '') {
@@ -127,6 +181,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                 echo "No Document";
                                             }
                                             ?></td>
+                <?php } ?>
                                     </tr>
                                 </table>
                             </div>
@@ -135,16 +190,16 @@ $this->params['breadcrumbs'][] = $this->title;
                     </div>
                 </div>
             </div>
+            <?php if($educationAttained==1){ ?>
             <div class="row" style="margin: 1%;">
                 <div class="col-xs-12">
                     <div class="box box-primary">
                         <div class="box-header">
-                            <h3 class="box-title"><b>Step 2: Tertiary Education Details</b></h3>
+                            <h3 class="box-title"><b>Step <?php echo $step3; ?>: Tertiary Education Details</b></h3>
                             <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                 <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                             <?php } ?>
                         </div>
-
                         <div class="box">
                             <!-- /.box-header -->
                             <div class="box-body no-padding">
@@ -186,11 +241,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     </div>
                 </div>
             </div>
+                <?php } ?>
             <div class="row" style="margin: 1%;">
                 <div class="col-xs-12">
                     <div class="box box-primary">
                         <div class="box-header">
-                            <h3 class="box-title"><b>Step 3: Employment Details</b></h3>
+                            <h3 class="box-title"><b>Step <?php echo $step4; ?>: Employment Details</b></h3>
                             <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                 <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                             <?php } ?>
@@ -213,30 +269,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     $employmentDetails->employer_name; ?></b></td>
                                             <td>Employee ID/Check #: </td>
                                             <td><b><?= $employmentDetails->employee_id; ?></b></td>
-                                            <td>Start Date: </td>
-                                            <td><b><?= $employmentDetails->start_date; ?></b></td>
-                                            <td>End Date: </td>
-                                            <td><b><?= $employmentDetails->end_date; ?></b></td>
-                                            <td>Fisrt Salary/Pay Slip Document</td>
-                                            <td ><?php
-                                                if ($employmentDetails->second_slip_document != '') {
-                                                    ?>
-                                                    <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?= $employmentDetails->first_slip_document; ?>);">VIEW</a>
-                                                    <?php
-                                                } else {
-                                                    echo "No Document";
-                                                }
-                                                ?></td>
-                                            <td>Second Salary/Pay Slip Document</td>
-                                            <td><?php
-                                                if ($employmentDetails->second_slip_document != '') {
-                                                    ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
-                                                    <?php
-                                                } else {
-                                                    echo "No Document";
-                                                }
-                                                ?></td>
                                         </tr>
                                         <?php //}?>
                                     <?php }
@@ -252,7 +284,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div class="col-xs-12">
                     <div class="box box-primary">
                         <div class="box-header">
-                            <h3 class="box-title"><b>Step 4: Bank Details</b></h3>
+                            <h3 class="box-title"><b>Step <?php echo $step5; ?>: Bank Details</b></h3>
                             <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                 <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                             <?php } ?>
@@ -302,47 +334,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div class="col-xs-12">
                     <div class="box box-primary">
                         <div class="box-header">
-                            <h3 class="box-title"><b>Step 5: Contacts Details</b></h3>
-                            <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
-                            <?php } ?>
-                        </div>
-
-                        <div class="box">
-                            <!-- /.box-header -->
-                            <div class="box-body no-padding">
-                                <table class="table table-condensed">
-                                    <?php
-                                    foreach ($modelRefContactPers AS $contactPersDetails) {
-                                        //if(!$educationHistory->certificate_document){
-                                        ?>
-
-                                        <tr>
-                                            <td>First Name: </td>
-                                            <td><b><?= $contactPersDetails->firstname; ?></b></td>
-                                            <td>Middle Name: </td>
-                                            <td><b><?= $contactPersDetails->middlename; ?></b></td>
-                                            <td>Last Name: </td>
-                                            <td><b><?= $contactPersDetails->surname; ?></b></td>
-                                            <td>Phone Number: </td>
-                                            <td><b><?= $contactPersDetails->phone_number; ?></b></td>
-                                            <td>Email: </td>
-                                            <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
-                                        <?php //} ?>
-                                    <?php }
-                                    ?>
-                                </table>
-                            </div>
-                            <!-- /.box-body -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row" style="margin: 1%;">
-                <div class="col-xs-12">
-                    <div class="box box-primary">
-                        <div class="box-header">
-                            <h3 class="box-title"><b>Step 6: Social Fund Details</b></h3>
+                            <h3 class="box-title"><b>Step <?php echo $step6; ?>: Social Fund Details</b></h3>
                             <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                 <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                             <?php } ?>
@@ -427,7 +419,47 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="col-xs-12">
                         <div class="box box-primary">
                             <div class="box-header">
-                                <h3 class="box-title"><b>Step 1: Employment Details</b></h3>
+                                <h3 class="box-title"><b>Step 1: Contacts Details</b></h3>
+                                <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
+                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+                                <?php } ?>
+                            </div>
+
+                            <div class="box">
+                                <!-- /.box-header -->
+                                <div class="box-body no-padding">
+                                    <table class="table table-condensed">
+                                        <?php
+                                        foreach ($modelRefContactPers AS $contactPersDetails) {
+                                            //if(!$educationHistory->certificate_document){
+                                            ?>
+
+                                            <tr>
+                                                <td>First Name: </td>
+                                                <td><b><?= $contactPersDetails->firstname; ?></b></td>
+                                                <td>Middle Name: </td>
+                                                <td><b><?= $contactPersDetails->middlename; ?></b></td>
+                                                <td>Last Name: </td>
+                                                <td><b><?= $contactPersDetails->surname; ?></b></td>
+                                                <td>Phone Number: </td>
+                                                <td><b><?= $contactPersDetails->phone_number; ?></b></td>
+                                                <td>Email: </td>
+                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
+                                            <?php //} ?>
+                                        <?php }
+                                        ?>
+                                    </table>
+                                </div>
+                                <!-- /.box-body -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin: 1%;">
+                    <div class="col-xs-12">
+                        <div class="box box-primary">
+                            <div class="box-header">
+                                <h3 class="box-title"><b>Step 2: Employment Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                     <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                                 <?php } ?>
@@ -488,7 +520,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="col-xs-12">
                         <div class="box box-primary">
                             <div class="box-header">
-                                <h3 class="box-title"><b>Step 2: Repayment Details</b></h3>
+                                <h3 class="box-title"><b>Step 3: Repayment Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                     <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                                 <?php } ?>
@@ -530,7 +562,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="col-xs-12">
                         <div class="box box-primary">
                             <div class="box-header">
-                                <h3 class="box-title"><b>Step 3: Bank Details</b></h3>
+                                <h3 class="box-title"><b>Step 4: Bank Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                     <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                                 <?php } ?>
@@ -569,46 +601,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                         </tr>
                                         <?php //} ?>
                                         <?php //}  ?>
-                                    </table>
-                                </div>
-                                <!-- /.box-body -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" style="margin: 1%;">
-                    <div class="col-xs-12">
-                        <div class="box box-primary">
-                            <div class="box-header">
-                                <h3 class="box-title"><b>Step 4: Contacts Details</b></h3>
-                                <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
-                                <?php } ?>
-                            </div>
-
-                            <div class="box">
-                                <!-- /.box-header -->
-                                <div class="box-body no-padding">
-                                    <table class="table table-condensed">
-                                        <?php
-                                        foreach ($modelRefContactPers AS $contactPersDetails) {
-                                            //if(!$educationHistory->certificate_document){
-                                            ?>
-
-                                            <tr>
-                                                <td>First Name: </td>
-                                                <td><b><?= $contactPersDetails->firstname; ?></b></td>
-                                                <td>Middle Name: </td>
-                                                <td><b><?= $contactPersDetails->middlename; ?></b></td>
-                                                <td>Last Name: </td>
-                                                <td><b><?= $contactPersDetails->surname; ?></b></td>
-                                                <td>Phone Number: </td>
-                                                <td><b><?= $contactPersDetails->phone_number; ?></b></td>
-                                                <td>Email: </td>
-                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
-                                            <?php //} ?>
-                                        <?php }
-                                        ?>
                                     </table>
                                 </div>
                                 <!-- /.box-body -->
@@ -708,12 +700,51 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                     </div>
                 </div>
-
                 <div class="row" style="margin: 1%;">
                     <div class="col-xs-12">
                         <div class="box box-primary">
                             <div class="box-header">
-                                <h3 class="box-title"><b>Step 1: Deceased's Form 4 Education</b> </h3>
+                                <h3 class="box-title"><b>Step 1: Contacts Details</b></h3>
+                                <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
+                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+                                <?php } ?>
+                            </div>
+
+                            <div class="box">
+                                <!-- /.box-header -->
+                                <div class="box-body no-padding">
+                                    <table class="table table-condensed">
+                                        <?php
+                                        foreach ($modelRefContactPers AS $contactPersDetails) {
+                                            //if(!$educationHistory->certificate_document){
+                                            ?>
+
+                                            <tr>
+                                                <td>First Name: </td>
+                                                <td><b><?= $contactPersDetails->firstname; ?></b></td>
+                                                <td>Middle Name: </td>
+                                                <td><b><?= $contactPersDetails->middlename; ?></b></td>
+                                                <td>Last Name: </td>
+                                                <td><b><?= $contactPersDetails->surname; ?></b></td>
+                                                <td>Phone Number: </td>
+                                                <td><b><?= $contactPersDetails->phone_number; ?></b></td>
+                                                <td>Email: </td>
+                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
+                                            <?php //} ?>
+                                        <?php }
+                                        ?>
+                                    </table>
+                                </div>
+                                <!-- /.box-body -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin: 1%;">
+                    <div class="col-xs-12">
+                        <div class="box box-primary">
+                            <div class="box-header">
+                                <h3 class="box-title"><b>Step 2: Deceased's Form 4 Education</b> </h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                     <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                                 <?php } ?>
@@ -730,6 +761,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td><b><?= $modelRefundClaimant->middlename; ?></b></td>
                                             <td>Last Name: </td>
                                             <td><b><?= $modelRefundClaimant->surname; ?></b></td>
+                                            <?php if($educationAttained==1){ ?>
                                             <td>Academic Certificate Document:</td>
                                             <td ><?php
                                                 if ($modelRefundClaimant->f4_certificate_document != '') {
@@ -740,58 +772,8 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     echo "No Document";
                                                 }
                                                 ?></td>
+                                            <?php } ?>
                                         </tr>
-                                    </table>
-                                </div>
-                                <!-- /.box-body -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" style="margin: 1%;">
-                    <div class="col-xs-12">
-                        <div class="box box-primary">
-                            <div class="box-header">
-                                <h3 class="box-title"><b>Step 2: Deceased's Tertiary Education Details</b></h3>
-                                <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
-                                <?php } ?>
-                            </div>
-
-                            <div class="box">
-                                <!-- /.box-header -->
-                                <div class="box-body no-padding">
-                                    <table class="table table-condensed">
-                                        <?php
-                                        foreach ($modelRefundClaimantEducHistory AS $educationHistory) {
-                                            //if(!$educationHistory->certificate_document){
-                                            ?>
-
-                                            <tr>
-                                                <td>Study Level: </td>
-                                                <td><b><?= $educationHistory->studylevel->applicant_category; ?></b></td>
-                                                <td>Institution: </td>
-                                                <td><b><?= $educationHistory->institution->institution_name; ?></b></td>
-                                                <td>Programme: </td>
-                                                <td><b><?= $educationHistory->program->programme_name; ?></b></td>
-                                                <td>Entry Year: </td>
-                                                <td><b><?= $educationHistory->entry_year; ?></b></td>
-                                                <td>Completion Year: </td>
-                                                <td><b><?= $educationHistory->completion_year; ?></b></td>
-                                                <td>Academic Certificate Document:</td>
-                                                <td ><?php
-                                                    if ($educationHistory->certificate_document != '') {
-                                                        ?>
-                                                        <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
-                                                        <?php
-                                                    } else {
-                                                        echo "No Document";
-                                                    }
-                                                    ?></td>
-                                            </tr>
-                                            <?php //}?>
-                                        <?php }
-                                        ?>
                                     </table>
                                 </div>
                                 <!-- /.box-body -->
@@ -923,47 +905,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="col-xs-12">
                         <div class="box box-primary">
                             <div class="box-header">
-                                <h3 class="box-title"><b>Step 6: Contacts Details</b></h3>
-                                <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
-                                <?php } ?>
-                            </div>
-
-                            <div class="box">
-                                <!-- /.box-header -->
-                                <div class="box-body no-padding">
-                                    <table class="table table-condensed">
-                                        <?php
-                                        foreach ($modelRefContactPers AS $contactPersDetails) {
-                                            //if(!$educationHistory->certificate_document){
-                                            ?>
-
-                                            <tr>
-                                                <td>First Name: </td>
-                                                <td><b><?= $contactPersDetails->firstname; ?></b></td>
-                                                <td>Middle Name: </td>
-                                                <td><b><?= $contactPersDetails->middlename; ?></b></td>
-                                                <td>Last Name: </td>
-                                                <td><b><?= $contactPersDetails->surname; ?></b></td>
-                                                <td>Phone Number: </td>
-                                                <td><b><?= $contactPersDetails->phone_number; ?></b></td>
-                                                <td>Email: </td>
-                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
-                                            <?php //} ?>
-                                        <?php }
-                                        ?>
-                                    </table>
-                                </div>
-                                <!-- /.box-body -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" style="margin: 1%;">
-                    <div class="col-xs-12">
-                        <div class="box box-primary">
-                            <div class="box-header">
-                                <h3 class="box-title"><b>Step 7: Social Fund Details</b></h3>
+                                <h3 class="box-title"><b>Step 6: Social Fund Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                     <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
                                 <?php } ?>
@@ -1010,45 +952,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                         </tr>
                                         <?php //} ?>
                                         <?php //}  ?>
-                                    </table>
-                                </div>
-                                <!-- /.box-body -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" style="margin: 1%;">
-                    <div class="col-xs-12">
-                        <div class="box box-primary">
-                            <div class="box-header">
-                                <h3 class="box-title"><b>Step 8: Family Session Details</b></h3>
-                                <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
-                                <?php } ?>
-                            </div>
-
-                            <div class="box">
-                                <!-- /.box-header -->
-                                <div class="box-body no-padding">
-                                    <table class="table table-condensed">
-                                        <tr>
-                                            <td>Trustee First Name: </td>
-                                            <td><b><?= $resultsCheckResultsGeneral->trustee_firstname; ?></b></td>
-                                            <td>Trustee Middle Name: </td>
-                                            <td><b><?= $resultsCheckResultsGeneral->trustee_midlename; ?></b></td>
-                                            <td>Trustee Last Name: </td>
-                                            <td><b><?= $resultsCheckResultsGeneral->trustee_surname; ?></b></td>
-                                            <td>Family Session Letter Document: </td>
-                                            <td ><?php
-                                                if ($resultsCheckResultsGeneral->letter_family_session_document != '') {
-                                                    ?>
-                                                    <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?= $employmentDetails->first_slip_document; ?>);">VIEW</a>
-                                                    <?php
-                                                } else {
-                                                    echo "No Document";
-                                                }
-                                                ?></td>
-                                        </tr>
                                     </table>
                                 </div>
                                 <!-- /.box-body -->
