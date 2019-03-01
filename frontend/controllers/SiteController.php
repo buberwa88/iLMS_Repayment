@@ -1460,8 +1460,8 @@ class SiteController extends Controller {
         $refundClaimantid = $session->get('refund_claimant_id');
         $refund_application_id = $session->get('refund_application_id');
         //end set session
-        $searchModel = new \frontend\modules\repayment\models\RefundClaimantEmploymentSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $searchModel = new \frontend\modules\repayment\models\RefundClaimantSearch();
+        $dataProvider = $searchModel->searchClaimantDetails(Yii::$app->request->queryParams,$refund_application_id);
 
         return $this->render('indexf4educationdetails', [
                     'searchModel' => $searchModel,

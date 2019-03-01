@@ -202,6 +202,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             'employer_letter_document'=>'employer_letter_document',
             'educationAttained'=>'educationAttained',
             'claimant_names_changed_status'=>'Have you changed you names',
+            'bank_card_document'=>'Bank Document',
         ];
     }
 

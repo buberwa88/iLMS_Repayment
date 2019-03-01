@@ -41,7 +41,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-            <?php  $modelRefundClaimant = RefundClaimant::find()->where("refund_claimant_id={$refundClaimantid}")->all();
+            <?php  $modelRefundClaimant = RefundApplication::find()->where("refund_application_id={$refund_application_id}")->all();
 
 
             $sn = 0;
@@ -54,7 +54,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label' => 'F4 Index #',
-                                'value'=>$model->f4indexno,
+                                'visible'=>$model->educationAttained==1,
+                                'value'=>$model->refundClaimant->f4indexno,
                             ],
 
                         ],
@@ -64,7 +65,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label' => 'Completion Year',
-                                'value'=>$model->f4_completion_year,
+                                'visible'=>$model->educationAttained==1,
+                                'value'=>$model->refundClaimant->f4_completion_year,
                             ],
 
                         ],
@@ -74,7 +76,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label' => 'First Name',
-                                'value'=>$model->necta_firstname,
+                                'visible'=>$model->educationAttained==1,
+                                'value'=>$model->refundClaimant->necta_firstname,
                             ],
 
                         ],
@@ -84,7 +87,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label' => 'Middle Name',
-                                'value'=>$model->necta_middlename,
+                                'visible'=>$model->educationAttained==1,
+                                'value'=>$model->refundClaimant->necta_middlename,
                             ],
 
                         ],
@@ -94,7 +98,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
                         [
                             'label' => 'Last Name',
-                            'value'=>$model->necta_surname,
+                            'visible'=>$model->educationAttained==1,
+                            'value'=>$model->refundClaimant->necta_surname,
                         ],
 
                     ],
@@ -105,14 +110,33 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             [
                                 'label'=>'F4 Certificate Document',
+                                'visible'=>$model->educationAttained==1,
                 'value'=>call_user_func(function ($data) {
-                    if($data->f4_certificate_document !=''){
-                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->f4_certificate_document . '")','class'=>'label label-primary']);
+                    if($data->refundClaimant->f4_certificate_document !=''){
+                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->refundClaimant->f4_certificate_document . '")','class'=>'label label-primary']);
                     }else{
-                        return $data->f4_certificate_document;
+                        return $data->refundClaimant->f4_certificate_document;
                     }
                 }, $model),
                 'format' => 'raw',
+
+                            ],
+                        ],
+                    ],
+                    [
+                        'columns' => [
+
+                            [
+                                'label'=>'Employer Letter Document',
+                                'visible'=>$model->educationAttained==2,
+                                'value'=>call_user_func(function ($data) {
+                                    if($data->employer_letter_document !=''){
+                                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->employer_letter_document . '")','class'=>'label label-primary']);
+                                    }else{
+                                        return $data->employer_letter_document;
+                                    }
+                                }, $model),
+                                'format' => 'raw',
 
                             ],
                         ],

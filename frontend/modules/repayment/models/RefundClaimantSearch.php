@@ -82,4 +82,52 @@ class RefundClaimantSearch extends RefundClaimant
 
         return $dataProvider;
     }
+    public function searchClaimantDetails($params,$applicationid)
+    {
+        //$query = RefundClaimant::find();
+
+        $query = RefundApplication::find()
+            ->select('refund_application.refund_application_id,refund_application.educationAttained,refund_application.employer_letter_document,refund_claimant.f4indexno,refund_claimant.f4_certificate_document,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+            ->where(['refund_application.refund_application_id' => $applicationid]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->joinwith("refundClaimant");
+        $query->andFilterWhere([
+            'refund_claimant_id' => $this->refund_claimant_id,
+            'applicant_id' => $this->applicant_id,
+            'f4_completion_year' => $this->f4_completion_year,
+            'necta_details_confirmed' => $this->necta_details_confirmed,
+            'created_at' => $this->created_at,
+            'created_by' => $this->created_by,
+            'updated_at' => $this->updated_at,
+            'updated_by' => $this->updated_by,
+        ]);
+
+        $query->andFilterWhere(['like', 'firstname', $this->firstname])
+            ->andFilterWhere(['like', 'middlename', $this->middlename])
+            ->andFilterWhere(['like', 'surname', $this->surname])
+            ->andFilterWhere(['like', 'sex', $this->sex])
+            ->andFilterWhere(['like', 'phone_number', $this->phone_number])
+            ->andFilterWhere(['like', 'f4indexno', $this->f4indexno])
+            ->andFilterWhere(['like', 'necta_firstname', $this->necta_firstname])
+            ->andFilterWhere(['like', 'necta_middlename', $this->necta_middlename])
+            ->andFilterWhere(['like', 'necta_surname', $this->necta_surname])
+            ->andFilterWhere(['like', 'necta_sex', $this->necta_sex]);
+
+        return $dataProvider;
+    }
 }

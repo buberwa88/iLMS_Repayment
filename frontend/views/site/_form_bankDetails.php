@@ -35,6 +35,12 @@ $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 
+if($refundTypeId==3){
+    $bankAttLabe="Court Bank Account Document:";
+}else{
+    $bankAttLabe="Bank Card Document:";
+}
+
 $cancel="site/refund-liststeps";
 
 ?>
@@ -70,7 +76,7 @@ $cancel="site/refund-liststeps";
     ]);
     ?>
         <?php
-        echo $form->field($model, 'bank_card_document')->label('Bank Card Document:')->widget(FileInput::classname(), [
+        echo $form->field($model, 'bank_card_document')->label($bankAttLabe)->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf'],
             'pluginOptions' => [
                 'showCaption' => false,
@@ -78,7 +84,7 @@ $cancel="site/refund-liststeps";
                 'showUpload' => false,
                 // 'browseClass' => 'btn btn-primary btn-block',
                 'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
-                'browseLabel' =>  'Bank Card Document (required format .pdf only)',
+                'browseLabel' =>  $bankAttLabe.' (required format .pdf only)',
                 'initialPreview'=>[
                     "$model->bank_card_document",
 
