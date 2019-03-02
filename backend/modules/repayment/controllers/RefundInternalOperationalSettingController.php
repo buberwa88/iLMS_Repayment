@@ -74,8 +74,8 @@ class RefundInternalOperationalSettingController extends Controller {
         $model = new RefundInternalOperationalSetting();
 
         if ($model->load(Yii::$app->request->post())) {
-            if ($model->save()) {
-                return $this->redirect(['view', 'id' => $model->refund_internal_operational_id]);
+            if ($model->save(false)) {
+                return $this->redirect(['index']);
             }
         }
         return $this->render('create', [

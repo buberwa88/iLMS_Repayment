@@ -5,8 +5,8 @@ namespace backend\modules\repayment\controllers;
 use Yii;
 use backend\modules\repayment\models\RefundStatusReasonSetting;
 use backend\modules\repayment\models\RefundStatusReasonSettingSearch;
-//use yii\web\Controller;
-use \common\components\Controller;
+use yii\web\Controller;
+//use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -76,8 +76,8 @@ class RefundStatusReasonSettingController extends Controller {
 
         if ($model->load(Yii::$app->request->post())) {
             $model->created_by=  \Yii::$app->user->id;
-            if ($model->save()) {
-                return $this->redirect(['index', 'id' => $model->refund_status_reason_setting_id]);
+            if ($model->save(false)) {
+                return $this->redirect(['index']);
             }
             var_dump($model->errors);
         }
@@ -99,8 +99,8 @@ class RefundStatusReasonSettingController extends Controller {
             $model = $this->findModel($id);
         }
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['index', 'id' => $model->refund_status_reason_setting_id]);
+        if ($model->load(Yii::$app->request->post()) && $model->save(false)) {
+            return $this->redirect(['index']);
         } else {
             return $this->render('update', [
                         'model' => $model,

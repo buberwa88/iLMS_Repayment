@@ -5,7 +5,7 @@ namespace backend\modules\repayment\models\base;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
-use backend\modules\appeal\models\AttachmentDefinition;
+use frontend\modules\application\models\AttachmentDefinition;
 use common\models\User;
 
 /**

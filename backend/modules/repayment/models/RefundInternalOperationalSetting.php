@@ -130,6 +130,15 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
             self::STATUS_NEED_FURTHER_VERIFICATION => 'Need Further Verification',
         );
     }
+	
+	static function getVerificationStatusGeneral() {
+        return array(
+            self::STATUS_VALID => 'Valid',
+            self::STATUS_INVALID => 'Invalid',
+            self::STATUS_NEED_FURTHER_VERIFICATION => 'Need Further Verification',
+			self::VERIFICATION_STATUS_NEED_INVESTIGATION => 'Need Investigation',
+        );
+    }
 
     public static function getNextFlow($currentFlow_id, $statusResponse, $orderList_ASC_DESC, $condition,$flow_type,$current_flow_order_list) {
         if($flow_type==1) {

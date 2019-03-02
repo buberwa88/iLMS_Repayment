@@ -74,8 +74,8 @@ if($providerRefundVerificationFrameworkItem->totalCount){
                 'label' => 'Attachment '
             ],
             'verification_prompt',
-            //'status',
-            //'is_active',
+            'status',
+            'is_active',
     ];
     echo Gridview::widget([
         'dataProvider' => $providerRefundVerificationFrameworkItem,
@@ -91,5 +91,10 @@ if($providerRefundVerificationFrameworkItem->totalCount){
 }
 //echo $model->support_document;
 ?>
+<p><b>Support Documents</b></p>
+<p>
+
+<iframe src="../<?=$model->support_document?>" style="width:900px;height:300px;" frameborder="0"></iframe>
+</p>
     </div>
 </div>

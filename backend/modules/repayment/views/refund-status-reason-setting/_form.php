@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+$verificationStatus = \backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationStatusGeneral();
 
 /* @var $this yii\web\View */
 /* @var $model backend\modules\repayment\models\RefundStatusReasonSetting */
@@ -12,17 +13,8 @@ use yii\widgets\ActiveForm;
 
     <?php $form = ActiveForm::begin(); ?>
     <?=
-    $form->field($model, 'category')->widget(\kartik\widgets\Select2::classname(), [
-        'data' => $model->getApplcationProcessingSections(),
-        'options' => ['placeholder' => 'Choose Category'],
-        'pluginOptions' => [
-            'allowClear' => true
-        ],
-    ]);
-    ?>
-    <?=
     $form->field($model, 'status')->widget(\kartik\widgets\Select2::classname(), [
-        'data' =>$model->getStatusTypes(),// [1 => "Valid", 2 => "Invalid", 3 => "Waiting", 4 => "Incomplete"],
+        'data' =>$verificationStatus,//$model->getStatusTypes(),// [1 => "Valid", 2 => "Invalid", 3 => "Waiting", 4 => "Incomplete"],
         'options' => ['placeholder' => 'Choose Status'],
         'pluginOptions' => [
             'allowClear' => true
@@ -32,15 +24,13 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'reason')->textInput(['maxlength' => true, 'placeholder' => 'Reason']) ?>
 
-    <div class="form-group">
-        <?php if (Yii::$app->controller->action->id != 'save-as-new'): ?>
-            <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
-        <?php endif; ?>
-        <?php if (Yii::$app->controller->action->id != 'create'): ?>
-            <?= Html::submitButton('Save As New', ['class' => 'btn btn-info', 'value' => '1', 'name' => '_asnew']) ?>
-        <?php endif; ?>
-        <?= Html::a(Yii::t('app', 'Cancel'), Yii::$app->request->referrer, ['class' => 'btn btn-danger']) ?>
-    </div>
+<div class="text-right">
+    <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+    <?php
+    echo Html::resetButton('Reset', ['class' => 'btn btn-default']);
+    echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['index'], ['class' => 'btn btn-warning']);
+    ?>
+</div>
 
     <?php ActiveForm::end(); ?>
 

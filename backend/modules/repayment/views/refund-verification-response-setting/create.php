@@ -4,14 +4,14 @@ use yii\helpers\Html;
 
 
 /* @var $this yii\web\View */
-/* @var $model backend\modules\repayment\models\RefundStatusReasonSetting */
+/* @var $model backend\modules\repayment\models\RefundVerificationResponseSetting */
 
-$this->title = 'Create Refund Verification Comment';
-$this->params['breadcrumbs'][] = ['label' => 'Refund Verification Comment', 'url' => ['index']];
+$this->title = 'Create Refund Verification Response';
+$this->params['breadcrumbs'][] = ['label' => 'Refund Verification Response', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="refund-status-reason-setting-create">
- <div class="panel panel-info">
+<div class="refund-verification-response-setting-create">
+<div class="panel panel-info">
                         <div class="panel-heading">
 						<?= Html::encode($this->title) ?>
                         </div>
@@ -21,5 +21,5 @@ $this->params['breadcrumbs'][] = $this->title;
     ]) ?>
 
 </div>
-</div>
+       </div>
 </div>

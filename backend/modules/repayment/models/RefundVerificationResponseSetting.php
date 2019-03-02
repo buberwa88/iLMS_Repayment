@@ -98,4 +98,32 @@ class RefundVerificationResponseSetting extends \yii\db\ActiveRecord
         $codesID= self::findBySql("SELECT GROUP_CONCAT(refund_verification_response_setting_id) as id FROM refund_verification_response_setting WHERE response_code IN($groupCode)")->one();
         return $codesID->id;
     }
+
+
+/*
+	static function getVerificationResponCode() {
+        return [
+		    self::Concluded_Valid => 'Concluded Valid',
+            self::Issue_denial_letter => 'Issue Denial Letter',
+            self::Temporary_stop_Deduction_letter => 'Issue Temporary Stop Deduction',
+            self::Permanent_stop_deduction_letter => 'Issue Permanent Stop Deduction',
+            self::Need_further_verification => 'Need Further Verification',
+            self::Need_investigation => 'Need Investigation',
+            self::No_stop_deduction_needed => 'No Stop Deduction Needed',
+        ];
+    }
+	*/
+
+	static function getVerificationResponCode() {
+        return [
+		    self::Concluded_Valid => 'CLV',
+            self::Issue_denial_letter => 'DL',
+            self::Temporary_stop_Deduction_letter => 'TSDL',
+            self::Permanent_stop_deduction_letter => 'PSDL',
+            self::Need_further_verification => 'NFV',
+            self::Need_investigation => 'NIVST',
+            self::No_stop_deduction_needed => 'NSTL',
+        ];
+    }
+	
 }

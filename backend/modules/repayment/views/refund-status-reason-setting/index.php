@@ -6,8 +6,9 @@
 use yii\helpers\Html;
 use kartik\export\ExportMenu;
 use kartik\grid\GridView;
+$verificationStatus = \backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationStatusGeneral();
 
-$this->title = 'Refund Status Reason Setting';
+$this->title = 'Refund Verification Comment';
 $this->params['breadcrumbs'][] = $this->title;
 $search = "$('.search-button').click(function(){
 	$('.search-form').toggle(1000);
@@ -22,13 +23,14 @@ $this->registerJs($search);
         </div>
         <div class="panel-body">
             <p>
-                <?= Html::a('Create Refund Status Reason Setting', ['create'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a('Create Refund Verification Comment', ['create'], ['class' => 'btn btn-success']) ?>
 
             </p>
 
             <?php
             $gridColumn = [
                 ['class' => 'yii\grid\SerialColumn'],
+				/*
                 [
                     'attribute' => 'category',
                     'label' => 'category',
@@ -41,7 +43,9 @@ $this->registerJs($search);
                         'pluginOptions' => ['allowClear' => true],
                     ],
                     'filterInputOptions' => ['placeholder' => 'Category', 'id' => 'grid-category-search-attachment_definition_id']
-                ], [
+                ], 
+				
+				[
                     'attribute' => 'status',
                     'label' => 'Status',
                     'value' => function($model) {
@@ -49,13 +53,29 @@ $this->registerJs($search);
                     },
                     'filterType' => GridView::FILTER_SELECT2,
                     'filter' => function($model) {
-                        return $model->getStatusTypes();
+                        return $verificationStatus;
                     },
                     'filterWidgetOptions' => [
                         'pluginOptions' => ['allowClear' => true],
                     ],
                     'filterInputOptions' => ['placeholder' => 'Status', 'id' => 'grid-refund-comment-search-attachment_definition_id']
                 ],
+				*/
+				[
+                     'attribute' => 'status',
+                        'label'=>"Status",
+                        'value' => function ($model) {
+							if($model->status==1){
+                           return 'Valid';
+							}else if($model->status==2){
+							return 'InValid';	
+							}else if($model->status==3){
+							return 'Need Further Verification';	
+							}else if($model->status==4){
+							return 'Need Investigation';	
+							}
+                        },
+            ],
                 'reason',
                 //'category',
                 [

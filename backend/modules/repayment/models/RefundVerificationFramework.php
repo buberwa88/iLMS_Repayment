@@ -17,7 +17,7 @@ class RefundVerificationFramework extends BaseRefundVerificationFramework
     {
         return array_replace_recursive(parent::rules(),
 	    [
-            [['created_at', 'confirmed_at', 'updated_at'], 'safe'],
+            [['created_at', 'confirmed_at', 'updated_at','refund_type_id'], 'safe'],
             [['created_by', 'confirmed_by', 'updated_by', 'is_active'], 'integer'],
             [['verification_framework_title', 'verification_framework_desc', 'verification_framework_stage', 'support_document'], 'string', 'max' => 100]
         ]);

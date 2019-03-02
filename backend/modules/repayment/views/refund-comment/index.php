@@ -6,7 +6,7 @@
 use yii\helpers\Html;
 use kartik\export\ExportMenu;
 use kartik\grid\GridView;
-use backend\modules\appeal\models\AttachmentDefinition;
+use frontend\modules\application\models\AttachmentDefinition;
 
 $this->title = 'Refund Rejection Reasons Setting';
 $this->params['breadcrumbs'][] = $this->title;

@@ -63,7 +63,7 @@ class RefundStatusReasonSetting extends \yii\db\ActiveRecord {
         return [
             'refund_status_reason_setting_id' => 'Refund Status Reason Setting ID',
             'status' => 'Status Type',
-            'reason' => 'Reason',
+            'reason' => 'Comment',
             'category' => 'Reason Category',
         ];
     }

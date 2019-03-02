@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-use backend\modules\appeal\models\AttachmentDefinition;
+use frontend\modules\application\models\AttachmentDefinition;
 
 /* @var $this yii\web\View */
 /* @var $model backend\modules\repayment\models\RefundComment */

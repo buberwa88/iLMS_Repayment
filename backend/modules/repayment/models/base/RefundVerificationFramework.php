@@ -56,7 +56,7 @@ class RefundVerificationFramework extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['created_at', 'confirmed_at', 'updated_at'], 'safe'],
+            [['created_at', 'confirmed_at', 'updated_at','refund_type_id'], 'safe'],
             [['created_by', 'confirmed_by', 'updated_by', 'is_active'], 'integer'],
             [['verification_framework_title', 'verification_framework_desc', 'verification_framework_stage', 'support_document'], 'string', 'max' => 100]
         ];
@@ -84,6 +84,7 @@ class RefundVerificationFramework extends \yii\db\ActiveRecord
             'confirmed_by' => 'Confirmed By',
             'confirmed_at' => 'Confirmed At',
             'is_active' => 'Is Active',
+			'refund_type_id'=>'refund_type_id',
         ];
     }
     
