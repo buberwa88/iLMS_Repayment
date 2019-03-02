@@ -5,7 +5,7 @@ use kartik\builder\TabularForm;
 use yii\data\ArrayDataProvider;
 use yii\helpers\Html;
 use yii\widgets\Pjax;
-use backend\modules\appeal\models\AttachmentDefinition;
+use frontend\modules\application\models\AttachmentDefinition;
 
 $dataProvider = new ArrayDataProvider([
     'allModels' => $row,
@@ -40,7 +40,7 @@ echo TabularForm::widget([
             'type' => TabularForm::INPUT_WIDGET,
             'widgetClass' => \kartik\widgets\Select2::className(),
             'options' => [
-                'data' =>[1=>"Mandatory",0=>'Optional'],
+                'data' =>[1=>"Mandatory",2=>'Optional'],
                 'options' => ['placeholder' => 'Choose  Priority'],
             ],
             'columnOptions' => ['width' => '200px']

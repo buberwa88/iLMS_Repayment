@@ -60,7 +60,7 @@ class RefundVerificationResponseSetting extends \yii\db\ActiveRecord
             'response_code' => 'Response Code',
             'access_role_master' => 'Access Role Master',
             'access_role_child' => 'Access Role Child',
-            'reason' => 'Reason',
+            'reason' => 'Response',
             'created_at' => 'Created At',
             'created_by' => 'Created By',
             'updated_at' => 'Updated At',

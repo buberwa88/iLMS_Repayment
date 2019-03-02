@@ -71,6 +71,14 @@ $this->params['breadcrumbs'][] = $this->title;
                 },
                 'format' => 'raw'
             ],
+			[
+                     'attribute' => 'application_number',
+                        'label'=>"Application #",
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            return $model->application_number;
+                        },
+                    ],
                    [
                      'attribute' => 'current_status',
                        'label'=>'Status',

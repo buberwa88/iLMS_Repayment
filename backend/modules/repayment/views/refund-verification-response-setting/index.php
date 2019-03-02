@@ -42,7 +42,7 @@ $this->params['breadcrumbs'][] = $this->title;
 							}
                         },
             ],
-            //'response_code',
+            'response_code',
             //'access_role_master',
             //'access_role_child',
              'reason',

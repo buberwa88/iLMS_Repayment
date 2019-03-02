@@ -6,7 +6,7 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
 use common\models\User;
-use backend\modules\appeal\models\AttachmentDefinition;
+use frontend\modules\application\models\AttachmentDefinition;
 
 /**
  * This is the base model class for table "refund_verification_framework_item".

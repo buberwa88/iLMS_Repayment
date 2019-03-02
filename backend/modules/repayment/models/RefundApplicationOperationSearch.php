@@ -91,7 +91,7 @@ class RefundApplicationOperationSearch extends RefundApplicationOperation
     public function searchVerification($params,$roles)
     {
         $query = RefundApplicationOperation::find()
-            ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_application.verification_response,refund_application.current_level')
+            ->select('refund_application.refund_application_id,refund_application.application_number,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_application.verification_response,refund_application.current_level')
             ->where(['or',
                 ['in','refund_application_operation.access_role_master',$roles],
                 ['in','refund_application_operation.access_role_child',$roles],

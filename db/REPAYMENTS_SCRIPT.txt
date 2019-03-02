@@ -656,3 +656,6 @@ ALTER TABLE `refund_steps`
 --
 ALTER TABLE `refund_steps`
   MODIFY `refund_steps_id` int(11) NOT NULL AUTO_INCREMENT;COMMIT;
+  
+=================02-03-2019===========
+ALTER TABLE `refund_application_operation` DROP FOREIGN KEY `refundComment3_idfk`; ALTER TABLE `refund_application_operation` ADD CONSTRAINT `refundComment3_idfk` FOREIGN KEY (`refund_status_reason_setting_id`) REFERENCES `refund_status_reason_setting`(`refund_status_reason_setting_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;

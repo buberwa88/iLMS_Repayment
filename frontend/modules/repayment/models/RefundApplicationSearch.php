@@ -97,7 +97,7 @@ class RefundApplicationSearch extends RefundApplication {
 
         $loggedin = Yii::$app->user->identity->user_id;
         $query = RefundApplication::find()
-                ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+                ->select('refund_application.refund_application_id,refund_application.application_number,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
                 ->where(['refund_application.current_status' => $condition]);
 
         // add conditions that should always apply here
@@ -150,7 +150,7 @@ class RefundApplicationSearch extends RefundApplication {
     public function searchVerifiedRefundAppl($params, $currentLevel) {
 
         $query = RefundApplication::find()
-                ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+                ->select('refund_application.refund_application_id,refund_application.application_number,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
                 ->where(['refund_application.current_level' => $currentLevel]);
 
         // add conditions that should always apply here
@@ -204,7 +204,7 @@ class RefundApplicationSearch extends RefundApplication {
         //$codeResponseID=[1,3,5];
         //print_r($codeResponseID);exit;
         $query = RefundApplication::find()
-                ->select('refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+                ->select('refund_application.refund_application_id,refund_application.application_number,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
                 ->where(['refund_application.current_level' => $currentLevel, 'refund_application.verification_response' => $codeResponseID]);
 
         // add conditions that should always apply here
@@ -257,7 +257,7 @@ class RefundApplicationSearch extends RefundApplication {
     public function searchVerifiedRefundWaitingPayment($params, $currentLevel, $PayListStatus) {
 
         $query = RefundApplication::find()
-                ->select('refund_application.refund_claimant_amount,refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+                ->select('refund_application.refund_claimant_amount,refund_application.refund_application_id,refund_application.application_number,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
                 ->where(['refund_application.current_level' => $currentLevel, 'refund_application.current_status' => $PayListStatus]);
 
         // add conditions that should always apply here
@@ -310,7 +310,7 @@ class RefundApplicationSearch extends RefundApplication {
     public function searchVerifiedRefundPaid($params, $PayListStatus) {
 
         $query = RefundApplication::find()
-                ->select('refund_application.refund_claimant_amount,refund_application.refund_application_id,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
+                ->select('refund_application.refund_claimant_amount,refund_application.refund_application_id,refund_application.application_number,refund_application.refund_claimant_id, refund_application.refund_type_id,refund_application.current_status,refund_claimant.f4indexno,refund_claimant.firstname,refund_claimant.middlename,refund_claimant.surname,refund_claimant.f4indexno,refund_application.refund_type_id')
                 ->where(['refund_application.current_status' => $PayListStatus]);
 
         // add conditions that should always apply here
