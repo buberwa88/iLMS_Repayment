@@ -74,8 +74,10 @@ class RefundPaylistController extends Controller {
         ///
         ///paid models
         //$check=0;
-        $paidModel = new RefundPaylistDetails();
-        $paid_refunds = $paidModel->searchPaidRefunds(Yii::$app->request->queryParams);
+        //$paidModel = new RefundPaylistDetails();
+        //$paid_refunds = $paidModel->searchPaidRefunds(Yii::$app->request->queryParams);
+		//$paylistModel = new RefundPaylistSearch();
+        $paid_refunds = $paylistModel->searchPaid(Yii::$app->request->queryParams);
         if($check==0) {
             return $this->render('index_executive', [
                 'model' => $paylistModel,
@@ -84,7 +86,7 @@ class RefundPaylistController extends Controller {
                 'paylists' => $paylists,
                 'pendingModel' => $pendingModel,
                 'pending_refunds' => $pending_refunds,
-                'paidModel' => $paidModel,
+                'paidModel' => $paylistModel,
                 'paid_refunds' => $paid_refunds
             ]);
         }else{
@@ -93,7 +95,7 @@ class RefundPaylistController extends Controller {
                 'paylists' => $paylists,
                 'pendingModel' => $pendingModel,
                 'pending_refunds' => $pending_refunds,
-                'paidModel' => $paidModel,
+                'paidModel' => $paylistModel,
                 'paid_refunds' => $paid_refunds
             ]);
         }
@@ -227,7 +229,7 @@ class RefundPaylistController extends Controller {
 						$claimant_list->payment_bank_branch  = $application->branch;
                         $claimant_list->status = \backend\modules\repayment\models\RefundPaylistDetails::STATUS_CREATED;
                         ///savinf claimant list in the paylist
-                        if ($claimant_list->save(false)) {
+                        if ($claimant_list->save(false)) {			
                             $paylist_items++;
                         }
                     }
@@ -410,6 +412,14 @@ class RefundPaylistController extends Controller {
             $refund_internal_operational_id=$resultsRefundInterOperSett->refund_internal_operational_id;
 
             \backend\modules\repayment\models\RefundPaylistOperation::insertRefundPaylistOperation($refund_paylist_id, $refund_internal_operational_id, $previous_internal_operational_id, $access_role_master, $access_role_child, $status, $narration, $lastVerifiedBy, $dataVerified, $generalStatus);
+			
+			$allRefundAPPLICAtion=\backend\modules\repayment\models\RefundPaylistDetails::find()->where(['refund_paylist_id'=>$id])->all();
+			foreach($allRefundAPPLICAtion AS $applicationResults){
+			$RefundApplicationID=$applicationResults->refund_application_id;
+            $resultsApplication=\frontend\modules\repayment\models\RefundApplication::findOne($RefundApplicationID);
+			$resultsApplication->current_status=\frontend\modules\repayment\models\RefundApplication::APPLICATION_IN_PALIST;
+			$resultsApplication->save(false);			
+			}
         }
         return $this->redirect(['view', 'id' => $id]);
 

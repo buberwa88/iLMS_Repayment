@@ -70,5 +70,38 @@ class RefundPaylistSearch extends RefundPaylist {
 
         return $dataProvider;
     }
+	public function searchPaid($params) {
+        $query = RefundPaylist::find()->where(['status'=>1]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+        $query->orderBy('refund_paylist_id DESC');
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->andFilterWhere([
+            'refund_paylist_id' => $this->refund_paylist_id,
+            'date_created' => $this->date_created,
+            'created_by' => $this->created_by,
+            'date_updated' => $this->date_updated,
+            'updated_by' => $this->updated_by,
+            'status' => $this->status,
+        ]);
+
+        $query->andFilterWhere(['like', 'paylist_name', $this->paylist_name])
+                ->andFilterWhere(['like', 'paylist_description', $this->paylist_description])
+                ->andFilterWhere(['like', 'paylist_number', $this->paylist_number]);
+
+        return $dataProvider;
+    }
 
 }

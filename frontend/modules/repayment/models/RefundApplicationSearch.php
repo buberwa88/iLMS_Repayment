@@ -401,5 +401,46 @@ class RefundApplicationSearch extends RefundApplication {
 
         return $dataProvider;
     }
+	function searchPaidRefunds() {
+        $query = RefundApplication::find()
+                ->where(['current_status' => RefundApplication::PAID_APPLICATION]);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->joinwith("refundClaimant");
+        $query->andFilterWhere([
+            'refund_application_id' => $this->refund_application_id,
+            'refund_claimant_id' => $this->refund_claimant_id,
+            'finaccial_year_id' => $this->finaccial_year_id,
+            'academic_year_id' => $this->academic_year_id,
+            'refund_verification_framework_id' => $this->refund_verification_framework_id,
+            'refund_type_id' => $this->refund_type_id,
+            'is_active' => $this->is_active,
+            'submitted' => $this->submitted,
+        ]);
+
+        $query->andFilterWhere(['like', 'application_number', $this->application_number])
+                ->andFilterWhere(['like', 'refund_claimant_amount', $this->refund_claimant_amount])
+                ->andFilterWhere(['like', 'trustee_firstname', $this->trustee_firstname])
+                ->andFilterWhere(['like', 'trustee_midlename', $this->trustee_midlename])
+                ->andFilterWhere(['like', 'trustee_surname', $this->trustee_surname])
+                ->andFilterWhere(['like', 'trustee_sex', $this->trustee_sex])
+                ->andFilterWhere(['like', 'check_number', $this->check_number])
+                ->andFilterWhere(['like', 'bank_account_number', $this->bank_account_number])
+                ->andFilterWhere(['like', 'bank_account_name', $this->bank_account_name]);
+
+        return $dataProvider;
+    }
 
 }

@@ -35,7 +35,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     [
                         'label' => 'Paid Refunds',
-                        'content' => $this->render('_refund_paid', ['model' => $model, 'dataProvider' => $paid_refunds, 'paidModel' => $paidModel]),
+                        'content' => $this->render('_refund_paid', ['model' => $model, 'dataProvider' => $paid_refunds, 'paidModel' => $paylistModel]),
                         'id' => 'atab1',
                         'active' => ($active == 'atab1') ? true : false,
                     ],
