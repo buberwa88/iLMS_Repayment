@@ -252,7 +252,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <p style="font-weight: bold">CLAIMANT LIST</p>
             <?=
             GridView::widget([
-                'dataProvider' => $paylist_details_model->getPlayListDetails(),
+                'dataProvider' => $paylist_details_model->getPlayListDetails($model->refund_paylist_id),
 //            'filterModel' => $paylist_details_model,
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],

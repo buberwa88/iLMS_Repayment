@@ -96,8 +96,8 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
         return NULL;
     }
 
-    function getPlayListDetails() {
-        $query = RefundPaylistDetails::find();
+    function getPlayListDetails($refund_paylist_id) {
+        $query = RefundPaylistDetails::find()->where(['refund_paylist_id'=>$refund_paylist_id]);
 
         $dataProvider = new \yii\data\ActiveDataProvider([
             'query' => $query,

@@ -46,9 +46,34 @@ class RefundPaylistController extends Controller {
         ///pending application models for paylist creation
         $pendingModel = new \frontend\modules\repayment\models\RefundApplicationSearch();
         $pending_refunds = $pendingModel->searchPendingRefunds(Yii::$app->request->queryParams);
+		//check role
+		$currentStageLevelRoleMaster=\backend\modules\repayment\models\RefundInternalOperationalSetting::loan_recovery_data_section;
+		$user_id=Yii::$app->user->identity->user_id;
+        $allRoles1=\backend\modules\repayment\models\RefundApplicationOperation::getUserRoleByUserID($user_id);
+        $allRoles=$allRoles1->item_name;
+		$finalValue='';
+        $countCommas=substr_count($allRoles,",");
+        for($i=0;$i<=$countCommas;){
+            $arrayFound=explode(",",$allRoles);
+            if($i==$countCommas){
+                $val='"';
+            }else{
+                $val='",';
+            }
+            $value='"'.$arrayFound[$i].$val;
+            $finalValue.=$value;
+            $i++;
+        }
+		$foundFirstLEVEL=strpos($finalValue,$currentStageLevelRoleMaster);
+		if($foundFirstLEVEL > 0) {
+		$check=1;	
+		}else{
+		$check=0;	
+		}
+		//end check role
         ///
         ///paid models
-        $check=0;
+        //$check=0;
         $paidModel = new RefundPaylistDetails();
         $paid_refunds = $paidModel->searchPaidRefunds(Yii::$app->request->queryParams);
         if($check==0) {
@@ -173,14 +198,16 @@ class RefundPaylistController extends Controller {
             $model->created_by = Yii::$app->user->id;
             $model->status = RefundPaylist::STATUS_CREATED;
             $selected = $model->paylist_claimant;
+			$model->current_level = \backend\modules\repayment\models\RefundInternalOperationalSetting::getDefaultFirstLevelFlow()-> 	refund_internal_operational_id;
 //            echo'<pre/>';
-////            var_dump($model->paylist_claimant);
-////            exit;
+           //var_dump($model->paylist_claimant);
+            //exit;
             if ($model->save()) {
                 $paylist_items = 0;
                 foreach ($model->paylist_claimant as $key => $claimants) {
-                    $application = \frontend\modules\repayment\models\RefundApplication::getRefundApplicationDetailsById($key);
-//                    var_dump($application->attributes);
+                    $application = \frontend\modules\repayment\models\RefundApplication::getRefundApplicationDetailsById($claimants);
+                   //var_dump($application->attributes);
+				   //exit;
                     if ($application) {
                         $claimant_list = new \backend\modules\repayment\models\RefundPaylistDetails;
                         $claimant_list->refund_paylist_id = $model->refund_paylist_id;
@@ -189,14 +216,18 @@ class RefundPaylistController extends Controller {
                         $claimant_list->claimant_f4indexno = $application->refundClaimant->f4indexno;
                         $claimant_list->refund_application_reference_number = $application->application_number;
                         $claimant_list->refund_claimant_id = $application->refund_claimant_id;
-                        $claimant_list->application_id = $key;
+                        $claimant_list->refund_application_id = $claimants;
                         $claimant_list->claimant_name = $application->refundClaimant->firstname . ' ' . $application->refundClaimant->middlename . ' ' . $application->refundClaimant->surname;
                         $claimant_list->refund_claimant_amount = $application->refund_claimant_amount;
                         $claimant_list->phone_number = $application->refundClaimant->phone_number;
                         $claimant_list->email_address = $application->trustee_email;
+						$claimant_list->payment_bank_account_name = $application->bank_account_name;
+						$claimant_list->payment_bank_account_number = $application->bank_account_number;
+						$claimant_list->payment_bank_name  = $application->bank_name;
+						$claimant_list->payment_bank_branch  = $application->branch;
                         $claimant_list->status = \backend\modules\repayment\models\RefundPaylistDetails::STATUS_CREATED;
                         ///savinf claimant list in the paylist
-                        if ($claimant_list->save()) {
+                        if ($claimant_list->save(false)) {
                             $paylist_items++;
                         }
                     }
