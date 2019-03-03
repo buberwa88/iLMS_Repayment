@@ -761,9 +761,11 @@ class SiteController extends Controller {
             $todate = date("Y-m-d H:i:s");
             $model->created_at = $todate;
             $model->updated_at = $todate;
+            /*
             if ($model->firstname == 'YUSUPH') {
                 $model->applicant_id = 30;
             }
+            */
             $model->phone_number = str_replace(" ", "", $model->phone_number);
 
             if ($model->save(false)) {
@@ -1805,10 +1807,18 @@ $step_code=\backend\modules\repayment\models\RefundType::getRefundStepCode($refu
     }
 
     public function actionRefundConfirm($id) {
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
         $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($id);
         $modelRefundresults->submitted = 3;
-        if ($modelRefundresults->save(false))
-            ;
+        if ($modelRefundresults->save(false)) {
+            $refundApplicationID = $id;
+            $refund_claimant_id = $refundClaimantid;
+            if ($refundApplicationID != '' && $refund_claimant_id != '') {
+                \frontend\modules\repayment\models\RefundApplication::matchingUsingEmployeeID($refundApplicationID, $refund_claimant_id);
+            }
+        }
+
         //return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);
         return $this->redirect(['refund-liststeps']);
     }

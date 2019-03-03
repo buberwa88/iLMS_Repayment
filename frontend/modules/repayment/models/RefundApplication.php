@@ -396,4 +396,22 @@ class RefundApplication extends \yii\db\ActiveRecord {
         return self::find()->where(['current_status' => self::PAY_LIST_WAITING_QUEUE])->exists();
     }
 
+    public static function matchingUsingEmployeeID($refundApplicationID,$refund_claimant_id) {
+        $details_ = \frontend\modules\repayment\models\RefundClaimantEmployment::find()
+            ->select('employee_id')
+            ->where(['refund_application_id' => $refundApplicationID])
+            ->one();
+        $employee_id = $details_->employee_id;
+        if($employee_id !=''){
+            $details_EmplBenef = \frontend\modules\repayment\models\EmployedBeneficiary::find()
+                ->select('applicant_id')
+                ->where(['employee_id' =>$employee_id])
+                ->one();
+            $applicant_id=$details_EmplBenef->applicant_id;
+        }
+        if($applicant_id > 0){
+            \frontend\modules\repayment\models\RefundClaimant::updateAll(['applicant_id' => $applicant_id], 'refund_claimant_id="' .$refund_claimant_id. '" AND (applicant_id IS NULL OR applicant_id="")');
+        }
+    }
+
 }
