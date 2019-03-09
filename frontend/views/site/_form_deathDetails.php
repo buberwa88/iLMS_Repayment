@@ -43,12 +43,12 @@ $refund_application_id = $session->get('refund_application_id');
         'form'=>$form,
         'columns'=>1,
         'attributes'=>[
-            'death_certificate_number'=>['label'=>'Death ID:', 'options'=>['placeholder'=>'Enter.']],
+            'death_certificate_number'=>['label'=>'Death Certificate Number:', 'options'=>['placeholder'=>'Enter Certificate Number']],
         ]
     ]);
     ?>
         <?php
-        echo $form->field($model, 'death_certificate_document')->label('Death Certificate Document:')->widget(FileInput::classname(), [
+        echo $form->field($model, 'death_certificate_document')->label('Death Certificate Attachment:')->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf'],
             'pluginOptions' => [
                 'showCaption' => false,
@@ -56,7 +56,7 @@ $refund_application_id = $session->get('refund_application_id');
                 'showUpload' => false,
                 // 'browseClass' => 'btn btn-primary btn-block',
                 'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
-                'browseLabel' =>  'Death Certificate Document (required format .pdf only)',
+                'browseLabel' =>  'Upload a Certificed Death Certificate Document (required format .pdf only)',
                 'initialPreview'=>[
                     "$model->death_certificate_document",
 

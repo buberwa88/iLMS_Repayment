@@ -1,4 +1,5 @@
 <?php
+
 use kartik\widgets\ActiveForm;
 use kartik\builder\Form;
 use yii\helpers\Html;
@@ -41,4 +42,8 @@ use yii\captcha\Captcha;
 
         ActiveForm::end();
         ?>
+    </div>
+
+    <div class="text-left">
+        <p> <?php echo yii\bootstrap\Html::a('Recover My Reference number', ['/site/recover-reference-number'], ['class' => 'btn btn-warning']); ?></p>
     </div>

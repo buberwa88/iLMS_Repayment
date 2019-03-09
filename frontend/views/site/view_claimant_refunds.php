@@ -23,7 +23,8 @@ $this->params['breadcrumbs'][] = $this->title;
 //                'filterModel' => $model,
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
-                    ['label' => 'created_at',
+                    ['label' => 'created at',
+                        'attribute' => 'created_at',
                         'value' => function ($model) {
                             return date('d-M-Y', strtotime($model->created_at));
                         }
@@ -42,48 +43,49 @@ $this->params['breadcrumbs'][] = $this->title;
 //                    'trustee_surname:ntext',
 //                    'trustee_phone_number:ntext',
                     ['label' => 'Mobile No',
+                        'attribute' => 'trustee_phone_number',
                         'value' => function ($model) {
                             return $model->trustee_phone_number;
                         }
                     ],
                     'trustee_email:ntext',
-                    ['label' => 'Stutus',
+                    ['label' => 'Status',
                         'value' => function($model) {
                             return strtoupper($model->getCurrentStutusName());
                         }
                     ],
-					[
-               'label'=>'',
-               'value'=>function($model){
-                  //return Html::a("Application Details", ['/repayment/refund-application-operation/view-refund','id'=>$model->refund_application_id,'action' => 'view'], ['class'=>'label label-success']);
-				  return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'refundApplicationID' => $model->refund_application_id]);
-               },
-               'format'=>'raw',
-             ],
-					/*
-                    ['class' => 'yii\grid\ActionColumn',
-                        'template' => '{view}',
-                        'buttons' => [
-						
-                            'view' => function ($url, $model) {
-                                $url = yii\helpers\Url::to(['site/refund-applicationview', 'refundApplicationID' => $model->refund_application_id]);
-                                return Html::a('<span class="glyphicon glyphicon-search"></span>', $url, [
-                                            'title' => 'View Details',
-                                            'data-method' => 'get',
-                                ]);
-                            }
-                                ]
+                    [
+                        'label' => '',
+                        'value' => function($model) {
+                            //return Html::a("Application Details", ['/repayment/refund-application-operation/view-refund','id'=>$model->refund_application_id,'action' => 'view'], ['class'=>'label label-success']);
+                            return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'id' => $model->refund_application_id]);
+                        },
+                                'format' => 'raw',
                             ],
-							*/
-							/*
-							[
-               'label'=>'',
-               'value'=>function($model) use($refund_application_id){
-                  return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'refundApplicationID' => $refund_application_id]);
-               },
-               'format'=>'raw',
-             ],
-			 */
+                        /*
+                          ['class' => 'yii\grid\ActionColumn',
+                          'template' => '{view}',
+                          'buttons' => [
+
+                          'view' => function ($url, $model) {
+                          $url = yii\helpers\Url::to(['site/refund-applicationview', 'refundApplicationID' => $model->refund_application_id]);
+                          return Html::a('<span class="glyphicon glyphicon-search"></span>', $url, [
+                          'title' => 'View Details',
+                          'data-method' => 'get',
+                          ]);
+                          }
+                          ]
+                          ],
+                        
+                        /*
+                          [
+                          'label'=>'',
+                          'value'=>function($model) use($refund_application_id){
+                          return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'refundApplicationID' => $refund_application_id]);
+                          },
+                          'format'=>'raw',
+                          ],
+                         */
                         ],
                     ]);
                     ?>

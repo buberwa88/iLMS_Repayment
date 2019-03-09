@@ -25,45 +25,42 @@ use Yii;
  * @property RefundClaimant $refundClaimant
  * @property User $updatedBy
  */
-class RefundClaimantEmployment extends \yii\db\ActiveRecord
-{
+class RefundClaimantEmployment extends \yii\db\ActiveRecord {
+
     /**
      * @inheritdoc
      */
-    public static function tableName()
-    {
+    public static function tableName() {
         return 'refund_claimant_employment';
     }
 
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
+    public function rules() {
         return [
-            [['start_date', 'end_date', 'created_at', 'updated_at','first_slip_document','second_slip_document','employed_gvt_private_status','employed_gvt_check_number_status','employment_status'], 'safe'],
+            [['start_date', 'end_date', 'created_at', 'updated_at', 'first_slip_document', 'second_slip_document', 'employed_gvt_private_status', 'employed_gvt_check_number_status', 'employment_status'], 'safe'],
             [['refund_claimant_id', 'refund_application_id', 'created_by', 'updated_by'], 'integer'],
             [['employer_name', 'employee_id'], 'string', 'max' => 100],
             [['matching_status'], 'string', 'max' => 200],
-			[['first_slip_document'], 'file', 'extensions'=>['pdf']],
-			[['second_slip_document'], 'file', 'extensions'=>['pdf']],
+            [['first_slip_document'], 'file', 'extensions' => ['pdf']],
+            [['second_slip_document'], 'file', 'extensions' => ['pdf']],
             /*
-            [['start_date', 'end_date','employer_name','employee_id'], 'required', 'when' => function ($model) {
-                return $model->employment_status == 1;
-            }, 'whenClient' => "function (attribute, value) {
-				return $('#employmentStatus_id input:checked').val() == 1;
-			}"],
-            */
-
+              [['start_date', 'end_date','employer_name','employee_id'], 'required', 'when' => function ($model) {
+              return $model->employment_status == 1;
+              }, 'whenClient' => "function (attribute, value) {
+              return $('#employmentStatus_id input:checked').val() == 1;
+              }"],
+             */
             [['employed_gvt_check_number_status'], 'required', 'when' => function ($model) {
-                return $model->employed_gvt_check_number_status == 1;
-            }, 'whenClient' => "function (attribute, value) { 
+            return $model->employed_gvt_check_number_status == 1;
+        }, 'whenClient' => "function (attribute, value) { 
              if ($('#employed_gvt_private_status_id').val() == 1) {
              return $('#employed_gvt_private_status_id input:checked').val() == 1;
              }				
 			}"],
-			//[['employment_status','first_slip_document','second_slip_document'], 'required','on'=>'refundEmploymentDetails'],
-            [['employed_gvt_private_status','employee_id'], 'required','on'=>'refundEmploymentDetails'],
+            //[['employment_status','first_slip_document','second_slip_document'], 'required','on'=>'refundEmploymentDetails'],
+            [['employed_gvt_private_status', 'employee_id'], 'required', 'on' => 'refundEmploymentDetails'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['refund_application_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundApplication::className(), 'targetAttribute' => ['refund_application_id' => 'refund_application_id']],
             [['refund_claimant_id'], 'exist', 'skipOnError' => true, 'targetClass' => RefundClaimant::className(), 'targetAttribute' => ['refund_claimant_id' => 'refund_claimant_id']],
@@ -74,8 +71,7 @@ class RefundClaimantEmployment extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return [
             'refund_claimant_employment_id' => 'Refund Claimant Employment ID',
             'employer_name' => 'Employer Name',
@@ -95,41 +91,51 @@ class RefundClaimantEmployment extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCreatedBy()
-    {
+    public function getCreatedBy() {
         return $this->hasOne(User::className(), ['user_id' => 'created_by']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundApplication()
-    {
+    public function getRefundApplication() {
         return $this->hasOne(RefundApplication::className(), ['refund_application_id' => 'refund_application_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getRefundClaimant()
-    {
+    public function getRefundClaimant() {
         return $this->hasOne(RefundClaimant::className(), ['refund_claimant_id' => 'refund_claimant_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUpdatedBy()
-    {
+    public function getUpdatedBy() {
         return $this->hasOne(User::className(), ['user_id' => 'updated_by']);
     }
 
-    public static function getStageChecked($refund_application_id ){
+    public static function getStageChecked($refund_application_id) {
         $details_ = self::find()
-            ->select('refund_application_id')
-            ->where(['refund_application_id'=>$refund_application_id])
-            ->all();
-        $results=count($details_);
+                ->select('refund_application_id')
+                ->where(['refund_application_id' => $refund_application_id])
+                ->all();
+        $results = count($details_);
         return $results;
     }
+
+    static function getRefundApplicationEmplymentRecordsByApplicationIdAndClaimantId($application_id, $claimantid) {
+        return self::find()
+                        ->select('*')
+                        ->where(['refund_application_id' => $application_id, 'refund_claimant_id' => $claimantid])
+                        ->all();
+    }
+    static function hasEmploymentRecordsByApplicationIdAndClaimantId($application_id, $claimantid) {
+        return self::find()
+                        ->select('*')
+                        ->where(['refund_application_id' => $application_id, 'refund_claimant_id' => $claimantid])
+                        ->exists();
+    }
+
 }

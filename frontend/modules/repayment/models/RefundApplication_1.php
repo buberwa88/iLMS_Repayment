@@ -99,7 +99,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['application_number'], 'validateApplicationNo', 'on' => 'view-status'],
             [['trustee_identity', 'verificationCode'], 'required', 'on' => 'recover-refund-no'],
             [['trustee_identity'], 'validIdentity', 'on' => 'recover-refund-no'],
-            [['bank_account_number', 'bank_account_name', 'bank_name', 'bank_card_document'], 'required', 'on' => 'refundBankDetailsAdd'],
+            [['bank_account_number', 'bank_account_name', 'bank_name', 'branch', 'bank_card_document'], 'required', 'on' => 'refundBankDetailsAdd'],
             [['death_certificate_number', 'death_certificate_document'], 'required', 'on' => 'refundDeathDetails'],
             [['liquidation_letter_document', 'liquidation_letter_number'], 'required', 'on' => 'refundEmploymentDetails'],
             [['court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document'], 'required', 'on' => 'refundCourtDetails'],
@@ -107,12 +107,13 @@ class RefundApplication extends \yii\db\ActiveRecord {
             //[['social_fund_document','social_fund_status','social_fund_receipt_document'], 'required','on'=>'refundSocialFundDetails'],
             [['social_fund_status'], 'required', 'on' => 'refundSocialFundDetails'],
             [['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by', 'verification_response', 'current_level', 'soccialFundDocument', 'refundTypeExpalnation', 'refund_type_confirmed', 'employer_letter_document', 'educationAttained', 'claimant_names_changed_status', 'deed_pole_document', 'refundType'], 'safe'],
+            //[['created_at', 'updated_at', 'trustee_phone_number', 'trustee_email', 'trustee_email', 'bank_name', 'branch', 'bank_card_document', 'social_fund_status', 'social_fund_document', 'social_fund_receipt_document', 'liquidation_letter_document', 'liquidation_letter_number', 'death_certificate_number', 'death_certificate_document', 'court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document', 'assignee', 'date_verified', 'last_verified_by', 'assigned_by', 'verification_response', 'current_level', 'soccialFundDocument', 'refundTypeExpalnation', 'refund_type_confirmed', 'refundType'], 'safe'],
             [['death_certificate_document', 'court_letter_certificate_document', 'letter_family_session_document'], 'file', 'extensions' => ['pdf']],
             [['bank_card_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_document'], 'file', 'extensions' => ['pdf']],
             [['social_fund_receipt_document'], 'file', 'extensions' => ['pdf']],
             [['liquidation_letter_document'], 'file', 'extensions' => ['pdf']],
-            [['deed_pole_document'], 'file', 'extensions' => ['pdf']],
+            //[['deed_pole_document'], 'file', 'extensions' => ['pdf']],
             /*
               [['social_fund_receipt_document','social_fund_document'], 'required', 'when' => function($model) {
               return $model->social_fund_status == 1;
@@ -210,6 +211,7 @@ class RefundApplication extends \yii\db\ActiveRecord {
             'educationAttained' => 'educationAttained',
             'claimant_names_changed_status' => 'Have you changed you names',
             'bank_card_document' => 'Bank Document',
+            'trustee_identity' => 'Email/Phone No'
         ];
     }
 
@@ -378,12 +380,6 @@ class RefundApplication extends \yii\db\ActiveRecord {
         return self::find()->where(['refund_application_id' => $id])->one();
     }
 
-    static function getRefundApplicationDetailsByApplicationIdAndClaimandId($id, $claimant_id) {
-        return self::find()
-                        ->where(['refund_application_id' => $id, 'refund_claimant_id' => $claimant_id])
-                        ->one();
-    }
-
     function getApplicationStatus() {
         return [
             self::APPLICATION_STATUS_SAVED => 'Draft/Saved',
@@ -417,10 +413,6 @@ class RefundApplication extends \yii\db\ActiveRecord {
                 return TRUE;
             } else if (preg_match('/^(255\d{9})$/', $this->trustee_identity)) {
                 return TRUE;
-            } else if (preg_match('/^(0\d{9})$/', $this->trustee_identity)) {
-                $this->trustee_identity = '255' . substr($this->trustee_identity, 1);
-//                echo $this->trustee_identity;
-                return TRUE;
             }
         }
         $this->addError($this->trustee_identity, 'Wrong Detail Provided');
@@ -439,24 +431,6 @@ class RefundApplication extends \yii\db\ActiveRecord {
                         ->where('trustee_email ="' . $this->trustee_identity . '" OR trustee_phone_number "%' . $this->trustee_identity)
                         ->orderBy('created_at DESC')
                         ->exist();
-    }
-
-    public static function matchingUsingEmployeeID($refundApplicationID, $refund_claimant_id) {
-        $details_ = \frontend\modules\repayment\models\RefundClaimantEmployment::find()
-                ->select('employee_id')
-                ->where(['refund_application_id' => $refundApplicationID])
-                ->one();
-        $employee_id = $details_->employee_id;
-        if ($employee_id != '') {
-            $details_EmplBenef = \frontend\modules\repayment\models\EmployedBeneficiary::find()
-                    ->select('applicant_id')
-                    ->where(['employee_id' => $employee_id])
-                    ->one();
-            $applicant_id = $details_EmplBenef->applicant_id;
-        }
-        if ($applicant_id > 0) {
-            \frontend\modules\repayment\models\RefundClaimant::updateAll(['applicant_id' => $applicant_id], 'refund_claimant_id="' . $refund_claimant_id . '" AND (applicant_id IS NULL OR applicant_id="")');
-        }
     }
 
 }

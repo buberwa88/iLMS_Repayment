@@ -31,24 +31,23 @@ use frontend\modules\repayment\models\EmployerSearch;
 </style>
 <div class="refund-education-history-form">
     <?php
-    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL,'options' => ['enctype' => 'multipart/form-data'],
-        'enableClientValidation' => TRUE,]);
+    $form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL, 'options' => ['enctype' => 'multipart/form-data'],
+                'enableClientValidation' => TRUE,]);
     ?>
     <?php
     echo Form::widget([ // fields with labels
-        'model'=>$model,
-        'form'=>$form,
-        'columns'=>1,
-        'attributes'=>[
+        'model' => $model,
+        'form' => $form,
+        'columns' => 1,
+        'attributes' => [
             'study_level' => ['type' => Form::INPUT_WIDGET,
                 'widgetClass' => \kartik\select2\Select2::className(),
                 'label' => 'Level of study:',
                 'options' => [
                     'data' => ArrayHelper::map(backend\modules\application\models\ApplicantCategory::find()->all(), 'applicant_category_id', 'applicant_category'),
                     'options' => [
-                        'prompt' => 'Select',
-                        //'id' => 'applicant_category_id',
-
+                        'prompt' => '-- Select --',
+                    //'id' => 'applicant_category_id',
                     ],
                     'pluginOptions' => [
                         'allowClear' => true
@@ -61,8 +60,8 @@ use frontend\modules\repayment\models\EmployerSearch;
                 'options' => [
                     'data' => ArrayHelper::map(\frontend\modules\application\models\LearningInstitution::find()->where(['institution_type' => ['UNIVERSITY', 'COLLEGE']])->all(), 'learning_institution_id', 'institution_name'),
                     'options' => [
-                        'prompt' => ' Select Learning Institution ',
-                        'id' => 'learning_institution_PhD_id',
+                        'prompt' => '-- Select Institution -- ',
+                        'id' => 'learning_institution_id',
                     ],
                     'pluginOptions' => [
                         'allowClear' => true
@@ -76,39 +75,57 @@ use frontend\modules\repayment\models\EmployerSearch;
                 'options' => [
                     'data' => ArrayHelper::map(backend\modules\application\models\Programme::find()->all(), 'programme_id', 'programme_name'),
                     'options' => [
-                        'prompt' => ' Select Programme ',
-                        'id' => 'programme_PhD_id',
+                        'prompt' => '-- Select Programme -- ',
+                        'id' => 'programme_id',
                     ],
                     'pluginOptions' => [
-                        'depends' => ['learning_institution_PhD_id'],
+                        'depends' => ['learning_institution_id'],
                         'placeholder' => 'Select ',
                         'url' => Url::to(['/repayment/employer/programme-namepublic']),
                     ],
                 ],
             ],
-            'entry_year'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_PhD_id']],
-            'completion_year'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_PhD_id']],
-        ]
-    ]);
-    ?>
-    <?php
-    echo $form->field($model, 'certificate_document')->label('Certificate Document:')->widget(FileInput::classname(), [
-        'options' => ['accept' => 'site/pdf'],
-        'pluginOptions' => [
-            'showCaption' => false,
-            'showRemove' => TRUE,
-            'showUpload' => false,
-            // 'browseClass' => 'btn btn-primary btn-block',
-            'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
-            'browseLabel' =>  'Certificate Document (required format .pdf only)',
-            'initialPreview'=>[
-                "$model->certificate_document",
-
+            'institution_name' => ['type' => Form::INPUT_TEXT,
+                'label' => 'Institution/Univeristy Name:',
+                'options' => [
+                    'prompt' => ' Enter Institution Name ',
+                    'id' => 'institution_name',
+                ],
             ],
-            'initialCaption'=>$model->certificate_document,
-            'initialPreviewAsData'=>true,
-        ],
-        //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
+            'programme_name' => ['type' => Form::INPUT_TEXT,
+                'label' => 'Programme Name:',
+                'options' => [
+                    'prompt' => ' Enter Programme Name ',
+                    'id' => 'programme_name',
+                ],
+            ],
+            'entry_year' => ['type' => Form::INPUT_WIDGET,
+                'widgetClass' => \kartik\select2\Select2::className(),
+                'label' => 'Entry Year:',
+                'options' => [
+                    'data' => \common\components\Calendar::getNYearsListfromCurrentYear(100),
+                    'options' => [
+                        'prompt' => '-- select -- ',
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ],
+            ],
+            'completion_year' => ['type' => Form::INPUT_WIDGET,
+                'widgetClass' => \kartik\select2\Select2::className(),
+                'label' => 'Completion Year:',
+                'options' => [
+                    'data' => \common\components\Calendar::getNYearsListfromCurrentYear(100),
+                    'options' => [
+                        'prompt' => '-- select -- ',
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ],
+            ],
+        ]
     ]);
     ?>
 
@@ -117,10 +134,65 @@ use frontend\modules\repayment\models\EmployerSearch;
         <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 
         <?php
-        echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/index-tertiary-education','id'=>$employerID], ['class' => 'btn btn-warning']);
+        echo Html::resetButton('Reset', ['class' => 'btn btn-default']);
+        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/index-tertiary-education', 'id' => $employerID], ['class' => 'btn btn-warning']);
 
         ActiveForm::end();
         ?>
     </div>
 </div>
+
+
+<?php
+/////JQUERY SCRIPTS
+$this->registerJs('
+$( document ).ready(function() {
+var others=$("#select2-learning_institution_id-container").attr("title");
+if(others=="Others" || others=="Other"){
+$("#institution_name").show();
+$("#programme_name").show();
+$(".field-institution_name").show();
+$(".field-programme_name").show();
+
+$("#learning_institution_id").hide();
+$(".programme_id").hide();
+$(".field-refundclaimanteducationhistory-program_id").hide();
+
+}else{
+$(".programme_id").show();
+$(".field-refundclaimanteducationhistory-program_id").show();
+
+$("#institution_name").hide();
+$("#programme_name").hide();
+$(".field-institution_name").hide();
+$(".field-programme_name").hide();
+}
+});
+
+
+$("#learning_institution_id").change(function () {
+var others=$("#select2-learning_institution_id-container").attr("title");
+if(others=="Others" || others=="Other"){
+$("#institution_name").show();
+$("#programme_name").show();
+$(".field-institution_name").show();
+$(".field-programme_name").show();
+
+$("#learning_institution_id").hide();
+$(".programme_id").hide();
+$(".field-refundclaimanteducationhistory-program_id").hide();
+
+}else{
+$(".programme_id").show();
+$(".field-refundclaimanteducationhistory-program_id").show();
+
+$("#institution_name").hide();
+$("#programme_name").hide();
+$(".field-institution_name").hide();
+$(".field-programme_name").hide();
+}
+
+});
+
+');
+?>
