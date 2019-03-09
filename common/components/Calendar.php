@@ -59,4 +59,16 @@ class Calendar extends Component {
         return $months_list;
     }
 
+    static function getNYearsListfromCurrentYear($NYears = NULL) {
+        $current_year = (int) Date('Y', time());
+        $years_list = [];
+        if ($NYears == NULL) {
+            $NYears = 0;
+        }
+        for ($i = 0; $i < $NYears; $i++) {
+            $years_list[($current_year - $i)] = ($current_year - $i);
+        }
+        return $years_list;
+    }
+
 }
