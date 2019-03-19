@@ -44,7 +44,23 @@ $this->registerJs($search);
         ],
        // 'refund_verification_framework_id',
         'verification_framework_title',
-        'is_active',
+        //'is_active',
+		[
+            'attribute'=>'is_active',            
+            'filter' => ['1'=>'Active', '0'=>'In Active'],
+            //'format'=>'raw',    
+            'value' => function($model, $key, $index)
+            {   
+                if($model->is_active == '1')
+                {
+                    return 'Active';
+                }
+                else
+                {   
+                    return 'In Active';
+                }
+            },
+        ],
         [
             'class' => 'yii\grid\ActionColumn',
             'template' => '{save-as-new} {view} {update} {delete}',

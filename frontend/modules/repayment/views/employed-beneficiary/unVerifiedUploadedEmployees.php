@@ -8,15 +8,12 @@ use frontend\modules\repayment\models\EmployerSearch;
 /* @var $searchModel frontend\modules\repayment\models\EmployedBeneficiarySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Un-verified employees';
+$this->title = 'List of successful uploaded employees';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="employed-beneficiary-index">
 
 <div class="panel panel-info">
-                        <div class="panel-heading">
-                      <?= Html::encode($this->title) ?>
-                        </div>
                         <div class="panel-body">
                             <p>
                                 <?php 
@@ -62,6 +59,16 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
             //'employer.employer_name',
             [
+                'attribute' => 'employee_id',
+                'label' => "Employee ID/Check #",
+                //'vAlign' => 'middle',
+                'width' => '200px',
+                'value' => function ($model) {
+                    return $model->employee_id;
+                },
+            ],
+
+            [
                 'attribute' => 'firstname',
                 'label' => "First Name",
                 //'vAlign' => 'middle',
@@ -100,6 +107,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 },
             ],
             [
+                'attribute' => 'form_four_completion_year',
+                'label' => "Completion Year",
+                //'vAlign' => 'middle',
+                'width' => '200px',
+                'value' => function ($model) {
+                    return $model->form_four_completion_year;
+                },
+            ],
+            [
                 'attribute' => 'basic_salary',
                 //'label' => "Basic Salary(TZS)",
                 'hAlign' => 'right',
@@ -113,15 +129,19 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'attribute' => 'loan_summary_id',
                 'header' => 'Status',
-                'filter' => '',
                 'format' => 'raw',
+                //'value'=>$model->confirmed,
+
                 'value' => function($model) {
-                    if ($model->loan_summary_id == '') {
+                    if ($model->loan_summary_id == '' &&  $model->confirmed==0) {
+                        return '<p class="btn green"; style="color:red;">Unconfirmed</p>';
+                    }else if($model->loan_summary_id == '' &&  $model->confirmed==1){
                         return '<p class="btn green"; style="color:red;">Pending Verification</p>';
                     } else {
-                        return '<p class="btn green"; style="color:green;">Confirmed</p>';
+                        return '<p class="btn green"; style="color:green;">Verified</p>';
                     }
                 },
+
             ],
  
                         

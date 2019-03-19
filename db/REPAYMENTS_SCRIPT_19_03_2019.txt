@@ -1,0 +1,683 @@
+ALTER TABLE `employed_beneficiary` ADD `is_active` TINYINT(2) NOT NULL DEFAULT '1' AFTER `uploaded_sex`;
+ALTER TABLE `employed_beneficiary` ADD `confirmed` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `is_active`;
+ALTER TABLE `employed_beneficiary` ADD `mult_employed` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `confirmed`;
+ALTER TABLE `employed_beneficiary` ADD `support_document` VARCHAR(100) NULL DEFAULT NULL AFTER `mult_employed`;
+ALTER TABLE `employed_beneficiary` CHANGE `support_document` `support_document` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'To handle documents for \'TERMINATED\',\'RETIRED\',\'DECEASED\' beneficiary';
+
+ALTER TABLE `loan_summary_detail` ADD `is_active` TINYINT NOT NULL DEFAULT '1' COMMENT '0: Inactive, 1: Active(This column to be updated when cancelling or adding employee)' AFTER `vrf_accumulated`;
+ALTER TABLE `loan_summary` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `created_at`;
+ALTER TABLE `loan_summary` ADD `updated_by` DATETIME NULL DEFAULT NULL AFTER `created_by`;
+
+ALTER TABLE `loan_repayment` ADD `treasury_user_id` INT(11) NULL DEFAULT NULL AFTER `treasury_payment_id`;
+ALTER TABLE `loan_repayment_detail` ADD `treasury_user_id` INT(11) NULL DEFAULT NULL AFTER `treasury_payment_id`;
+
+ALTER TABLE `employed_beneficiary` ADD `loan_confirmed` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `support_document`;
+
+ALTER TABLE `user` ADD `sex` CHAR(1) NULL DEFAULT NULL AFTER `surname`;
+
+======================================================
+ALTER TABLE `loan_repayment_item` ADD `parrent_id` INT(11) NULL DEFAULT NULL COMMENT 'FK: refer to loan_repayment_id for child items' AFTER `loan_repayment_item_id`, ADD INDEX `loan_repayment_item_id` (`parrent_id`);
+
+ALTER TABLE `loan_repayment_setting` ADD `charging_interval` ENUM('NULL','HOURLY','DAILY','MONTHLY','ANNUALLY') NULL DEFAULT NULL COMMENT 'Duration used to charge the item' AFTER `end_date`, ADD INDEX `item_charging_interval` (`charging_interval`);
+
+ALTER TABLE `loan_repayment_setting` CHANGE `charging_interval` `charging_interval` ENUM('ONCE','HOURLY','DAILY','MONTHLY','ANNUALLY') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Duration used to charge the item';
+
+ALTER TABLE `loan_repayment_setting` CHANGE `percent` `rate` FLOAT NOT NULL;
+
+ALTER TABLE `loan_repayment_setting` ADD `item_applicable_scope` ENUM('LOANEE','INSTITUTION','','') NOT NULL COMMENT 'Applicable for loanee and institution' AFTER `calculation_mode`, ADD INDEX `repayment_item_scope` (`item_applicable_scope`);
+
+ALTER TABLE `loan_repayment_setting` CHANGE `calculation_mode` `calculation_mode` ENUM('1','2') NULL DEFAULT NULL COMMENT '1: Once at first, 2: Continous ';
+ALTER TABLE `loan_repayment_setting` CHANGE `item_applicable_scope` `item_applicable_scope` ENUM('LOANEE','INSTITUTION') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'Applicable for loanee and institution';
+ALTER TABLE `loan_repayment_setting` ADD `item_formula` TEXT NULL COMMENT 'Formula used to get the item value' AFTER `item_applicable_scope`;
+ALTER TABLE `loan_repayment_setting` ADD `formula_stage` ENUM('0','1','2') NULL DEFAULT NULL COMMENT '0:General,1:Before Repayment,2:On Repayment' AFTER `item_formula`, ADD INDEX `item_formula_stage` (`formula_stage`);
+ALTER TABLE `loan_repayment_setting` CHANGE `item_applicable_scope` `item_applicable_scope` ENUM('LOANEE','EMPLOYER') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Applicable for loanee and institution';
+ALTER TABLE `loan_repayment_setting` ADD `employer_type_id` INT(11) NULL DEFAULT NULL COMMENT 'FK: refer employer type' AFTER `formula_stage`, ADD INDEX `employer_type` (`employer_type_id`);
+ALTER TABLE `loan_repayment_setting` ADD `payment_deadline_day_per_month` INT(11) NULL DEFAULT NULL COMMENT 'Day per month of which the pernalty should be issues to employer if payments of the previous month not yet paid' AFTER `employer_type_id`, ADD INDEX `payment_deadline_day_per_month` (`payment_deadline_day_per_month`);
+ALTER TABLE `loan_repayment_setting` ADD `rate_type` ENUM('percent','amount') NOT NULL AFTER `rate`;
+ALTER TABLE `loan_repayment_item` ADD `payable_status` TINYINT(2) NOT NULL AFTER `item_code`, ADD `payable_order_list` INT(11) NULL DEFAULT NULL COMMENT 'Sequence of monthly payment depending on the items to be paid' AFTER `payable_status`;
+ALTER TABLE `loan_repayment_item` CHANGE `payable_status` `payable_status` TINYINT(2) NOT NULL COMMENT '0: Independent, 1: Payable order list';
+ALTER TABLE `loan_repayment_item` ADD `payable_order_list_status` TINYINT NULL DEFAULT NULL COMMENT '1: Full paid before other items, 2: Partially Depending onthe item rate' AFTER `payable_order_list`;
+
+
+ALTER TABLE `system_setting` CHANGE `value_data_type` `value_data_type` ENUM('TEXT','NUMBER','DATE','PERCENT','AMOUNT') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `system_setting` CHANGE `value_data_type` `value_data_type` ENUM('TEXT','NUMBER','DATE','PERCENT','AMOUNT','DAY') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
+ALTER TABLE `system_setting` ADD `item_formula` TEXT NULL DEFAULT NULL AFTER `is_active`;
+ALTER TABLE `system_setting` CHANGE `value_data_type` `value_data_type` ENUM('TEXT','NUMBER','DATE','PERCENT','AMOUNT','DAY') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_repayment_setting` ADD `loan_repayment_rate` FLOAT NULL DEFAULT NULL COMMENT 'Loan repayment rate calculated from the monthly payment' AFTER `payment_deadline_day_per_month`;
+
+ALTER TABLE `loan` CHANGE `application_id` `applicant_id` INT(11) NOT NULL;
+ALTER TABLE `loan` CHANGE `principal_balance` `other_charges_amount` FLOAT NOT NULL;
+ALTER TABLE `loan` ADD `created_at` DATETIME NULL DEFAULT NULL AFTER `other_charges_amount`;
+ALTER TABLE `loan` ADD `other_charges_updated_at` DATETIME NULL DEFAULT NULL AFTER `created_at`;
+ALTER TABLE `loan` DROP FOREIGN KEY `FK_loan_application`; ALTER TABLE `loan` ADD CONSTRAINT `FK_loan_application` FOREIGN KEY (`applicant_id`) REFERENCES `applicant`(`applicant_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+-------14-11-2018------------------------------------
+ALTER TABLE `loan` ADD `loan_repayment_item_id` INT(11) NULL DEFAULT NULL AFTER `loan_number`;
+ALTER TABLE `loan` ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `loan_repayment_item_id`;
+ALTER TABLE `loan` CHANGE `other_charges_updated_at` `updated_at` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `loan` CHANGE `loan_repayment_item_id` `loan_repayment_item_id` INT(11) NULL;
+ALTER TABLE `loan` CHANGE `loan_repayment_item_id` `loan_repayment_item_id` INT(11) NOT NULL;
+
+ALTER TABLE `application` ADD `date_graduated` DATE NULL DEFAULT NULL AFTER `current_study_year`;
+ALTER TABLE `loan_repayment_detail` ADD `vrf_accumulated` DECIMAL(15,2) NULL DEFAULT NULL AFTER `amount`;
+ALTER TABLE `loan_repayment_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,2) NULL DEFAULT NULL COMMENT 'to be added based on between payment time interval';
+ALTER TABLE `loan_repayment_setting` ADD `formula_stage_level` TINYINT(4) NULL DEFAULT NULL COMMENT '1: From Disbursement time, 2: Due Loan, 3: On Repayment' AFTER `formula_stage`;
+ALTER TABLE `loan_repayment_setting` ADD `formula_stage_level_condition` TINYINT(4) NULL DEFAULT NULL COMMENT '1: After Graduation, 2: Per Academic Year' AFTER `formula_stage_level`;
+ALTER TABLE `loan_repayment_setting` ADD `grace_period` INT(11) NULL DEFAULT NULL COMMENT 'Grace period in days' AFTER `formula_stage_level_condition`;
+ALTER TABLE `employer` ADD `vote_number` VARCHAR(50) NULL DEFAULT NULL COMMENT 'For Government institution vote numbers' AFTER `salary_source`;
+ALTER TABLE `employer` CHANGE `salary_source` `salary_source` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Central Government, 2: Own Source, 3: Both(Own source and Government)';
+ALTER TABLE `loan_repayment_setting` CHANGE `formula_stage_level` `formula_stage_level` TINYINT(4) NULL DEFAULT NULL COMMENT '1: From Disbursement date, 2: Due Loan, 3: On Repayment';
+ALTER TABLE `loan_repayment` ADD `receipt_date` DATETIME NULL DEFAULT NULL AFTER `date_control_received`;
+ALTER TABLE `academic_year` ADD `start_date` DATE NULL DEFAULT NULL AFTER `academic_year`, ADD `end_date` DATE NULL DEFAULT NULL AFTER `start_date`;
+ALTER TABLE `employed_beneficiary` ADD `vote_number` VARCHAR(50) NULL DEFAULT NULL AFTER `loan_confirmed`;
+ALTER TABLE `employed_beneficiary` ADD `salary_source` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Central Government, 2: Own Source' AFTER `loan_confirmed`;
+
+ALTER TABLE `loan_repayment_detail` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,4) NULL DEFAULT NULL COMMENT 'to be added based on between payment time interval';
+ALTER TABLE `loan_summary_detail` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_summary_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,4) NULL DEFAULT NULL;
+ALTER TABLE `loan_summary` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_summary` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `salary_source` `salary_source` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Central Government, 2: Own Source, 3: Both';
+ALTER TABLE `loan_repayment` CHANGE `payment_status` `payment_status` INT(11) NULL DEFAULT NULL COMMENT '0: Payment confirmed/Bill Confirmed, 1: GePG confirmed Payment, 2: selected for payment by treasury, 3: Cancelled';
+ALTER TABLE `loan_repayment` ADD `canceled_by` INT(11) NULL DEFAULT NULL AFTER `payment_status`, ADD `canceled_at` DATETIME NULL DEFAULT NULL AFTER `canceled_by`, ADD `cancel_reason` VARCHAR(200) NULL DEFAULT NULL AFTER `canceled_at`;
+ALTER TABLE `employer_penalty_payment` CHANGE `payment_status` `payment_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Payment confirmed, 1: GePG confirmed Payment, 3: Cancelled';
+ALTER TABLE `employer_penalty_payment` ADD `bill_number` VARCHAR(20) NULL DEFAULT NULL AFTER `employer_id`;
+ALTER TABLE `employer_penalty_payment` ADD `canceled_by` INT(11) NULL DEFAULT NULL AFTER `payment_status`, ADD `canceled_at` DATETIME NULL DEFAULT NULL AFTER `canceled_by`, ADD `cancel_reason` VARCHAR(200) NULL DEFAULT NULL AFTER `canceled_at`;
+ALTER TABLE `loan_repayment` ADD `gepg_cancel_request_status` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0: Not Requested, 1: Requested, 2: Request acknowledged' AFTER `cancel_reason`;
+ALTER TABLE `employer_penalty_payment` ADD `gepg_cancel_request_status` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '0: Not Requested, 1: Requested, 2: Request acknowledged ' AFTER `cancel_reason`;
+ALTER TABLE `employer_penalty` ADD `is_active` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '0: Cancelled, 1: Active' AFTER `loan_summary_id`, ADD `canceled_by` INT(11) NULL DEFAULT NULL AFTER `is_active`, ADD `canceled_at` DATETIME NULL DEFAULT NULL AFTER `canceled_by`, ADD `cancel_reason` VARCHAR(200) NULL DEFAULT NULL AFTER `canceled_at`;
+
+
+
+ALTER TABLE `employer_penalty_payment` CHANGE `payment_status` `payment_status` INT(11) NULL DEFAULT NULL COMMENT '0: Payment confirmed, 1: GePG confirmed Payment, 3: Cancelled';
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employer_penalty_cycle`
+--
+
+CREATE TABLE IF NOT EXISTS `employer_penalty_cycle` (
+  `employer_penalty_cycle_id` int(11) NOT NULL AUTO_INCREMENT,
+  `employer_id` int(11) DEFAULT NULL,
+  `repayment_deadline_day` int(11) NOT NULL,
+  `penalty_rate` double NOT NULL,
+  `duration` int(5) NOT NULL,
+  `duration_type` enum('d','w','m','y') NOT NULL,
+  `is_active` tinyint(2) NOT NULL DEFAULT '1',
+  `cycle_type` enum('0','1') NOT NULL COMMENT '0: General, 1: Employer Based',
+  `start_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `created_by` int(11) NOT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`employer_penalty_cycle_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+COMMIT;
+
+ALTER TABLE `loan_summary_detail` ADD `created_at` DATETIME NOT NULL AFTER `is_active`;
+ALTER TABLE `loan_summary_detail` CHANGE `is_active` `is_active` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '0: Inactive, 1: Active(This column to be updated when cancelling or adding employee), -1: Status for killing the previous loan summary before staring Repayment';
+ALTER TABLE `system_setting` ADD `graduated_from` DATE NULL DEFAULT NULL COMMENT 'Date to guide penalty calculation' AFTER `item_formula`, ADD `graduated_to` DATE NULL DEFAULT NULL COMMENT 'Date to guide penalty calculation' AFTER `graduated_from`;
+ALTER TABLE `loan_repayment_detail` ADD `loan_balance` DECIMAL(15,4) NULL DEFAULT NULL COMMENT 'To be updated at the principal repayment item' AFTER `loan_summary_id`;
+ALTER TABLE `loan_repayment_detail` ADD `prepaid_id` INT(11) NULL DEFAULT NULL COMMENT 'for prepaid payments' AFTER `treasury_user_id`;
+ALTER TABLE `loan_summary_detail` ADD `vrf_before_repayment` DECIMAL(15,4) NULL DEFAULT NULL AFTER `amount`;
+
+CREATE TABLE `loan_repayment_prepaid` (
+  `prepaid_id` int(11) NOT NULL AUTO_INCREMENT,
+  `employer_id` int(11) NOT NULL,
+  `applicant_id` int(11) NOT NULL,
+  `loan_summary_id` int(11) NOT NULL,
+  `monthly_amount` decimal(15,4) NOT NULL,
+  `payment_date` date DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `created_by` int(11) NOT NULL,
+  `bill_number` varchar(20) NOT NULL,
+  `control_number` varchar(20) DEFAULT NULL,
+  `receipt_number` varchar(20) DEFAULT NULL,
+  `date_bill_generated` datetime DEFAULT NULL,
+  `date_control_received` datetime DEFAULT NULL,
+  `receipt_date` datetime DEFAULT NULL,
+  `date_receipt_received` datetime DEFAULT NULL,
+  `payment_status` tinyint(4) DEFAULT NULL COMMENT '0: Payment confirmed/Bill Confirmed, 1: GePG confirmed Payment, 2: selected for payment by treasury, 3: Cancelled ',
+  `cancelled_by` int(11) DEFAULT NULL,
+  `cancelled_at` datetime DEFAULT NULL,
+  `cancel_reason` varchar(200) DEFAULT NULL,
+  `gepg_cancel_request_status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '0: Not Requested, 1: Requested, 2: Request acknowledged ',
+  `monthly_deduction_status` tinyint(4) NOT NULL DEFAULT '0',
+  `date_deducted` datetime DEFAULT NULL,
+  PRIMARY KEY (`prepaid_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+ALTER TABLE `employer_penalty` ADD `level` TINYINT(4) NULL DEFAULT '1' COMMENT '1: Original, 2: Acrued' AFTER `loan_summary_id`, ADD `employer_penalty_cycle_id` INT(11) NULL AFTER `level`;
+ALTER TABLE `employer_penalty` CHANGE `employer_penalty_cycle_id` `employer_penalty_cycle_id` INT(11) NOT NULL;
+ALTER TABLE `employer_penalty` ADD `penalty_id` INT(11) NULL DEFAULT NULL COMMENT 'To store the employer penalty id for acrued penalty' AFTER `employer_penalty_cycle_id`;
+ALTER TABLE `loan_summary_detail` ADD `loan_given_to` TINYINT(4) NOT NULL COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution' AFTER `vrf_accumulated`, ADD `employer_id` INT(11) NULL DEFAULT NULL COMMENT 'To be effected if the loan given to Applicant through Employer/Institution' AFTER `loan_given_to`;
+ALTER TABLE `loan_repayment_setting` CHANGE `rate` `rate` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan_summary_detail` CHANGE `loan_given_to` `loan_given_to` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution';
+ALTER TABLE `loan_summary_detail` ADD `created_by` INT(11) NOT NULL AFTER `created_at`, ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `created_by`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
+ALTER TABLE `loan_repayment_detail` ADD `loan_given_to` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution' AFTER `prepaid_id`;
+ALTER TABLE `loan_repayment_detail` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `loan_given_to`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
+
+ALTER TABLE `loan` ADD `loan_given_to` TINYINT(4) NOT NULL COMMENT '1: Direct to Applicant, 2: To Applicant Through Employer/Institution' AFTER `is_full_paid`;
+ALTER TABLE `loan` CHANGE `is_full_paid` `is_full_paid` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes';
+ALTER TABLE `loan` ADD `created_by` INT(11) NOT NULL AFTER `loan_given_to`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `created_by`;
+ALTER TABLE `loan` CHANGE `amount` `amount` DECIMAL(15,4) NOT NULL;
+ALTER TABLE `loan` CHANGE `loan_repayment_item_id` `loan_repayment_item_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan` ADD `vrf_accumulated` DECIMAL(15,4) NULL DEFAULT NULL AFTER `amount`;
+ALTER TABLE `loan` CHANGE `is_full_paid` `is_full_paid` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '0: No, 1: Yes, 2: Confirmed';
+ALTER TABLE `loan_summary` CHANGE `updated_by` `updated_by` INT NULL DEFAULT NULL;
+ALTER TABLE `loan_summary_detail` ADD `is_full_paid` TINYINT(4) NULL DEFAULT '0' COMMENT '0: No, 1: Yes' AFTER `is_active`;
+ALTER TABLE `employer` ADD `created_by` INT(11) NULL DEFAULT NULL AFTER `created_at`;
+ALTER TABLE `employed_beneficiary` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `created_by`, ADD `updated_by` INT(11) NULL DEFAULT NULL AFTER `updated_at`;
+
+ALTER TABLE `employed_beneficiary` ADD `STUDY_LEVEL2` VARCHAR(30) NULL DEFAULT NULL AFTER `vote_number`, ADD `INSTITUTION_OF_STUDY2` VARCHAR(100) NULL DEFAULT NULL AFTER `STUDY_LEVEL2`, ADD `PROGRAMME_STUDIED2` VARCHAR(100) NULL DEFAULT NULL AFTER `INSTITUTION_OF_STUDY2`, ADD `ENTRY_YEAR2` INT(11) NULL DEFAULT NULL AFTER `PROGRAMME_STUDIED2`, ADD `COMPLETION_YEAR2` INT(11) NULL DEFAULT NULL AFTER `ENTRY_YEAR2`, ADD `STUDY_LEVEL3` VARCHAR(30) NULL DEFAULT NULL AFTER `COMPLETION_YEAR2`, ADD `INSTITUTION_OF_STUDY3` VARCHAR(100) NULL DEFAULT NULL AFTER `STUDY_LEVEL3`;
+ALTER TABLE `employed_beneficiary` ADD `PROGRAMME_STUDIED3` VARCHAR(100) NULL DEFAULT NULL AFTER `INSTITUTION_OF_STUDY3`, ADD `ENTRY_YEAR3` INT(11) NULL DEFAULT NULL AFTER `PROGRAMME_STUDIED3`, ADD `COMPLETION_YEAR3` INT(11) NULL DEFAULT NULL AFTER `ENTRY_YEAR3`, ADD `LOAN_BENEFICIARY_STATUS` CHAR(10) NULL DEFAULT NULL AFTER `COMPLETION_YEAR3`;
+ALTER TABLE `employed_beneficiary` CHANGE `learning_institution_id` `learning_institution_id` VARCHAR(50) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `programme` `programme` VARCHAR(50) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `uploaded_learning_institution_code` `uploaded_learning_institution_code` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `uploaded_programme_studied` `uploaded_programme_studied` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `programme_level_of_study` `programme_level_of_study` VARCHAR(100) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `basic_salary` `basic_salary` DECIMAL(15,4) NULL DEFAULT NULL;
+
+
+DROP TABLE IF EXISTS `employer_group`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `employer_group` (
+  `employer_group_id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(100) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`employer_group_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+ALTER TABLE `employer_type` ADD `employer_group_id` INT(11) NOT NULL AFTER `employer_type_id`;
+ALTER TABLE `employed_beneficiary` ADD `traced_by` INT(11) NULL DEFAULT NULL AFTER `LOAN_BENEFICIARY_STATUS`;
+ALTER TABLE `employed_beneficiary` ADD `salary_upload_status` INT NULL DEFAULT NULL AFTER `traced_by`, ADD `salary_upload_fail_reasson` VARCHAR(200) NULL DEFAULT NULL AFTER `salary_upload_status`;
+ALTER TABLE `employed_beneficiary` ADD `matching` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Used to indicate level of matching on upload/adding employee' AFTER `salary_upload_fail_reasson`;
+ALTER TABLE `employed_beneficiary` ADD `STUDY_LEVEL1` VARCHAR(30) NULL DEFAULT NULL AFTER `vote_number`, ADD `INSTITUTION_OF_STUDY1` VARCHAR(100) NULL DEFAULT NULL AFTER `STUDY_LEVEL1`, ADD `PROGRAMME_STUDIED1` VARCHAR(100) NULL DEFAULT NULL AFTER `INSTITUTION_OF_STUDY1`, ADD `ENTRY_YEAR1` INT(11) NULL DEFAULT NULL AFTER `PROGRAMME_STUDIED1`;
+ALTER TABLE `employed_beneficiary` ADD `COMPLETION_YEAR1` INT(11) NULL DEFAULT NULL AFTER `ENTRY_YEAR1`;
+
+####################28/12/2018###################
+ALTER TABLE `employed_beneficiary` ADD `form_four_completion_year` INT(11) NOT NULL AFTER `f4indexno`;
+ALTER TABLE `loan_beneficiary` CHANGE `firstname` `firstname` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `middlename` `middlename` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL, CHANGE `surname` `surname` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL, CHANGE `f4indexno` `f4indexno` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `phone_number` `phone_number` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `password` `password` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` ADD `schedule_principal_amount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `liquidation_issued_by`, ADD `schedule_penalty` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_principal_amount`, ADD `schedule_laf` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_penalty`, ADD `schedule_vrf` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_laf`, ADD `schedule_total_loan_amount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_vrf`, ADD `schedule_start_date` DATE NULL DEFAULT NULL AFTER `schedule_total_loan_amount`, ADD `schedule_end_date` DATE NULL DEFAULT NULL AFTER `schedule_start_date`;
+ALTER TABLE `loan_beneficiary` ADD `monthly_installment` DECIMAL(38,2) NULL DEFAULT NULL AFTER `schedule_end_date`;
+ALTER TABLE `loan_repayment` ADD `vote_number` VARCHAR(100) NULL DEFAULT NULL COMMENT 'Identify the GVT employer payments' AFTER `gepg_cancel_request_status`, ADD `Vote_name` VARCHAR(100) NULL DEFAULT NULL COMMENT 'Identify the GVT employer payments' AFTER `vote_number`;
+ALTER TABLE `loan_repayment_detail` ADD `vote_number` VARCHAR(100) NULL DEFAULT NULL AFTER `updated_by`, ADD `Vote_name` VARCHAR(100) NULL DEFAULT NULL AFTER `vote_number`, ADD `sub_vote` VARCHAR(100) NULL DEFAULT NULL AFTER `Vote_name`, ADD `sub_vote_name` VARCHAR(100) NULL DEFAULT NULL AFTER `sub_vote`, ADD `lawson_loan_balance` DECIMAL(38,2) NULL DEFAULT NULL AFTER `sub_vote_name`, ADD `lawson_payment_date` DATE NULL DEFAULT NULL AFTER `lawson_loan_balance`, ADD `deduction_code` VARCHAR(50) NULL DEFAULT NULL AFTER `lawson_payment_date`, ADD `deduction_description` VARCHAR(100) NULL DEFAULT NULL AFTER `deduction_code`;
+ALTER TABLE `loan_repayment_detail` CHANGE `deduction_code` `deduction_code` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'heslb code to lawson api';
+ALTER TABLE `loan_repayment_detail` CHANGE `applicant_id` `applicant_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `loan_summary_id` `loan_summary_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan_repayment_detail` ADD `first_name` VARCHAR(100) NULL DEFAULT NULL AFTER `deduction_description`, ADD `middle_name` VARCHAR(100) NULL DEFAULT NULL AFTER `first_name`, ADD `last_name` VARCHAR(100) NULL DEFAULT NULL AFTER `middle_name`;
+ALTER TABLE `loan_repayment_detail` ADD `check_number` VARCHAR(100) NULL DEFAULT NULL AFTER `last_name`;
+
+DROP TABLE IF EXISTS `gepg_lawson`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gepg_lawson` (
+  `gepg_lawson_id` int(11) NOT NULL AUTO_INCREMENT,
+  `bill_number` varchar(100) DEFAULT NULL,
+  `amount` decimal(38,2) DEFAULT NULL,
+  `control_number` varchar(100) DEFAULT NULL,
+  `control_number_date` datetime DEFAULT NULL,
+  `deduction_month` date DEFAULT NULL,
+  `status` tinyint(2) NOT NULL DEFAULT '0' COMMENT '0:Not sent to GePG, 1: Sent to GePG,2: Sent to lawson',
+  `gepg_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`gepg_lawson_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `gvt_employee`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gvt_employee` (
+  `gvt_employee` int(11) NOT NULL AUTO_INCREMENT,
+  `vote_number` varchar(50) DEFAULT NULL,
+  `vote_name` varchar(100) DEFAULT NULL,
+  `Sub_vote` varchar(50) DEFAULT NULL,
+  `sub_vote_name` varchar(100) DEFAULT NULL,
+  `check_number` varchar(50) DEFAULT NULL,
+  `f4indexno` varchar(20) DEFAULT NULL,
+  `first_name` varchar(100) DEFAULT NULL,
+  `middle_name` varchar(100) DEFAULT NULL,
+  `surname` varchar(100) DEFAULT NULL,
+  `sex` char(4) DEFAULT NULL,
+  `NIN` varchar(100) DEFAULT NULL,
+  `employment_date` date DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `payment_date` date DEFAULT NULL,
+  PRIMARY KEY (`gvt_employee`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+ALTER TABLE `loan_repayment` ADD `gepg_lawson_id` INT(11) NULL DEFAULT NULL COMMENT 'for GVT employees' AFTER `Vote_name`;
+ALTER TABLE `loan_repayment` ADD `lowason_check_date` DATE NULL DEFAULT NULL AFTER `gepg_lawson_id`;
+ALTER TABLE `gepg_lawson` ADD `check_date` DATE NULL DEFAULT NULL AFTER `gepg_date`;
+DROP TABLE IF EXISTS `lawson_monthly_deduction`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lawson_monthly_deduction` (
+  `lawson_monthly_deduction_id` int(11) NOT NULL AUTO_INCREMENT,
+  `ActualBalanceAmount` decimal(38,2) DEFAULT NULL,
+  `CheckDate` date DEFAULT NULL,
+  `CheckNumber` varchar(100) DEFAULT NULL,
+  `DateHired` date DEFAULT NULL,
+  `DeductionAmount` decimal(38,2) DEFAULT NULL,
+  `DeductionCode` varchar(50) DEFAULT NULL,
+  `DeductionDesc` varchar(100) DEFAULT NULL,
+  `DeptName` varchar(100) DEFAULT NULL,
+  `FirstName` varchar(100) DEFAULT NULL,
+  `LastName` varchar(100) DEFAULT NULL,
+  `MiddleName` varchar(100) DEFAULT NULL,
+  `NationalId` varchar(100) DEFAULT NULL,
+  `Sex` char(4) DEFAULT NULL,
+  `VoteName` varchar(100) DEFAULT NULL,
+  `Votecode` varchar(50) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `deduction_month` date DEFAULT NULL,
+  PRIMARY KEY (`lawson_monthly_deduction_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+--------------------06-01-2018-----------------------
+ALTER TABLE `gepg_lawson` ADD `gspp_totalAmount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `check_date`;
+ALTER TABLE `gepg_lawson` ADD `amount_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked and ok, 2: Checked and Differ' AFTER `gspp_totalAmount`;
+ALTER TABLE `gepg_lawson` ADD `gspp_detailAmount` DECIMAL(38,2) NULL DEFAULT NULL AFTER `gspp_totalAmount`;
+ALTER TABLE `gepg_lawson` CHANGE `amount_status` `amount_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked(both gspp amount) and ok, 2: Checked (both gspp amount) and Differ, 3: Checked(gspp and repayment amount) and ok, 4: Checked(gspp and repayment amount) and differ,';
+ALTER TABLE `loan_repayment` ADD `payment_category` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Self Employer, 1: Treasury' AFTER `lowason_check_date`;
+ALTER TABLE `loan_repayment` CHANGE `payment_category` `payment_category` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Self Employer/Beneficiary, 1: Treasury';
+------------------08-01-2019-------------
+ALTER TABLE `lawson_monthly_deduction` ADD `Deptcode` VARCHAR(50) NULL DEFAULT NULL AFTER `DeductionDesc`;
+ALTER TABLE `gvt_employee` ADD `applicant_id` INT(11) NULL DEFAULT NULL AFTER `payment_date`;
+ALTER TABLE `gvt_employee` ADD `applicant_date_found` DATETIME NULL DEFAULT NULL AFTER `applicant_id`, ADD `action_taken` VARCHAR(200) NULL DEFAULT NULL AFTER `applicant_date_found`;
+ALTER TABLE `gvt_employee` ADD `action_taken_date` DATETIME NULL DEFAULT NULL AFTER `action_taken`, ADD `action_taken_by` INT(11) NULL DEFAULT NULL AFTER `action_taken_date`;
+ALTER TABLE `gvt_employee` ADD `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked' AFTER `payment_date`, ADD `checked_at` DATETIME NULL DEFAULT NULL AFTER `checked_status`;
+ALTER TABLE `gvt_employee` CHANGE `gvt_employee` `gvt_employee_id` INT(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `gvt_employee` CHANGE `applicant_date_found` `applicant_date_checked` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `gvt_employee` ADD `matching` VARCHAR(100) NULL DEFAULT NULL AFTER `action_taken_by`;
+
+--09-01-2019----
+ALTER TABLE `gvt_employee` CHANGE `checked_status` `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked beneficiary not onrepayment, 2: Checked beneficiary onrepayment, 3: Checked nonbeneficiary';
+ALTER TABLE `gvt_employee` CHANGE `checked_status` `checked_status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Not Checked, 1: Checked beneficiary not onrepayment, 2: Checked beneficiary onrepayment, 3: Checked nonbeneficiary, 4: Checked employee onrepayment';
+----10-01-2019--
+ALTER TABLE `gepg_lawson` ADD `totalEmployees` INT(11) NULL DEFAULT NULL AFTER `amount_status`;
+ALTER TABLE `loan_repayment_detail` ADD `financial_year_id` INT(11) NULL DEFAULT NULL AFTER `check_number`, ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `financial_year_id`;
+-----------------------------------------------------
+======================================================
+
+##=====23/dec/2018 CHARLES MHOJA
+ALTER TABLE `loan_beneficiary` ADD `loan_confirmation_status` INT(1) NULL DEFAULT '0' COMMENT 'Shows whether the loan was confirmed or not, 0=nt confirmed,1=confirmed' AFTER `updated_by`, ADD INDEX `index_loan_confirmation_status` (`loan_confirmation_status`);
+ALTER TABLE `loan_beneficiary` ADD `date_confirmed` DATETIME NULL COMMENT 'Date the loan was confirmed for the first time' AFTER `loan_confirmation_status`, ADD `confirmed_by` INT(11) NULL COMMENT 'user who confirmed the loan' AFTER `date_confirmed`, ADD INDEX `index_confirmedby` (`confirmed_by`);
+ALTER TABLE `loan_beneficiary` ADD `liquidation_letter_status` INT NOT NULL DEFAULT '0' COMMENT 'Status of theBeneficiary Liquidation Later' AFTER `confirmed_by`, ADD `liquidation_date_issues` DATETIME NULL DEFAULT NULL COMMENT 'Date Liquidation letter was issues' AFTER `liquidation_letter_status`, ADD `liquidation_issued_by` INT NULL DEFAULT NULL COMMENT 'User who issued the liqudation' AFTER `liquidation_date_issues`, ADD INDEX `index_liquidation_letter` (`liquidation_letter_status`);
+ALTER TABLE `loan_beneficiary` CHANGE `f4indexno` `f4indexno` VARCHAR(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `date_of_birth` `date_of_birth` DATE NULL, CHANGE `place_of_birth` `place_of_birth` INT(11) NULL, CHANGE `applicant_id` `applicant_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `postal_address` `postal_address` VARCHAR(30) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL, CHANGE `physical_address` `physical_address` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL, CHANGE `email_address` `email_address` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `learning_institution_id` `learning_institution_id` INT(11) NULL;
+ALTER TABLE `loan_beneficiary` CHANGE `liquidation_date_issues` `liquidation_date_issued` DATETIME NULL DEFAULT NULL COMMENT 'Date Liquidation letter was issued';
+ALTER TABLE `loan_beneficiary` CHANGE `loan_confirmation_status` `loan_confirmation_status` INT(1) NOT NULL DEFAULT '0' COMMENT 'Shows whether the loan was confirmed or not, 0=nt confirmed,1=confirmed';
+
+
+##=================12-01-2019================
+ALTER TABLE `loan_repayment_detail` ADD `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB' AFTER `academic_year_id`;
+ALTER TABLE `loan_summary_detail` ADD `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB' AFTER `updated_by`;
+
+=======
+#######12/Jan/2019 from 29/Dec/2018 Charles Mhoja
+--
+-- Table structure for table `loan_non_beneficiary`
+--
+CREATE TABLE `loan_non_beneficiary` (
+  `applicant_id` int(11) NOT NULL,
+  `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by` int(11) NOT NULL,
+  `user_comments` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+ALTER TABLE `loan_non_beneficiary`
+ ADD KEY `loan_applicant_id_index` (`applicant_id`);
+
+
+ALTER TABLE `loan_non_beneficiary` 
+ADD `is_beneficiary` BOOLEAN NOT NULL DEFAULT FALSE AFTER `created_by`; 
+ALTER TABLE `loan_non_beneficiary` ADD INDEX `is_beneficiary_index` (`is_beneficiary`)
+
+ALTER TABLE loan_non_beneficiary
+ADD CONSTRAINT FK_applicant_applicant_id
+FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id)
+ON UPDATE CASCADE
+ON DELETE CASCADE,
+
+ADD CONSTRAINT FK_user_created_by
+FOREIGN KEY (created_by) REFERENCES user(user_id)
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+##=====14-01-2019------
+ALTER TABLE `loan_repayment_detail` ADD `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes' AFTER `pre_post_heslb`;
+ALTER TABLE `loan_summary_detail` ADD `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes' AFTER `pre_post_heslb`;
+ALTER TABLE `loan_summary_detail` ADD `financial_year_id` INT(11) NULL DEFAULT NULL AFTER `has_disco`, ADD `current_academic_year_id` INT(11) NULL DEFAULT NULL AFTER `financial_year_id`;
+ALTER TABLE `employed_beneficiary` ADD `financial_year_id` INT(11) NULL DEFAULT NULL AFTER `matching`, ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `financial_year_id`;
+ALTER TABLE `employer` ADD `financial_year_id` INT(11) NULL DEFAULT NULL AFTER `vote_number`, ADD `academic_year_id` INT(11) NULL DEFAULT NULL AFTER `financial_year_id`;
+
+##======16-01-2019======
+ALTER TABLE `loan_repayment_detail` CHANGE `has_disco` `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes, 3: Has Both';
+ALTER TABLE `loan_repayment_detail` CHANGE `pre_post_heslb` `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB, 3: Both';
+ALTER TABLE `loan_summary_detail` CHANGE `has_disco` `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes, 3: Has Both';
+ALTER TABLE `loan_summary_detail` CHANGE `pre_post_heslb` `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB, 3: Both';
+
+##====================17-01-2019================== 	 
+ALTER TABLE `report` ADD `excel_printing_mode` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0: Normal, 1: On specific layout' AFTER `printing_mode`;
+ALTER TABLE `report` ADD `report_student_code` INT(11) NULL DEFAULT NULL AFTER `excel_printing_mode`;
+
+##=================18-01-2018======================
+ALTER TABLE `gepg_lawson` ADD `gsppContrlnAcknowledge` VARCHAR(300) NULL DEFAULT NULL AFTER `totalEmployees`;
+ALTER TABLE `gepg_lawson` ADD `gsppAcknDate` DATETIME NULL DEFAULT NULL AFTER `gsppContrlnAcknowledge`;
+
+##=================19-01-2019=====
+ALTER TABLE `gepg_bill` ADD `bill_reference_table_id` INT NULL DEFAULT NULL AFTER `bill_id`, ADD `bill_type` VARCHAR(50) NULL DEFAULT NULL AFTER `bill_reference_table_id`, ADD `bill_reference_table` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_type`;
+ALTER TABLE `gepg_receipt` ADD `bill_reference_table_id` INT NULL DEFAULT NULL AFTER `paymServProvName`, ADD `bill_type` VARCHAR(50) NULL DEFAULT NULL AFTER `bill_reference_table_id`, ADD `bill_reference_table` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_type`;
+ALTER TABLE `loan_non_beneficiary` ADD `is_active` BOOLEAN NOT NULL DEFAULT TRUE AFTER `user_comments`;
+ALTER TABLE `loan_non_beneficiary` CHANGE `user_comments` `user_comments` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL;
+
+##############22-01-2019###########
+ALTER TABLE `gepg_bill` CHANGE `bill_amount` `bill_amount` DECIMAL(38,2) NULL DEFAULT NULL;
+ALTER TABLE `gepg_receipt` CHANGE `bill_amount` `bill_amount` DECIMAL(38,2) NULL DEFAULT NULL, CHANGE `paid_amount` `paid_amount` DECIMAL(38,2) NULL DEFAULT NULL, CHANGE `amount_diff` `amount_diff` DECIMAL(38,2) NULL DEFAULT NULL, CHANGE `recon_amount` `recon_amount` DECIMAL(38,2) NULL DEFAULT NULL;
+ALTER TABLE `gepg_lawson` CHANGE `status` `status` TINYINT(2) NOT NULL DEFAULT '0' COMMENT '0:Not sent to GePG, 1: Sent to GePG,2: Sent to lawson, 3: Sent to GePG but not replied';
+ALTER TABLE `gepg_lawson` ADD `user_id` INT(11) NULL DEFAULT NULL AFTER `gsppAcknDate`;
+ALTER TABLE `loan_repayment` CHANGE `bill_number` `bill_number` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Generated by iLMS to be sent to GePG';
+ALTER TABLE `loan_repayment` CHANGE `bill_number` `bill_number` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'Generated by iLMS to be sent to GePG';
+ALTER TABLE `loan_repayment` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL, CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(38,2) NULL DEFAULT NULL COMMENT 'to be added based on between payment time interval', CHANGE `loan_balance` `loan_balance` DECIMAL(38,2) NULL DEFAULT NULL COMMENT 'To be updated at the principal repayment item';
+ALTER TABLE `loan_repayment_prepaid` CHANGE `monthly_amount` `monthly_amount` DECIMAL(38,2) NOT NULL;
+ALTER TABLE `loan_summary` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL, CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(38,2) NOT NULL;
+ALTER TABLE `loan_summary_detail` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL, CHANGE `vrf_before_repayment` `vrf_before_repayment` DECIMAL(38,2) NULL DEFAULT NULL, CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(38,2) NULL DEFAULT NULL;
+ALTER TABLE `loan` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL, CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(38,2) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `basic_salary` `basic_salary` DECIMAL(38,2) NULL DEFAULT NULL;
+ALTER TABLE `loan_repayment_prepaid` CHANGE `bill_number` `bill_number` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+ALTER TABLE `gepg_bill` CHANGE `bill_number` `bill_number` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `gepg_receipt` CHANGE `bill_number` `bill_number` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `gepg_payment_reconciliation` CHANGE `paid_amount` `paid_amount` DECIMAL(38,2) NULL DEFAULT NULL;
+ALTER TABLE `employer_penalty` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `bill_number` `bill_number` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `date_control_requested` `date_control_requested` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `date_control_received` `date_control_received` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `date_receipt_received` `date_receipt_received` DATETIME NULL DEFAULT NULL;
+ALTER TABLE `employer_penalty_payment` CHANGE `pay_method_id` `pay_method_id` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `employer_penalty_payment` ADD `receipt_date` VARCHAR(20) NULL DEFAULT NULL AFTER `receipt_number`;
+ALTER TABLE `gepg_bill` ADD `primary_keycolumn` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_reference_table`;
+ALTER TABLE `gepg_receipt` ADD `primary_keycolumn` VARCHAR(20) NULL DEFAULT NULL AFTER `bill_reference_table`;
+
+##############25-01-2019##############
+ALTER TABLE `loan` ADD `vrf_before_repayment` DECIMAL(38,2) NULL DEFAULT NULL AFTER `vrf_accumulated`;
+ALTER TABLE `loan_repayment_detail` ADD `loan_repayment_setting_id` INT(11) NULL DEFAULT NULL AFTER `loan_balance`;
+ALTER TABLE `loan_summary_detail` ADD `loan_repayment_setting_id` INT(11) NULL DEFAULT NULL AFTER `vrf_accumulated`;
+ALTER TABLE `loan_repayment_setting` CHANGE `rate` `rate` DECIMAL(15,2) NOT NULL;
+ALTER TABLE `gepg_lawson` ADD `payment_status` TINYINT(2) NULL DEFAULT NULL AFTER `user_id`, ADD `canceled_by` INT(11) NULL DEFAULT NULL AFTER `payment_status`, ADD `canceled_at` DATETIME NULL DEFAULT NULL AFTER `canceled_by`, ADD `cancel_reason` VARCHAR(200) NULL DEFAULT NULL AFTER `canceled_at`, ADD `gepg_cancel_request_status` TINYINT(2) NULL DEFAULT NULL AFTER `cancel_reason`;
+ALTER TABLE `gepg_lawson` CHANGE `payment_status` `payment_status` TINYINT(2) NULL DEFAULT '1' COMMENT '1: Not Cancelled, 4: Cancelled';
+#####################27-01-2019####################
+ALTER TABLE `loan_summary_detail` CHANGE `loan_repayment_setting_id` `loan_repayment_setting_id` VARCHAR(50) NULL DEFAULT NULL COMMENT 'The item can have value obtaied by different formul
+ALTER TABLE `loan` ADD `loan_repayment_setting_id` VARCHAR(50) NULL DEFAULT NULL COMMENT 'The item can have value obtaied by different formula' AFTER `vrf_before_repayment`, ADD `pre_post_heslb` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Post HESLB, 2: Pre HESLB, 3: Both' AFTER `loan_repayment_setting_id`, ADD `has_disco` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: No, 2: Yes, 3: Has Both' AFTER `pre_post_heslb`;
+
+##########31-01-2019##############################
+ALTER TABLE `notification` ADD `refund_claimant_id` INT(11) NULL DEFAULT NULL AFTER `treasury_id`;
+###############04-02-2019#####################
+ALTER TABLE `refund_application` ADD `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted, 2: Submitted but not Confirmed, 3: Submitted and Confirmed' AFTER `is_active`;
+ALTER TABLE `refund_application` CHANGE `submitted` `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted, 2: Submitted but not Confirmed, 3: Submitted and Confirmed, 4: Attempted';
+
+#######07-02-2019#############
+ALTER TABLE `refund_application` ADD `trustee_phone_number` VARCHAR(20) NULL DEFAULT NULL AFTER `trustee_surname`, ADD `trustee_email` VARCHAR(20) NULL DEFAULT NULL AFTER `trustee_phone_number`;
+##########08-02-2019#########
+ALTER TABLE `refund_claimant_education_history` ADD `study_level` INT(11) NULL DEFAULT NULL AFTER `refund_application_id`;
+###################09-02-2019##############
+ALTER TABLE `refund_claimant_employment` ADD `employment_status` TINYINT NOT NULL COMMENT '1: employed, 2: not employed' AFTER `refund_application_id`;
+ALTER TABLE `refund_claimant_employment` ADD `slip_document` VARCHAR(100) NULL DEFAULT NULL AFTER `employment_status`;
+ALTER TABLE `refund_claimant_employment` CHANGE `slip_document` `first_slip_document` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_claimant_employment` ADD `second_slip_document` VARCHAR(100) NULL DEFAULT NULL AFTER `first_slip_document`;
+
+############10-02-2019###############################
+ALTER TABLE `refund_application` ADD `bank_name` VARCHAR(100) NULL DEFAULT NULL AFTER `bank_account_name`, ADD `branch` VARCHAR(100) NULL DEFAULT NULL AFTER `bank_name`;
+ALTER TABLE `refund_application` ADD `bank_card_document` VARCHAR(100) NULL DEFAULT NULL AFTER `branch`;
+ALTER TABLE `refund_application` ADD `social_fund_status` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Retired, 2: Not Retired' AFTER `bank_id`, ADD `social_fund_document` VARCHAR(100) NULL DEFAULT NULL AFTER `social_fund_status`;
+ALTER TABLE `refund_application` ADD `social_fund_receipt_document` VARCHAR(100) NULL DEFAULT NULL AFTER `social_fund_document`;
+ALTER TABLE `refund_claimant` ADD `f4_certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `necta_details_confirmed`;
+ALTER TABLE `refund_application` ADD `liquidation_letter_document` VARCHAR(100) NULL DEFAULT NULL AFTER `liquidation_letter_number`;
+ALTER TABLE `refund_claimant_education_history` ADD `certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `completion_year`;
+ALTER TABLE `refund_application` ADD `death_certificate_number` VARCHAR(100) NULL DEFAULT NULL AFTER `liquidation_letter_document`, ADD `death_certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `death_certificate_number`;
+ALTER TABLE `refund_application` ADD `court_letter_number` VARCHAR(100) NULL DEFAULT NULL AFTER `death_certificate_document`, ADD `court_letter_certificate_document` VARCHAR(100) NULL DEFAULT NULL AFTER `court_letter_number`;
+ALTER TABLE `refund_application` ADD `letter_family_session_document` VARCHAR(100) NULL DEFAULT NULL AFTER `court_letter_certificate_document`;
+
+##############12-02-2019#############
+ALTER TABLE `refund_status_reason_setting` CHANGE `status` `status` TINYINT(3) NULL DEFAULT NULL COMMENT '1:Valid, 2:Invalid,3:Waiting, 4:Incomplete';
+ALTER TABLE `refund_status_reason_setting` CHANGE `category` `category` TINYINT(2) NULL DEFAULT NULL COMMENT '1:Loan Refund Data Section, 2:Validation Section,3:Audit and Investigation';
+ALTER TABLE `refund_application` CHANGE `submitted` `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted, 2: Confirmed but not Submitted, 3: Submitted and Confirmed, 4: Attempted';
+ALTER TABLE `refund_application` CHANGE `submitted` `submitted` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not Submitted But Attempted, 2: Confirmed but not Submitted, 3: Submitted and Confirmed';
+ALTER TABLE `refund_claimant` ADD `f4type` TINYINT(2) NULL DEFAULT NULL COMMENT '1: necta, 2: non-necta' AFTER `phone_number`;
+ALTER TABLE `refund_verification_framework` CHANGE `refund_type_id` `refund_type_id` INT(11) NULL DEFAULT NULL COMMENT '1: NON-BENEFICIARY, 2: OVER-DEDUCTED, 3: DECEASED';
+ALTER TABLE `refund_verification_framework_item` CHANGE `last_updated_by` `updated_by` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `refund_verification_framework_item` CHANGE `last_updated_at` `updated_at` DATETIME NULL DEFAULT NULL;
+
+=======14-02-2019================
+ALTER TABLE `refund_application` ADD `assignee` INT(11) NULL DEFAULT NULL AFTER `submitted`, ADD `date_verified` DATETIME NULL DEFAULT NULL AFTER `assignee`, ADD `last_verified_by` INT(11) NULL DEFAULT NULL AFTER `date_verified`;
+ALTER TABLE `refund_application` ADD `assigned_by` INT(11) NULL DEFAULT NULL AFTER `last_verified_by`;
+ALTER TABLE `attachment_definition` ADD `attachment_code` VARCHAR(50) NULL DEFAULT NULL AFTER `is_active`;
+
+#########15-02-2019#####
+ALTER TABLE `refund_application_operation` CHANGE `access_role` `access_role_master` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_application_operation` ADD `access_role_child` VARCHAR(50) NULL DEFAULT NULL AFTER `access_role_master`;
+############16-02-2019########
+ALTER TABLE `refund_application_operation` ADD `general_status` TINYINT(2) NULL DEFAULT '1' COMMENT '1: Onprogress, 2: Concluded' AFTER `is_active`, ADD `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with permanent stop deduction' AFTER `general_status`;
+ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification';
+ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification, 6: Valid';
+
+####################16-02-2019_2##################
+ALTER TABLE `refund_application_operation` CHANGE `current_verification_response` `current_verification_response` TINYINT(2) NULL DEFAULT NULL COMMENT 'e.g 1: Issued temporary stop deduction, 2: Issued permanent stop deduction, 3: Need Invest. with temporary stop deduction, 4: Need invest. with no stop deduction, 5: Need Further Verification, 6: Valid, 7: Need Denial Letter';
+RENAME TABLE `olams_uat3`.`refund_comment` TO `olams_uat3`.`refund_application_rejection_setting`;
+RENAME TABLE `olams_uat3`.`refund_application_rejection_setting` TO `olams_uat3`.`refund_application_rejection_reason_setting`;
+ALTER TABLE `refund_application_rejection_reason_setting` ADD `reason_type` INT(2) NOT NULL AFTER `attachment_definition_id`;
+
+################17-02-2019####################
+ALTER TABLE `refund_status_reason_setting` CHANGE `status` `status` TINYINT(3) NULL DEFAULT NULL COMMENT '1:Valid, 2:Invalid,3:Further Verification, 4: Need Investigation';
+ALTER TABLE `refund_status_reason_setting` ADD `access_role_master` VARCHAR(50) NULL DEFAULT NULL AFTER `status`, ADD `access_role_child` VARCHAR(50) NULL DEFAULT NULL AFTER `access_role_master`;
+ALTER TABLE `refund_application_operation` ADD `previous_internal_operational_id` INT(11) NULL DEFAULT NULL AFTER `refund_internal_operational_id`;
+
+##############18-02-2019###################
+ALTER TABLE `refund_application` ADD `verification_response` TINYINT(2) NULL DEFAULT NULL AFTER `assigned_by`;
+ALTER TABLE `refund_application` CHANGE `current_status` `current_status` TINYINT(2) NULL DEFAULT '0' COMMENT '0: Unverified, 1: Preview Complete, 6: Verification Onprogress, 7: Verification Complete';
+ALTER TABLE `refund_application` ADD `current_level` INT(11) NULL DEFAULT NULL AFTER `verification_response`;
+
+########## 19-02-2019##########
+ALTER TABLE `refund_letter_format` CHANGE `letter_heading` `letter_heading` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` CHANGE `header` `header` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` CHANGE `footer` `footer` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` CHANGE `letter_heading` `letter_heading` TINYTEXT CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_letter_format` ADD `letter_reference_no` VARCHAR(200) NULL AFTER `letter_name`;
+
+ALTER TABLE `refund_application` ADD `soccialFundDocument` TINYINT(2) NULL DEFAULT NULL AFTER `social_fund_status`;
+ALTER TABLE `refund_application` CHANGE `current_status` `current_status` TINYINT(2) NULL DEFAULT '0' COMMENT '0: Unverified, 1: Preview Complete,2: Incomplete,3: Waiting,4: Invalid,5: Pending, 6: Verification Onprogress, 7: Verification Complete';
+ALTER TABLE `refund_application` ADD `refund_type_confirmed` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Unconfirmed: 2: Confirmed' AFTER `current_level`;
+
+
+CREATE TABLE `refund_paylist` (
+  `refund_paylist_id` int(11) NOT NULL,
+  `paylist_name` varchar(255) NOT NULL,
+  `paylist_description` text,
+  `paylist_number` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+ALTER TABLE `refund_paylist` ADD PRIMARY KEY (`refund_paylist_id`);
+
+ALTER TABLE `refund_paylist` CHANGE `refund_paylist_id` `refund_paylist_id` INT(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `refund_paylist` ADD `date_created` TIMESTAMP NOT NULL AFTER `paylist_number`, ADD `created_by` INT NOT NULL AFTER `date_created`, ADD `status` INT(2) NOT NULL AFTER `created_by`;
+
+ALTER TABLE `refund_paylist` ADD `date_updated` DATETIME NULL AFTER `created_by`, ADD `updated_by` INT NULL AFTER `date_updated`;
+
+CREATE TABLE `refund_paylist_details` (
+  `refund_paylist_details_id` int(11) NOT NULL,
+  `refund_paylist_id` int(11) NOT NULL,
+  `refund_application_reference_number` varchar(100) NOT NULL,
+  `refund_claimant_id` int(11) NOT NULL,
+  `claimant_f4indexno` varchar(30) NOT NULL,
+  `claimant_name` varchar(255) NOT NULL,
+  `refund_claimant_amount` decimal(10,0) NOT NULL,
+  `status` int(2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+ALTER TABLE `refund_paylist_details`
+  ADD PRIMARY KEY (`refund_paylist_details_id`);
+
+ALTER TABLE `refund_paylist_details`
+  MODIFY `refund_paylist_details_id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `refund_paylist_details` CHANGE `refund_claimant_amount` `refund_claimant_amount` DOUBLE NOT NULL;
+ALTER TABLE `refund_paylist_details` ADD `phone_number` INT(20) NULL AFTER `refund_claimant_amount`, ADD `email_address` INT(255) NULL AFTER `phone_number`, ADD `academic_year_id` INT(11) NOT NULL AFTER `email_address`, ADD `financial_year_id` INT(11) NOT NULL AFTER `academic_year_id`;
+ALTER TABLE `refund_paylist_details` ADD `application_id` INT NOT NULL AFTER `refund_claimant_id`;
+ALTER TABLE `refund_paylist_details` CHANGE `phone_number` `phone_number` VARCHAR(20) NULL DEFAULT NULL, CHANGE `email_address` `email_address` VARCHAR(255) NULL DEFAULT NULL;
+ALTER TABLE `refund_paylist_details` CHANGE `claimant_f4indexno` `claimant_f4indexno` VARCHAR(30) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+
+#############20-02-2019#############
+ALTER TABLE `refund_contact_person` CHANGE `email_address` `email_address` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+ALTER TABLE `refund_application` CHANGE `trustee_email` `trustee_email` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
+
+#########23-02-2019####################
+ALTER TABLE `refund_internal_operational_setting` ADD `flow_type` TINYINT(2) NOT NULL COMMENT '1: Flow for Application, 2: Flow for Pay List' AFTER `refund_internal_operational_id`;
+ALTER TABLE `refund_application` ADD `employer_letter_document` VARCHAR(100) NULL DEFAULT NULL AFTER `letter_family_session_document`;
+ALTER TABLE `refund_application` ADD `educationAttained` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Form IV certificate and above, 2: Below Form IV' AFTER `refund_type_confirmed`;
+ALTER TABLE `refund_paylist_details` ADD `payment_bank_account_name` VARCHAR(100) NOT NULL AFTER `financial_year_id`, ADD `payment_bank_account_number` VARCHAR(100) NOT NULL AFTER `payment_bank_account_name`, ADD `payment_bank_name` VARCHAR(100) NOT NULL AFTER `payment_bank_account_number`, ADD `payment_bank_branch` VARCHAR(100) NOT NULL AFTER `payment_bank_name`;
+
+##########25-02-2019#####################
+ALTER TABLE `refund_paylist_details` CHANGE `application_id` `refund_application_id` INT(11) NOT NULL;
+ALTER TABLE `refund_paylist` ADD `current_level` INT(11) NULL DEFAULT NULL AFTER `status`;
+
+
+CREATE TABLE `refund_paylist_operation` (
+  `refund_application_operation_id` int(11) NOT NULL,
+  `refund_paylist_id` int(11) DEFAULT NULL,
+  `refund_internal_operational_id` int(11) DEFAULT NULL,
+  `previous_internal_operational_id` int(11) DEFAULT NULL,
+  `access_role_master` varchar(50) DEFAULT NULL,
+  `access_role_child` varchar(50) DEFAULT NULL,
+  `status` int(11) NOT NULL DEFAULT '1' COMMENT '1: Recommended for approval, 2: Rejected, 3: Approved',
+  `narration` varchar(500) DEFAULT NULL,
+  `assignee` int(11) DEFAULT NULL,
+  `assigned_at` datetime DEFAULT NULL,
+  `assigned_by` int(11) DEFAULT NULL,
+  `last_verified_by` int(11) DEFAULT NULL,
+  `is_current_stage` tinyint(2) NOT NULL DEFAULT '1' COMMENT '1: Current Stage, 0: Not Current Stage',
+  `date_verified` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `is_active` tinyint(2) NOT NULL DEFAULT '1' COMMENT '0: InActive, 1: Active',
+  `general_status` tinyint(2) DEFAULT '1' COMMENT '1: Onprogress, 2: Concluded'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `refund_paylist_operation`
+--
+ALTER TABLE `refund_paylist_operation`
+  ADD PRIMARY KEY (`refund_application_operation_id`),
+  ADD KEY `assignedByref3_idfk` (`assigned_by`),
+  ADD KEY `createdByref3_idfk` (`created_by`),
+  ADD KEY `assigneeref3_idfk` (`assignee`),
+  ADD KEY `lastVerifiedByref3_idfk` (`last_verified_by`),
+  ADD KEY `refundApplication3_idfk` (`refund_paylist_id`),
+  ADD KEY `refundInternalOper3_idfk` (`refund_internal_operational_id`),
+  ADD KEY `updatedBy3_idfk` (`updated_by`),
+  ADD KEY `refund_paylist_operation_idrefInteropprev` (`previous_internal_operational_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `refund_paylist_operation`
+--
+ALTER TABLE `refund_paylist_operation`
+  MODIFY `refund_application_operation_id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `refund_paylist_operation`
+--
+ALTER TABLE `refund_paylist_operation`
+  ADD CONSTRAINT `refund_paylist_operation_ibfk_1` FOREIGN KEY (`refund_paylist_id`) REFERENCES `refund_paylist` (`refund_paylist_id`),
+  ADD CONSTRAINT `refund_paylist_operation_idrefInterop` FOREIGN KEY (`refund_internal_operational_id`) REFERENCES `refund_internal_operational_setting` (`refund_internal_operational_id`),
+  ADD CONSTRAINT `refund_paylist_operation_idrefInteropprev` FOREIGN KEY (`previous_internal_operational_id`) REFERENCES `refund_internal_operational_setting` (`refund_internal_operational_id`);
+COMMIT;
+
+===========26-02-2019==============================
+ALTER TABLE `refund_paylist` ADD `cheque_number` VARCHAR(100) NULL DEFAULT NULL AFTER `current_level`;
+ALTER TABLE `refund_paylist` ADD `pay_description` VARCHAR(200) NULL DEFAULT NULL AFTER `cheque_number`;
+ALTER TABLE `refund_paylist` ADD `updated_at` DATETIME NULL DEFAULT NULL AFTER `pay_description`;
+ALTER TABLE `refund_paylist` CHANGE `status` `status` INT(2) NOT NULL COMMENT '1: Paid, 0: Not paid';
+
+=================27-02-2019=================
+ALTER TABLE `refund_claimant_employment` ADD `employed_gvt_private` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Government, 2: Private' AFTER `updated_by`, ADD `employed_gvt_check_number` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Check number, 2: Employee ID' AFTER `employed_gvt_private`;
+ALTER TABLE `refund_claimant_employment` CHANGE `employed_gvt_private` `employed_gvt_private_status` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Government, 2: Private';
+ALTER TABLE `refund_claimant_employment` CHANGE `employed_gvt_check_number` `employed_gvt_check_number_status` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Check number, 2: Employee ID';
+ALTER TABLE `refund_application` ADD `claimant_names_changed_status` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Names Changed, 2: Names not changed' AFTER `educationAttained`;
+ALTER TABLE `refund_application` ADD `deed_pole_document` VARCHAR(100) NULL DEFAULT NULL AFTER `claimant_names_changed_status`;
+
+===============01-03-2019=============
+ALTER TABLE `refund_type` ADD `type` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Non-Beneficiary, 2: Over deducted, 3: Deceased' AFTER `is_active`, ADD `minimum_steps` INT(11) NULL DEFAULT NULL AFTER `type`;
+
+CREATE TABLE `refund_steps` (
+  `refund_steps_id` int(11) NOT NULL,
+  `refund_type` tinyint(2) DEFAULT NULL COMMENT '1: Non-Beneficiary, 2: Over deducted, 3: Deceased',
+  `refund_application_id` int(11) DEFAULT NULL,
+  `step_code` varchar(50) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `refund_steps`
+--
+ALTER TABLE `refund_steps`
+  ADD PRIMARY KEY (`refund_steps_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `refund_steps`
+--
+ALTER TABLE `refund_steps`
+  MODIFY `refund_steps_id` int(11) NOT NULL AUTO_INCREMENT;COMMIT;
+  
+=================02-03-2019===========
+ALTER TABLE `refund_application_operation` DROP FOREIGN KEY `refundComment3_idfk`; ALTER TABLE `refund_application_operation` ADD CONSTRAINT `refundComment3_idfk` FOREIGN KEY (`refund_status_reason_setting_id`) REFERENCES `refund_status_reason_setting`(`refund_status_reason_setting_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+================04/03/2019======
+ALTER TABLE `loan_summary_detail` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL;
+ALTER TABLE `loan_summary` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL;
+
+
+ALTER TABLE `loan_repayment` CHANGE `amount` `amount` DECIMAL(38,4) NOT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `amount` `amount` DECIMAL(38,4) NOT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(38,4) NULL DEFAULT NULL COMMENT 'to be added based on between payment time interval';
+ALTER TABLE `loan_repayment_detail` CHANGE `loan_balance` `loan_balance` DECIMAL(38,4) NULL DEFAULT NULL COMMENT 'To be updated at the principal repayment item';
+ALTER TABLE `loan_repayment_detail` CHANGE `lawson_loan_balance` `lawson_loan_balance` DECIMAL(38,4) NULL DEFAULT NULL;
+
+==================================05-03-2019==================
+ALTER TABLE `loan_repayment_item` ADD `item_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not In Use, 2: In Use' AFTER `created_by`;
+ALTER TABLE `employer_contact_person` ADD `is_active` TINYINT(2) NOT NULL DEFAULT '1' AFTER `role`;
+ALTER TABLE `employer_contact_person` CHANGE `is_active` `is_active` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Active, 2: InActive';
+ALTER TABLE `employed_beneficiary` CHANGE `form_four_completion_year` `form_four_completion_year` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `upload_status` `upload_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Successful, 0: error, 2: Employee Exists';
+ALTER TABLE `employed_beneficiary` CHANGE `upload_status` `upload_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Successful, 0: error';
+ALTER TABLE `employed_beneficiary` ADD `existing_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: New, 2: Exist' AFTER `academic_year_id`;
+ALTER TABLE `employed_beneficiary` CHANGE `verification_status` `verification_status` TINYINT(1) NOT NULL COMMENT '0: Pending Verification, 1: VerifiedHESLB has to verify who is beneficiary and who is not,3: waiting employer confirmation,4:has no loan,5:shifted to another employer,6: HESLB Confirmed non beneficiary';
+

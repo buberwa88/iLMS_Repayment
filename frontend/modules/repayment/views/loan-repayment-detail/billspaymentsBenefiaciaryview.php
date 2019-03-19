@@ -49,9 +49,18 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute'=>'control_number',
                 'format'=>'raw',
                 'value'=>function($model)
-            {
-             return $model->control_number;    
-            },                 
+                {
+                    return $model->control_number;
+                },
+            ],
+            [
+                'attribute'=>'payment_date',
+                'label'=>'Date',
+                'format'=>'raw',
+                'value'=>function($model)
+                {
+                    return $model->payment_date;
+                },
             ],
 			[
             'attribute'=>'amountApplicant',

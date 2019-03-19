@@ -322,7 +322,8 @@ class RefundApplicationOperation extends \yii\db\ActiveRecord
         return $applicationDetails;
     }
     public static function updateCurrentVerificationLevel($refund_internal_operational_id,$refund_application_id,$currentVerificationResponse){
-        if($currentVerificationResponse==1 || $currentVerificationResponse==2){
+$responseCode=\backend\modules\repayment\models\RefundVerificationResponseSetting::getVerificationResponseCode($currentVerificationResponse)->response_code;
+        if($responseCode==\backend\modules\repayment\models\RefundVerificationResponseSetting::Permanent_stop_deduction_letter || $responseCode==\backend\modules\repayment\models\RefundVerificationResponseSetting::Concluded_Valid){
             $current_status=8;
             $details=self::getApplicationDEtails($refund_application_id);
             $date=date("Y-m-d");

@@ -45,12 +45,14 @@ $model->updatePaymentAfterGePGconfirmPaymentDone($controlNumber,$amount);
                     ?>
             <?php								
 echo TabsX::widget([
-    'items' => [  	
+    'items' => [
+/*  	
         [
             'label' => 'My Loan',
             'content' => '<iframe src="' . yii\helpers\Url::to(['loan-repayment-detail/beneficiaries-loan']) . '" width="100%" height="600px" style="border: 0"></iframe>',
             'id' => '2',
-        ],	
+        ],
+*/		
         [
             'label' => 'Payments',
             'content' => '<iframe src="' . yii\helpers\Url::to(['loan-repayment-detail/billspayments-benefiaciaryview']) . '" width="100%" height="600px" style="border: 0"></iframe>',

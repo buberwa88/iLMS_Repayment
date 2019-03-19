@@ -17,12 +17,17 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 
 <div class="panel panel-info">
                         <div class="panel-body"> 
+						<?php 
+$countEmployees=\frontend\modules\repayment\models\EmployedBeneficiary::getCountBeneficiaries($employerID);
+if($countEmployees > 0){
+						?>
 <?= Html::a('Upload(Update) Salary', ['upload-salaries'], ['class' => 'btn btn-primary']) ?>
 <div class="text-right">
                 <?php 
 echo Html::a('Export Excel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp', Url::toRoute(['export-beneficiaries']));
                 ?>
-                </div>						
+                </div>
+<?php } ?>				
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,

@@ -58,7 +58,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'label' => '',
                         'value' => function($model) {
                             //return Html::a("Application Details", ['/repayment/refund-application-operation/view-refund','id'=>$model->refund_application_id,'action' => 'view'], ['class'=>'label label-success']);
-                            return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'id' => $model->refund_application_id]);
+                            return yii\helpers\Html::a("VIEW", ['site/refund-applicationview', 'refundApplicationID' => $model->refund_application_id]);
                         },
                                 'format' => 'raw',
                             ],

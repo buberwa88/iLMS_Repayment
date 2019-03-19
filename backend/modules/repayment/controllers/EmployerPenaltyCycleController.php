@@ -69,8 +69,13 @@ class EmployerPenaltyCycleController extends Controller {
         if (!empty($model->employer_id) && is_int($model->employer_id)) {
             $model->cycle_type = EmployerPenaltyCycle::REPAYMENT_CYCLE_EMPLOYER;
         }
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->employer_penalty_cycle_id]);
+        $model->scenario='employerPenaltyCicleRegister';
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            if($model->save()) {
+                $sms = '<p>Information Successful Added.</p>';
+                Yii::$app->getSession()->setFlash('success', $sms);
+                return $this->redirect(['index']);
+            }
         } else {
             return $this->render('create', [
                         'model' => $model,
@@ -86,6 +91,7 @@ class EmployerPenaltyCycleController extends Controller {
      */
     public function actionUpdate($id) {
         $model = $this->findModel($id);
+        $model->scenario='employerPenaltyCicleUpdate';
         $model->updated_by = \Yii::$app->user->id;
         $model->updated_at = date('Y-m-d H:i:s', time());
         //setting config type
@@ -93,8 +99,13 @@ class EmployerPenaltyCycleController extends Controller {
         if (!empty($model->employer_id) && is_int($model->employer_id)) {
             $model->cycle_type = EmployerPenaltyCycle::REPAYMENT_CYCLE_EMPLOYER;
         }
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->employer_penalty_cycle_id]);
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            if($model->is_active==0){
+                $model->end_date=date("Y-m-d");
+            }
+            if($model->save()) {
+                return $this->redirect(['index']);
+            }
         } else {
             return $this->render('create', [
                         'model' => $model,
@@ -109,6 +120,11 @@ class EmployerPenaltyCycleController extends Controller {
      * @return mixed
      */
     public function actionDelete($id) {
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+    }
+    public function actionDeletePenaltycycle($id) {
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);

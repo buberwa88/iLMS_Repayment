@@ -6,7 +6,7 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\modules\repayment\models\SystemSetting */
 
-$this->title = 'Create System Setting';
+$this->title = 'Create General Settings';
 $this->params['breadcrumbs'][] = ['label' => 'System Settings', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>

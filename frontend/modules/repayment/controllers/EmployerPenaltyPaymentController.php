@@ -56,7 +56,11 @@ class EmployerPenaltyPaymentController extends Controller
     {
 	     $this->layout="default_main";
         $searchModel = new EmployerPenaltyPaymentSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $employerModel = new EmployerSearch();
+        $loggedin = Yii::$app->user->identity->user_id;
+        $employer2 = $employerModel->getEmployer($loggedin);
+        $employerID = $employer2->employer_id;
+        $dataProvider = $searchModel->searchEmployerPenalty(Yii::$app->request->queryParams,$employerID);
 
         return $this->render('penaltyPaymentsView', [
             'searchModel' => $searchModel,

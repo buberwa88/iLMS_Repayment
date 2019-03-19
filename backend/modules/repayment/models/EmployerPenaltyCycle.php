@@ -42,9 +42,19 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
         return [
             [['employer_id', 'repayment_deadline_day', 'duration', 'is_active', 'created_by', 'updated_by'], 'integer'],
             [['repayment_deadline_day', 'penalty_rate', 'duration', 'duration_type', 'cycle_type', 'start_date', 'created_at', 'created_by'], 'required'],
+            [['repayment_deadline_day', 'penalty_rate', 'duration', 'duration_type', 'cycle_type', 'start_date', 'created_at', 'created_by'], 'required','on'=>'employerPenaltyCicleRegister'],
+            [['repayment_deadline_day', 'penalty_rate', 'duration', 'duration_type', 'cycle_type', 'start_date', 'created_at', 'created_by'], 'required','on'=>'employerPenaltyCicleUpdate'],
             [['penalty_rate'], 'number'],
-            [['created_by'], 'validateConfiguration'],
+            //[['created_by'], 'validateConfiguration','on'=>'employerPenaltyCicleRegister'],
+            [['duration_type'], 'validateEmployerPenalty','on'=>'employerPenaltyCicleRegister'],
+            [['duration_type'], 'validateEmployerPenaltyUpdate','on'=>'employerPenaltyCicleUpdate'],
             [['duration_type', 'cycle_type'], 'string'],
+            [['penalty_rate'], 'validatePercentItemrate'],
+            //[['end_date'], 'validateEmployerPenaltyInactive'],
+            [['duration'], 'validateDurationType'],
+            [['repayment_deadline_day'], 'validateRepaymentDay'],
+            //[['penalty_rate'], 'number', 'numberPattern' => '/^[0-9]{1,2}([\.,][0-9]{1,2})*$/',
+                //'message' => 'Invalid Penalty Rate', 'max' => '100', min => '0'],
             [['start_date'], 'compare', 'operator' => '>=', 'compareValue' => date('Y-m-d', time())],
             [['end_date'], 'compare', 'operator' => '>=', 'compareAttribute' => 'start_date'],
             [['start_date', 'end_date', 'created_at', 'updated_at','penalty','payment_deadline_day_per_month'], 'safe'],
@@ -127,6 +137,79 @@ class EmployerPenaltyCycle extends \yii\db\ActiveRecord {
             return $cycle_type[$this->cycle_type];
         }
         return NULL;
+    }
+    public function validatePercentItemrate($attribute) {
+        if($this->penalty_rate > 100 || $this->penalty_rate < 0){
+            $this->addError($attribute,'Invalid Rate');
+            return FALSE;
+        }
+        return true;
+    }
+
+    public function validateDurationType($attribute) {
+        if($this->duration_type=='m'){
+            if($this->duration > 12 || $this->duration < 1) {
+                $this->addError($attribute, 'Invalid Duration');
+                return FALSE;
+            }
+        }
+        return true;
+    }
+    public function validateRepaymentDay($attribute) {
+            if($this->repayment_deadline_day > 28 || $this->repayment_deadline_day < 1) {
+                $this->addError($attribute, 'Invalid Repayment Day');
+                return FALSE;
+            }
+        return true;
+    }
+    public function validateEmployerPenalty($attribute)
+{
+    if ($this->employer_id == '') {
+        if (self::findBySql("SELECT * FROM employer_penalty_cycle where (employer_id IS NULL or employer_id='') AND is_active='1'")
+            ->exists()) {
+            $this->addError($attribute, 'Employer Exist');
+            return FALSE;
+        }
+    }
+    if (self::findBySql("SELECT * FROM employer_penalty_cycle where employer_id = '$this->employer_id' AND is_active='1'")
+        ->exists()) {
+        $this->addError($attribute, 'Employer Exist');
+        return FALSE;
+    }
+    return true;
+}
+    public function validateEmployerPenaltyUpdate($attribute)
+    {
+        if ($this->employer_id == '') {
+            if (self::findBySql("SELECT * FROM employer_penalty_cycle where (employer_id IS NULL or employer_id='') AND is_active='1' AND employer_penalty_cycle_id<>'$this->employer_penalty_cycle_id'")
+                ->exists()) {
+                $this->addError($attribute, 'Employer Exist');
+                return FALSE;
+            }
+        }
+        if (self::findBySql("SELECT * FROM employer_penalty_cycle where employer_id = '$this->employer_id' AND is_active='1' AND employer_penalty_cycle_id<>'$this->employer_penalty_cycle_id'")
+            ->exists()) {
+            $this->addError($attribute, 'Employer Exist');
+            return FALSE;
+        }
+        return true;
+    }
+    public function validateEmployerPenaltyInactive($attribute)
+    {
+        echo "tele";exit;
+        if ($this->is_active == 0 && $this->end_date =='') {
+                $this->addError($attribute, 'Required Rnd Date');
+                return FALSE;
+        }
+        return true;
+    }
+    public static function checkItemUsed(){
+        $countExist=0;
+        $employerTypeID = \frontend\modules\repayment\models\EmployerPenalty::findBySql("SELECT * FROM employer_penalty")->count();
+        if($employerTypeID > 0){
+            $countExist=1;
+        }
+        return $countExist;
     }
 
 }

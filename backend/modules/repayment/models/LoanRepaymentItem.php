@@ -25,7 +25,14 @@ class LoanRepaymentItem extends \yii\db\ActiveRecord
     const ITEM_ORDER_LIST_3 = 3;
     const ITEM_ORDER_LIST_4 = 4;    
     const ITEM_ORDER_LIST_CONDITION_1=1;
-    const ITEM_ORDER_LIST_CONDITION_2=2;    
+    const ITEM_ORDER_LIST_CONDITION_2=2;
+
+    const PRINCIPAL='PRC';
+    const Loan_Administration_Fee='LAF';
+    const Penalty='PNT';
+    const Value_Retention_Fee='VRF';
+    const Employer_Penalty='EPNT';
+    const testing='TEST';
     /**
      * @inheritdoc
      */
@@ -35,6 +42,7 @@ class LoanRepaymentItem extends \yii\db\ActiveRecord
     }
     
     public $is_parent_child;
+    public $item_status;
     /**
      * @inheritdoc
      */
@@ -44,7 +52,7 @@ class LoanRepaymentItem extends \yii\db\ActiveRecord
             [['item_name', 'item_code', 'created_at', 'created_by', 'is_active','payable_status','is_parent_child'], 'required'],
             [['is_active', 'created_by'], 'integer'],
 			[['item_code'], 'unique', 'message'=>'Item code already exist!'],
-            [['created_at','payable_status','payable_order_list','payable_order_list_status','parent_id'], 'safe'],
+            [['created_at','payable_status','payable_order_list','payable_order_list_status','parent_id','item_status'], 'safe'],
             ['parent_id', 'required', 'when' => function ($model) {
     return $model->is_parent_child == 2;
 }, 'whenClient' => "function (attribute, value) {
@@ -125,6 +133,38 @@ class LoanRepaymentItem extends \yii\db\ActiveRecord
         return [
             self::ITEM_ORDER_LIST_CONDITION_1 => 'Full paid before other items',
             self::ITEM_ORDER_LIST_CONDITION_2 => 'Partially Depending onthe item rate', 
+        ];
+    }
+    public static function checkItemUsed($repaymentItemID){
+        $countExist=0;
+        $loanRepaymentItemSetting = \backend\modules\repayment\models\LoanRepaymentSetting::findBySql("SELECT * FROM loan_repayment_setting WHERE  loan_repayment_item_id='$repaymentItemID'")->count();
+        if($loanRepaymentItemSetting > 0){
+            $countExist=1;
+        }
+        $loanRepaymentSummaryDetail = \backend\modules\repayment\models\LoanSummaryDetail::findBySql("SELECT * FROM loan_summary_detail WHERE  loan_repayment_item_id='$repaymentItemID'")->count();
+        if($loanRepaymentSummaryDetail > 0){
+            $countExist=1;
+        }
+        $loan_repayment_detail = \backend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT * FROM loan_repayment_detail WHERE  loan_repayment_item_id='$repaymentItemID'")->count();
+        if($loan_repayment_detail > 0){
+            $countExist=1;
+        }
+        $loan_repayment_item = \backend\modules\repayment\models\LoanRepaymentItem::findBySql("SELECT * FROM  loan_repayment_item WHERE  payable_status='$repaymentItemID'")->count();
+        if($loan_repayment_item > 1){
+            $countExist=1;
+        }
+
+    return $countExist;
+    }
+
+    static function getLoanRepaymentItemList() {
+        return [
+            self::PRINCIPAL=>'PRC',
+            self::Loan_Administration_Fee=>'LAF',
+            self::Penalty=>'PNT',
+            self::Value_Retention_Fee=>'VRF',
+            self::Employer_Penalty=>'EPNT',
+            self::testing=>'TEST',
         ];
     }
     

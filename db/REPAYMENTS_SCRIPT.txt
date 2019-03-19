@@ -665,4 +665,25 @@ ALTER TABLE `refund_application`
   MODIFY `trustee_email` VARCHAR(255) DEFAULT NULL;
 
 ALTER TABLE `refund_claimant_education_history` ADD `institution_name` VARCHAR(255) NULL COMMENT 'Name of the not fount institution as submitted by claimant' AFTER `institution_id`, ADD `programme_name` VARCHAR(255) NULL COMMENT 'Name of programme as submitted by claimant' AFTER `institution_name`;
+========================================
+================04/03/2019======
+ALTER TABLE `loan_summary_detail` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL;
+ALTER TABLE `loan_summary` CHANGE `amount` `amount` DECIMAL(38,2) NOT NULL;
+
+
+ALTER TABLE `loan_repayment` CHANGE `amount` `amount` DECIMAL(38,4) NOT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `amount` `amount` DECIMAL(38,4) NOT NULL;
+ALTER TABLE `loan_repayment_detail` CHANGE `vrf_accumulated` `vrf_accumulated` DECIMAL(38,4) NULL DEFAULT NULL COMMENT 'to be added based on between payment time interval';
+ALTER TABLE `loan_repayment_detail` CHANGE `loan_balance` `loan_balance` DECIMAL(38,4) NULL DEFAULT NULL COMMENT 'To be updated at the principal repayment item';
+ALTER TABLE `loan_repayment_detail` CHANGE `lawson_loan_balance` `lawson_loan_balance` DECIMAL(38,4) NULL DEFAULT NULL;
+
+==================================05-03-2019==================
+ALTER TABLE `loan_repayment_item` ADD `item_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Not In Use, 2: In Use' AFTER `created_by`;
+ALTER TABLE `employer_contact_person` ADD `is_active` TINYINT(2) NOT NULL DEFAULT '1' AFTER `role`;
+ALTER TABLE `employer_contact_person` CHANGE `is_active` `is_active` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Active, 2: InActive';
+ALTER TABLE `employed_beneficiary` CHANGE `form_four_completion_year` `form_four_completion_year` INT(11) NULL DEFAULT NULL;
+ALTER TABLE `employed_beneficiary` CHANGE `upload_status` `upload_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Successful, 0: error, 2: Employee Exists';
+ALTER TABLE `employed_beneficiary` CHANGE `upload_status` `upload_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Successful, 0: error';
+ALTER TABLE `employed_beneficiary` ADD `existing_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: New, 2: Exist' AFTER `academic_year_id`;
+ALTER TABLE `employed_beneficiary` CHANGE `verification_status` `verification_status` TINYINT(1) NOT NULL COMMENT '0: Pending Verification, 1: VerifiedHESLB has to verify who is beneficiary and who is not,3: waiting employer confirmation,4:has no loan,5:shifted to another employer,6: HESLB Confirmed non beneficiary';
 

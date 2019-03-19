@@ -18,7 +18,7 @@ if (!$employerModel->isNewRecord && $employerModel->ward_id > 0) {
     $employerModel->district = $modelz->district_id;
     ################find region Id ##############
 
-    $modelr = \backend\modules\application\models\District::findOne($modelz->district);
+    $modelr = \backend\modules\application\models\District::findOne($employerModel->district);
     $employerModel->region = $modelr->region_id;
 }
 $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL]);
@@ -33,27 +33,40 @@ echo Form::widget([ // fields with labels
     'attributes'=>[
          'employer_name'=>['label'=>'Employer Name:', 'options'=>['placeholder'=>'Employer Name']], 
 		 'short_name'=>['label'=>'Employer Short Name:', 'options'=>['placeholder'=>'Employer Short Name']],
-		 'TIN'=>['label'=>'TIN:', 'options'=>['placeholder'=>'TIN']],
-		 'employer_type_id' => ['type' => Form::INPUT_WIDGET,
-                'widgetClass' => \kartik\select2\Select2::className(),
-                'label' => 'Employer Type:',
+    ]
+]);
+?>
+<?=
+$form->field($employerModel, 'TIN')->label('TIN:')->widget(\yii\widgets\MaskedInput::className(), [
+    'mask' => '999-999-999'
+]);
+?>
+<?php
+echo Form::widget([ // fields with labels
+    'model'=>$employerModel,
+    'form'=>$form,
+    'columns'=>1,
+    'attributes'=>[
+        'employer_type_id' => ['type' => Form::INPUT_WIDGET,
+            'widgetClass' => \kartik\select2\Select2::className(),
+            'label' => 'Employer Type:',
+            'options' => [
+                'data' =>ArrayHelper::map(\backend\modules\repayment\models\EmployerType::find()->asArray()->all(), 'employer_type_id', 'employer_type'),
                 'options' => [
-                    'data' =>ArrayHelper::map(\backend\modules\repayment\models\EmployerType::find()->asArray()->all(), 'employer_type_id', 'employer_type'),
-                    'options' => [
-                        'prompt' => 'Select Employer Type',
-                    ],
+                    'prompt' => 'Select Employer Type',
                 ],
-            ],			
-			'nature_of_work_id' => ['type' => Form::INPUT_WIDGET,
-                'widgetClass' => \kartik\select2\Select2::className(),
-                'label' => 'Sector:',
+            ],
+        ],
+        'nature_of_work_id' => ['type' => Form::INPUT_WIDGET,
+            'widgetClass' => \kartik\select2\Select2::className(),
+            'label' => 'Sector:',
+            'options' => [
+                'data' =>ArrayHelper::map(\backend\modules\repayment\models\NatureOfWork::find()->asArray()->all(), 'nature_of_work_id', 'description'),
                 'options' => [
-                    'data' =>ArrayHelper::map(\backend\modules\repayment\models\NatureOfWork::find()->asArray()->all(), 'nature_of_work_id', 'description'),
-                    'options' => [
-                        'prompt' => 'Select Sector',
-                    ],
+                    'prompt' => 'Select Sector',
                 ],
-            ],         			
+            ],
+        ],
     ]
 ]);
 ?>
@@ -113,7 +126,7 @@ echo Form::widget([ // fields with labels
             ],
     ]
 ]);
-
+/*
 echo Form::widget([ // fields with labels
     'model'=>$employerModel,
     'form'=>$form,
@@ -124,6 +137,14 @@ echo Form::widget([ // fields with labels
 		],        
     ]
 ]);
+*/
+?>
+<?=
+$form->field($employerModel, 'phone_number')->label('Telephone Number:')->widget(\yii\widgets\MaskedInput::className(), [
+    'mask' => '255 999 999 999',
+    //'options' => ['data-toggle' => 'tooltip',
+    //'data-placement' => 'top', 'title' => 'Phone Number eg 07XXXXXXXX or 06XXXXXXXX or 0XXXXXXXXX']
+])->hint('Phone Number eg 255 7XXXXXXXX or 255 6XXXXXXXX or 255 XXXXXXXXX');
 ?>
 <?php
 echo Form::widget([ // fields with labels
@@ -136,6 +157,7 @@ echo Form::widget([ // fields with labels
     ]
 ]);
  ?>
+<?= $form->field($employerModel, 'employer_id')->label(false)->hiddenInput(['value'=>$employerModel->employer_id,'readOnly'=>'readOnly']) ?>
  <?php
  if(strcmp(strtoupper($results->employerType->employer_type),"GOVERNMENT")==0){
 echo Form::widget([ // fields with labels

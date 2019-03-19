@@ -45,7 +45,7 @@ DetailView::widget([
             'width' => '200px',
             'format' => 'raw',
             'value' => call_user_func(function ($data) {
-                        if ($model->applicant_id == '') {
+                        if ($data->applicant_id == '') {
                             return '<p class="btn green"; style="color:red;">Pending Verification</p>';
                         } else {
                             return '<p class="btn green"; style="color:green;">Confirmed</p>';

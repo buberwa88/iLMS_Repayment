@@ -63,7 +63,7 @@ if ($employerDetails->salary_source==3) {
            'name' => 'payment_date', 
            'value' => date('Y-m-d'),
     'options' => [
-	              'placeholder'=>'Select Date of Bill',
+	              'placeholder'=>'yyyy-mm-dd',
 	              'todayHighlight' => true,
 				  'id' => 'dateofbill_id',
                   'onchange' => 'ShowHideDiv()',

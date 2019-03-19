@@ -41,7 +41,7 @@ class EmployerContactPerson extends \yii\db\ActiveRecord
         return [
             [['employer_id', 'user_id', 'role'], 'required'],
             [['employer_id', 'user_id', 'created_by'], 'integer'],
-            [['created_at'], 'safe'],
+            [['created_at','is_active'], 'safe'],
             [['role'], 'string', 'max' => 100],
         ];
     }
@@ -58,6 +58,7 @@ class EmployerContactPerson extends \yii\db\ActiveRecord
             'created_at' => 'Created At',
             'created_by' => 'Created By',
             'role' => 'Role',
+            'is_active'=>'is_active',
         ];
     }
     public function getUser()

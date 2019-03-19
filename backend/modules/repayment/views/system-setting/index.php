@@ -58,6 +58,7 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
             //'setting_value',
             'value_data_type',
+            /*
                     [
             'attribute'=>'item_formula',
             'header'=>'Formula',
@@ -71,6 +72,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             }
             },
         ],
+            */
 		[
             'attribute'=>'graduated_from',
             'header'=>'Graduated From',
@@ -114,7 +116,42 @@ $this->params['breadcrumbs'][] = $this->title;
             },
         ],
 
-            ['class' => 'yii\grid\ActionColumn','template'=>'{update}'],
+            //['class' => 'yii\grid\ActionColumn','template'=>'{update}{delete}'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'header' => 'Actions',
+                'headerOptions' => ['style' => 'color:#337ab7'],
+                'template' => '{update}{delete}',
+                'buttons' => [
+                    'update' => function ($url, $model) {
+                        return $model->is_active==1 ? Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
+                            'title' => Yii::t('app', 'update'),
+                        ]):'';
+                    },
+                    'delete' => function ($url, $model) {
+                        return \backend\modules\repayment\models\SystemSetting::checkItemUsed()==0? Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
+                            //'class' => 'btn btn-info',
+                            'data' => [
+                                'confirm' => 'Are you sure you want to delete this item?',
+                                //'method' => 'get',
+                                //'title' => Yii::t('app', 'lead-update'),
+                            ],
+                        ]):'';
+                    }
+
+                ],
+                'urlCreator' => function ($action, $model, $key, $index) {
+                    if ($action === 'update') {
+                        $url ='index.php?r=repayment/system-setting/update&id='.$model->system_setting_id;
+                        return $url;
+                    }
+                    if ($action === 'delete') {
+                        $url ='index.php?r=repayment/system-setting/delete-generalset&id='.$model->system_setting_id;
+                        return $url;
+                    }
+
+                }
+            ],
         ],
     ]); ?>
 </div>

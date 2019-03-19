@@ -28,6 +28,16 @@ if (!$model->isNewRecord && $model->place_of_birth > 0) {
         $employer2 = EmployerSearch::getEmployer($loggedin);
         $employerID = $employer2->employer_id;
 
+$yearmax = date("Y")-2;
+for ($y = 1982; $y <= $yearmax; $y++) {
+    $year[$y] = $y;
+}
+
+$yearmax2 = date("Y")-3;
+for ($y = 1982; $y <= $yearmax2; $y++) {
+    $year2[$y] = $y;
+}
+
 $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL]);
 ?>
 <?php
@@ -109,20 +119,70 @@ echo Form::widget([ // fields with labels
                 ],
             ],
         ],	        
-        'programme_entry_year'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_PhD_id']],
-        'programme_completion_year'=>['label'=>'Completion Year:', 'options'=>['placeholder'=>'Completion Year','id' => 'programme_completion_year_PhD_id']],		
+        //'programme_entry_year'=>['label'=>'Entry Year:', 'options'=>['placeholder'=>'Entry Year','id' => 'programme_entry_year_PhD_id']],
+
+        'programme_entry_year' => ['type' => Form::INPUT_WIDGET,
+            'widgetClass' => \kartik\select2\Select2::className(),
+            'label' => 'Entry Year:',
+            'options' => [
+                'data' => $year,
+                'options' => [
+                    'prompt' => 'Select',
+                    'id' => 'programme_entry_year_PhD_id',
+                    //'onchange' => 'check_necta()'
+                    //'id'=>'entry_year_id'
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ],
+        ],
+
+        'programme_completion_year' => ['type' => Form::INPUT_WIDGET,
+            'widgetClass' => \kartik\select2\Select2::className(),
+            'label' => 'Completion Year:',
+            'options' => [
+                'data' => $year,
+                'options' => [
+                    'prompt' => 'Select',
+                    'id' => 'programme_completion_year_PhD_id',
+                    //'onchange' => 'check_necta()'
+                    //'id'=>'entry_year_id'
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ],
+        ],
     ]
 ]);	
-?>	
+?>
+<?=
+$form->field($model, 'phone_number')->label('Telephone Number:')->widget(\yii\widgets\MaskedInput::className(), [
+    'mask' => '255 99 999 9999'
+]);
+?>
 <?php
 echo Form::widget([ // fields with labels
     'model'=>$model,
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[	
-        'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Telephone Number']],
+        //'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Telephone Number']],
         'f4indexno'=>['label'=>'Form IV Index Number:', 'options'=>['placeholder'=>'Example: S0105.0011']],
-        'form_four_completion_year'=>['label'=>'Form IV Completion Year:', 'options'=>['placeholder'=>'Form IV Completion Year']],		
+        'form_four_completion_year' => ['type' => Form::INPUT_WIDGET,
+            'widgetClass' => \kartik\select2\Select2::className(),
+            'label' => 'Form IV Completion Year:',
+            'options' => [
+                'data' => $year2,
+                'options' => [
+                    'prompt' => 'Select',
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ],
+        ],
         'NID'=>['label'=>'National Identification Number:', 'options'=>['placeholder'=>'National Identification Number']], 			
         'employee_id'=>['label'=>'Employee ID:', 'options'=>['placeholder'=>'Employee ID']],        
         'LOAN_BENEFICIARY_STATUS'=>['type' => Form::INPUT_WIDGET,
@@ -145,7 +205,7 @@ echo Form::widget([ // fields with labels
                 'label' => 'Salary Source:',
               
                 'options' => [
-                    'data' => ['1'=>'Central Government', '2'=>'Own Source', '3'=>'Both(Own Source and Central Government)'],
+                    'data' => ['1'=>'Central Government', '2'=>'Own Source'],
                     'options' => [
                         'prompt' => 'Select Salary Source',
                    
@@ -182,7 +242,7 @@ echo Form::widget([ // fields with labels
   
 <?php
 echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/employed-beneficiary/index-view-beneficiary'], ['class' => 'btn btn-warning']);
+echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/employed-beneficiary/add-uploademployee'], ['class' => 'btn btn-warning']);
 
 ActiveForm::end();
 ?>

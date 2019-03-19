@@ -177,7 +177,7 @@ desired effect
 				    //["label" => "Receipts", "url" => Url::to(['/repayment/loan-repayment/receipt']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='receipt'), "icon" => "money"],
 					],
 					],
-    ['label' => 'Refund', "icon" => "th", 'url' => Url::to(['/repayment/loan-repayment/index-refund']), 'active' => ((Yii::$app->controller->id == 'loan-repayment' || Yii::$app->controller->id == 'refund-education-history' || Yii::$app->controller->id == 'refund-claimant') && (Yii::$app->controller->action->id == 'index-refund' || Yii::$app->controller->action->id == 'create'))],
+    //['label' => 'Refund', "icon" => "th", 'url' => Url::to(['/repayment/loan-repayment/index-refund']), 'active' => ((Yii::$app->controller->id == 'loan-repayment' || Yii::$app->controller->id == 'refund-education-history' || Yii::$app->controller->id == 'refund-claimant') && (Yii::$app->controller->action->id == 'index-refund' || Yii::$app->controller->action->id == 'create'))],
                                 ['label' => 'Change Password', 'icon' => 'lock', 'url' => ['/site/change-password'],'active' => (Yii::$app->controller->id == 'site')],
                                    
                             ],

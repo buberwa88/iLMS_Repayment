@@ -85,7 +85,7 @@ class RefundVerificationFrameworkController extends Controller
     public function actionCreate()
     {
         $model = new RefundVerificationFramework();
-
+        $model->scenario='frameworkRegister';
         if ($model->loadAll(Yii::$app->request->post()) && $model->saveAll()) {
             return $this->redirect(['view', 'id' => $model->refund_verification_framework_id]);
         } else {
@@ -108,6 +108,7 @@ class RefundVerificationFrameworkController extends Controller
         }else{
             $model = $this->findModel($id);
         }
+		$model->scenario='frameworkUpdate';
 
         if ($model->loadAll(Yii::$app->request->post()) && $model->saveAll()) {
             return $this->redirect(['view', 'id' => $model->refund_verification_framework_id]);

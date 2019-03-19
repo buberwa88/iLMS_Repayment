@@ -67,7 +67,7 @@ $attributes = [
             [
                 'label' => 'f4index #',
                 'value'=>call_user_func(function ($data){
-				return $data->f4indexno;
+				return $data->f4indexno.'.'.$data->form_four_completion_year;
             }, $model),
                 'labelColOptions' => ['style' => 'width:20%'],
             ],

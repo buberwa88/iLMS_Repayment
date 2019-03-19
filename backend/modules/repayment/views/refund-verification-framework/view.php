@@ -57,6 +57,17 @@ $model_test=RefundApplication::find()->where(["refund_verification_framework_id"
         ],
         'confirmed_at',
         //'is_active',
+		[
+                'attribute'=>'is_active',
+                'label'=>'Is Active',
+                'value'=>call_user_func(function ($data) {
+                    if($data->is_active==1){
+                return 'Yes';    
+                }else{
+                 return 'No';
+                }
+            }, $model),                
+            ],
     ];
     echo DetailView::widget([
         'model' => $model,

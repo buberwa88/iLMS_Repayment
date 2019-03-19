@@ -29,6 +29,7 @@ class RefundVerificationResponseSetting extends \yii\db\ActiveRecord
     const Permanent_stop_deduction_letter = 'PSDL';
     const Concluded_Valid = 'CLV';
     const Issue_denial_letter = 'DL';
+	const TEST = 'TEST';
 
     public static function tableName()
     {
@@ -45,6 +46,7 @@ class RefundVerificationResponseSetting extends \yii\db\ActiveRecord
             [['created_at', 'updated_at','is_active','verification_status'], 'safe'],
             [['created_by', 'updated_by'], 'integer'],
             [['response_code'], 'string', 'max' => 20],
+			[['response_code'], 'unique', 'message'=>'Item already exist!'],
             [['access_role_master', 'access_role_child'], 'string', 'max' => 50],
             [['reason'], 'string', 'max' => 200],
         ];
@@ -123,6 +125,7 @@ class RefundVerificationResponseSetting extends \yii\db\ActiveRecord
             self::Need_further_verification => 'NFV',
             self::Need_investigation => 'NIVST',
             self::No_stop_deduction_needed => 'NSTL',
+			self::TEST => 'TEST',
         ];
     }
 	

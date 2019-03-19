@@ -204,7 +204,8 @@ class LoanRepaymentDetail extends \yii\db\ActiveRecord
            $itemCodePRC="PRC";
            $PRC_id=$moder->getloanRepaymentItemID($itemCodePRC);           
            $outstandingPrincipalLoan=$moder->getOutstandingPrincipalLoanUnderBill($applicantID,$loan_summary_id,$loan_given_to);
-		   
+		   //echo $vrf."--vrf--".$LAF."---LAF----".$penalty."---PNT---".$outstandingPrincipalLoan;
+		   //exit;
 		   //here is about to finish paying loan
 		   if($loanStatus==0){	   
 		   $this->updateAll(['amount'=>$LAF], 'loan_repayment_id ="'.$loan_repayment_id.'" AND applicant_id="'.$applicantID.'" AND loan_repayment_item_id="'.$LAF_id.'" AND loan_given_to="'.$loan_given_to.'"');

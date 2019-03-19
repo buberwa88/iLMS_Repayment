@@ -20,7 +20,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
         return [
             [['employed_beneficiary_id', 'employer_id', 'applicant_id', 'created_by'], 'integer'],
             [['employee_id', 'employment_status', 'created_at','employee_check_number','employee_f4indexno','employee_mobile_phone_no',
-                'employee_year_completion_studies','employee_academic_awarded','employee_instituitions_studies','employee_NIN','employee_check_number','firstname','surname','middlename','f4indexno','employerName','upload_error','confirmed','totalLoan'], 'safe'],
+                'employee_year_completion_studies','employee_academic_awarded','employee_instituitions_studies','employee_NIN','employee_check_number','firstname','surname','middlename','f4indexno','employerName','upload_error','confirmed','totalLoan','form_four_completion_year'], 'safe'],
             [['basic_salary'], 'number'],
         ];
     }
@@ -426,6 +426,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
             ->andFilterWhere(['like', 'employee_academic_awarded', $this->employee_academic_awarded])
             ->andFilterWhere(['like', 'employee_instituitions_studies', $this->employee_instituitions_studies])
             ->andFilterWhere(['like', 'employee_NIN', $this->employee_NIN])
+            ->andFilterWhere(['like', 'form_four_completion_year', $this->form_four_completion_year])
 			->andFilterWhere(['like', 'basic_salary', $this->basic_salary])
             ->andFilterWhere(['like', 'employee_check_number', $this->employee_check_number]);
 
@@ -480,6 +481,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
             ->andFilterWhere(['like', 'employee_academic_awarded', $this->employee_academic_awarded])
             ->andFilterWhere(['like', 'employee_instituitions_studies', $this->employee_instituitions_studies])
             ->andFilterWhere(['like', 'employee_NIN', $this->employee_NIN])
+            ->andFilterWhere(['like', 'form_four_completion_year', $this->form_four_completion_year])
 	    ->andFilterWhere(['like', 'basic_salary', $this->basic_salary])
             ->andFilterWhere(['like', 'upload_error', $this->upload_error])    
             ->andFilterWhere(['like', 'employee_check_number', $this->employee_check_number]);

@@ -15,9 +15,6 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 <div class="employed-beneficiary-index">
 
 <div class="panel panel-info">
-                        <div class="panel-heading">
-                      <?= Html::encode($this->title) ?>
-                        </div>
                         <div class="panel-body">            
     <?= GridView::widget([
         'dataProvider' => $dataProvider,

@@ -35,8 +35,8 @@ echo Form::widget([ // fields with labels
             ],
         ],
         'reason' => ['label' => 'Response'],
-		'response_code' => ['label' => 'Response Code'],
-		/*
+		//'response_code' => ['label' => 'Response Code'],
+		
 		'response_code' => ['type' => Form::INPUT_WIDGET,
             'widgetClass' => \kartik\select2\Select2::className(),
             'label' => 'Response Code:',
@@ -50,7 +50,7 @@ echo Form::widget([ // fields with labels
                 ],
             ],
         ],
-		*/
+		
     ]
 ]);
 ?>

@@ -68,13 +68,15 @@ $this->params['breadcrumbs'][] = $this->title;
                     return '<p class="btn green"; style="color:green;">Confirmed</p>';
                    }else if($model->verification_status==3){
                     return '<p class="btn red"; style="color:red;">Deactivated</p>';   
-                   }else if($model->verification_status==0 || $model->verification_status==2){
+                   }else if($model->verification_status==0){
                     return '<p class="btn red"; style="color:blue;">Pending Verification</p>';  
+                   }else if($model->verification_status==2){
+                   return '<p class="btn red"; style="color:black;">Waiting Activation</p>';
                    }
 
             },
 			'filterType' => GridView::FILTER_SELECT2,
-                        'filter' => [0=>'Pending Verification',1=>'Confirmed',3=>'Deactivated'],
+                        'filter' => [0=>'Pending Verification',1=>'Confirmed',2=>'Waiting Activation',3=>'Deactivated'],
                         'filterWidgetOptions' => [
                             'pluginOptions' => ['allowClear' => true],
                         ],

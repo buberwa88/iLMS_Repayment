@@ -25,10 +25,15 @@ $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVE
 <div class="panel panel-info">
                         <div class="panel-body"> 
 <div id="hidden">
+    <?php
+    $countEmployees=\frontend\modules\repayment\models\EmployedBeneficiary::getCountBeneficiaries($employerID);
+    if($countEmployees > 0){
+    ?>
 <p>
         <?= Html::a('Get New Repayment Schedule', ['employed-beneficiary/newrepayment-schedule'], ['class' => 'btn btn-success','onclick'=>'return  check_status()']) ?>
         
     </p>
+    <?php } ?>
 	
     <?= GridView::widget([
         'dataProvider' => $dataProvider,

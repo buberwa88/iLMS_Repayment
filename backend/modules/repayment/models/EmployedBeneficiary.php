@@ -91,6 +91,7 @@ class EmployedBeneficiary extends \yii\db\ActiveRecord
             [['basic_salary','phone_number'], 'number'],
 			['phone_number', 'string', 'length' => [0, 12]],
             [['employment_status'], 'string'],
+            [['basic_salary'], 'number', min => '0'],
             [['employer_id', 'employee_id', 'applicant_id', 'employment_status', 'created_at', 'created_by', 'created_at',
                 'employee_current_nameifchanged','NID','f4indexno','firstname','phone_number','loan_summary_id', 'principal', 'totalLoanees','verification_status','firstname','middlename','surname','employerName','learning_institution_id','place_of_birth','principal','penalty','LAF','VRF','totalLoan','paid','outstanding','f4indexno2','confirmed','mult_employed','support_document','employee_status','vote_number','academic_year_id','financial_year_id'], 'safe'],
             [['imageFile'], 'file', 'skipOnEmpty' => false, 'extensions' => 'xlsx,xls','on'=>'Uploding_employed_beneficiaries'],

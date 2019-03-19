@@ -65,6 +65,7 @@ class SystemSettingController extends Controller
     public function actionCreate()
     {
         $model = new SystemSetting();
+        $model->scenario='Itemregister';
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
                    $sms = '<p>Data Successful Added.</p>';
@@ -86,11 +87,14 @@ class SystemSettingController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $model->scenario='Itemupdate';
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            $sms = '<p>Data Successful Added.</p>';
-                   Yii::$app->getSession()->setFlash('success', $sms);
-            return $this->redirect(['index']);
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            if($model->save()) {
+                $sms = '<p>Data Successful Added.</p>';
+                Yii::$app->getSession()->setFlash('success', $sms);
+                return $this->redirect(['index']);
+            }
         } else {
             return $this->render('update', [
                 'model' => $model,
@@ -105,6 +109,13 @@ class SystemSettingController extends Controller
      * @return mixed
      */
     public function actionDelete($id)
+    {
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+    }
+
+    public function actionDeleteGeneralset($id)
     {
         $this->findModel($id)->delete();
 

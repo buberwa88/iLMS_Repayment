@@ -113,6 +113,12 @@ class LoanRepaymentItemController extends Controller
 
         return $this->redirect(['index']);
     }
+    public function actionDeleteRepayitem($id)
+    {
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+    }
 
     /**
      * Finds the LoanRepaymentItem model based on its primary key value.

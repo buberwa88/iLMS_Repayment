@@ -172,7 +172,7 @@ class LoanRepaymentController extends Controller
         $employer2=$employerModel->getEmployer($loggedin);
         $employerID=$employer2->employer_id;
         $model2->employer_id=$employerID;
-		$model2->scenario='billGeneration';
+		$model2->scenario='billGeneration2';
         //$model2->repayment_reference_number=$employer2->employer_code;
         $model2->amount=0;
         //$model2->pay_method_id=4;

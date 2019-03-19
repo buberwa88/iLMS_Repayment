@@ -204,7 +204,42 @@ $this->params['breadcrumbs'][] = $this->title;
             // 'created_at',
             // 'created_by',
 
-            ['class' => 'yii\grid\ActionColumn','template'=>'{update}'],
+            //['class' => 'yii\grid\ActionColumn','template'=>'{update}{delete}'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'header' => 'Actions',
+                'headerOptions' => ['style' => 'color:#337ab7'],
+                'template' => '{update}{delete}',
+                'buttons' => [
+                    'update' => function ($url, $model) {
+                        return \backend\modules\repayment\models\LoanRepaymentSetting::checkItemUsed()==0 ? Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
+                            'title' => Yii::t('app', 'update'),
+                        ]):'';
+                    },
+                    'delete' => function ($url, $model) {
+                        return \backend\modules\repayment\models\LoanRepaymentSetting::checkItemUsed()==0? Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
+                            //'class' => 'btn btn-info',
+                            'data' => [
+                                'confirm' => 'Are you sure you want to delete this item?',
+                                //'method' => 'get',
+                                //'title' => Yii::t('app', 'lead-update'),
+                            ],
+                        ]):'';
+                    }
+
+                ],
+                'urlCreator' => function ($action, $model, $key, $index) {
+                    if ($action === 'update') {
+                        $url ='index.php?r=repayment/loan-repayment-setting/update&id='.$model->loan_repayment_setting_id;
+                        return $url;
+                    }
+                    if ($action === 'delete') {
+                        $url ='index.php?r=repayment/loan-repayment-setting/delete-itemsetting&id='.$model->loan_repayment_setting_id;
+                        return $url;
+                    }
+
+                }
+            ],
         ],
     ]); ?>
 </div>

@@ -27,6 +27,7 @@ class NatureOfWork extends \yii\db\ActiveRecord
     {
         return [
             [['description'], 'required'],
+            [['description'], 'unique', 'message'=>'Sector exist!'],
             [['description'], 'string', 'max' => 100],
         ];
     }

@@ -56,7 +56,44 @@ $this->params['breadcrumbs'][] = $this->title;
                 ],
                 'start_date',
                 'end_date',
-                ['class' => 'yii\grid\ActionColumn'],
+                //['class' => 'yii\grid\ActionColumn'],
+
+                [
+                    'class' => 'yii\grid\ActionColumn',
+                    'header' => 'Actions',
+                    'headerOptions' => ['style' => 'color:#337ab7'],
+                    'template' => '{update}{delete}',
+                    'buttons' => [
+                        'update' => function ($url, $model) {
+                            return $model->is_active==1 ? Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
+                                'title' => Yii::t('app', 'update'),
+                            ]):'';
+                        },
+                        'delete' => function ($url, $model) {
+                            return \backend\modules\repayment\models\EmployerPenaltyCycle::checkItemUsed()==0? Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
+                                //'class' => 'btn btn-info',
+                                'data' => [
+                                    'confirm' => 'Are you sure you want to delete this item?',
+                                    //'method' => 'get',
+                                    //'title' => Yii::t('app', 'lead-update'),
+                                ],
+                            ]):'';
+                        }
+
+                    ],
+                    'urlCreator' => function ($action, $model, $key, $index) {
+                        if ($action === 'update') {
+                            $url ='index.php?r=repayment/employer-penalty-cycle/update&id='.$model->employer_penalty_cycle_id;
+                            return $url;
+                        }
+                        if ($action === 'delete') {
+                            $url ='index.php?r=repayment/employer-penalty-cycle/delete-penaltycycle&id='.$model->employer_penalty_cycle_id;
+                            return $url;
+                        }
+
+                    }
+                ],
+
             ],
         ]);
         ?>

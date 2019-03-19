@@ -7,7 +7,7 @@ use yii\helpers\Html;
 use kartik\export\ExportMenu;
 use kartik\grid\GridView;
 
-$this->title = 'Refund Internal Operational Setting';
+$this->title = 'Refund Operational Setting';
 $this->params['breadcrumbs'][] = $this->title;
 $search = "$('.search-button').click(function(){
 	$('.search-form').toggle(1000);
@@ -46,7 +46,7 @@ $this->registerJs($search);
                 ],
                 [
                     'class' => 'yii\grid\ActionColumn',
-                    'template' => '{view} {update} {delete}',
+                    'template' => '{update} {delete}',
                 ],
             ];
             ?>

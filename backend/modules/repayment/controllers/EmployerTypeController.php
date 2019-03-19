@@ -117,6 +117,12 @@ class EmployerTypeController extends Controller
 
         return $this->redirect(['index']);
     }
+	public function actionDeleteEmployertype($id)
+    {
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+    }
 
     /**
      * Finds the EmployerType model based on its primary key value.

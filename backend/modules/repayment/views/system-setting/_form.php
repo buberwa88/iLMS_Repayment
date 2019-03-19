@@ -20,13 +20,26 @@ echo Form::widget([ // fields with labels
     'columns' => 1,
     'attributes' => [
         'setting_name' => ['label' => 'Item Name'],
-        'setting_code' => ['label' => 'Item Code'],
+        'setting_code' => ['type' => Form::INPUT_WIDGET,
+            'widgetClass' => \kartik\select2\Select2::className(),
+            'label' => 'Item Code',
+            'options' => [
+                'data' => \backend\modules\repayment\models\SystemSetting::getItemListCode(),
+                'options' => [
+                    'prompt' => 'Select',
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ],
+        ],
         'setting_value' => ['label' => 'Rate'],
     ]
 ]);
 ?>
 <?= $form->field($model, 'value_data_type')->dropDownList([ 'PERCENT' => 'PERCENT', 'AMOUNT' => 'AMOUNT', 'DAY' => 'DAY'], ['prompt' => '']) ?>
 <?php
+/*
 echo Form::widget([ // fields with labels
     'model' => $model,
     'form' => $form,
@@ -35,6 +48,7 @@ echo Form::widget([ // fields with labels
         'item_formula' => ['label' => 'Item Formula'],
     ]
 ]);
+*/
 ?>
 <?=
 $form->field($model, 'graduated_from')->widget(DatePicker::classname(), [

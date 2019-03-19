@@ -55,7 +55,7 @@
      $.ajax({
      type   : 'GET',
      
-     url:"<?= \Yii::$app->getUrlManager()->createUrl('/repayment/loan-repayment-setting/repayment-itemtype'); ?>",
+     url:"",
      data:{loan_repayment_item_value:loan_repayment_item_value},
      success: function (data) {
      //alert (loan_repayment_item_value);
@@ -350,6 +350,7 @@ echo Form::widget([ // fields with labels
     <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 
     <?php
+	echo Html::resetButton('Reset', ['class' => 'btn btn-default']);
     echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/loan-repayment-setting/index'], ['class' => 'btn btn-warning']);
     ActiveForm::end();
     ?>

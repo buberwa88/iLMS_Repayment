@@ -86,22 +86,58 @@ $this->params['breadcrumbs'][] = $this->title;
 			 return false;
 			 }
             }, $model),
-            ],				
+            ],
+            [
+                'columns' => [
+
+                    [
+                        'label'=>'Status',
+                        'value'=>call_user_func(function ($data) {
+                            if($data->verification_status==1){
+                                return 'Confirmed';
+                            }else if($data->verification_status==2){
+                                return 'Waiting Activation';
+                            }else if($data->verification_status==3){
+                                return 'Deactivated';
+                            }else if($data->verification_status==0){
+                                return 'Pending Verification';
+                            }
+                        }, $model),
+                    ],
+                ],
+            ],
+            [
+                'columns' => [
+
+                    [
+                        'label'=>'Reason',
+                        'visible'=>$model->verification_status==3,
+                        'value'=>$model->rejection_reason,
+                    ],
+                ],
+            ],
         ],
     ]) ?>
 	<div class="text-right">
+        <?php
+
+        if($model->verification_status !=3 && $model->verification_status !=2){ ?>
 	<p>
          <?= Html::a('Create New Contact Person', ['add-contact-person', 'employer_id' => $model->employer_id], ['class' => 'btn btn-success']) ?>   
         <?= Html::a('Update Information', ['update-information', 'id' => $model->employer_id], ['class' => 'btn btn-primary']) ?>
 		
     </p>
+        <?php } ?>
 	</div>
 	<div class="text-right">
 <?php 
 
-			if($model->verification_status !=1 && $model->verification_status !=3){ ?>
+			if($model->verification_status !=1 && $model->verification_status !=3 && $model->verification_status !=2){ ?>
         <?= Html::a('Confirm', ['employer-confirmheslb','employerID'=>$model->employer_id,'actionID'=>'1'], ['class' => 'btn btn-success']) ?>      
             <?php } ?>
+<?php
+
+if($model->verification_status !=3){ ?>
 			<?= Html::a('Deactivate', ['employer-confirmheslb','employerID' => $model->employer_id,'actionID'=>'3'],[
             'class' => 'btn btn-danger',
             'data' => [
@@ -109,9 +145,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 'method' => 'post',
             ],
         ]) ?>
+<?php } ?>
 		<?php 
 
-			if($model->verification_status ==2){ ?>
+			if($model->verification_status ==2 || $model->verification_status ==3){ ?>
 		<?= Html::a('Activate Acount', ['activate-accountheslb','employerID' => $model->employer_id],[
             'class' => 'btn btn-primary',
             'data' => [
@@ -124,7 +161,7 @@ $this->params['breadcrumbs'][] = $this->title;
 			</div>
 </div>
             <div class="col-md-6">
-                <?php  $modelEmployerContactPerson = EmployerContactPerson::find()->where("employer_id = {$model->employer_id} ")->all(); 
+                <?php  $modelEmployerContactPerson = EmployerContactPerson::find()->where("employer_id = {$model->employer_id}")->all();
                 
                 
                 $sn = 0;
@@ -187,7 +224,23 @@ $this->params['breadcrumbs'][] = $this->title;
                         //'valueColOptions'=>['style'=>'width:30%'],
                     ],
                 ],
-            ],           
+            ],
+            [
+                'columns' => [
+
+                    [
+                        'label'=>'Status',
+                        'value'=>call_user_func(function ($data) {
+                            if($data->is_active==1){
+                                return 'Active';
+                            }else if($data->is_active==2){
+                                return 'InActive';
+                            }
+                        }, $model),
+                    ],
+                ],
+            ],
+
         ];
     
 
@@ -201,8 +254,14 @@ $this->params['breadcrumbs'][] = $this->title;
     echo '<div class="text-right">
 	<p>';
     ?>
+                <?php
+
+                if($model->employer->verification_status !=3){
+                    if($model->employer->verification_status !=2){
+                    ?>
         <?= Html::a('Update/Edit', ['update-contactperson', 'id' => $model->user_id,'emploID'=>$model->employer_id], ['class' => 'btn btn-primary']) ?>  
-		<?= Html::a('Change Password', ['change-password-contactp', 'id' => $model->user_id,'emploID'=>$model->employer_id], ['class' => 'btn btn-success']) ?>		
+		<?= Html::a('Change Password', ['change-password-contactp', 'id' => $model->user_id,'emploID'=>$model->employer_id], ['class' => 'btn btn-success']) ?>
+                    <?php }} ?>
 	<?php	
     echo "</p></div>";
     }?>          

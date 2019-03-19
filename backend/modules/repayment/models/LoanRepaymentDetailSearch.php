@@ -108,9 +108,10 @@ class LoanRepaymentDetailSearch extends LoanRepaymentDetail {
 	public function searchAllEmployerRepaymentsknown($params) {
         $query = LoanRepaymentDetail::find()
 		        ->select('bill_number,control_number,receipt_number,payment_status,loan_repayment_detail_id,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_given_to,prepaid_id,loan_repayment_detail.amount as amount,loan_repayment_detail.check_number,loan_repayment_detail.first_name,loan_repayment_detail.middle_name,loan_repayment_detail.last_name,loan_repayment_detail.Vote_name,loan_repayment.employer_id')
+                ->where(['loan_repayment.payment_status'=>1])
 	            ->andWhere(['>','loan_repayment_detail.applicant_id','0'])
 				->andWhere(['>','loan_repayment.employer_id','0'])
-                ->groupBy('loan_repayment_detail.applicant_id');
+                ->groupBy('loan_repayment_detail.applicant_id,loan_repayment_detail.loan_repayment_id');
                 
 
         // add conditions that should always apply here

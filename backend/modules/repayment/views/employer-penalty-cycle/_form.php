@@ -14,7 +14,7 @@ use kartik\date\DatePicker;
 $form = ActiveForm::begin(['type' => ActiveForm::TYPE_HORIZONTAL]);
 ?>
 <?php
-echo $form->errorSummary($model);
+//echo $form->errorSummary($model);
 ?>
 <?php
 echo Form::widget([ // fields with labels
@@ -28,6 +28,9 @@ echo Form::widget([ // fields with labels
                 'data' => ArrayHelper::map(backend\modules\repayment\models\Employer::find()->where('employer_type_id<>2')->all(), 'employer_id', 'employer_name'),
                 'options' => [
                     'placeholder' => '-- All Employer --',
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
                 ],
             ],
         ],

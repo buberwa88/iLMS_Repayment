@@ -36,10 +36,13 @@ const RECEIVE_CANCEL_BILL='RCCNCELB';
     public function rules()
     {
         return [
-            [['bill_type', 'bill_processing_uri', 'bill_prefix', 'operation_type'], 'required'],
+            [['bill_type', 'bill_processing_uri', 'bill_prefix', 'operation_type'], 'required', 'on'=>'itemSettingRegister'],
+			[['bill_type', 'bill_processing_uri', 'bill_prefix', 'operation_type'], 'required', 'on'=>'itemSettingUpdate'],
             [['created_by'], 'integer'],
             [['created_at','created_by','updated_at','updated_by'], 'safe'],
             [['bill_type'], 'string', 'max' => 50],
+			[['bill_type'], 'validateGePGSettingRegister','on'=>'itemSettingRegister'],
+			[['bill_type'], 'validateGePGSettingUpdate','on'=>'itemSettingUpdate'],
             [['bill_processing_uri'], 'string', 'max' => 500],
             [['bill_prefix', 'operation_type'], 'string', 'max' => 20],
         ];
@@ -72,5 +75,26 @@ const RECEIVE_CANCEL_BILL='RCCNCELB';
         $details=self::findBySql("SELECT  bill_processing_uri "
             . "FROM gepg_bill_processing_setting WHERE  bill_prefix like '$billPrefix%'  AND operation_type='$operationType'")->one();
         return $details;
+    }
+	public function validateGePGSettingRegister($attribute)
+    {
+
+        if (self::findBySql("SELECT * FROM gepg_bill_processing_setting where bill_prefix = '$this->bill_prefix' AND operation_type='$this->operation_type'")
+            ->exists()) {
+            $this->addError($attribute, 'Item Exist');
+            return FALSE;
+        }
+    
+        return true;
+    }
+    public function validateGePGSettingUpdate($attribute)
+    {
+
+            if (self::findBySql("SELECT * FROM gepg_bill_processing_setting where bill_prefix = '$this->bill_prefix' AND operation_type='$this->operation_type' AND gepg_bill_processing_setting_id<>'$this->gepg_bill_processing_setting_id'")
+                ->exists()) {
+                $this->addError($attribute, 'Item Exist');
+                return FALSE;
+            }        
+        return true;
     }
 }

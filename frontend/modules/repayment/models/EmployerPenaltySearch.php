@@ -100,4 +100,34 @@ class EmployerPenaltySearch extends EmployerPenalty
 		$query->andFilterWhere(['like', 'employer.employer_name', $this->employer_id]);
         return $dataProvider;
     }
+    public function searchEmployerPenalty($params,$employerID)
+    {
+        $query = EmployerPenalty::find()->where(['employer_penalty.employer_id'=>$employerID]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->joinWith('employer');
+        $query->andFilterWhere([
+            'employer_penalty_id' => $this->employer_penalty_id,
+            //'employer_id' => $this->employer_id,
+            'amount' => $this->amount,
+            'penalty_date' => $this->penalty_date,
+            'created_at' => $this->created_at,
+        ]);
+        $query->andFilterWhere(['like', 'employer.employer_name', $this->employer_id]);
+        return $dataProvider;
+    }
 }

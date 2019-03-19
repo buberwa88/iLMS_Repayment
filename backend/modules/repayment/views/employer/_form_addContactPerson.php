@@ -35,7 +35,21 @@ echo Form::widget([// fields with labels
                 'prompt' => '--surname--',
             ],
         ],
-		'phone_number'=>['label'=>'Telephone Number:', 'options'=>['placeholder'=>'Telephone Number']],	 
+]]);
+?>
+<?=
+$form->field($model, 'phone_number')->label('Telephone Number:')->widget(\yii\widgets\MaskedInput::className(), [
+    'mask' => '255 999 999 999',
+    //'options' => ['data-toggle' => 'tooltip',
+    //'data-placement' => 'top', 'title' => 'Phone Number eg 07XXXXXXXX or 06XXXXXXXX or 0XXXXXXXXX']
+])->hint('Phone Number eg 255 7XXXXXXXX or 255 6XXXXXXXX or 255 XXXXXXXXX');
+?>
+<?php
+echo Form::widget([// fields with labels
+    'model' => $model,
+    'form' => $form,
+    'columns' => 1,
+    'attributes' => [        	 
 		'email_address'=>['label'=>'Email Address:', 'options'=>['placeholder'=>'Email Address'],
 		],
 		'password'=>['type'=>Form::INPUT_PASSWORD,'label'=>'Password:', 'options'=>['placeholder'=>'Password'],

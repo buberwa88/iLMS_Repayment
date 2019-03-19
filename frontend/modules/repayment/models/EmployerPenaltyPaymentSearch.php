@@ -174,4 +174,36 @@ class EmployerPenaltyPaymentSearch extends EmployerPenaltyPayment
 		
         return $dataProvider;
     }
+    public function searchEmployerPenalty($params,$employerID)
+    {
+        $query = EmployerPenaltyPayment::find()->where(['employer_penalty_payment.employer_id'=>$employerID]);
+
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->andFilterWhere([
+            'employer_penalty_payment_id' => $this->employer_penalty_payment_id,
+            'employer_id' => $this->employer_id,
+            'amount' => $this->amount,
+            'payment_date' => $this->payment_date,
+            'created_at' => $this->created_at,
+            'payment_status' => $this->payment_status,
+        ]);
+
+        $query->andFilterWhere(['like', 'control_number', $this->control_number]);
+
+        return $dataProvider;
+    }
 }

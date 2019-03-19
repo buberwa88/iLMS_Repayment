@@ -81,6 +81,7 @@ class EmployerController extends Controller
     public function actionView($id)
     {
 	    $modelEmployer = new Employer();
+        $employerID=$id;
 		$searchModelEmployedBeneficiaries = new EmployedBeneficiarySearch();
         $dataProvider = $searchModelEmployedBeneficiaries->getEmployeesUnderEmployer(Yii::$app->request->queryParams,$employerID);
         return $this->render('view', [
@@ -243,7 +244,8 @@ class EmployerController extends Controller
     public function actionEmployerVerificationStatus($employerID,$actionID)
     {
         $model = new Employer();   
-        $modelLoanBeneficiary = new LoanBeneficiary();		
+        $modelLoanBeneficiary = new LoanBeneficiary();
+        $headers='';
         if($actionID==1){
 		$model->updateEmployerVerificationStatus($employerID,$actionID);
 		//generate employer code for accepted employer
@@ -335,7 +337,7 @@ class EmployerController extends Controller
     {
 		$model = new Employer(['scenario' => 'employer_rejection']);
 		$modelLoanBeneficiary = new LoanBeneficiary();
-		
+        $headers='';
 		$actionID='3';
 		if ($model->load(Yii::$app->request->post())) {
 		$employerID=$model->employerID;
@@ -373,11 +375,60 @@ class EmployerController extends Controller
             $sms = '<p>Employer Confirmed!</p>';
             Yii::$app->getSession()->setFlash('success', $sms);
 			
-        }
-        if($actionID==3){		
+        }else{
+            $model = \backend\modules\repayment\models\Employer::findOne($employerID);
+            //deactivate employer
+            //$model = new Employer(['scenario' => 'employer_rejection']);
+            $model->scenario='employer_rejection';
+            $modelLoanBeneficiary = new LoanBeneficiary();
+            $headers = '';
+            $actionID = '3';
+            if ($model->load(Yii::$app->request->post())) {
+                if ($model->validate()) {
+                $employerID = $model->employerID;
+                $rejectionReason = $model->rejection_reason;
+                if ($rejectionReason != '') {
+                    $model->updateEmployerVerificationStatus2($employerID, $actionID, $rejectionReason);
+                    $userID = $modelLoanBeneficiary->getUserIDFromEmployer($employerID);
+                    $userDetails = $modelLoanBeneficiary->getUserDetailsFromUserID($userID->user_id);
+                    $statusD = 0;
+                    $updatedBy = $loggedin = Yii::$app->user->identity->user_id;
+
+                    $contactPerson = \frontend\modules\repayment\models\EmployerContactPerson::find()->where(['employer_id' => $employerID])->all();
+                    foreach ($contactPerson AS $contactPersonRes) {
+                        $varuser_id=$contactPersonRes->user_id;
+                        $modelLoanBeneficiary->deactivateUser($varuser_id, $statusD, $updatedBy);
+                    }
+
+
+                    //email notification
+                    $message = "Dear " . $userID->employer_name . ",\r\nYour iLMS account has been deactivate due to the following reason:" . "\r\n" . $model->rejection_reason . "\r\n\r\nThis email has been sent by Higher Education Students' Loan Board(HESLB).\r\nIf you believe you have received it by mistake, please ignore and sorry for inconvenience.";
+                    $subject = "iLMS Account Deactivation";
+                    $headers .= "MIME-Version: 1.0\r\n";
+                    $headers .= "From: iLMS ";
+                    if (mail($userDetails->email_address, $subject, $message, $headers)) {
+                        //end email notification
+                        $sms = '<p>Employer Deactivated!</p>';
+                        Yii::$app->getSession()->setFlash('success', $sms);
+                    }
+                } else {
+                    $sms = '<p>Operation failed,deactivation reason can not be empty!</p>';
+                    Yii::$app->getSession()->setFlash('error', $sms);
+                }
+                return $this->redirect(['index']);
+            }else {
+                    return $this->render('employerDeactivate', [
+                        'model' => $model, 'id' => $employerID,
+                    ]);
+                }
+
+            } //end deactivate employer
+
+            else {
             return $this->render('employerDeactivate', [
-            'model' => $this->findModel($employerID),'id'=>$employerID,
-        ]);
+                'model' => $model, 'id' => $employerID,
+            ]);
+        }
         }		
             return $this->redirect(['index']);
       }
@@ -400,21 +451,25 @@ class EmployerController extends Controller
 		$userID=\common\models\LoanBeneficiary::getUserIDFromEmployer($employerID);
 		$results=\common\models\LoanBeneficiary::getUserDetailsFromUserID($userID->user_id);
 		if($userID !=0){
-		if($results->status==0){
-		   //generate employer code for accepted employer
-		       //$employer_code_format="000000";
-			   $employer_code_format=\frontend\modules\repayment\models\Employer::EMPLOYER_CODE_FORMAT;
-               $employerIdLength=strlen($employerID);
-               $remained=substr($employer_code_format,$employerIdLength);
-                $employerCode=$remained.$employerID;
-                \backend\modules\repayment\models\Employer::updateEmployerCode($employerID,$employerCode);
-				$userID=\common\models\LoanBeneficiary::getUserIDFromEmployer($employerID);
-				$userDetails=\common\models\LoanBeneficiary::getUserDetailsFromUserID($userID->user_id);
-		   //end 
-		   $verification_status=0;		   
-           \common\models\LoanBeneficiary::updateEmployerVerifiedEmail($employerID,$verification_status);
-		   \common\models\LoanBeneficiary::updateUserActivateAccount($userID->user_id);
-           \common\models\LoanBeneficiary::updateUserVerifyEmail($userID->user_id);		   
+		if($results->status==0) {
+            //generate employer code for accepted employer
+            //$employer_code_format="000000";
+            $employer_code_format = \frontend\modules\repayment\models\Employer::EMPLOYER_CODE_FORMAT;
+            $employerIdLength = strlen($employerID);
+            $remained = substr($employer_code_format, $employerIdLength);
+            $employerCode = $remained . $employerID;
+            \backend\modules\repayment\models\Employer::updateEmployerCode($employerID, $employerCode);
+            $userID = \common\models\LoanBeneficiary::getUserIDFromEmployer($employerID);
+            $contactPerson = \frontend\modules\repayment\models\EmployerContactPerson::find()->where(['employer_id' => $employerID])->all();
+            foreach ($contactPerson AS $contactPersonRes) {
+                $varuser_id=$contactPersonRes->user_id;
+            $userDetails = \common\models\LoanBeneficiary::getUserDetailsFromUserID($varuser_id);
+            //end
+            $verification_status = 0;
+            \common\models\LoanBeneficiary::updateEmployerVerifiedEmail($employerID, $verification_status);
+            \common\models\LoanBeneficiary::updateUserActivateAccount($varuser_id);
+            \common\models\LoanBeneficiary::updateUserVerifyEmail($varuser_id);
+        }
 		   $sms = '<p>Account activated successful!</p>';
             Yii::$app->getSession()->setFlash('success', $sms);
 		   }else if($results->status==10){
@@ -505,11 +560,19 @@ class EmployerController extends Controller
 			if($model2->email_address !=''){
 			$model2->username=$model2->email_address;	
 			}else{
-			$model2->username=$model2->firstname;
+			$model2->username=strtolower($model2->firstname).mt_rand(10,1000);
 			}
+
+            $password=$model2->password;
+            $model2->password_hash=Yii::$app->security->generatePasswordHash($password);
+            $model2->auth_key = Yii::$app->security->generateRandomString();
+            $model2->status=0;
+            $model2->login_type=2;
+            if($model2->validate()){
+
             $model1->financial_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
             $model1->academic_year_id=\frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
-		$employerName=$model1->employerName;
+		$employerName=$model2->employerName;
 		$model1->verification_status=1;
         $loggedin=Yii::$app->user->identity->user_id;        
 		$model1->employer_type_id=$model2->employer_type_id;
@@ -528,6 +591,7 @@ class EmployerController extends Controller
         $model1->ward_id=$model2->ward_id;		
 
 		//check if employer exist
+          /*
 		$results=$model1->checkEmployerExists($model1->employer_name);
 		if($results>0){
 		$sms = "<p>Sorry!<br/>
@@ -536,12 +600,15 @@ class EmployerController extends Controller
             return $this->redirect(['/application/default/home-page']);
 		//return $this->redirect(['view-employer-success', 'id' =>$results,'employer_status' =>2]);
 		}
+		*/
 		//end check
+        /*
         $password=$model2->password;        
         $model2->password_hash=Yii::$app->security->generatePasswordHash($password);
         $model2->auth_key = Yii::$app->security->generateRandomString();
         $model2->status=10;
-        $model2->login_type=2; 
+        $model2->login_type=2;
+        */
         $model2->created_by=$loggedin;		
         
 		
@@ -564,15 +631,15 @@ class EmployerController extends Controller
 							}
             echo $reason1."<br/>".$reason;exit;
 			*/
-        }
-        		
-        if ($model2->load(Yii::$app->request->post()) && $model2->save()) {
+        //}
+        //var_dump($model2->errors);exit;
+        if ($model2->load(Yii::$app->request->post()) && $model2->save(false)) {
             $model1->user_id=$model2->user_id;
 			//$model1->email_verification_code=589;
 			$model1->email_verification_code=mt_rand(10,1000);
             if($model1->load(Yii::$app->request->post())){
              $model1->created_by=$loggedin;
-		if($model1->save()){
+		if($model1->save(false)){
 			 #################create employer role #########
                                     $date=strtotime(date("Y-m-d"));
    //Yii::$app->db->createCommand("INSERT  INTO auth_assignment(item_name,user_id,created_at) VALUES('Repayment',$model2->user_id,$date)")->execute();
@@ -601,7 +668,7 @@ class EmployerController extends Controller
    $modelEmployerContactPerson->role=\frontend\modules\repayment\models\EmployerContactPerson::ROLE_PRIMARY;
    $modelEmployerContactPerson->created_by=$model2->user_id;
    $modelEmployerContactPerson->created_at=$model1->created_at;
-   $modelEmployerContactPerson->save();
+   $modelEmployerContactPerson->save(false);
 
                         
 		    $sms = "<p>Employer Registration Successful!</p>";
@@ -610,7 +677,11 @@ class EmployerController extends Controller
 		  }
             //return $this->redirect(['view-employer-success', 'id' => $model1->employer_id]);			
             }            
-        } else {
+        }}else {
+                return $this->render('createEmployerheslb', [
+                    'model1' => $model1,'model2' => $model2,
+                ]);
+        }}else {
             return $this->render('createEmployerheslb', [
                 'model1' => $model1,'model2' => $model2,
             ]);
@@ -682,7 +753,9 @@ public function actionUpdateInformation($id)
     {	
 	    $loggedin=Yii::$app->user->identity->user_id;
 	    
-        $employerModel = $this->findModel($id);
+        //$employerModel = $this->findModel($id);
+        $employerModel =\frontend\modules\repayment\models\Employer::findOne($id);
+        $employerModel->scenario='employer_update_details';
 		if($employerModel->load(Yii::$app->request->post()) && $employerModel->save()){
 		    $sms="Information Updated!";
             Yii::$app->getSession()->setFlash('success', $sms);
@@ -707,7 +780,17 @@ public function actionUpdateInformation($id)
 			$userModel1->surname=$userModel->surname;
 			$userModel1->phone_number=$userModel->phone_number;
 			$userModel1->email_address=$userModel->email_address;
+            $userModel1->status=$userModel->status;
 			if($userModel1->save()){
+			    if($userModel1->status==0){
+    $contactPersDetails = \frontend\modules\repayment\models\EmployerContactPerson::find()->where(['user_id'=>$id])->one();
+    $contactPersDetails->is_active=2;
+    $contactPersDetails->save();
+                }else{
+    $contactPersDetailsx = \frontend\modules\repayment\models\EmployerContactPerson::find()->where(['user_id'=>$id])->one();
+    $contactPersDetailsx->is_active=1;
+    $contactPersDetailsx->save();
+                }
 		    $sms="Information Updated!";
             Yii::$app->getSession()->setFlash('success', $sms);
             return $this->redirect(['view', 'id' => $emploID]);
@@ -776,5 +859,4 @@ public function actionUpdateInformation($id)
             }
         }
     }
-		  
 }

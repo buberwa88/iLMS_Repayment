@@ -79,7 +79,7 @@ class RefundCommentController extends Controller {
             $model->is_active = 1;
             $model->created_by = \Yii::$app->user->id;
             if ($model->save()) {
-                return $this->redirect(['view', 'id' => $model->refund_comment_id]);
+                return $this->redirect(['index']);
             }
         }
         return $this->render('create', [
@@ -101,7 +101,7 @@ class RefundCommentController extends Controller {
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->refund_comment_id]);
+            return $this->redirect(['index']);
         } else {
             return $this->render('update', [
                         'model' => $model,

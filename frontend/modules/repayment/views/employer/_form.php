@@ -32,8 +32,16 @@ use yii\captcha\Captcha;
 /* @var $model frontend\modules\repayment\models\Employer */
 /* @var $form yii\widgets\ActiveForm */
 
-if (!$model1->isNewRecord && $model1->place_of_birth > 0) {
-    $modelz = \backend\modules\application\models\Ward::findOne($model1->place_of_birth);
+if (!$model1->isNewRecord && $model2->region > 0) {
+	$modelr = \backend\modules\application\models\District::findOne($model2->region);
+    $model2->region = $modelr->region_id;
+	
+	$modelDistr = \backend\modules\application\models\District::findOne($model2->region);
+    $model2->district = $modelDistr->region_id;
+}
+/*
+if (!$model1->isNewRecord && $model2->place_of_birth > 0) {
+    $modelz = \backend\modules\application\models\Ward::findOne($model2->place_of_birth);
 
     $model1->district = $modelz->district_id;
     ################find region Id ##############
@@ -41,18 +49,27 @@ if (!$model1->isNewRecord && $model1->place_of_birth > 0) {
     $modelr = \backend\modules\application\models\District::findOne($modelz->district);
     $model1->region = $modelr->region_id;
 }
-
+*/
 $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL]);
 ?>
 <i><strong><h1>Employer Details</h1></strong></i>
 
 <?php
 echo Form::widget([ // fields with labels
+    'model'=>$model2,
+    'form'=>$form,
+    'columns'=>1,
+    'attributes'=>[
+         'employerName'=>['label'=>'Employer Name:', 'options'=>['placeholder'=>'Employer Name','onkeyup'=>"this.value = this.value.toUpperCase();"]],		          			
+    ]
+]);
+?>
+<?php
+echo Form::widget([ // fields with labels
     'model'=>$model1,
     'form'=>$form,
     'columns'=>1,
     'attributes'=>[
-         'employerName'=>['label'=>'Employer Name:', 'options'=>['placeholder'=>'Employer Name','onkeyup'=>"this.value = this.value.toUpperCase();"]], 
 		 'short_name'=>['label'=>'Employer Short Name:', 'options'=>['placeholder'=>'Employer Short Name']],		          			
     ]
 ]);
@@ -138,7 +155,7 @@ echo Form::widget([ // fields with labels
             'label' => 'District:',
             'widgetClass' => DepDrop::className(),
             'options' => [
-                'data' => ArrayHelper::map(\common\models\District::find()->where(['region_id' => $model1->region])->all(), 'district_id', 'district_name'),
+                'data' => ArrayHelper::map(\common\models\District::find()->where(['region_id' => $model2->region])->all(), 'district_id', 'district_name'),
                 'options' => [
                     'prompt' => 'Select District Name',
                     'id' => 'district_id'
@@ -155,7 +172,7 @@ echo Form::widget([ // fields with labels
             'label' => 'Ward:',
             'widgetClass' => DepDrop::className(),
             'options' => [
-                'data' => ArrayHelper::map(backend\modules\application\models\Ward::find()->where(['district_id' => $model1->district])->all(), 'ward_id', 'ward_name'),
+                'data' => ArrayHelper::map(backend\modules\application\models\Ward::find()->where(['district_id' => $model2->district])->all(), 'ward_id', 'ward_name'),
                 //'disabled' => $model->isNewrecord ? false : true,
                 'pluginOptions' => [
                     'depends' => ['district_id'],

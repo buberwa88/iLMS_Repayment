@@ -50,7 +50,7 @@ $totalVRFApplicable=0;
 $totalVRFApplicable=$detailsBeforeRepayment->vrf_before_repayment;
 if($resultsCheckExist){
 $getDetails = \backend\modules\repayment\models\LoanRepaymentDetail::findBySql("SELECT loan_repayment_detail.loan_repayment_id, loan_repayment_detail.applicant_id, loan_repayment_detail.loan_repayment_item_id, SUM(loan_repayment_detail.amount) AS amount,SUM(loan_repayment_detail.vrf_accumulated) AS vrf_accumulated,loan_repayment.receipt_date FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment.loan_repayment_id=loan_repayment_detail.loan_repayment_id 
-WHERE loan_repayment_detail.loan_given_to=1 AND loan_repayment_detail.applicant_id='$applicant_id' GROUP BY loan_repayment_detail.loan_repayment_id")->all();
+WHERE loan_repayment_detail.loan_given_to=1 AND loan_repayment_detail.applicant_id='$applicant_id' AND loan_repayment.payment_status='1' GROUP BY loan_repayment_detail.loan_repayment_id")->all();
 $sno=1;
 
     $amountDeduct=0;

@@ -75,7 +75,41 @@ $this->params['breadcrumbs'][] = $this->title;
                      * 
                      */            
             //'is_active',
+			/*
             [
+            'attribute'=>'is_active',            
+            'filter' => ['1'=>'Active', '0'=>'In Active'],
+            //'format'=>'raw',    
+            'value' => function($model, $key, $index)
+            {   
+                if($model->is_active == '1')
+                {
+                    return 'Active';
+                }
+                else
+                {   
+                    return 'In Active';
+                }
+            },
+        ],
+		*/
+		[
+            'attribute'=>'payable_order_list_status',
+            'label'=>'Payment Order',			
+            'value' => function($model, $key, $index)
+            {   
+                if($model->payable_order_list_status == '1')
+                {
+                    return 'Full paid before other items';
+                }else if($model->payable_order_list_status == '2'){
+					return 'Partially Depending onthe item rate';
+                }else
+                {   
+                    return 'Independent';
+                }
+            },
+        ],
+		[
             'attribute'=>'is_active',            
             'filter' => ['1'=>'Active', '0'=>'In Active'],
             //'format'=>'raw',    
@@ -94,7 +128,42 @@ $this->params['breadcrumbs'][] = $this->title;
             //'created_at',
             // 'created_by',
 
-            ['class' => 'yii\grid\ActionColumn','template'=>'{update}'],
+            //['class' => 'yii\grid\ActionColumn','template'=>'{update}{delete}'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'header' => 'Actions',
+                'headerOptions' => ['style' => 'color:#337ab7'],
+                'template' => '{update}{delete}',
+                'buttons' => [
+                    'update' => function ($url, $model) {
+                        return \backend\modules\repayment\models\LoanRepaymentItem::checkItemUsed($model->loan_repayment_item_id)== 0? Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
+                            'title' => Yii::t('app', 'update'),
+                        ]):'';
+                    },
+                    'delete' => function ($url, $model) {
+                        return \backend\modules\repayment\models\LoanRepaymentItem::checkItemUsed($model->loan_repayment_item_id)== 0? Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
+                            //'class' => 'btn btn-info',
+                            'data' => [
+                                'confirm' => 'Are you sure you want to delete this item?',
+                                //'method' => 'get',
+                                //'title' => Yii::t('app', 'lead-update'),
+                            ],
+                        ]):'';
+                    }
+
+                ],
+                'urlCreator' => function ($action, $model, $key, $index) {
+                    if ($action === 'update') {
+                        $url ='index.php?r=repayment/loan-repayment-item/update&id='.$model->loan_repayment_item_id;
+                        return $url;
+                    }
+                    if ($action === 'delete') {
+                        $url ='index.php?r=repayment/loan-repayment-item/delete-repayitem&id='.$model->loan_repayment_item_id;
+                        return $url;
+                    }
+
+                }
+            ],
                     
         ],
     ]); ?>

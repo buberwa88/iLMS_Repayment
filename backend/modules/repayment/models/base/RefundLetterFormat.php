@@ -52,7 +52,7 @@ class RefundLetterFormat extends \yii\db\ActiveRecord {
             [['letter_name', 'letter_reference_no', 'header', 'footer', 'letter_heading', 'letter_body', 'created_by'], 'required'],
             [['letter_body'], 'string'],
             [['letter_name', 'letter_heading', 'letter_body'], 'unique'],
-            [['letter_name', 'letter_reference_no', 'letter_heading'], 'string', 'max' => 200],
+            [['letter_name', 'letter_reference_no', 'letter_heading'], 'string', 'max' => 500],
             [['created_at', 'updated_at'], 'safe'],
             [['created_by', 'updated_by', 'is_active'], 'integer'],
         ];

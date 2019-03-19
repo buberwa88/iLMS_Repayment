@@ -5,8 +5,8 @@ namespace backend\modules\repayment\controllers;
 use Yii;
 use backend\modules\repayment\models\LoanRepaymentSetting;
 use backend\modules\repayment\models\LoanRepaymentSettingSearch;
-//use yii\web\Controller;
-use \common\components\Controller;
+use yii\web\Controller;
+//use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -69,6 +69,7 @@ class LoanRepaymentSettingController extends Controller
         $model = new LoanRepaymentSetting();
         $model->created_at=date("Y-m-d");
         $model->created_by=\Yii::$app->user->identity->user_id;
+        $model->scenario='itemSettingRegister';
 		//$model->start_date=date("Y-m-d");
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 		$loan_repayment_item_id=$model->loan_repayment_item_id;
@@ -94,6 +95,7 @@ class LoanRepaymentSettingController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $model->scenario='itemSettingUpdate';
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 		           $sms = '<p>Information Successful Updated.</p>';
@@ -113,6 +115,13 @@ class LoanRepaymentSettingController extends Controller
      * @return mixed
      */
     public function actionDelete($id)
+    {
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+    }
+
+    public function actionDeleteItemsetting($id)
     {
         $this->findModel($id)->delete();
 

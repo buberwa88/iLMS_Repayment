@@ -93,6 +93,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
             [['amount','repaymentID'], 'required','on'=>'paymentAdjustmentLoanee'],
             [['amount'], 'number','on'=>'paymentAdjustmentLoanee'],
 	    [['payment_date'], 'required','on'=>'billGeneration'],
+        [['payment_date'], 'required','on'=>'billGeneration2'],
 		[['control_number','amount','payCategory'], 'required','on'=>'gepgPayment'],
             [['employerId_bulk'], 'required','on'=>'bulkBillTreasury'],
             [['payment_date'], 'required','on'=>'billConfirmationTreasury'],
@@ -100,6 +101,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
             [['date_bill_generated', 'date_control_received', 'date_receipt_received','totalEmployees','payment_status','amount', 'pay_method_id', 'amountApplicant', 'total_loan', 'amount_paid', 'balance','f4indexno','principal','penalty','LAF','vrf','totalLoan','outstandingDebt','repaymentID','loan_summary_id','amountx','payment_date','print','treasury_user_id','employerId_bulk','salarySource','receipt_date','vote_number','Vote_name','gepg_lawson_id','lowason_check_date','employer_code','employer_name','phone_number','email_address','name','refund_type'], 'safe'],
             [['bill_number', 'control_number', 'receipt_number'], 'string', 'max' => 100],
             [['pay_phone_number'], 'string', 'max' => 13],
+            [['payment_date'], 'compare', 'operator' => '<=', 'compareValue' => date('Y-m-d', time()),'on'=>'billGeneration2'],
             [['applicant_id'], 'exist', 'skipOnError' => true, 'targetClass' => \frontend\modules\application\models\Applicant::className(), 'targetAttribute' => ['applicant_id' => 'applicant_id']],
             [['employer_id'], 'exist', 'skipOnError' => true, 'targetClass' => Employer::className(), 'targetAttribute' => ['employer_id' => 'employer_id']],
             [['pay_method_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\repayment\models\PayMethod::className(), 'targetAttribute' => ['pay_method_id' => 'pay_method_id']],
@@ -580,7 +582,7 @@ public function getAllEmployeesUnderBillunderTreasury($loan_repayment_id){
         return $value;
         }
 public static function checkPaymentsEmployer($employerID,$firstDayPreviousMonth,$deadlineDateOfMonth,$loan_given_to){
-	$details =  \frontend\modules\repayment\models\LoanRepayment::findBySql("SELECT * FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id WHERE  employer_id='$employerID' AND payment_status='1' AND payment_date >='$firstDayPreviousMonth' AND payment_date <='$deadlineDateOfMonth' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->count();
+	$details =  \frontend\modules\repayment\models\LoanRepayment::findBySql("SELECT loan_repayment_detail.* FROM loan_repayment_detail INNER JOIN loan_repayment ON loan_repayment_detail.loan_repayment_id=loan_repayment.loan_repayment_id WHERE  employer_id='$employerID' AND payment_status='1' AND payment_date >='$firstDayPreviousMonth' AND payment_date <='$deadlineDateOfMonth' AND loan_repayment_detail.loan_given_to='$loan_given_to'")->count();
 	return $details;
 }
 public static function checkPaymentsEmployerAcruePenalty($employerID,$checkMonth,$loan_given_to){

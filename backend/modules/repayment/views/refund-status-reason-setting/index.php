@@ -80,7 +80,7 @@ $this->registerJs($search);
                 //'category',
                 [
                     'class' => 'yii\grid\ActionColumn',
-                    'template' => '{save-as-new} {update} {delete}',
+                    'template' => '{update} {delete}',
                     'buttons' => [
                         'save-as-new' => function ($url) {
                             return Html::a('<span class="glyphicon glyphicon-copy"></span>', $url, ['title' => 'Save As New']);

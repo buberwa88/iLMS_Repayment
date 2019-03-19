@@ -6,6 +6,7 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use frontend\modules\repayment\models\Employer;
 
 /**
  * This is the model class for table "user".
@@ -83,6 +84,8 @@ class User extends ActiveRecord implements IdentityInterface
 
     public $validated;
 	public $staffLevel;
+	
+	public $employerName;
 
     public static function tableName()
     {
@@ -111,7 +114,7 @@ class User extends ActiveRecord implements IdentityInterface
 			//[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'login_type', 'created_at','phone_number_employer'], 'required','on'=>['employer_registration','heslb_employer_registration']],
 			[['firstname', 'surname','phone_number'], 'required','on'=>'update_contact_person'],
 			[['firstname', 'surname','email_address','phone_number'], 'required','on'=>'employer_contact_person'],
-			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'password', 'confirm_password','phone_number','confirm_email','employer_type_id','region','district','ward_id'], 'required', 'on'=>['employer_registration']],
+			[['firstname', 'surname', 'middlename', 'password_hash', 'email_address', 'password', 'confirm_password','phone_number','confirm_email','employer_type_id','region','district','ward_id','employerName'], 'required', 'on'=>['employer_registration']],
 			[['firstname', 'surname', 'email_address', 'password','confirm_password','phone_number','staffLevel'], 'required', 'on'=>'add_staffs'],
 			[['firstname', 'surname', 'middlename', 'password_hash', 'password', 'confirm_password','phone_number','employer_type_id','region','district','ward_id'], 'required', 'on'=>['heslb_employer_registration']],
 			[['firstname', 'surname', 'middlename', 'email_address','phone_number'], 'required', 'on'=>'employer_update_information'],
@@ -136,6 +139,8 @@ class User extends ActiveRecord implements IdentityInterface
 			['phone_number', 'checkphonenumber'],
 			['phone_number_employer', 'checkphonenumberemployer'],
 			['fax_number', 'checkFaxNumber','skipOnEmpty' => true],
+			[['employerName'],'validateNewEmployer','on'=>'employer_registration'],
+            [['employerName'],'validateNewEmployer','on'=>'heslb_employer_registration'],
 			['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => ['employer_registration','heslb_employer_registration']],
 			['confirm_email', 'compare', 'compareAttribute'=>'email_address', 'message'=>"Email must be retyped exactly", 'on' => ['employer_registration']],
             ['confirm_password', 'compare', 'compareAttribute'=>'password', 'message'=>"Passwords must be retyped exactly", 'on' => 'employer_contact_person' ],
@@ -191,6 +196,7 @@ class User extends ActiveRecord implements IdentityInterface
 			'phone_number_employer'=>'Work Phone No.',
 			'verifyCode'=>'Type below the blue characters:',
 			'staffLevel'=>'Role',
+			'employerName'=>'Employer Name',
         ];
     }
 
@@ -503,6 +509,7 @@ public function checkphonenumberemployer($attribute, $params)
     $this->addError('phone_number_employer', 'Incorrect Work Phone No.');
     } 
 }
+/*
 public function checkEmployerTypeTIN($attribute, $params)
 {
     $employerType=\backend\modules\repayment\models\EmployerType::find()
@@ -531,6 +538,48 @@ public function checkEmployerTypeTIN($attribute, $params)
 		 }
     }  
 }
+*/
+    public function checkEmployerTypeTIN($attribute, $params)
+    {
+        $employerType=\backend\modules\repayment\models\EmployerType::find()
+            ->andWhere(['employer_type_id' =>$this->employer_type_id])
+            ->andWhere(['has_TIN' =>1])
+            ->one();
+        if (count($employerType)>0 && $this->TIN==''){
+            $this->addError('TIN', 'TIN can not be blank');
+        }
+        if (count($employerType)>0 && $this->TIN !=''){
+            $EmployerTIN=\frontend\modules\repayment\models\Employer::findBySql(" SELECT * FROM employer WHERE TIN ='$this->TIN' AND employer_id<>'$this->employer_id'")
+                ->one();
+            if (count($EmployerTIN)>0){
+                $this->addError('TIN', 'TIN  exists');
+            }
+        }
+        $employerType=\backend\modules\repayment\models\EmployerType::find()
+            ->andWhere(['employer_type_id' =>$this->employer_type_id])
+            ->andWhere(['has_TIN' =>1])
+            ->one();
+        if (count($employerType)>0 && $this->TIN !=''){
+            $tinCount=strlen(str_replace("_","",str_replace("-","",$this->TIN)));
+            if($tinCount < 9){
+                $this->addError('TIN', 'Incorrect TIN');
+            }
+        }else if(count($employerType)==0){
+            if($this->TIN !='') {
+
+                $EmployerTIN=\frontend\modules\repayment\models\Employer::findBySql(" SELECT * FROM employer WHERE TIN ='$this->TIN' AND employer_id<>'$this->employer_id'")
+                    ->one();
+                if (count($EmployerTIN)>0){
+                    $this->addError('TIN', 'TIN  exists');
+                }
+
+                $tinCount = strlen(str_replace("_", "", str_replace("-", "", $this->TIN)));
+                if ($tinCount < 9) {
+                    $this->addError('TIN', 'Incorrect TIN');
+                }
+            }
+        }
+    }
 public function checkFaxNumber($attribute, $params)
 {
     $phone=str_replace(" ","",str_replace(",","",$this->fax_number));
@@ -538,4 +587,14 @@ public function checkFaxNumber($attribute, $params)
     $this->addError('fax_number', 'Incorrect Fax Number.');
     } 
 }
+public function validateNewEmployer($attribute) {
+        if ($attribute && $this->employerName) {
+            if (\frontend\modules\repayment\models\Employer::find()->where('employer_name=:employerName', [':employerName' => $this->employerName])
+                            ->exists()) {
+                $this->addError($attribute,'Employer Exists');
+                return FALSE;
+            }
+        }
+        return true;
+    }
 }

@@ -1229,7 +1229,8 @@ class EmployedBeneficiaryController extends Controller
                 $completionYear = $model->programme_completion_year = $model->formatRowData($rows['COMPLETION_YEAR']);
                 $programme1 = $model->formatRowData($rows['PROGRAMME_STUDIED']);
                 $salary_source = $model->formatRowData($rows['SALARY_SOURCE']);
-                $model->salary_source = $salary_source;
+                $model->salary_source=strtoupper($salary_source);
+                $salary_source=strtoupper($salary_source);
                 $programme_level_of_study1 = $model->formatRowData($rows['STUDY_LEVEL']);
                 $programme_level_of_study = \backend\modules\application\models\ApplicantCategory::findOne(['applicant_category' => $programme_level_of_study1]);
                 $studyLevel = $model->programme_level_of_study = $programme_level_of_study->applicant_category_id;
@@ -1249,7 +1250,7 @@ class EmployedBeneficiaryController extends Controller
                 $updated_at = date("Y-m-d H:i:s");
                 $updated_by = $loggedin;
 
-                if ($salary_source == 'central government') {
+                if ($salary_source == 'CENTRAL GOVERNMENT') {
                     //check employer salary source
                     if ($employerSalarySource == 1 OR $employerSalarySource == 3) {
                         $model->salary_source = 1;
@@ -1258,7 +1259,7 @@ class EmployedBeneficiaryController extends Controller
                     }
                     //end check
 
-                } else if ($salary_source == 'own source') {
+                } else if ($salary_source == 'OWN SOURCE') {
                     //check employer salary source
                     if ($employerSalarySource != 1) {
                         $model->salary_source = 2;
@@ -1266,7 +1267,7 @@ class EmployedBeneficiaryController extends Controller
                         $model->salary_source = '';
                     }
                     //end check
-                } else if ($salary_source == 'both') {
+                } else if ($salary_source == 'BOTH') {
                     //check employer salary source
                     if ($employerSalarySource == 3) {
                         $model->salary_source = 3;
@@ -1362,6 +1363,7 @@ class EmployedBeneficiaryController extends Controller
                 //end check 
                 // check if beneficiary exists in beneficiary table and save
                 $employeeExist = $model->checkEmployeeExists($applicantId, $model->employer_id, $model->employee_id);
+                $existingEmployeeOld=$model->getEmployeeExistsOld($model->employer_id, $model->employee_id);
                 if ($employeeExist == 1) {
                     $eployee_exists_status = 1;
                     $employeeExistsID = $model->getEmployeeExists($applicantId, $model->employer_id, $model->employee_id);
@@ -1386,6 +1388,15 @@ class EmployedBeneficiaryController extends Controller
                     //end check if nonApplicant Exists 
                 }
                 //validate for error recording
+                //existing general new 11/03/2019
+                $checkNumberError='';
+                $resultsExistsGeneral=$model->checkEmployeeExistsBycheckNumberOnly($model->employer_id, $model->employee_id);
+                $resultsExistsGeneralAndFname=$model->checkEmployeeExistsBycheckNumberAndFname($model->firstname,$model->employer_id, $model->employee_id);
+                if($resultsExistsGeneral==1 && $resultsExistsGeneralAndFname==0){
+                    $checkNumberError=" EMPLOYEE_ID Exist";
+                }
+                //end existing general new 11/03/2019
+
                 $model->validate();
 
                 $reason = '';
@@ -1395,6 +1406,7 @@ class EmployedBeneficiaryController extends Controller
                         $reason = $reason . $value[0] . ',  ';
                     }
                 }
+                $reason=$reason.$checkNumberError;
                 if ($reason != '') {
                     $model->upload_status = 0;
                     $model->upload_error = $reason;
@@ -1439,20 +1451,31 @@ class EmployedBeneficiaryController extends Controller
                 }
                 //end check names and education history match
                 $model->matching = $generalMatch;
-                if ($eployee_exists_status == 0 && $eployee_exists_nonApplicant == 0) {
-                    if ($model->employee_id != 'T12XX35') {
+                //if ($eployee_exists_status == 0 && $eployee_exists_nonApplicant == 0) {
+                if ($resultsExistsGeneral==0) {
+                    if($model->employee_id !='T12XX35' && ($model->employee_id !='' || $model->f4indexno !='' || $model->form_four_completion_year !='' || $model->firstname !='' || $model->middlename !='' || $model->surname !='')) {
                         $model->save(false);
                     }
-                } else if ($eployee_exists_status == 1) {
+                }else if($resultsExistsGeneral==1 && $resultsExistsGeneralAndFname==0){
+                    $model->save(false);
+                } else if ($resultsExistsGeneral==1 &&  $resultsExistsGeneralAndFname==1 && $eployee_exists_status == 1 && $existingEmployeeOld==0) {
                     //$model->updateBeneficiary($checkIsmoney,$employeeExistsId);
                     $model->updateEmployeeReuploaded($model->employer_id, $model->employee_id, $model->applicant_id, $model->basic_salary, $model->employment_status, $model->NID, $model->f4indexno, $f4completionyear, $model->firstname, $model->middlename, $model->surname, $model->sex, $model->learning_institution_id, $model->phone_number, $model->upload_status, $model->upload_error, $model->programme_entry_year, $model->programme_completion_year, $model->programme, $model->programme_level_of_study, $model->employee_status, $model->current_name, $model->uploaded_learning_institution_code, $model->uploaded_level_of_study, $model->uploaded_programme_studied, $model->uploaded_place_of_birth, $model->uploaded_sex, $model->verification_status, $employeeExistsId, $model->salary_source, $model->LOAN_BENEFICIARY_STATUS, $model->matching, $model->traced_by, $updated_at, $updated_by);
-                } else if ($eployee_exists_status == 0 && $eployee_exists_nonApplicant == 1) {
+                } else if ($resultsExistsGeneral==1 && $resultsExistsGeneralAndFname==1 && $eployee_exists_status == 0 && $eployee_exists_nonApplicant == 1 && $existingEmployeeOld==0) {
                     //$model->updateBeneficiaryNonApplicant($checkIsmoney,$results_nonApplicantFound,$f4indexno,$firstname,$phone_number,$NIN); 
 
                     $model->updateEmployeeReuploaded($model->employer_id, $model->employee_id, $model->applicant_id, $model->basic_salary, $model->employment_status, $model->NID, $model->f4indexno, $f4completionyear, $model->firstname, $model->middlename, $model->surname, $model->sex, $model->learning_institution_id, $model->phone_number, $model->upload_status, $model->upload_error, $model->programme_entry_year, $model->programme_completion_year, $model->programme, $model->programme_level_of_study, $model->employee_status, $model->current_name, $model->uploaded_learning_institution_code, $model->uploaded_level_of_study, $model->uploaded_programme_studied, $model->uploaded_place_of_birth, $model->uploaded_sex, $model->verification_status, $results_nonApplicantFound, $model->salary_source, $model->LOAN_BENEFICIARY_STATUS, $model->matching, $model->traced_by, $updated_at, $updated_by);
                 }
-
-                $doneUpload = 1;
+                if($existingEmployeeOld==1){
+                    $errorDescription="Active Employee Exist";
+                    $model->updateEmployeeExistindOld($model->employer_id, $model->employee_id,$errorDescription);
+                }
+                if($model->employee_id !='T12XX35' && ($model->employee_id !='' || $model->f4indexno !='' || $model->form_four_completion_year !='' || $model->firstname !='' || $model->middlename !='' || $model->surname !='')) {
+                    $doneUpload = 1;
+                }else{
+                    $doneUpload = 0;
+                }
+                //$doneUpload = 1;
             }
             unlink($uploadedFileName);
             if ($doneUpload == 1) {
@@ -1463,7 +1486,7 @@ class EmployedBeneficiaryController extends Controller
             } else {
                 $sms = "<p>Operation failed, no record saved!</p>";
                 Yii::$app->getSession()->setFlash('danger', $sms);
-                return $this->redirect(['index-upload-employees']);
+                return $this->redirect(['index-upload-employees', 'id' => $employerID]);
             }
         } else {
             return $this->render('indexUploadEmployeesheslb', [
@@ -1481,7 +1504,148 @@ class EmployedBeneficiaryController extends Controller
         return $this->render('failedUploadedEmployees', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'employerID'=>$employerID,
         ]);
     }
+    public function actionExportFailedEmployee($employerID) {
+        /*
+        $employerModel = new EmployerSearch();
+        $loggedin = Yii::$app->user->identity->user_id;
+        $employer2 = $employerModel->getEmployer($loggedin);
+        $employerID = $employer2->employer_id;
+        */
+        $uploadStatus = 0;
 
+        $objPHPExcelOutput = new \PHPExcel();
+        $objPHPExcelOutput->getActiveSheet()->getDefaultStyle()->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $objPHPExcelOutput->getActiveSheet()->getStyle('A1:S1')->getFont()->setBold(true);
+        $objPHPExcelOutput->setActiveSheetIndex(0);
+        //$objPHPExcelOutput->getActiveSheet()->SetCellValue('A1', 'EMPLOYEES UPLOAD REPORT');
+        //$objPHPExcelOutput->setActiveSheetIndex(0)->mergeCells('A1:S1', 'EMPLOYEES UPLOAD REPORT');
+
+        $objPHPExcelOutput=\frontend\modules\repayment\models\EmployedBeneficiary::exportExcelTemplate($objPHPExcelOutput,$employerID, $uploadStatus);
+
+        $writer = \PHPExcel_IOFactory::createWriter($objPHPExcelOutput, 'Excel5');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="Failed Uploaded Employees.xls"');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+    }
+    public function actionUnVerifiedUploadedEmployees($employerID) {
+        $this->layout="default_main";
+        $searchModel = new \frontend\modules\repayment\models\EmployedBeneficiarySearch();
+        $dataProvider = $searchModel->getNonVerifiedEmployees(Yii::$app->request->queryParams, $employerID);
+        return $this->render('unVerifiedUploadedEmployees', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'model' => $searchModel,
+        ]);
+    }
+    public function actionViewUpload($id) {
+        $this->layout = "default_main";
+        //$model=$this->findModel($id);
+        $model=\frontend\modules\repayment\models\EmployedBeneficiary::findOne($id);
+        if($model->upload_status==1){
+            $action='/repayment/employed-beneficiary/un-verified-uploaded-employees';
+        }else if($model->upload_status==0){
+            $action='/repayment/employed-beneficiary/failed-uploaded-employees';
+        }
+        return $this->render('viewUpload', [
+            'model' => $model,'action'=>$action
+        ]);
+    }
+    public function actionUpdateUpload($id=null,$employerID=null) {
+        $this->layout = "default_main";
+        //$model = $this->findModel($id);
+        $model = \frontend\modules\repayment\models\EmployedBeneficiary::findOne($id);
+        $model->scenario = 'UpadateEmployee';
+        //$model->f4indexno='';
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            //validate for error recording
+            $generalUploadStatus=$model->upload_status;
+            $model->upload_status = 1;
+            $model->upload_error = '';
+            //end validation check
+            //check applicant if exists using unique identifiers i.e employee_f4indexno and employee_NIN
+            if ($model->applicant_id == '') {
+                $splitF4Indexno=explode('.',$model->f4indexno);
+                $f4indexnoSprit1=$splitF4Indexno[0];
+                $f4indexnoSprit2=$splitF4Indexno[1];
+                $f4indexnoSprit3=$splitF4Indexno[2];
+                $regNo=$f4indexnoSprit1.".".$f4indexnoSprit2;
+                $f4CompletionYear=$f4indexnoSprit3;
+                $employeeID = $model->getApplicantDetails($regNo,$f4CompletionYear, $model->NID);
+                $model->applicant_id = $employeeID->applicant_id;
+                //end check using unique identifiers
+                //check using non-unique identifiers
+                if (!is_numeric($model->applicant_id) && $model->applicant_id < 1 && $model->applicant_id == '') {
+                    $resultsUsingNonUniqueIdent = $model->getApplicantDetailsUsingNonUniqueIdentifiers($model->firstname, $model->middlename, $model->surname, $model->date_of_birth, $model->place_of_birth, $model->learning_institution_id, $model->programme_level_of_study, $model->programme, $model->programme_entry_year, $model->programme_completion_year);
+                    $model->applicant_id = $resultsUsingNonUniqueIdent->applicant_id;
+                }
+                // end check using unique identifiers
+                if (!is_numeric($model->applicant_id)) {
+                    $model->applicant_id = '';
+                }
+                //$applicantId = $model->applicant_id;
+                //check if employee is on study
+                if ($model->applicant_id != '') {
+                    $employeeOnstudyStatus = $model->getEmployeeOnStudyStatus($model->applicant_id);
+                    if ($employeeOnstudyStatus != '') {
+                        $model->employee_status = 1;
+                    } else {
+                        $model->employee_status = 0;
+                    }
+                } else {
+                    $model->employee_status = 0;
+                }
+            }
+            //end check
+            // check for disbursed amount to employee
+            if ($model->applicant_id > 0) {
+                $resultDisbursed = $model->getIndividualEmployeesPrincipalLoan($model->applicant_id);
+                if ($resultDisbursed == 0) {
+                    $model->verification_status = 4;
+                }
+            }
+            //end check
+            $model->upload_status = 1;
+            $model->employment_start_date = date("Y-m-d H:i:s");
+            $model->confirmed = 1;
+            if ($model->save()) {
+                $sms = "Information Updated Successful!";
+                Yii::$app->getSession()->setFlash('success', $sms);
+
+                if($generalUploadStatus==1){
+                    $action='/repayment/employed-beneficiary/un-verified-uploaded-employees';
+                }else if($generalUploadStatus==0){
+                    $action='/repayment/employed-beneficiary/failed-uploaded-employees';
+                }
+
+                return $this->redirect([$action,'employerID'=>$employerID]);
+            }
+        } else {
+            if($model->upload_status==1){
+                $action='/repayment/employed-beneficiary/un-verified-uploaded-employees';
+            }else if($model->upload_status==0){
+                $action='/repayment/employed-beneficiary/failed-uploaded-employees';
+            }
+            return $this->render('updateUpload', [
+                'model' => $model,'action'=>$action
+            ]);
+        }
+    }
+    public function actionDeleteUpload($id,$employerID) {
+        $model=$this->findModel($id);
+        $this->findModel($id)->delete();
+
+        if($model->upload_status==1){
+            $action='/repayment/employed-beneficiary/un-verified-uploaded-employees';
+        }else if($model->upload_status==0){
+            $action='/repayment/employed-beneficiary/failed-uploaded-employees';
+        }else{
+            $action='index-view-beneficiary';
+        }
+
+        return $this->redirect([$action,'employerID'=>$employerID]);
+    }
 }

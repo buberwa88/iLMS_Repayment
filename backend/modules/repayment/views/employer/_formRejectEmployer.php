@@ -10,7 +10,7 @@ use yii\widgets\ActiveForm;
 
 <div class="employer-form">
 
-    <?php $form = ActiveForm::begin(['action' => ['employer/employer-deactivate'],'options' => ['method' => 'post']]); ?>
+    <?php $form = ActiveForm::begin(); ?>
 	<?= $form->field($model, 'employerID')->label(false)->hiddenInput(['value'=>$employer_id,'readOnly'=>'readOnly']) ?>
 <table style="width:100%;"><tr><td>    
       <tr>

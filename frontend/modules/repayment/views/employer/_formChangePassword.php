@@ -29,11 +29,11 @@ echo Form::widget([ // fields with labels
 ]);
 ?>
   <div class="text-right">
-       <?= Html::submitButton($modelUser->isNewRecord ? 'Sign Up' : 'Change Password', ['class' => $modelUser->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+       <?= Html::submitButton($modelUser->isNewRecord ? 'Change Password' : 'Change Password', ['class' => $modelUser->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
   
 <?php
 echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
-echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['view','id'=> $id], ['class' => 'btn btn-warning']);
+echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['view','id'=> $employer_id], ['class' => 'btn btn-warning']);
 
 ActiveForm::end();
 ?>

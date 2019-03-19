@@ -86,7 +86,7 @@ echo Form::widget([
 <?php
 echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
 ?>
- <?= Html::a('Cancel', ['index-view-beneficiary'], ['class' => 'btn btn-warning']) ?>
+ <?= Html::a('Cancel', ['add-uploademployee'], ['class' => 'btn btn-warning']) ?>
       <?php
 ActiveForm::end();
 ?>

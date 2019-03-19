@@ -24,6 +24,8 @@ class RefundVerificationFrameworkItem extends BaseRefundVerificationFrameworkIte
 	    [
             [['refund_verification_framework_id', 'attachment_definition_id', 'status', 'created_by', 'updated_by', 'is_active'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
+            [['attachment_definition_id', 'verification_prompt'], 'required'],
+            ['attachment_definition_id', 'unique', 'targetAttribute' => ['attachment_definition_id','refund_verification_framework_id']],
             [['verification_prompt'], 'string', 'max' => 200]
         ]);
     }

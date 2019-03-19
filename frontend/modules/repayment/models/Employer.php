@@ -59,14 +59,20 @@ class Employer extends \yii\db\ActiveRecord
     {
         return [
             //[['user_id', 'employer_name', 'employer_code', 'phone_number', 'physical_address', 'email_address'], 'required'],
-            [['user_id','employer_name','postal_address','ward_id','employer_type_id','district','nature_of_work_id','physical_address','employerName','region','email_address','phone_number'], 'required', 'on'=>'employer_details'],
+            [['user_id','employer_name','postal_address','ward_id','employer_type_id','district','nature_of_work_id','physical_address','region','email_address','phone_number'], 'required', 'on'=>'employer_details'],
+            [['user_id','employer_name','postal_address','ward_id','employer_type_id','district','nature_of_work_id','physical_address','region','email_address','phone_number'], 'required', 'on'=>'employer_update_details'],
 			[['employer_name','employer_type_id','postal_address','ward_id','district','nature_of_work_id','physical_address','region','email_address','phone_number'], 'required', 'on'=>'employer_update_information'],
 			[['salary_source','vote_number'], 'required', 'on'=>'employer_update_salary_source'],
 			[['email_address','email_address2'], 'required', 'on'=>'employer_forgot_password_reset'],
             [['user_id', 'ward_id','district','employer_type_id','nature_of_work_id'], 'integer'],
 			//[['employer_name'], 'unique', 'message'=>'Employer Exists'],
-            [[ 'short_name'], 'string'],			
-            [['created_at', 'email_address','employer_code', 'short_name','phone_number','verification_status','TIN','countEmployer','district','region','ward_id','fax_number','email_verification_code','email_verification_code2','nature_of_work_other','salary_source','sector','industry','vote_number','academic_year_id','financial_year_id'], 'safe'],
+            [[ 'short_name'], 'string'],
+            [['employer_name'],'validatingemployerupdating','on'=>'employer_update_details'],
+            [['fax_number'],'validatingemployerupdatingfax','on'=>'employer_update_details','skipOnEmpty' => true],
+            [['phone_number'], 'checkphonenumber','on'=>'employer_update_details'],
+            //[['TIN'],'checkEmployerTypeTINnew','on'=>'employer_update_details','skipOnEmpty' => true],
+            [['TIN'], 'checkEmployerTypeTINnew','on'=>'employer_update_details','skipOnEmpty' => false],
+            [['created_at', 'email_address','employer_code', 'short_name','phone_number','verification_status','TIN','countEmployer','district','region','ward_id','fax_number','email_verification_code','email_verification_code2','nature_of_work_other','salary_source','sector','industry','vote_number','academic_year_id','financial_year_id','employerName'], 'safe'],
             /*['industry', 'required', 'when' => function ($model) {
     return $model->employer_type_id == 1 || $model->employer_type_id == 3;
 }, 'whenClient' => "function (attribute, value) {
@@ -107,7 +113,7 @@ class Employer extends \yii\db\ActiveRecord
             'employer_code' => 'Employer Code',
             'employer_type_id' => 'Employer Type',
             'postal_address' => 'Postal Address',
-            'phone_number' => 'Work Phone No.',
+            'phone_number' => 'Telephone No.',
             'physical_address' => 'Physical Address',
             'ward_id' => 'Ward',
             'email_address' => 'Office Email Address',
@@ -255,9 +261,9 @@ class Employer extends \yii\db\ActiveRecord
 
 public function checkphonenumber($attribute, $params)
 {
-    $phone=trim(str_replace(",","",$this->phone_number));
+    $phone=trim(str_replace(" ","",$this->phone_number));
 	 if (!preg_match('/^[0-9]*$/', $phone)) {
-    $this->addError('phone_number', 'Incorrect Telephone Number---');
+    $this->addError('phone_number', 'Incorrect Telephone No.');
     } 
 }
     public function checkEmployerTypeTIN($attribute, $params)
@@ -316,4 +322,87 @@ public static function getProgrammes($InstitutionId) {
             return $value2;
         
     }
+    public function validateNewEmployer($attribute) {
+    if ($attribute && $this->employerName) {
+        if (\frontend\modules\repayment\models\Employer::find()->where('employer_name=:employerName', [':employerName' => $this->employerName])
+            ->exists()) {
+            $this->addError($attribute,'Employer Exists');
+            return FALSE;
+        }
+    }
+    return true;
+}
+    public function validatingemployerupdating($attribute) {
+    if ($attribute && $this->employer_id && $this->employer_name) {
+        if (\frontend\modules\repayment\models\Employer::findBySql(" SELECT * FROM employer WHERE employer_name ='$this->employer_name' AND employer_id<>'$this->employer_id'")
+            ->exists()) {
+            $this->addError($attribute,$this->employer_name.' Employer Exists');
+            return FALSE;
+        }
+    }
+    return true;
+}
+
+    public function validatingemployerupdatingfax($attribute) {
+        if ($attribute && $this->employer_id && $this->fax_number) {
+            if (\frontend\modules\repayment\models\Employer::findBySql(" SELECT * FROM employer WHERE fax_number ='$this->fax_number' AND employer_id<>'$this->employer_id'")
+                ->exists()) {
+                $this->addError($attribute,$this->fax_number.' Fax number Exists');
+                return FALSE;
+            }
+        }
+        return true;
+    }
+    public function validatingemployerupdatingtin($attribute) {
+        if ($attribute && $this->employer_id && $this->TIN) {
+            if (\frontend\modules\repayment\models\Employer::findBySql(" SELECT * FROM employer WHERE TIN ='$this->TIN' AND employer_id<>'$this->employer_id'")
+                ->exists()) {
+                $this->addError($attribute,$this->TIN.' TIN Exists');
+                return FALSE;
+            }
+        }
+        return true;
+    }
+    public function checkEmployerTypeTINnew($attribute, $params)
+    {
+        $employerType=\backend\modules\repayment\models\EmployerType::find()
+            ->andWhere(['employer_type_id' =>$this->employer_type_id])
+            ->andWhere(['has_TIN' =>1])
+            ->one();
+        if (count($employerType)>0 && $this->TIN==''){
+            $this->addError('TIN', 'TIN can not be blank');
+        }
+        if (count($employerType)>0 && $this->TIN !=''){
+            $EmployerTIN=\frontend\modules\repayment\models\Employer::findBySql(" SELECT * FROM employer WHERE TIN ='$this->TIN' AND employer_id<>'$this->employer_id'")
+                ->one();
+            if (count($EmployerTIN)>0){
+                $this->addError('TIN', 'TIN  exists');
+            }
+        }
+        $employerType=\backend\modules\repayment\models\EmployerType::find()
+            ->andWhere(['employer_type_id' =>$this->employer_type_id])
+            ->andWhere(['has_TIN' =>1])
+            ->one();
+        if (count($employerType)>0 && $this->TIN !=''){
+            $tinCount=strlen(str_replace("_","",str_replace("-","",$this->TIN)));
+            if($tinCount < 9){
+                $this->addError('TIN', 'Incorrect TIN');
+            }
+        }else if(count($employerType)==0){
+            if($this->TIN !='') {
+
+                $EmployerTIN=\frontend\modules\repayment\models\Employer::findBySql(" SELECT * FROM employer WHERE TIN ='$this->TIN' AND employer_id<>'$this->employer_id'")
+                    ->one();
+                if (count($EmployerTIN)>0){
+                    $this->addError('TIN', 'TIN  exists');
+                }
+
+                $tinCount = strlen(str_replace("_", "", str_replace("-", "", $this->TIN)));
+                if ($tinCount < 9) {
+                    $this->addError('TIN', 'Incorrect TIN');
+                }
+            }
+        }
+    }
+
 }

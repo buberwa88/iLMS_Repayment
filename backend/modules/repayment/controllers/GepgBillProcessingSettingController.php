@@ -68,6 +68,7 @@ class GepgBillProcessingSettingController extends Controller
     public function actionCreate()
     {
         $model = new GepgBillProcessingSetting();
+		$model->scenario='itemSettingRegister';
         $model->created_by=Yii::$app->user->identity->user_id;
         $model->created_at=date("Y-m-d H:i:s");
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -103,6 +104,7 @@ class GepgBillProcessingSettingController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+		$model->scenario='itemSettingUpdate';
         $model->updated_by=Yii::$app->user->identity->user_id;
         $model->updated_at=date("Y-m-d H:i:s");
         if ($model->load(Yii::$app->request->post()) && $model->save()) {

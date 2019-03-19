@@ -63,9 +63,16 @@ $this->params['breadcrumbs'][] = $this->title;
                      'attribute' => 'f4indexno',
                         'label'=>"Index Number",
                         'value' => function ($model) {
-                            return $model->f4indexno;
+                            return $model->f4indexno.'.'.$model->form_four_completion_year;
                         },
-            ],			
+            ],
+            [
+                'attribute' => 'form_four_completion_year',
+                'label'=>"Completion Year",
+                'value' => function ($model) {
+                    return $model->form_four_completion_year;
+                },
+            ],
             [
                 'attribute' => 'basic_salary',
                 //'label' => "Basic Salary",

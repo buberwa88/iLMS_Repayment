@@ -9,6 +9,7 @@ use frontend\modules\repayment\models\EmployerPenaltySearch;
 use \common\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use frontend\modules\repayment\models\EmployerSearch;
 
 /**
  * EmployerPenaltyController implements the CRUD actions for EmployerPenalty model.
@@ -52,7 +53,12 @@ class EmployerPenaltyController extends Controller
     {
 	    $this->layout="default_main";
         $searchModel = new EmployerPenaltySearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $employerModel = new EmployerSearch();
+        //$dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $loggedin = Yii::$app->user->identity->user_id;
+        $employer2 = $employerModel->getEmployer($loggedin);
+        $employerID = $employer2->employer_id;
+        $dataProvider = $searchModel->searchEmployerPenalty(Yii::$app->request->queryParams,$employerID);
 
         return $this->render('penalityView', [
             'searchModel' => $searchModel,

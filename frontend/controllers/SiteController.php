@@ -1860,7 +1860,25 @@ class SiteController extends Controller {
         ]);
     }
 
-    public function actionRefundApplicationview($id) {
+    public function actionRefundApplicationview($refundApplicationID) {
+        $this->layout = "main_public";
+        if (\Yii::$app->session->has('refund_claimant_id') && \Yii::$app->session->get('refund_claimant_id') > 0) {
+            $claimant_id = \Yii::$app->session->get('refund_claimant_id');
+            $model = \frontend\modules\repayment\models\RefundApplication::getRefundApplicationDetailsByApplicationIdAndClaimandId($refundApplicationID, $claimant_id);
+            if (!$model) {
+                //taking to refund view default page if this refund doesnot exist
+                $this->redirect(['site/claimant-refunds']);
+            } else {
+                return $this->render('refund_application_details', [
+                            'model' => $model,
+                ]);
+            }
+        } else {
+            $this->redirect(['site/claimant-refunds']);
+        }
+    }
+	/*
+	public function actionRefundApplicationview($id) {
         $this->layout = "main_public";
         if (\Yii::$app->session->has('refund_claimant_id') && \Yii::$app->session->get('refund_claimant_id') > 0) {
             $claimant_id = \Yii::$app->session->get('refund_claimant_id');
@@ -1877,6 +1895,7 @@ class SiteController extends Controller {
             $this->redirect(['site/claimant-refunds']);
         }
     }
+	*/
 
     public function actionLogoutRefund($id) {
         $session = Yii::$app->session;
@@ -2123,6 +2142,11 @@ class SiteController extends Controller {
         }
         return $this->render('recoverReferenceNo', [
                     'model' => $model
+        ]);
+    }
+	public function actionEmployerRegistrationStatus() {
+        $this->layout = "main_public";
+        return $this->render('employerRegistrationStatus', [
         ]);
     }
 

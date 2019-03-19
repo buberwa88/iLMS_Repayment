@@ -355,7 +355,7 @@ class LoanRepaymentSearch extends LoanRepayment
 //                                        ['payment_status'=>'1'], 
 //                                        ['payment_status'=>'0']
 //                                    ]);
-                                    ->select('loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.date_control_received,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id')
+                                    ->select('loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.date_control_received,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_repayment.payment_date')
                                     ->leftJoin('loan_repayment_detail', '`loan_repayment_detail`.`loan_repayment_id` = `loan_repayment`.`loan_repayment_id`')
                                     ->where(['loan_repayment.payment_status' =>'1','loan_repayment_detail.applicant_id'=>$applicantID])
                                     ->groupBy('{{loan_repayment_detail}}.loan_repayment_id')

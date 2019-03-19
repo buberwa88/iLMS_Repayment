@@ -143,6 +143,17 @@ $this->params['breadcrumbs'][] = $this->title;
                     ]
                 ],
             ],
+            [
+                'columns' => [
+
+                    [
+                        'label'=>'Username',
+                        'value'=>$model->user->username,
+                        //'labelColOptions'=>['style'=>'width:20%'],
+                        //'valueColOptions'=>['style'=>'width:30%'],
+                    ]
+                ],
+            ],
             
             [
                 'columns' => [
@@ -154,7 +165,22 @@ $this->params['breadcrumbs'][] = $this->title;
                         //'valueColOptions'=>['style'=>'width:30%'],
                     ],
                 ],
-            ],           
+            ],
+            [
+                'columns' => [
+
+                    [
+                        'label'=>'Status',
+                        'value'=>call_user_func(function ($data) {
+                            if($data->is_active==1){
+                                return 'Active';
+                            }else if($data->is_active==2){
+                                return 'InActive';
+                            }
+                        }, $model),
+                    ],
+                ],
+            ],
         ];
     
 
@@ -168,8 +194,8 @@ $this->params['breadcrumbs'][] = $this->title;
     echo '<div class="text-right">
 	<p>';
     ?>
-        <?= Html::a('Update/Edit', ['update-information', 'id' => $model->user_id], ['class' => 'btn btn-primary']) ?>  
-		<?= Html::a('Change Password', ['update-password', 'id' => $model->user_id], ['class' => 'btn btn-success']) ?>		
+        <?= Html::a('Update/Edit', ['update-contactperson', 'id' => $model->user_id,'emploID'=>$model->employer_id], ['class' => 'btn btn-primary']) ?>
+		<?= Html::a('Change Password', ['change-password-contactp', 'id' => $model->user_id,'emploID'=>$model->employer_id], ['class' => 'btn btn-success']) ?>
 	<?php	
     echo "</p></div>";
     }?>          

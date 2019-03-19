@@ -22,7 +22,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
         return [
             [['employed_beneficiary_id', 'applicant_id', 'created_by'], 'integer'],
             [['employee_id', 'employment_status', 'created_at','employee_check_number','employee_f4indexno','employee_firstname','employee_mobile_phone_no',
-                'employee_year_completion_studies','employee_academic_awarded','employee_instituitions_studies','employee_NIN','employee_check_number','firstname','surname','middlename','f4indexno','employerName','outstanding','mult_employed','phone_number','sex','employer_id','vote_number','matching'], 'safe'],
+                'employee_year_completion_studies','employee_academic_awarded','employee_instituitions_studies','employee_NIN','employee_check_number','firstname','surname','middlename','f4indexno','employerName','outstanding','mult_employed','phone_number','sex','employer_id','vote_number','matching','form_four_completion_year'], 'safe'],
             [['basic_salary','totalLoan'], 'number'],
         ];
     }
@@ -497,7 +497,7 @@ class EmployedBeneficiarySearch extends EmployedBeneficiary
 	public function getNewEmployedBeneficiariesFound($params,$employee_status)
     {
         $query = EmployedBeneficiary::find()
-		                               ->select('employed_beneficiary.employer_id,employed_beneficiary.employed_beneficiary_id,employed_beneficiary.applicant_id,employed_beneficiary.basic_salary,employed_beneficiary.sex,employed_beneficiary.f4indexno,employed_beneficiary.matching,employed_beneficiary.basic_salary,employed_beneficiary.firstname,employed_beneficiary.middlename,employed_beneficiary.surname,employed_beneficiary.sex,employed_beneficiary.mult_employed')
+		                               ->select('employed_beneficiary.employer_id,employed_beneficiary.employed_beneficiary_id,employed_beneficiary.applicant_id,employed_beneficiary.basic_salary,employed_beneficiary.sex,employed_beneficiary.f4indexno,employed_beneficiary.matching,employed_beneficiary.basic_salary,employed_beneficiary.firstname,employed_beneficiary.middlename,employed_beneficiary.surname,employed_beneficiary.sex,employed_beneficiary.mult_employed,employed_beneficiary.form_four_completion_year')
                                        ->where('employed_beneficiary.verification_status IN(0,4) AND employed_beneficiary.employment_status ="ONPOST" AND employed_beneficiary.applicant_id >0 AND employed_beneficiary.confirmed="1" AND employed_beneficiary.upload_status="1" AND employed_beneficiary.employee_status="'.$employee_status.'"')
                                        ->orderBy('employed_beneficiary.employed_beneficiary_id DESC');
                                    // ->all();

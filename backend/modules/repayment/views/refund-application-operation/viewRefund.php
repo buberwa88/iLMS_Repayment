@@ -32,8 +32,7 @@ img:hover {
 <div class="application-view">
    <div class="panel panel-info">
         <div class="panel-heading">
-       <?= Html::encode($this->title) ?>
-          <a href="<?= Yii::$app->urlManager->createUrl(['/application/application/preview-application-form','id'=>$model->refund_application_id])?>"target="_blank" class="btn btn-primary pull-right" style="margin-right: 5px;"><i class="fa fa-eye"></i> Preview Form</a>
+       <?= Html::encode($this->title) ?>          
         </div>
 
 

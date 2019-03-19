@@ -194,7 +194,7 @@ desired effect
 				    //["label" => "Receipts", "url" => Url::to(['/repayment/loan-repayment/receipt']), 'active' => (Yii::$app->controller->id =='loan-repayment'&&Yii::$app->controller->action->id=='receipt'), "icon" => "money"],
 					],
 					],
-    ['label' => 'Refund', "icon" => "th", 'url' => Url::to(['/repayment/loan-repayment/index-refund']), 'active' => (Yii::$app->controller->id == 'loan-repayment' && Yii::$app->controller->action->id == 'index-refund')],
+    //['label' => 'Refund', "icon" => "th", 'url' => Url::to(['/repayment/loan-repayment/index-refund']), 'active' => (Yii::$app->controller->id == 'loan-repayment' && Yii::$app->controller->action->id == 'index-refund')],
 
                                 ['label' => 'Appeal', 'icon' => 'balance-scale', 'url' => ['/appeal/appeal/index'],'active' => (Yii::$app->controller->id == 'appeal'),'visible' =>$countAllocation=='23'],
                                 ['label' => 'Complaints', 'icon' => 'comments', 'url' => ['/appeal/complaints/index'],'active' => (Yii::$app->controller->id == 'complaints'),'visible' =>$countAllocation=='23'],

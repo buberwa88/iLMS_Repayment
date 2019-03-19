@@ -30,6 +30,7 @@ class EmployerType extends \yii\db\ActiveRecord
     {
         return [
             [['employer_type', 'created_at','has_TIN','employer_group_id'], 'required'],
+            [['employer_type'], 'unique', 'message'=>'Employer type already exist!'],
             [['created_at'], 'safe'],
             [['is_active'], 'integer'],
             [['employer_type'], 'string', 'max' => 50],
@@ -53,5 +54,13 @@ class EmployerType extends \yii\db\ActiveRecord
 	public function getEmployerGroup()
     {
         return $this->hasOne(EmployerGroup::className(), ['employer_group_id' => 'employer_group_id']);
+    }
+    public static function checkItemUsed($employerTypeID){
+        $countExist=0;
+        $employerTypeID = \frontend\modules\repayment\models\Employer::findBySql("SELECT * FROM employer WHERE  employer_type_id='$employerTypeID'")->count();
+        if($employerTypeID > 0){
+            $countExist=1;
+        }
+        return $countExist;
     }
 }

@@ -46,6 +46,7 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
     const director_loan_recovery_repayment_c = 'DLRR';
     const executive_director_c = 'ED';
     const account_section_c = 'AS';
+	const TEST='TEST';
     //configuration for application and pay list flow
     const FLOW_TYPE_APPLICATION = 1;
     const FLOW_TYPE_PAY_LIST = 2;
@@ -226,6 +227,17 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
     }
 	public static function getDefaultFirstLevelFlow(){
       return  self::find()->where(['flow_type'=>2,'is_active'=>1,'code'=>'LRDS'])->one();
+    }
+	static function getVerificationResponCode() {
+        return [
+		    self::loan_recovery_data_section_c => 'LRDS',
+            self::validation_section_c => 'VLSC',
+            self::audit_investigation_department_c => 'AIND',
+            self::director_loan_recovery_repayment_c => 'DLRR',
+            self::executive_director_c => 'ED',
+            self::account_section_c => 'AS',
+			self::TEST => 'TEST',
+        ];
     }
 
 }

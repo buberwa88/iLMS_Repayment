@@ -175,7 +175,7 @@ img:hover {
                                    ?></b></td>
                            <td><?php
                                if($applicantID > 0){
-                              echo Html::a('VIEW DETAIL', ['/repayment/loan-beneficiary/view-loanee-details', 'id' =>$applicantID]);
+                              echo Html::a('VIEW DETAIL', ['/repayment/loan-beneficiary/view-loanee-details', 'id' =>$applicantID],['target' => '_blank', 'class' => 'btn btn-success center-block']);
                                }
                                ?></td>
                        </tr>
@@ -289,7 +289,7 @@ img:hover {
                            //if(!$educationHistory->certificate_document){
 
                            ?>
-
+                           <?php if($operaApp->status > 0){ ?>
                            <tr>
                                <td><?= $noCount;?></td>
                                <td><?= $operaApp->refundInternalOperationalPrevious->name;?></td>
@@ -310,7 +310,10 @@ img:hover {
                                <td><?= $operaApp->verificationResponse->reason;?></td>
                                <td><?= $operaApp->lastVerifiedBy->firstname." ".$operaApp->lastVerifiedBy->middlename." ".$operaApp->lastVerifiedBy->surname;?></td>
                            </tr>
-                           <?php $noCount++; }?>
+                               <?php
+                               $noCount++;
+                           } ?>
+                           <?php  }?>
                            <?php
                        } ?>
                    </table>

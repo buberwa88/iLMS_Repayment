@@ -55,7 +55,9 @@ echo Form::widget([ // fields with labels
  ?>
   <div class="text-right">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
-		<?php echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/employer-type/index'], ['class' => 'btn btn-warning']);?>
+		<?php
+        echo Html::resetButton('Reset', ['class' => 'btn btn-default']);
+        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['/repayment/employer-type/index'], ['class' => 'btn btn-warning']);?>
   
 <?php
 ActiveForm::end();

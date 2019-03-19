@@ -1,7 +1,11 @@
 <?php
-
+use kartik\widgets\ActiveForm;
+use kartik\builder\Form;
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
+use kartik\depdrop\DepDrop;
+use yii\helpers\Url;
+use kartik\date\DatePicker;
 
 /* @var $this yii\web\View */
 /* @var $model backend\modules\repayment\models\RefundInternalOperationalSetting */
@@ -18,7 +22,30 @@ use yii\widgets\ActiveForm;
     ?>
     <?= $form->field($model, 'name')->textInput(['maxlength' => true, 'placeholder' => 'Name']) ?>
 
-    <?= $form->field($model, 'code')->textInput(['maxlength' => true, 'placeholder' => 'Code']) ?>
+    
+	<?php
+echo Form::widget([ // fields with labels
+    'model' => $model,
+    'form' => $form,
+    'columns' => 1,
+    'attributes' => [	
+		'code' => ['type' => Form::INPUT_WIDGET,
+            'widgetClass' => \kartik\select2\Select2::className(),
+            'label' => 'Code',
+            'options' => [
+                'data' =>\backend\modules\repayment\models\RefundInternalOperationalSetting::getVerificationResponCode(),
+                'options' => [
+                    'prompt' => 'Select ',
+                ],
+                'pluginOptions' => [
+                    'allowClear' => true
+                ],
+            ],
+        ],
+		
+    ]
+]);
+?>
 
     <?=
     $form->field($model, 'access_role_master')->widget(kartik\widgets\Select2::classname(), [

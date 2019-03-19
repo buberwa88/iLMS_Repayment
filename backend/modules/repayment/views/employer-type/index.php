@@ -76,24 +76,43 @@ $this->params['breadcrumbs'][] = $this->title;
                         'format' => 'raw'
             ], 
 			
-			['class' => 'yii\grid\ActionColumn',
-                         'header' => 'Action',
-                         'headerOptions' => ['style' => 'color:#337ab7'],
-			 'template'=>'{update}',
-                         'buttons' => [
-             'update' => function ($url, $model) {
-                return Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
-				'title' => Yii::t('app', 'update'),
-                ]);
-            },
-          ],
-        'urlCreator' => function ($action, $model, $key, $index) {
-            if ($action === 'update') {
-                $url ='index.php?r=repayment/employer-type/update&id='.$model->employer_type_id;
-                return $url;
-            }
-          }
-			],
+			[
+                'class' => 'yii\grid\ActionColumn',
+                'header' => 'Actions',
+                'headerOptions' => ['style' => 'color:#337ab7'],
+                'template' => '{update}{delete}',
+                'buttons' => [
+                    'update' => function ($url, $model) {
+                        return \backend\modules\repayment\models\EmployerType::checkItemUsed($model->employer_type_id)==0? Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, [
+                            'title' => Yii::t('app', 'update'),
+                        ]):'';
+                    },
+                    'delete' => function ($url, $model) {
+                        return \backend\modules\repayment\models\EmployerType::checkItemUsed($model->employer_type_id)==0? Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
+                            //'class' => 'btn btn-info',
+                            'data' => [
+                                'confirm' => 'Are you sure you want to delete this item?',
+                                //'method' => 'get',
+                                //'title' => Yii::t('app', 'lead-update'),
+                            ],
+                        ]):'';
+                    }
+
+                ],
+                'urlCreator' => function ($action, $model, $key, $index) {
+                    if ($action === 'update') {
+                        $url ='index.php?r=repayment/employer-type/update&id='.$model->employer_type_id;
+                        return $url;
+                    }
+                    if ($action === 'delete') {
+                        $url ='index.php?r=repayment/employer-type/delete-employertype&id='.$model->employer_type_id;
+                        return $url;
+                    }
+
+                }
+            ],
+			
+			
         ],
     ]); ?>
     </div>

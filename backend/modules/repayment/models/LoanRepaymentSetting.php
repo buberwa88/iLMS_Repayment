@@ -55,10 +55,17 @@ class LoanRepaymentSetting extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['loan_repayment_item_id', 'rate', 'calculation_mode','rate_type','charging_interval','item_applicable_scope','start_date'], 'required'],
+            [['loan_repayment_item_id', 'rate', 'calculation_mode','rate_type','charging_interval','item_applicable_scope','start_date'], 'required','on'=>'itemSettingRegister'],
+            [['loan_repayment_item_id', 'rate', 'calculation_mode','rate_type','charging_interval','item_applicable_scope','start_date'], 'required','on'=>'itemSettingUpdate'],
             [['loan_repayment_item_id', 'created_by'], 'integer'],
+			
             [['start_date','end_date', 'created_at','calculation_mode','is_active','item_name','charging_interval','rate_type','item_applicable_scope','item_formula','formula_stage','employer_type_id','payment_deadline_day_per_month','loan_repayment_rate','formula_stage_level','formula_stage_level_condition','grace_period'], 'safe'],
             [['rate'], 'number'],
+            [['rate'], 'validatePercentItemrate'],
+            [['loan_repayment_item_id'], 'validateLoanRepaymentSettingRegister','on'=>'itemSettingRegister'],
+            [['loan_repayment_item_id'], 'validateLoanRepaymentSettingUpdate','on'=>'itemSettingUpdate'],
+			//[['rate'], 'number','max' => 100, min => '0'],
+			[['loan_repayment_rate'], 'number','max' => 100, min => '0'],
             [['loan_repayment_item_id'], 'exist', 'skipOnError' => true, 'targetClass' => LoanRepaymentItem::className(), 'targetAttribute' => ['loan_repayment_item_id' => 'loan_repayment_item_id']],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => \common\models\User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
         ];
@@ -141,4 +148,87 @@ class LoanRepaymentSetting extends \yii\db\ActiveRecord
 	public static function getLoanRepaymentRateOtherItems($itemsID){
 	return  self::findBySql("SELECT loan_repayment_rate FROM loan_repayment_setting INNER JOIN loan_repayment_item ON loan_repayment_item.loan_repayment_item_id=loan_repayment_setting.loan_repayment_item_id WHERE  loan_repayment_setting.loan_repayment_item_id='$itemsID' AND loan_repayment_setting.is_active='1' AND loan_repayment_item.is_active='1'")->one();	
 	}
+
+    public function validatePercentItemrate($attribute) {
+        if($this->rate_type=='percent') {
+            if ($this->rate > 100 || $this->rate < 0) {
+                $this->addError($attribute, 'Invalid Rate');
+                return FALSE;
+            }
+        }
+        if($this->rate_type=='day') {
+            if ($this->rate > 366 || $this->rate < 0) {
+                $this->addError($attribute, 'Invalid Rate');
+                return FALSE;
+            }
+        }
+        if($this->rate_type=='amount') {
+            if ($this->rate < 0) {
+                $this->addError($attribute, 'Invalid Rate');
+                return FALSE;
+            }
+        }
+        return true;
+    }
+
+    public function validateLoanRepaymentSettingRegister($attribute)
+    {
+        $values=\backend\modules\repayment\models\LoanRepaymentItem::findBySql("SELECT item_code FROM loan_repayment_item where loan_repayment_item_id = '$this->loan_repayment_item_id'")->one();
+
+        if($values->item_code =='VRF' && $this->formula_stage=='') {
+            $this->addError($attribute, 'Formula Stage Required');
+            return FALSE;
+        }
+
+    if($values->item_code !='VRF') {
+
+        if (self::findBySql("SELECT * FROM loan_repayment_setting where item_applicable_scope = '$this->item_applicable_scope' AND is_active='1' AND loan_repayment_item_id='$this->loan_repayment_item_id'")
+            ->exists()) {
+            $this->addError($attribute, 'Item Exist');
+            return FALSE;
+        }
+    }else{
+        if (self::findBySql("SELECT * FROM loan_repayment_setting where item_applicable_scope = '$this->item_applicable_scope' AND is_active='1' AND loan_repayment_item_id='$this->loan_repayment_item_id' AND formula_stage='$this->formula_stage'")
+            ->exists()) {
+            $this->addError($attribute, 'Item Exist');
+            return FALSE;
+        }
+    }
+        return true;
+    }
+    public function validateLoanRepaymentSettingUpdate($attribute)
+    {
+        $values=\backend\modules\repayment\models\LoanRepaymentItem::findBySql("SELECT item_code FROM loan_repayment_item where loan_repayment_item_id = '$this->loan_repayment_item_id'")->one();
+
+        if($values->item_code =='VRF' && $this->formula_stage=='') {
+            $this->addError($attribute, 'Formula Stage Required');
+            return FALSE;
+        }
+
+        if($values->item_code !='VRF') {
+
+            if (self::findBySql("SELECT * FROM loan_repayment_setting where item_applicable_scope = '$this->item_applicable_scope' AND is_active='1' AND loan_repayment_item_id='$this->loan_repayment_item_id' AND loan_repayment_setting_id<>'$this->loan_repayment_setting_id'")
+                ->exists()) {
+                $this->addError($attribute, 'Item Exist');
+                return FALSE;
+            }
+        }else{
+
+            if (self::findBySql("SELECT * FROM loan_repayment_setting where item_applicable_scope = '$this->item_applicable_scope' AND is_active='1' AND loan_repayment_item_id='$this->loan_repayment_item_id' AND loan_repayment_setting_id<>'$this->loan_repayment_setting_id' AND formula_stage='$this->formula_stage'")
+                ->exists()) {
+                $this->addError($attribute, 'Item Exist');
+                return FALSE;
+            }
+
+        }
+        return true;
+    }
+    public static function checkItemUsed(){
+        $countExist=0;
+        $loanSummary = \frontend\modules\repayment\models\LoanSummary::findBySql("SELECT * FROM loan_summary")->count();
+        if($loanSummary > 0){
+            $countExist=1;
+        }
+        return $countExist;
+    }
 }
