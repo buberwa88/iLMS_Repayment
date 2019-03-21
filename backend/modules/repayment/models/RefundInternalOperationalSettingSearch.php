@@ -19,7 +19,7 @@ use backend\modules\repayment\models\RefundInternalOperationalSetting;
     {
         return [
             [['refund_internal_operational_id', 'flow_order_list', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['name', 'code', 'access_role_master', 'access_role_child', 'created_at', 'updated_at'], 'safe'],
+            [['name', 'code', 'access_role_master', 'access_role_child', 'created_at', 'updated_at','approval_status','approval_comment'], 'safe'],
         ];
     }
 

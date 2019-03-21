@@ -4,6 +4,7 @@ use yii\helpers\Html;
 use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
 use frontend\modules\repayment\models\LoanRepayment;
+use yii\helpers\Url;
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -60,6 +61,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>function($model)
                 {
                     return $model->payment_date;
+                    //return $model->applicantIDPayer;
                 },
             ],
 			[
@@ -71,7 +73,16 @@ $this->params['breadcrumbs'][] = $this->title;
                  return $model->getTotalAmountPaidLoaneeUnderTransaction($model->loan_repayment_id);
             },
             'format'=>['decimal',2],
-        ], 
+        ],
+            [
+                'attribute' => 'print',
+                'format' => 'raw',
+                'label'=>'Action',
+                'value' => function ($model) {
+                    return $model->applicantIDPayer >0 ? Html::a('Print Receipt', Url::toRoute(['loan-repayment/print-receipt', 'id' => $model->loan_repayment_id]),
+                        ['target' => '_blank', 'class' => 'btn btn-success center-block']):'';
+                },
+            ]
 		/*
             [
                 'attribute'=>'date_control_received',

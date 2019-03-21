@@ -12,8 +12,7 @@ use yii\widgets\ActiveForm;
 
     <?php $form = ActiveForm::begin(); ?>
     <?= $form->field($model, 'control_number')->textInput(['value'=>$model->control_number,'readOnly'=>'readOnly']) ?>
-    <?= $form->field($model, 'amount')->textInput(['value'=>number_format($model->amount,2),'readOnly'=>'readOnly']) ?>
-    <?= $form->field($model, 'totalEmployees')->textInput(['value'=>$totalEmployees,'readOnly'=>'readOnly']) ?>
+    <?= $form->field($model, 'amount')->label("Pay Amount")->textInput(['value'=>number_format($model->amount,2),'readOnly'=>'readOnly']) ?>
     <?php ActiveForm::end(); ?>
 
 </div>

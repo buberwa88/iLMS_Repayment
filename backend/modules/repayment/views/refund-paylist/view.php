@@ -49,8 +49,9 @@ $this->params['breadcrumbs'][] = $this->title;
             <?php if($isPaylistClosedCount ==0){
             if(($ispayListOperatExistCount == 0 || $isCurremtStageRejection == 2) && $currentStageCountLevel > 0 && $currentStageStatus==1){
             ?>
-            <?php if ($model->status == RefundPaylist::STATUS_CREATED) { ?>
+
             <?= Html::a('Update', ['update', 'id' => $model->refund_paylist_id], ['class' => 'btn btn-primary']) ?>
+                <?php if ($model->status == RefundPaylist::STATUS_CREATED) { ?>
             <?=
             Html::a('Delete', ['delete', 'id' => $model->refund_paylist_id], [
                 'class' => 'btn btn-danger',
@@ -196,6 +197,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'value' => number_format(backend\modules\repayment\models\RefundPaylistDetails::getPayListTotalAmountById($model->refund_paylist_id)),
                     ], [
                         'attribute' => 'status',
+                        'label'=>'Payment Status',
                         'value' => strtoupper($model->getStatusName())
                     ],
                     [
@@ -235,8 +237,10 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     [
                         'attribute' => 'status',
-                        'label' => 'Status',
+                        'label' => 'Approval Status',
                         'value' => function($model) {
+                         return $model->approval_status;
+                         /*
                             if($model->status==1){
                                 return   "Recommended for approval";
                             }else if($model->status==2){
@@ -244,7 +248,17 @@ $this->params['breadcrumbs'][] = $this->title;
                             }else if($model->status==3){
                                 return "Approved";
                             }
+                         */
                         }
+
+                    ],
+                    [
+                        'attribute' => 'last_verified_by',
+                        'label' => 'User',
+                        'value' => function($model) {
+                         return $model->lastVerifiedBy->firstname." ".$model->lastVerifiedBy->middlename.$model->lastVerifiedBy->surname;
+                        }
+
                     ],
                 ],
             ]); ?>
@@ -256,6 +270,7 @@ $this->params['breadcrumbs'][] = $this->title;
 //            'filterModel' => $paylist_details_model,
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
+                    /*
                     [
                         'attribute' => 'refund_application_reference_number',
                         'label' => 'Application #',
@@ -264,6 +279,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         },
                         'vAlign' => 'middle',
                     ],
+                    */
                     [
                         'attribute' => 'claimant_name',
                         'label' => 'Claimant',
@@ -295,16 +311,48 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model->payment_bank_name . ' ' . (($model->payment_bank_branch) ? $model->payment_bank_branch : '');
                         }
                     ],
+                    /*
                     [
                         'attribute' => 'status',
                         'value' => function($model) {
                             return $model->getStatusName();
                         },
                     ],
+                    */
+                    /*
                     ['class' => 'yii\grid\ActionColumn',
                         'template' => '{delete}',
                         'visible' => ($model->status == RefundPaylist::STATUS_CREATED) ? TRUE : FALSE
                     ],
+                    */
+
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'header' => 'Actions',
+                        'headerOptions' => ['style' => 'color:#337ab7'],
+                        'template' => '{delete}',
+                        'buttons' => [
+                            'delete' => function ($url, $model) use($isCurremtStageRejection, $currentStageCountLevel) {
+                                return ($model->status == RefundPaylist::STATUS_CREATED || ($isCurremtStageRejection==2 && $currentStageCountLevel > 0))? Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, [
+                                    //'class' => 'btn btn-info',
+                                    'data' => [
+                                        'confirm' => 'Are you sure you want to delete this item?',
+                                        //'method' => 'get',
+                                        //'title' => Yii::t('app', 'lead-update'),
+                                    ],
+                                ]):'';
+                            }
+
+                        ],
+                        'urlCreator' => function ($action, $model, $key, $index) {
+                            if ($action === 'delete') {
+                                $url ='index.php?r=repayment/refund-paylist-details/delete-paylistdetail&id='.$model->refund_paylist_details_id;
+                                return $url;
+                            }
+
+                        }
+                    ],
+
                 ],
             ]);
             ?>

@@ -23,10 +23,10 @@ use Yii;
  */
 class RefundPaylistDetails extends \yii\db\ActiveRecord {
 
-    const STATUS_CREATED = 0;
-    const STATUS_VERIFIED = 1;
-    const STATUS_APPROVED = 2;
-    const STATUS_PAID = 3;
+    const STATUS_CREATED = 1;
+    const STATUS_VERIFIED = 2;
+    const STATUS_APPROVED = 3;
+    const STATUS_PAID = 4;
 
     /**
      * @inheritdoc
@@ -163,6 +163,10 @@ class RefundPaylistDetails extends \yii\db\ActiveRecord {
                 ->andFilterWhere(['like', 'claimant_name', $this->claimant_name]);
 
         return $dataProvider;
+    }
+
+    public static function updatePaylistDetails($currentStatus,$refund_paylist_id) {
+        self::updateAll(['status' => $currentStatus], 'refund_paylist_id ="' . $refund_paylist_id . '"');
     }
 
 }

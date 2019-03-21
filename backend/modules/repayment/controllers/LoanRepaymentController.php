@@ -667,5 +667,17 @@ public function actionRequestgsppAllemploydeductform()
 		}
         return $this->redirect(['requestgspp-monthdeduction']);
     }
+    public function actionPrintReceipt($id) {
+        // get your HTML raw content without any layouts or scripts
+        $htmlContent = $this->renderPartial('printReceipt',['id' =>$id]);
+
+        // setup kartik\mpdf\Pdf component
+        $pdf = Yii::$app->pdf;
+        $pdf->content = $htmlContent;
+        return $pdf->render();
+
+        // return the pdf output as per the destination setting
+        //return $pdf->render();
+    }
 	
 }

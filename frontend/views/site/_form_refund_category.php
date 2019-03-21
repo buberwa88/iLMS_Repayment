@@ -99,22 +99,6 @@ $incomplete=0;
                             'surname'=>['label'=>'Last Name:', 'options'=>['placeholder'=>'Last Name']],
                             //'phone_number'=>['label'=>'Phone #:', 'options'=>['placeholder'=>'Phone #']],
                             'email'=>['label'=>'Email Address:', 'options'=>['placeholder'=>'Email Address']],
-                            /*
-                            'phone_number' => ['type' => Form::INPUT_TEXT, 'options' => ['maxlength'=>10,'placeholder' => '0*********','data-toggle' => 'tooltip',
-                                'data-placement' => 'top', 'title' => 'Phone Number eg 07XXXXXXXX or 06XXXXXXXX or 0XXXXXXXXX']],
-
-
-                            'refund_type' => [
-                                'type' => Form::INPUT_DROPDOWN_LIST,
-                                'label'=>'Refund Type:',
-                                'items' =>['1'=>'NON-BENEFICIARY', '2'=>'OVER DEDUCTED','3'=>'DECEASED'],
-                                'options' => [
-                                    'prompt' => 'Select',
-                                    'id' => 'refund_type_id',
-                                    'onchange'=>'ShowHideDiv()',
-                                ],
-                            ],
-                            */
                         ]
                     ]);
                     ?>
@@ -126,6 +110,30 @@ $incomplete=0;
                     ])->hint('Phone Number eg 255 7XXXXXXXX or 255 6XXXXXXXX or 255 XXXXXXXXX');
                     ?>
                     <?= $form->field($model, 'refund_type_confirmed_nonb')->label(false)->hiddenInput(['value'=>2,'readOnly'=>'readOnly']) ?>
+
+
+                    <?php
+                    echo $form->field($model, 'court_letter_certificate_document')->label('Appointed estate admin confirmation document:')->widget(FileInput::classname(), [
+                        'options' => ['accept' => 'site/pdf'],
+                        'pluginOptions' => [
+                            'showCaption' => false,
+                            'showRemove' => TRUE,
+                            'showUpload' => false,
+                            // 'browseClass' => 'btn btn-primary btn-block',
+                            'browseIcon' => '<i class="fa fa fa-file-pdf-o"></i> ',
+                            'browseLabel' =>  'Appointed estate admin confirmation document (required format .pdf only)',
+                            'initialPreview'=>[
+                                "$model->court_letter_certificate_document",
+
+                            ],
+                            'initialCaption'=>$model->court_letter_certificate_document,
+                            'initialPreviewAsData'=>true,
+                        ],
+                        //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
+                    ]);
+                    ?>
+
+
                     <?= $form->field($model, 'verifyCode')->widget(Captcha::className(), [
                         'captchaAction'=>'/site/captcha','id'=>'captcha_block_id'
                     ]) ?>

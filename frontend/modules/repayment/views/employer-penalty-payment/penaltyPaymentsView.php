@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\EmployerPenaltyPaymentSearch */
@@ -62,6 +63,15 @@ $this->params['breadcrumbs'][] = $this->title;
                         ],
                         'filterInputOptions' => ['placeholder' => 'Search'],
                         'format' => 'raw'
+            ],
+            [
+                'attribute' => 'print',
+                'format' => 'raw',
+                'label'=>'Action',
+                'value' => function ($model) {
+                    return Html::a('Print Receipt', Url::toRoute(['employer-penalty-payment/print-receipt', 'id' => $model->employer_penalty_payment_id]),
+                        ['target' => '_blank', 'class' => 'btn btn-success center-block']);
+                },
             ],
 			
 			

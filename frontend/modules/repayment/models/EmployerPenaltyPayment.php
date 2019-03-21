@@ -559,4 +559,10 @@ public static function updatePaymentAfterGePGconfirmPaymentDonepenaltylive($cont
         self::updateAll(['payment_status' =>'1','receipt_date'=>$receiptDate,'date_receipt_received'=>$date_receipt_received,'receipt_number'=>$receiptNumber], 'control_number ="'.$controlNumber.'" AND payment_status ="0"');
 
     }
+    public static function getReceiptDetailsEmployerPenalty($employer_penalty_payment_id){
+        $condition = ["employer_penalty_payment_id" =>$employer_penalty_payment_id];
+        return \frontend\modules\repayment\models\EmployerPenaltyPayment::find()
+            ->where($condition)
+            ->one();
+    }
 }

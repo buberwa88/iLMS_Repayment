@@ -70,7 +70,7 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
         return [
             [['flow_type', 'flow_order_list', 'name', 'code', 'access_role_master', 'access_role_child', '', 'created_by', 'is_active'], 'required'],
             [['flow_type', 'flow_order_list', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['created_at', 'updated_at', 'flow_type'], 'safe'],
+            [['created_at', 'updated_at', 'flow_type','approval_comment','approval_status'], 'safe'],
             [['name', 'access_role_master', 'access_role_child'], 'string', 'max' => 100],
             [['code'], 'string', 'max' => 50],
             [['code'], 'unique'],
@@ -96,6 +96,8 @@ class RefundInternalOperationalSetting extends \yii\db\ActiveRecord {
             'updated_by' => 'Updated By',
             'is_active' => 'Status',
             'flow_type' => 'Flow Type',
+            'approval_status'=>'Approval Status',
+            'approval_comment'=>'Approval Comment',
         ];
     }
 

@@ -352,7 +352,8 @@ class LoanRepaymentController extends Controller
             //requesting control number
             //this is for temporaly test
             if($employerSalarySource==0){
-            $controlNumber=mt_rand (10,100);
+            $controlNumber1=mt_rand(100,1000);
+            $controlNumber="991110068".$controlNumber1;
             }else{
             $controlNumber='';    
             }
@@ -376,7 +377,7 @@ class LoanRepaymentController extends Controller
                 }else{
                   $sms="Bill successful confirmed!";  
                 }
-           Yii::$app->getSession()->setFlash('success', $sms);
+           //Yii::$app->getSession()->setFlash('success', $sms);
            return $this->redirect(['viewconfirmed-payment', 'id' => $model->loan_repayment_id]);
                 
         }
@@ -398,7 +399,8 @@ class LoanRepaymentController extends Controller
         if($loan_repayment_id >0){
             //requesting control number
             //this is for temporaly test
-            $controlNumber=mt_rand (10,100);
+            $controlNumber1=mt_rand (100,1000);
+            $controlNumber="991110068".$controlNumber1;
             //end for temporaly test
           //end
             $model2->updateConfirmPaymentandControlNo($loan_repayment_id,$controlNumber);
@@ -641,7 +643,7 @@ class LoanRepaymentController extends Controller
 			}
             //end GePG LIVE
 		   $sms="Kindly use the below control number for payment!";
-           Yii::$app->getSession()->setFlash('success', $sms);
+           //Yii::$app->getSession()->setFlash('success', $sms);
             return $this->redirect(['viewconfirmed-paymentbeneficiary', 'id' => $model->loan_repayment_id]);
 			}else {
             return $this->render('confirmPaymentbeneficiary', [
@@ -1174,7 +1176,8 @@ return $pdf->render();
             //requesting control number
             //this is for temporaly test
             if($employerSalarySource==0){
-            $controlNumber=mt_rand (10,100);
+                $controlNumber1=mt_rand (100,1000);
+            $controlNumber="991110068".$controlNumber1;
             }else{
             $controlNumber='';    
             }

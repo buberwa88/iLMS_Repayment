@@ -74,6 +74,8 @@ echo Form::widget([ // fields with labels
             Yii::$app->params['priority_order_list'], ['prompt' => ' -- select --']
     );
     ?>
+    <?= $form->field($model, 'approval_comment')->textInput(['maxlength' => true, 'placeholder' => 'Approval Comment']) ?>
+    <?= $form->field($model, 'approval_status')->textInput(['maxlength' => true, 'placeholder' => 'Approval Status']) ?>
     <?=
     $form->field($model, 'is_active')->dropDownList(
             $model->getStatusList()

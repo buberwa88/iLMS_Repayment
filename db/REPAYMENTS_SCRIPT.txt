@@ -686,4 +686,14 @@ ALTER TABLE `employed_beneficiary` CHANGE `upload_status` `upload_status` TINYIN
 ALTER TABLE `employed_beneficiary` CHANGE `upload_status` `upload_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: Successful, 0: error';
 ALTER TABLE `employed_beneficiary` ADD `existing_status` TINYINT(2) NOT NULL DEFAULT '1' COMMENT '1: New, 2: Exist' AFTER `academic_year_id`;
 ALTER TABLE `employed_beneficiary` CHANGE `verification_status` `verification_status` TINYINT(1) NOT NULL COMMENT '0: Pending Verification, 1: VerifiedHESLB has to verify who is beneficiary and who is not,3: waiting employer confirmation,4:has no loan,5:shifted to another employer,6: HESLB Confirmed non beneficiary';
+===========================19/03/2019=========
+ALTER TABLE `logs` CHANGE `created_at` `created_at` DATETIME NULL DEFAULT NULL, CHANGE `updated_at` `updated_at` DATETIME NULL DEFAULT NULL;
+=============================20/03/2019===================
+ALTER TABLE `refund_paylist_details` CHANGE `status` `status` INT(2) NOT NULL DEFAULT '1' COMMENT '1: Created, 2: Confirmed';
+ALTER TABLE `refund_application` CHANGE `current_status` `current_status` TINYINT(2) NULL DEFAULT '0' COMMENT '0: Unverified, 1: Preview Complete,2: Incomplete,3: Waiting,4: Invalid,5: Pending, 6: Verification Onprogress, 7: Verification Complete, 8: PAY_LIST_WAITING_QUEUE, 9: APPLICATION_IN_PALIST, 10: PAID_APPLICATION';
+ALTER TABLE `refund_paylist_details` CHANGE `status` `status` INT(2) NOT NULL DEFAULT '1' COMMENT '1: Created, 2: Verified, 3: Approved, 4: Paid';
+ALTER TABLE `refund_internal_operational_setting` ADD `approval_comment` VARCHAR(200) NULL DEFAULT NULL AFTER `is_active`, ADD `approval_status` VARCHAR(200) NULL DEFAULT NULL AFTER `approval_comment`;
+ALTER TABLE `refund_paylist_operation` ADD `approval_status` VARCHAR(200) NULL DEFAULT NULL AFTER `status`;
+=========================21/03/2019=======================
+ALTER TABLE `refund_application` ADD `claimant_letter_document` VARCHAR(200) NULL DEFAULT NULL AFTER `deed_pole_document`;
 

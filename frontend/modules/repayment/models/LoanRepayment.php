@@ -85,6 +85,7 @@ class LoanRepayment extends \yii\db\ActiveRecord
 	public $email_address;
 	public $name;
 	public $refund_type;
+	public $applicantIDPayer;
 
     public function rules()
     {

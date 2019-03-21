@@ -308,4 +308,16 @@ class EmployerPenaltyPaymentController extends Controller
     }
     }
 	*/
+    public function actionPrintReceipt($id) {
+        // get your HTML raw content without any layouts or scripts
+        $htmlContent = $this->renderPartial('printReceiptEmployerPenalty',['id' =>$id]);
+
+        // setup kartik\mpdf\Pdf component
+        $pdf = Yii::$app->pdf;
+        $pdf->content = $htmlContent;
+        return $pdf->render();
+
+        // return the pdf output as per the destination setting
+        //return $pdf->render();
+    }
 }

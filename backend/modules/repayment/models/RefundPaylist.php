@@ -24,9 +24,10 @@ class RefundPaylist extends \yii\db\ActiveRecord {
     public $rejection_narration;
     public $refund_application_id;
 
-    const STATUS_CREATED = 0;
-    const STATUS_REVIEWED = 1;
-    const STATUS_APPROVED = 2;
+    const STATUS_CREATED = 1;
+    const STATUS_CONFIRMED_SUBMITTED = 2;
+    const STATUS_REVIEWED_AND_APPROVED = 3;
+    const STATUS_PAID = 4;
 
     /**
      * @inheritdoc
@@ -76,9 +77,10 @@ class RefundPaylist extends \yii\db\ActiveRecord {
             //self::STATUS_CREATED => 'Created',
             //self::STATUS_REVIEWED => 'Reviewed',
             //self::STATUS_APPROVED => 'Approved',
-            self::STATUS_CREATED => 'Pending',
-            self::STATUS_REVIEWED => 'Paid',
-            self::STATUS_APPROVED => 'Approved',
+            self::STATUS_CREATED => 'NOT PAID',
+            self::STATUS_CONFIRMED_SUBMITTED => 'NOT PAID',
+            self::STATUS_REVIEWED_AND_APPROVED => 'NOT PAID',
+            self::STATUS_PAID => 'PAID',
         ];
     }
 

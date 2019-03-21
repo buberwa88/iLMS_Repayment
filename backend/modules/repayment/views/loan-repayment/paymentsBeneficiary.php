@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $searchModel frontend\modules\repayment\models\LoanRepaymentSearch */
@@ -138,6 +139,15 @@ $this->params['breadcrumbs'][] = $this->title;
                         ],
                         'filterInputOptions' => ['placeholder' => 'Search'],
                         'format' => 'raw'
+            ],
+            [
+                'attribute' => 'print',
+                'format' => 'raw',
+                'label'=>'Action',
+                'value' => function ($model) {
+                    return Html::a('Print Receipt', Url::toRoute(['loan-repayment/print-receipt', 'id' => $model->loan_repayment_id]),
+                        ['target' => '_blank', 'class' => 'btn btn-success center-block']);
+                },
             ],
 
             

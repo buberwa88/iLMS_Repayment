@@ -90,7 +90,7 @@ class RefundPaylistOperationSearch extends RefundPaylistOperation
         //$query = RefundPaylistOperation::find();
 
         $query = RefundPaylistOperation::find()
-            ->select('refund_paylist_operation.previous_internal_operational_id,refund_paylist_operation.refund_internal_operational_id, refund_paylist_operation.narration,refund_paylist_operation.status')
+            ->select('refund_paylist_operation.previous_internal_operational_id,refund_paylist_operation.refund_internal_operational_id, refund_paylist_operation.narration,refund_paylist_operation.status,refund_paylist_operation.approval_status,refund_paylist_operation.last_verified_by')
             ->where(['refund_paylist_id'=>$refund_paylist_id]);
         /*
             ->where(['or',
@@ -115,6 +115,7 @@ class RefundPaylistOperationSearch extends RefundPaylistOperation
 
         // grid filtering conditions
         $query->joinwith(["refundInternalOperational"]);
+        $query->joinwith(["lastVerifiedBy"]);
         $query->andFilterWhere([
             'refund_application_operation_id' => $this->refund_application_operation_id,
             'refund_paylist_id' => $this->refund_paylist_id,

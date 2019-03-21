@@ -11,10 +11,8 @@ use yii\widgets\ActiveForm;
 <div class="loan-repayment-form">
 
     <?php $form = ActiveForm::begin(); ?>
-    <?= $form->field($model, 'bill_number')->textInput(['value'=>$bill_number,'readOnly'=>'readOnly']) ?>
     <?= $form->field($model, 'control_number')->textInput(['value'=>$paymentRefNo,'readOnly'=>'readOnly']) ?>
-    <?= $form->field($model, 'totalAmount')->textInput(['value'=>  number_format($amount,2),'readOnly'=>'readOnly']) ?>
-    <?= $form->field($model, 'payment_status')->textInput(['value'=>$payment_status,'readOnly'=>'readOnly']) ?>
+    <?= $form->field($model, 'totalAmount')->label("Pay Amount")->textInput(['value'=>  number_format($amount,2),'readOnly'=>'readOnly']) ?>
     <?php ActiveForm::end(); ?>
 
 </div>

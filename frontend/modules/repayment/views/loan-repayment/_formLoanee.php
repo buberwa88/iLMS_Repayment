@@ -60,7 +60,8 @@ $controlNumber=null;
 $date=null;
 			}
 			if($testingLocal=='T'){
-$controlNumber=mt_rand (10,100);
+$controlNumber1=mt_rand (100,1000);
+$controlNumber="991110068".$controlNumber1;
 $date=date("Y-m-d H:i:s");
 			}
 ?>

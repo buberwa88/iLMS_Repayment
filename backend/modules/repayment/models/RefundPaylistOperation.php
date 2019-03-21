@@ -41,6 +41,7 @@ class RefundPaylistOperation extends \yii\db\ActiveRecord
     const Recommended_for_approval = 1;
     const Rejected = 2;
     const Approved = 3;
+    const Rejected_approval_status = 'Rejected';
    //end
 
     public static function tableName()
@@ -55,7 +56,7 @@ class RefundPaylistOperation extends \yii\db\ActiveRecord
     {
         return [
             [['refund_paylist_id', 'refund_internal_operational_id', 'previous_internal_operational_id', 'status', 'assignee', 'assigned_by', 'last_verified_by', 'is_current_stage', 'created_by', 'updated_by', 'is_active', 'general_status'], 'integer'],
-            [['assigned_at', 'date_verified', 'created_at', 'updated_at'], 'safe'],
+            [['assigned_at', 'date_verified', 'created_at', 'updated_at','approval_status'], 'safe'],
             [['created_at'], 'required'],
             [['access_role_master', 'access_role_child'], 'string', 'max' => 50],
             [['narration'], 'string', 'max' => 500],
@@ -91,6 +92,7 @@ class RefundPaylistOperation extends \yii\db\ActiveRecord
             'updated_by' => 'Updated By',
             'is_active' => 'Is Active',
             'general_status' => 'General Status',
+            'approval_status'=>'Approval Status',
         ];
     }
 
@@ -117,8 +119,12 @@ class RefundPaylistOperation extends \yii\db\ActiveRecord
     {
         return $this->hasOne(RefundInternalOperationalSetting::className(), ['refund_internal_operational_id' => 'previous_internal_operational_id']);
     }
+    public function getLastVerifiedBy()
+    {
+        return $this->hasOne(\frontend\modules\repayment\models\User::className(), ['user_id' => 'last_verified_by']);
+    }
 
-    public static function insertRefundPaylistOperation($refund_paylist_id, $refund_internal_operational_id, $previous_internal_operational_id, $access_role_master, $access_role_child, $status, $narration, $lastVerifiedBy, $dataVerified, $generalStatus)
+    public static function insertRefundPaylistOperation($refund_paylist_id, $refund_internal_operational_id, $previous_internal_operational_id, $access_role_master, $access_role_child, $status, $narration, $lastVerifiedBy, $dataVerified, $generalStatus,$approval_status)
     {
         Yii::$app->db->createCommand()
             ->insert('refund_paylist_operation', [
@@ -133,6 +139,7 @@ class RefundPaylistOperation extends \yii\db\ActiveRecord
                 'date_verified' => $dataVerified,
                 'general_status' => $generalStatus,
                 'previous_internal_operational_id' => $previous_internal_operational_id,
+                'approval_status'=>$approval_status,
             ])->execute();
         self::updateCurrentVerificationLevel($refund_internal_operational_id,$refund_paylist_id);
     }

@@ -16,11 +16,12 @@ class LoanRepaymentSearch extends LoanRepayment
      * @inheritdoc
      */
     public $employer_name;
+    public $applicantIDPayer;
     public function rules()
     {
         return [
             [['loan_repayment_id', 'employer_id', 'applicant_id', 'pay_method_id'], 'integer'],
-            [['bill_number', 'control_number', 'receipt_number', 'pay_phone_number', 'date_bill_generated', 'date_control_received', 'date_receipt_received','payment_date','employer_name'], 'safe'],
+            [['bill_number', 'control_number', 'receipt_number', 'pay_phone_number', 'date_bill_generated', 'date_control_received', 'date_receipt_received','payment_date','employer_name','applicantIDPayer'], 'safe'],
             [['amount'], 'number'],
         ];
     }
@@ -355,7 +356,7 @@ class LoanRepaymentSearch extends LoanRepayment
 //                                        ['payment_status'=>'1'], 
 //                                        ['payment_status'=>'0']
 //                                    ]);
-                                    ->select('loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.date_control_received,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_repayment.payment_date')
+                                    ->select('loan_repayment.bill_number,loan_repayment.control_number,loan_repayment.applicant_id AS applicantIDPayer,loan_repayment.date_control_received,loan_repayment.loan_repayment_id,loan_repayment_detail.applicant_id,loan_repayment.payment_date')
                                     ->leftJoin('loan_repayment_detail', '`loan_repayment_detail`.`loan_repayment_id` = `loan_repayment`.`loan_repayment_id`')
                                     ->where(['loan_repayment.payment_status' =>'1','loan_repayment_detail.applicant_id'=>$applicantID])
                                     ->groupBy('{{loan_repayment_detail}}.loan_repayment_id')

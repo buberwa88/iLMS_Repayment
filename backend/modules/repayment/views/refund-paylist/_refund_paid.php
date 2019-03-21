@@ -26,6 +26,13 @@
                 return $model->getStatusName();
             },
         ],
+        [
+            'attribute' => 'date_created',
+            'label' => 'Date Created',
+            'value' => function($model) {
+                return date("Y-m-d",strtotime($model->date_created));
+            }
+        ],
         // 'created_by',
         // 'date_updated',
         // 'updated_by',

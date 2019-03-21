@@ -45,6 +45,18 @@ $this->registerJs($search);
                     }
                 ],
                 [
+                    'attribute' => 'approval_comment',
+                    'value' => function($model) {
+                        return$model->approval_comment;
+                    }
+                ],
+                [
+                    'attribute' => 'approval_status',
+                    'value' => function($model) {
+                        return$model->approval_status;
+                    }
+                ],
+                [
                     'class' => 'yii\grid\ActionColumn',
                     'template' => '{update} {delete}',
                 ],
