@@ -36,6 +36,11 @@ $step3=3;$step4=3;$step5=4;$step6=5;$step7=6;
                 <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $refund_claim_id]) ?>" class="btn btn-primary pull-right" style="margin-right: 5px;"><i class="fa  fa-power-off"></i> Logout</a></h4>
         </div>
         <div class="panel-body">
+            <?php if($incomplete !=3){ ?>
+            <div class="alert alert-info alert-dismissible">
+            <h4 >Please complete the steps listed below to submit your application</h4>
+            </div>
+            <?php } ?>
             <p>
                 <?php
                 if ($refund_application_id != '') {

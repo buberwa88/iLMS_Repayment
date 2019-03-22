@@ -28,6 +28,11 @@ $incomplete = $resultsCheckResultsGeneral->submitted;
 
         </div>
         <div class="panel-body">
+            <?php if($incomplete !=3){ ?>
+            <div class="alert alert-info alert-dismissible">
+                <h4 >Please complete the steps listed below to submit your application</h4>
+            </div>
+            <?php } ?>
             <p>
                 <?php
                 if ($refund_application_id != '') {

@@ -84,9 +84,9 @@ class RefundApplication extends \yii\db\ActiveRecord {
     public $letter_family_session_document2;
     public $totalApplication;
     public $refundTypeExpalnation;
-    public $refund_type_confirmed;
+    //public $refund_type_confirmed;
     public $refundType;
-    ////variable for refund recover application
+    //variable for refund recover application
     public $trustee_identity;
 
     public function rules() {
@@ -386,7 +386,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
 
     function getApplicationStatus() {
         return [
-            self::APPLICATION_STATUS_SAVED => 'Draft/Saved',
+            //self::APPLICATION_STATUS_SAVED => 'Draft/Saved',
+            self::APPLICATION_STATUS_SAVED => 'Submitted',
             self::Preview_Complete => 'Preview Complete',
             self::Incomplete => 'Incomplete',
             self::Waiting => 'Waiting',

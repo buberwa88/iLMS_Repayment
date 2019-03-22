@@ -64,19 +64,21 @@ class RefundClaimant extends \yii\db\ActiveRecord
     public $refund_type_confirmed_deceased;
     public $educationAttained;
     public $employer_letter_document;
+    public $claimant_letter_document;
     public function rules()
     {
         return [
             //[['applicant_id', 'f4_completion_year', 'necta_details_confirmed', 'created_by', 'updated_by'], 'integer'],
-            [['refund_type','firstname','surname','phone_number','verifyCode'], 'required','on'=>'refundRegistration'],
+            [['refund_type','firstname','surname','phone_number','verifyCode','claimant_letter_document'], 'required','on'=>'refundRegistration'],
             [['applicationCode','verifyCode','refundClaimantid'], 'required','on'=>'refundApplicationCodeVerification'],
             ['verifyCode', 'captcha','on'=>['refundRegistration','refundApplicationCodeVerification']],
             //[['f4indexno','f4_completion_year'], 'required','on'=>'refundf4educationnecta'],
             [['educationAttained'], 'required','on'=>'refundf4education'],
+            [['phone_number'], 'number'],
             //[['f4indexno','firstname','middlename','surname','f4_completion_year'], 'required','on'=>'refundf4education'],
             [['created_at', 'updated_at','sex','refundClaimantid','f4_certificate_document','f4type','refundTypeExpalnation',
-              'refund_type_confirmed','refund_type_confirmed_nonb','refund_type_confirmed_overded','refund_type_confirmed_deceased','middlename','email','educationAttained','employer_letter_document'], 'safe'],
-			//[['f4_certificate_document'], 'file', 'extensions'=>['pdf']],
+              'refund_type_confirmed','refund_type_confirmed_nonb','refund_type_confirmed_overded','refund_type_confirmed_deceased','middlename','email','educationAttained','employer_letter_document','claimant_letter_document'], 'safe'],
+			[['claimant_letter_document'], 'file', 'extensions'=>['pdf']],
             [['f4_certificate_document','employer_letter_document'], 'file', 'skipOnEmpty' => true, 'extensions' => 'pdf','on'=>'refundf4education'],
             [['firstname', 'middlename', 'surname', 'necta_firstname', 'necta_middlename', 'necta_surname'], 'string', 'max' => 45],
             [['sex', 'necta_sex'], 'string', 'max' => 1],
@@ -172,7 +174,8 @@ class RefundClaimant extends \yii\db\ActiveRecord
             'created_by' => 'Created By',
             'updated_at' => 'Updated At',
             'updated_by' => 'Updated By',
-            'verifyCode'=>'Enter Text: ',
+            //'verifyCode'=>'Enter Text: ',
+			'verifyCode'=>'Type below the blue characters. Click on the blue characters to get a new one if not clearly seen',
             'applicationCode'=>'Code:',
             'refundTypeExpalnation'=>'refundTypeExpalnation',
             'refund_type_confirmed'=>'refund_type_confirmed',

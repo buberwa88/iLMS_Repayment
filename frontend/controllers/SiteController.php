@@ -757,10 +757,15 @@ class SiteController extends Controller {
         $modelRefundContactPerson = new \frontend\modules\repayment\models\RefundContactPerson();
         $model->scenario = 'refundRegistration';
         if ($model->load(Yii::$app->request->post())) {
+
+            $datime = date("Y_m_d_H_i_s");
+            $model->claimant_letter_document = UploadedFile::getInstance($model, 'claimant_letter_document');
+
             if ($model->validate()) {
                 $todate = date("Y-m-d H:i:s");
                 $model->created_at = $todate;
                 $model->updated_at = $todate;
+
                 /*
                   if ($model->firstname == 'YUSUPH') {
                   $model->applicant_id = 30;
@@ -780,11 +785,13 @@ class SiteController extends Controller {
                     $modelRefundApplication->created_at = $todate;
                     $modelRefundApplication->updated_at = $todate;
 
+
                     $modelRefundApplication->finaccial_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getCurrentFinancialYear()->financial_year_id;
                     $modelRefundApplication->academic_year_id = \frontend\modules\repayment\models\LoanRepaymentDetail::getActiveAcademicYear()->academic_year_id;
                     $modelRefundApplication->trustee_phone_number = $model->phone_number;
                     $modelRefundApplication->trustee_email = $model->email;
-                    $modelRefundApplication->refund_type_confirmed = $model->refund_type_confirmed_nonb;
+                    //$modelRefundApplication->refund_type_confirmed = $model->refund_type_confirmed_nonb;
+                    $modelRefundApplication->refund_type_confirmed = 2;
                     $modelRefundApplication->save(false);
 
                     if ($model->refund_type == 3) {
@@ -810,6 +817,11 @@ class SiteController extends Controller {
                     $generalStepCode = \backend\modules\repayment\models\RefundType::Contact_details_check;
                     $step_code = \backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type, $generalStepCode);
                     \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id, $refund_type, $step_code);
+                    $refundApplicationLetterDoc = \frontend\modules\repayment\models\RefundApplication::findOne($modelRefundApplication->refund_application_id);
+                    $model->claimant_letter_document->saveAs(Yii::$app->params['refundAttachments'] . "claimant_letter_document" . "_" . $modelRefundApplication->refund_application_id . "_" . $datime . '.' . $model->claimant_letter_document->extension);
+                    $model->claimant_letter_document = Yii::$app->params['refundAttachments'] . "claimant_letter_document" . "_" . $modelRefundApplication->refund_application_id . "_" . $datime . '.' . $model->claimant_letter_document->extension;
+                    $refundApplicationLetterDoc->claimant_letter_document=$model->claimant_letter_document;
+                    $refundApplicationLetterDoc->save(false);
                     /////
                     ####################here send email#####################
                     $headers = '';
@@ -1934,7 +1946,10 @@ class SiteController extends Controller {
         }
 
         //return $this->redirect(['list-steps-nonbeneficiary', 'id' => $id]);
-        return $this->redirect(['refund-liststeps']);
+        //return $this->redirect(['refund-liststeps']);
+        $sms="Application submitted successful!";
+        Yii::$app->getSession()->setFlash('success', $sms);
+        return $this->redirect(['claimant-refunds']);
     }
 
     public function actionRefundSubmitapplication($id) {
