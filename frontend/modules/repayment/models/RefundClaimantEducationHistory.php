@@ -39,7 +39,7 @@ class RefundClaimantEducationHistory extends \yii\db\ActiveRecord {
     public function rules() {
         return [
             [['refund_application_id', 'program_id', 'institution_id', 'entry_year', 'completion_year', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['program_id', 'institution_id', 'entry_year', 'completion_year', 'certificate_document'], 'required', 'on' => 'refundTresuryEducation'],
+            [['program_id', 'institution_id', 'entry_year', 'completion_year','study_level'], 'required', 'on' => 'refundTresuryEducation'],
             [['created_at', 'updated_at', 'study_level', 'certificate_document', 'institution_name', 'programme_name'], 'safe'],
             [['institution_name', 'programme_name'], 'required', 'on' => 'institution_others'],
             [['program_id', 'institution_id'], 'required', 'on' => 'institution_normal'],
@@ -120,6 +120,14 @@ class RefundClaimantEducationHistory extends \yii\db\ActiveRecord {
 
     static function hasEducationHistory($refund_application_id) {
         return self::find()->where(['refund_application_id' => $refund_application_id])->exists();
+    }
+    public static function checkExists($refund_application_id){
+        if (self::find()
+            ->where(['refund_application_id' => $refund_application_id])->exists()) {
+            return 1;
+        }else{
+            return 0;
+        }
     }
 
 }

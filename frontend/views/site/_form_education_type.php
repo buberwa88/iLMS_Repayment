@@ -151,6 +151,9 @@ if($refundTypeId==3){
                             ],
                             'initialCaption'=>$model->f4_certificate_document,
                             'initialPreviewAsData'=>true,
+                            'initialPreviewConfig' => [
+                                ['type'=> explode(".",$model->f4_certificate_document)[1]=="pdf"?"pdf":"image"],
+                            ],
                         ],
 
                     ])->hint('Attach the Certificate Document Having the Same Information as Provided Above');

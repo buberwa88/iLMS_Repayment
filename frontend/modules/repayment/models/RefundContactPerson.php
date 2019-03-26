@@ -30,10 +30,13 @@ class RefundContactPerson extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+    public $claimant_letter_document;
     public function rules()
     {
         return [
             [['refund_application_id'], 'integer'],
+            [['firstname','surname','phone_number'], 'required','on'=>'refundClaimantContactUpdate'],
+            [['claimant_letter_document'], 'file', 'extensions'=>['pdf']],
             [['created_at', 'updated_at'], 'safe'],
             [['firstname', 'middlename', 'surname'], 'string', 'max' => 45],
             [['phone_number', 'email_address'], 'string', 'max' => 50],
@@ -55,6 +58,7 @@ class RefundContactPerson extends \yii\db\ActiveRecord
             'updated_at' => 'Updated At',
             'phone_number' => 'Phone Number',
             'email_address' => 'Email Address',
+            'claimant_letter_document'=>'Claimant letter document',
         ];
     }
 	public function getRefundApplication()

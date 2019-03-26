@@ -42,6 +42,7 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
 	 const Death_Certificate_Document='DCFD';
     const Employer_letter_Document='EMPLD';
     const Claimant_deed_pole_document='CDPD';
+    const Claimant_refund_letter_document='CRL';
 
     public static function tableName()
     {
@@ -124,4 +125,42 @@ class RefundClaimantAttachment extends \yii\db\ActiveRecord
                         'attachment_path' => $attachment_path,
                     ])->execute();
 	}
+
+    public static function updateClaimantAttachment($refund_application_id,$attachment_code,$attachment_path){
+        $getAttachmentDef = \backend\modules\application\models\AttachmentDefinition::findBySql("SELECT attachment_definition_id FROM  attachment_definition WHERE  attachment_code='$attachment_code' AND is_active='1'")->one();
+        $attachment_definition_id=$getAttachmentDef->attachment_definition_id;
+        //first check in table of refund_claimant_attachment
+        $resultsAttachmentExist =self::findBySql("SELECT refund_claimant_attachment_id FROM  refund_claimant_attachment WHERE  refund_application_id='$refund_application_id' AND attachment_definition_id='$attachment_definition_id' AND is_active='1'")->one();
+        $claimantAttachmentID=$resultsAttachmentExist->refund_claimant_attachment_id;
+        //end check in refund_claimant_attachment
+       if($claimantAttachmentID > 0){
+           self::updateAll(['attachment_path' => $attachment_path], 'refund_claimant_attachment_id="' . $claimantAttachmentID . '"');
+       }
+    }
+    public static function deleteClaimantAttachment($refund_application_id,$attachment_code){
+        $getAttachmentDef = \backend\modules\application\models\AttachmentDefinition::findBySql("SELECT attachment_definition_id FROM  attachment_definition WHERE  attachment_code='$attachment_code' AND is_active='1'")->one();
+        $attachment_definition_id=$getAttachmentDef->attachment_definition_id;
+
+        //first check in table of refund_claimant_attachment
+        $resultsAttachmentExist =self::findBySql("SELECT refund_claimant_attachment_id FROM  refund_claimant_attachment WHERE  refund_application_id='$refund_application_id' AND attachment_definition_id='$attachment_definition_id' AND is_active='1'")->one();
+        $claimantAttachmentID=$resultsAttachmentExist->refund_claimant_attachment_id;
+        //end check in refund_claimant_attachment
+        if($claimantAttachmentID > 0){
+            Yii::$app
+                ->db
+                ->createCommand()
+                ->delete('refund_claimant_attachment', ['refund_claimant_attachment_id' => $claimantAttachmentID])
+                ->execute();
+        }
+    }
+    public static function checkAttachmentExists($refund_application_id,$attachment_code){
+        $getAttachmentDef = \backend\modules\application\models\AttachmentDefinition::findBySql("SELECT attachment_definition_id FROM  attachment_definition WHERE  attachment_code='$attachment_code' AND is_active='1'")->one();
+        $attachment_definition_id=$getAttachmentDef->attachment_definition_id;
+
+        //first check in table of refund_claimant_attachment
+        $resultsAttachmentExist =self::findBySql("SELECT refund_claimant_attachment_id FROM  refund_claimant_attachment WHERE  refund_application_id='$refund_application_id' AND attachment_definition_id='$attachment_definition_id' AND is_active='1'")->one();
+        $claimantAttachmentID=$resultsAttachmentExist->refund_claimant_attachment_id;
+        //end check in refund_claimant_attachment
+        return $claimantAttachmentID;
+    }
 }

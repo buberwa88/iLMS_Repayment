@@ -54,6 +54,7 @@ class Controller extends \yii\web\Controller {
 		array_push($dontRequireLogin, '/repayment/employer/viewemployer-verificationcode');
 		array_push($dontRequireLogin, '/repayment/loan-beneficiary/verify-beneficiaryemail');
 		array_push($dontRequireLogin, '/repayment/employer/programme-namepublic');
+		array_push($dontRequireLogin, '/repayment/refund-claimant/nectadetails');
 		//END REPAYMENT
 		
              $mustLogin = array();

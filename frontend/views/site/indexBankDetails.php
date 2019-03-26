@@ -30,6 +30,8 @@ $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGener
 $resultsCheckCountSocialFund = RefundApplication::getStageCheckedSocialFund($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 $educationAttained = $resultsCheckResultsGeneral->educationAttained;
+$attachmentType=\backend\modules\repayment\models\RefundClaimantAttachment::Bank_Card;
+$attachmentTypeDeedPoll=\backend\modules\repayment\models\RefundClaimantAttachment::Claimant_deed_pole_document;
 
 if ($educationAttained == 2) {
     $step3 = 3;
@@ -132,6 +134,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'columns' => [
 
+                            /*
                         [
                             'label' => 'Bank Card Document',
                             'value' => call_user_func(function ($data) {
@@ -143,8 +146,32 @@ $this->params['breadcrumbs'][] = $this->title;
                                     }, $model),
                                     'format' => 'raw',
                                 ],
+                        */
+                        [
+                            'label' => 'Bank Card Document',
+                            'value' => call_user_func(function ($data) use($attachmentType) {
+                                return Html::a("VIEW", ['site/download', 'id'=>$data->refund_application_id,'attachmentType'=>$attachmentType]);
+                            }, $model),
+                            'format' => 'raw',
+                        ],
+
+
                             ],
                         ],
+                [
+                    'columns' => [
+                        [
+                            'label' => 'Deed Poll Document',
+                            'visible'=>$model->claimant_names_changed_status==1,
+                            'value' => call_user_func(function ($data) use($attachmentTypeDeedPoll) {
+                                return Html::a("VIEW", ['site/download', 'id'=>$data->refund_application_id,'attachmentType'=>$attachmentTypeDeedPoll]);
+                            }, $model),
+                            'format' => 'raw',
+                        ],
+
+
+                    ],
+                ],
                     ];
 
 

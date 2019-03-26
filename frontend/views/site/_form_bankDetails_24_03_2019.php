@@ -1,13 +1,13 @@
 <script type="text/javascript">
-     function claimantNamesChangedStatus(element) {//
+    function claimantNamesChangedStatus(element) {
+        //alert(element);
         var namesChangedStatusV = $('#claimant_names_changed_status_id input:checked').val();
         if (namesChangedStatusV == 1) {
-            $('.field-refundApplication-deed_pole_document').attr('style', 'display:block');
-            // $('#form_data_id').attr('style', 'display:block');
-        }
-        else {
-            $('#deed_pole_document_id').val('');
-            $('.field-refundApplication-deed_pole_document').attr('style', 'display:none');
+            document.getElementById('showNamesChanged').style.display = 'block';
+        } else if (namesChangedStatusV == 2) {
+            document.getElementById('showNamesChanged').style.display = 'none';
+        } else {
+            document.getElementById('showNamesChanged').style.display = 'none';
         }
     }
 </script>
@@ -24,21 +24,15 @@ use yii\captcha\Captcha;
 use kartik\date\DatePicker;
 use kartik\widgets\FileInput;
 use frontend\modules\repayment\models\RefundApplication;
+echo $model->claimant_names_changed_status."tele";
+if ($model->claimant_names_changed_status==1) {
     //$nonenecta = "checked='checked'";
-    if ($model->claimant_names_changed_status==1) {
-        //$nonenecta = "checked='checked'";
-        echo '<style>
-        .field-refundApplication-deed_pole_document{
-            display:block;
-        }
-    </style>';
-    } else {
-        echo '<style>
-      .field-refundApplication-deed_pole_document{
-            display: none;
-        }
-    </style>';
-    }
+    ?>
+<script type="text/javascript">
+    document.getElementById('showNamesChanged').style.display = 'block';
+</script>
+<?php
+}
 
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\RefundEducationHistory */
@@ -133,9 +127,11 @@ $cancel = "site/refund-liststeps";
     <br/>
     <?= $form->field($model, 'refundType')->label(FALSE)->hiddenInput(["value" => $refundTypeId, 'id' => 'refundType_id']) ?>
     <br/>
+
+    <div id="showNamesChanged" style="display:none">
         <?php
         echo $form->field($model, 'deed_pole_document')->label('Deed Pole Document:')->widget(FileInput::classname(), [
-            'options' => ['accept' => 'site/pdf','id' => 'deed_pole_document_id',],
+            'options' => ['accept' => 'site/pdf'],
             'pluginOptions' => [
                 'showCaption' => false,
                 'showRemove' => TRUE,
@@ -155,6 +151,7 @@ $cancel = "site/refund-liststeps";
                 //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
         ]);
         ?>
+    </div>
     <div class="text-right">
         <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 

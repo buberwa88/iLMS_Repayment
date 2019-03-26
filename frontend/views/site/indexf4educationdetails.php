@@ -22,6 +22,9 @@ $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked($refund_application_id);
+$attachmentTypef4cetificate=\backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
+$Employer_letter_Document=\backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
+$action='indexf4educationdetails';
 //$refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 //if($refundTypeId==3){
     //$title="Step 1: Deceased's Form 4 Education";
@@ -33,7 +36,7 @@ $resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked(
 //$resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 if($refundTypeId==3){
-    $title="Step 2: Deceased's Primary/Form 4 Education";
+    $title="Step 2: Deceased's Primary/Olevel Education";
     if(count($resultsCheckResultsGeneral->death_certificate_number)==0) {
         $link = 'site/create-deathdetails';
     }
@@ -41,7 +44,7 @@ if($refundTypeId==3){
         $link = 'site/index-deathdetails';
     }
 }else if($refundTypeId==1){
-    $title="Step 2: Primary/Form 4 Education";
+    $title="Step 2: Primary/Olevel Education";
     if ($resultsCheckResultsGeneral->educationAttained == 1) {
         $link = 'site/index-tertiary-education';
     }else{
@@ -52,7 +55,7 @@ if($refundTypeId==3){
         }
     }
 }else if($refundTypeId==2){
-    $title="Step 2: Primary/Form 4 Education";
+    $title="Step 2: Primary/Olevel Education";
 }
 //end set session
 
@@ -135,7 +138,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     [
                         'columns' => [
-
+                          /*
                             [
                                 'label'=>'F4 Certificate Document',
                                 'visible'=>$model->educationAttained==1,
@@ -149,6 +152,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format' => 'raw',
 
                             ],
+                          */
+                            [
+                                'label' => 'F4 Certificate Document',
+                                'visible'=>$model->educationAttained==1 && $model->refundClaimant->f4type==2,
+                                'value' => call_user_func(function ($data) use($attachmentTypef4cetificate) {
+                                    return Html::a("VIEW", ['site/download', 'id'=>$data->refund_claimant_id,'attachmentType'=>$attachmentTypef4cetificate]);
+                                }, $model),
+                                'format' => 'raw',
+                            ],
                         ],
                     ],
                     [
@@ -157,16 +169,14 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'label'=>'Employer Letter Document',
                                 'visible'=>$model->educationAttained==2,
-                                'value'=>call_user_func(function ($data) {
-                                    if($data->employer_letter_document !=''){
-                                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->employer_letter_document . '")','class'=>'label label-primary']);
-                                    }else{
-                                        return $data->employer_letter_document;
-                                    }
+                                'value' => call_user_func(function ($data) use($refund_application_id,$Employer_letter_Document,$action) {
+                                    return Html::a("VIEW", ['site/download', 'id'=>$refund_application_id,'attachmentType'=>$Employer_letter_Document,'action'=>$action]);
                                 }, $model),
                                 'format' => 'raw',
 
                             ],
+
+
                         ],
                     ],
                 ];
@@ -182,7 +192,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 echo '<div class="text-right">
 	<p>';
                 ?>
-                <?= Html::a('Update/Edit', ['update-contactperson', 'id' => '','emploID'=>''], ['class' => 'btn btn-primary']) ?>
+                <?php if($model->refundClaimant->f4type !=1){ ?>
+                <?= Html::a('Update/Edit Details', ['updatef4education', 'id' => $model->refund_claimant_id], ['class' => 'btn btn-primary']) ?>
+                <?php } ?>
                 <?php
                 echo "</p></div>";
             }?>

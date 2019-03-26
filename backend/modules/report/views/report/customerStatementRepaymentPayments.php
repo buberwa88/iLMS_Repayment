@@ -27,13 +27,13 @@ $style1='style="width:20%;text-align: right;font-weight:bold;"';
 $style2='style="width:10%;text-align:right;font-weight:bold;"';
 $style3='style="width:50%;text-align:left;font-size: 13pt;"';
 $style4='style="width:20%;text-align: right;font-size: 13pt;"';
-$style5HeaderS='style="width:5%;text-align: right;font-weight:bold;"';
-$style5HeaderEmpC='style="width:15%;text-align: right;font-weight:bold;"';
+$style5HeaderS='style="width:5%;text-align: left;font-weight:bold;"';
+$style5HeaderEmpC='style="width:15%;text-align: left;font-weight:bold;"';
 $style5HeaderPayD='style="width:10%;text-align: right;font-weight:bold;"';
 $style5HeaderAmount='style="width:30%;text-align: right;font-weight:bold;"';
 
-$style5DataS='style="width:5%;text-align: right;font-size: 13pt;"';
-$style5DataEmpC='style="width:15%;text-align: right;font-size: 13pt;"';
+$style5DataS='style="width:5%;text-align: left;font-size: 13pt;"';
+$style5DataEmpC='style="width:15%;text-align: left;font-size: 13pt;"';
 $style5DataPayD='style="width:10%;text-align: right;font-size: 13pt;"';
 $style5DataAmount='style="width:30%;text-align: right;font-size: 13pt;"';
 $loan_given_to=\frontend\modules\repayment\models\LoanRepaymentDetail::LOAN_GIVEN_TO_LOANEE;

@@ -822,6 +822,10 @@ class SiteController extends Controller {
                     $model->claimant_letter_document = Yii::$app->params['refundAttachments'] . "claimant_letter_document" . "_" . $modelRefundApplication->refund_application_id . "_" . $datime . '.' . $model->claimant_letter_document->extension;
                     $refundApplicationLetterDoc->claimant_letter_document=$model->claimant_letter_document;
                     $refundApplicationLetterDoc->save(false);
+                    //$attachment_code='F4CERT';
+                    $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Claimant_refund_letter_document;
+                    \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->claimant_letter_document);
+                    //////
                     /////
                     ####################here send email#####################
                     $headers = '';
@@ -966,6 +970,7 @@ class SiteController extends Controller {
                     $modelRefundresults->firstname = $model->firstname;
                     $modelRefundresults->middlename = $model->middlename;
                     $modelRefundresults->surname = $model->surname;
+                    $modelRefundresults->f4type = $model->f4type;
                     $modelRefundresults->f4_certificate_document = $model->f4_certificate_document;
                     if ($modelRefundresults->save(false)) {
                         //$attachment_code='F4CERT';
@@ -1007,37 +1012,69 @@ class SiteController extends Controller {
         if ($model->load(Yii::$app->request->post())) {
             $datime = date("Y_m_d_H_i_s");
             if ($model->educationAttained == 1) {
-                $model->f4_certificate_document = UploadedFile::getInstance($model, 'f4_certificate_document');
+                if ($model->f4type == 2) {
+                    $model->f4_certificate_document = UploadedFile::getInstance($model, 'f4_certificate_document');
+                }
             } else if ($model->educationAttained == 2) {
                 $model->employer_letter_document = UploadedFile::getInstance($model, 'employer_letter_document');
             }
             if ($model->validate()) {
                 if ($model->educationAttained == 1) {
-                    // $model->f4_certificate_document->saveAs(Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension);
-                    //$model->f4_certificate_document = Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension;
+                    if ($model->f4type == 2) {
+                        $model->f4_certificate_document->saveAs(Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension);
+                        $model->f4_certificate_document = Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension;
+                    }
                 }
                 if ($model->educationAttained == 2) {
-                    // $model->employer_letter_document->saveAs(Yii::$app->params['refundAttachments'] . "employer_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->employer_letter_document->extension);
-                    //$model->employer_letter_document = Yii::$app->params['refundAttachments'] . "employer_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->employer_letter_document->extension;
+                     $model->employer_letter_document->saveAs(Yii::$app->params['refundAttachments'] . "employer_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->employer_letter_document->extension);
+                    $model->employer_letter_document = Yii::$app->params['refundAttachments'] . "employer_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->employer_letter_document->extension;
                 }
 
                 if ($refundClaimantid != '') {
                     if ($model->educationAttained == 1) {
-                        $modelRefundresults = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
-                        $modelRefundresults->f4indexno = $model->f4indexno;
-                        $modelRefundresults->f4_completion_year = $model->f4_completion_year;
-                        $modelRefundresults->necta_firstname = $model->firstname;
-                        $modelRefundresults->necta_middlename = $model->middlename;
-                        $modelRefundresults->necta_surname = $model->surname;
-                        $modelRefundresults->firstname = $model->firstname;
-                        $modelRefundresults->middlename = $model->middlename;
-                        $modelRefundresults->surname = $model->surname;
-                        $modelRefundresults->f4_certificate_document = $model->f4_certificate_document;
-                        $modelRefundresults->save(false);
-                        $savedF4Education = 1;
-                        $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
-                        $modelRefundApplication_n->educationAttained = $model->educationAttained;
-                        $modelRefundApplication_n->save(false);
+                        if ($model->f4type == 2) {
+                            $modelRefundresults = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
+                            $modelRefundresults->f4indexno = $model->f4indexno;
+                            $modelRefundresults->f4_completion_year = $model->f4_completion_year;
+                            $modelRefundresults->necta_firstname = $model->firstname;
+                            $modelRefundresults->necta_middlename = $model->middlename;
+                            $modelRefundresults->necta_surname = $model->surname;
+                            //$modelRefundresults->firstname = $model->firstname;
+                            //$modelRefundresults->middlename = $model->middlename;
+                            //$modelRefundresults->surname = $model->surname;
+                            $modelRefundresults->f4_certificate_document = $model->f4_certificate_document;
+                            $modelRefundresults->save(false);
+                            $savedF4Education = 1;
+                            $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                            $modelRefundApplication_n->educationAttained = $model->educationAttained;
+                            $modelRefundApplication_n->save(false);
+                        }else if($model->f4type == 1){
+                            $nectaDataDetails = \frontend\modules\repayment\models\RefundNectaData::getNectaDataDetails($model->f4indexno,$model->f4_completion_year);
+                            $model->firstname=$nectaDataDetails->firstname;
+                            $model->middlename=$nectaDataDetails->middlename;
+                            $model->surname=$nectaDataDetails->lastname;
+                            $modelRefundresults = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
+                            $modelRefundresults->f4indexno = $model->f4indexno;
+                            $modelRefundresults->f4_completion_year = $model->f4_completion_year;
+                            $modelRefundresults->necta_firstname = $model->firstname;
+                            $modelRefundresults->necta_middlename = $model->middlename;
+                            $modelRefundresults->necta_surname = $model->surname;
+                            $modelRefundresults->educationAttained = $model->educationAttained;
+                            $modelRefundresults->f4_certificate_document = null;
+                            $modelRefundresults->f4type = $model->f4type;
+                            $modelRefundresults->save(false);
+                            $savedF4Education = 1;
+                            $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                            $modelRefundApplication_n->educationAttained = $model->educationAttained;
+                            $modelRefundApplication_n->save(false);
+
+                            //set to null
+                            $modelRefundApplication = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                            $modelRefundApplication->employer_letter_document = null;
+                            $modelRefundApplication->save(false);
+                            //end set to null
+
+                        }
                     }
                     if ($model->educationAttained == 2) {
                         $modelRefundApplication = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
@@ -1049,8 +1086,10 @@ class SiteController extends Controller {
                     if ($savedF4Education == 1 || $savedEmployerLetter == 1) {
                         //$attachment_code='F4CERT';
                         if ($model->educationAttained == 1) {
-                            $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
-                            \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $modelRefundresults->f4_certificate_document);
+                            if ($model->f4type == 2) {
+                                $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
+                                \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $modelRefundresults->f4_certificate_document);
+                            }
                         }
                         if ($model->educationAttained == 2) {
                             $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
@@ -1123,7 +1162,7 @@ class SiteController extends Controller {
             }
             if ($refundClaimantid != '' && $refund_application_id != '') {
                 $model->refund_application_id = $refund_application_id;
-
+                if ($model->validate()) {
                 if ($model->save()) {
                     if ($model->study_level == 1) {
                         $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Bachelor_Education_Certificate_Document;
@@ -1143,6 +1182,11 @@ class SiteController extends Controller {
                     \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id, $refund_type, $step_code);
                     /////
                     return $this->redirect(['index-tertiary-education']);
+                }
+            }else{
+                    return $this->render('createTertiary', [
+                        'model' => $model,
+                    ]);
                 }
             } else {
                 $sms = "<p>Session Expired!</p>";
@@ -1363,63 +1407,126 @@ class SiteController extends Controller {
         $refundClaimantid = $session->get('refund_claimant_id');
         $refund_application_id = $session->get('refund_application_id');
         //end set session
+        $old='';
+        $old2='';
         $model = \frontend\modules\repayment\models\RefundApplication::getRefundApplicationDetailsById($id);
-        if ($model) {
+        //if ($model) {
+        $model->scenario = 'updateBankDetails';
             if ($model->load(Yii::$app->request->post())) {
                 $datime = date("Y_m_d_H_i_s");
                 $model->bank_card_document = UploadedFile::getInstance($model, 'bank_card_document');
-                if ($model->claimant_names_changed_status == 1) {
-                    $model->deed_pole_document = UploadedFile::getInstance($model, 'deed_pole_document');
+                if ($model->bank_card_document == "") {
+                    $model->bank_card_document = $model->OldAttributes['bank_card_document'];
+                    $old = 1;
+                } else {
+                    $model->bank_card_document = UploadedFile::getInstance($model, 'bank_card_document');
+                    $old = 2;
                 }
-                $model->bank_card_document->saveAs(Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension);
+                //echo $model->bank_card_document ."---".$old;exit;
+                //check old and new
+                $newclaimant_names_changed_status=$model->claimant_names_changed_status;
+                $oldclaimant_names_changed_status=$model->OldAttributes['claimant_names_changed_status'];
+                //end check old and new
                 if ($model->claimant_names_changed_status == 1) {
-                    $model->deed_pole_document->saveAs(Yii::$app->params['refundAttachments'] . "deed_pole_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->deed_pole_document->extension);
+                    $oldclaimant_names_changed_status = $model->OldAttributes['claimant_names_changed_status'];
+                    $model->deed_pole_document = UploadedFile::getInstance($model, 'deed_pole_document');
+                    if ($model->deed_pole_document == "") {
+                        if($oldclaimant_names_changed_status==1) {
+                            //$model->bank_card_document = $model->OldAttributes['deed_pole_document'];
+                            $model->deed_pole_document = $model->OldAttributes['deed_pole_document'];
+                            $old2 = 1;
+                        }else{
+                            $model->deed_pole_document = UploadedFile::getInstance($model, 'deed_pole_document');
+                            $old2 = 2;
+                        }
+                    } else {
+                        $model->deed_pole_document = UploadedFile::getInstance($model, 'deed_pole_document');
+                        $old2 = 2;
+                    }
+                }
+                if($model->claimant_names_changed_status==1) {
+                 if($old2==2){
+                     $model->scenario = 'updateBankDetails2';
+                     //echo "tele";exit;
+                 }
+
+                }                if ($model->validate()) {
+                    if ($old == 2) {
+                        $model->bank_card_document->saveAs(Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension);
+                    }
+                    if ($model->claimant_names_changed_status == 1) {
+                        if ($old2 == 2) {
+                            $model->deed_pole_document->saveAs(Yii::$app->params['refundAttachments'] . "deed_pole_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->deed_pole_document->extension);
+                        }
+                    }
+                    if ($old == 2) {
+                        $model->bank_card_document = Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension;
+                    }
+                    if ($model->claimant_names_changed_status == 1) {
+                        if ($old2 == 2) {
+                            $model->deed_pole_document = Yii::$app->params['refundAttachments'] . "deed_pole_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->deed_pole_document->extension;
+                        }
+                    }
+                    //echo $old2."deep ".$old."bank card";exit;
+                    if ($refund_application_id != '') {
+                        $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                        $modelRefundresults->bank_name = $model->bank_name;
+                        $modelRefundresults->bank_account_number = $model->bank_account_number;
+                        $modelRefundresults->bank_account_name = $model->bank_account_name;
+                        if ($model->claimant_names_changed_status == 1) {
+                            if ($old2 == 2) {
+                                $modelRefundresults->deed_pole_document = $model->deed_pole_document;
+                            }
+                        }else{
+                            $modelRefundresults->deed_pole_document = null;
+                        }
+                        $modelRefundresults->claimant_names_changed_status = $model->claimant_names_changed_status;
+                        $modelRefundresults->branch = $model->branch;
+                        if ($old == 2) {
+                            $modelRefundresults->bank_card_document = $model->bank_card_document;
+                        }
+                        if ($modelRefundresults->save(false)) {
+                            $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Bank_Card;
+                            $attachment_code2 = \backend\modules\repayment\models\RefundClaimantAttachment::Claimant_deed_pole_document;
+                            //\backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->bank_card_document);
+                            if ($old == 2) {
+                                \backend\modules\repayment\models\RefundClaimantAttachment::updateClaimantAttachment($refund_application_id, $attachment_code, $model->bank_card_document);
+                            }
+                            if ($model->claimant_names_changed_status == 1) {
+                                $existAttachmentID = \backend\modules\repayment\models\RefundClaimantAttachment::checkAttachmentExists($refund_application_id, $attachment_code2);
+                                if ($existAttachmentID > 0) {
+                                    \backend\modules\repayment\models\RefundClaimantAttachment::updateClaimantAttachment($refund_application_id, $attachment_code2, $model->deed_pole_document);
+                                } else {
+                                    \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code2, $model->deed_pole_document);
+                                }
+                            }
+                            if($newclaimant_names_changed_status !=1 && $oldclaimant_names_changed_status==1) {
+                                \backend\modules\repayment\models\RefundClaimantAttachment::deleteClaimantAttachment($refund_application_id, $attachment_code2);
+                            }
+                            return $this->redirect(['index-bankdetails']);
+                        }
+                    }
+                } else {
+                    return $this->render('EditRefundBankdetails', [
+                        'model' => $model,
+                    ]);
+
                 }
 
-                $model->bank_card_document = Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension;
-                if ($model->claimant_names_changed_status == 1) {
-                    $model->deed_pole_document = Yii::$app->params['refundAttachments'] . "deed_pole_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->deed_pole_document->extension;
-                }
-                if ($refund_application_id != '') {
-                    $modelRefundresults = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
-                    $modelRefundresults->bank_name = $model->bank_name;
-                    $modelRefundresults->bank_account_number = $model->bank_account_number;
-                    $modelRefundresults->bank_account_name = $model->bank_account_name;
-                    if ($model->claimant_names_changed_status == 1) {
-                        $modelRefundresults->deed_pole_document = $model->deed_pole_document;
-                    }
-                    $modelRefundresults->claimant_names_changed_status = $model->claimant_names_changed_status;
-                    $modelRefundresults->branch = $model->branch;
-                    $modelRefundresults->bank_card_document = $model->bank_card_document;
-                    if ($modelRefundresults->save(false)) {
-                        $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Bank_Card;
-                        $attachment_code2 = \backend\modules\repayment\models\RefundClaimantAttachment::Claimant_deed_pole_document;
-                        \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->bank_card_document);
-                        if ($model->claimant_names_changed_status == 1) {
-                            \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code2, $model->deed_pole_document);
-                        }
-                        //////
-                        $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
-                        $refund_type = $modelRefundApplication_n->refund_type_id;
-                        $generalStepCode = \backend\modules\repayment\models\RefundType::Bank_details_check;
-                        $step_code = \backend\modules\repayment\models\RefundType::getRefundStepCode($refund_type, $generalStepCode);
-                        \frontend\modules\repayment\models\RefundSteps::insertRefundStepsAttained($refund_application_id, $refund_type, $step_code);
-                        /////
-                        return $this->redirect(['index-bankdetails']);
-                    }
-                }
+            }else {
+                return $this->render('EditRefundBankdetails', [
+                    'model' => $model,
+                ]);
             }
-            return $this->render('EditRefundBankdetails', [
-                        'model' => $model,
-            ]);
+
 //            else {
 //                $sms = "<p>Session Expired!</p>";
 //                Yii::$app->getSession()->setFlash('error', $sms);
 //                return $this->redirect(['index-bankdetails']);
 //            }
-        } else {
-            $this->redirect(['site/index-bankdetails', 'id' => $refund_applaction_id]);
-        }
+        //} else {
+           // $this->redirect(['site/index-bankdetails', 'id' => $refund_application_id]);
+        //}
     }
 
     public function actionBankDetailspreview($id) {
@@ -2109,6 +2216,8 @@ class SiteController extends Controller {
     function actionRecoverReferenceNumber() {
         $this->layout = "main_public";
         $sms = '';
+        $Full_name='';
+        $trustee_email='';
         $model = new \frontend\modules\repayment\models\RefundApplication();
         $model->scenario = 'recover-refund-no';
         if ($_POST['RefundApplication']) {
@@ -2164,5 +2273,293 @@ class SiteController extends Controller {
         return $this->render('employerRegistrationStatus', [
         ]);
     }
+    public function actionDownload($id,$attachmentType,$action=null){
+        $this->layout = "main_public";
+        $session = Yii::$app->session;
 
+        $attachmentTypef4cetificate=\backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
+        $attachmentBankCard=\backend\modules\repayment\models\RefundClaimantAttachment::Bank_Card;
+        $attachmentTypeDeedPoll=\backend\modules\repayment\models\RefundClaimantAttachment::Claimant_deed_pole_document;
+        $Employer_letter_Document=\backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
+        $Claimant_refund_letter_document=\backend\modules\repayment\models\RefundClaimantAttachment::Claimant_refund_letter_document;
+        if($attachmentType==$attachmentTypef4cetificate) {
+            $att = \frontend\modules\repayment\models\RefundClaimant::findOne(['refund_claimant_id' => $id]);
+            $file = $att->f4_certificate_document;
+        }
+        if($attachmentType==$attachmentBankCard) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->bank_card_document;
+        }
+        if($attachmentType==$attachmentTypeDeedPoll) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->deed_pole_document;
+        }
+        if($attachmentType==$Employer_letter_Document) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->employer_letter_document;
+        }
+        if($attachmentType==$Claimant_refund_letter_document) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->claimant_letter_document;
+        }
+
+        //echo $file;exit;
+        if (file_exists($file)) {
+            return Yii::$app->response->sendFile($file);
+        }else{
+            //$model = \frontend\modules\repayment\models\RefundClaimant::findOne($id);
+            $sms = "File Doesn't Exist";
+            Yii::$app->getSession()->setFlash('error', $sms);
+            return $this->redirect(['/site/'.$action]);
+        }
+
+    }
+    public function actionUpdatef4education($id) {
+    $this->layout = "main_public";
+    //$model = new \frontend\modules\repayment\models\RefundClaimant();
+    //set session
+    $old='';
+    $old2='';
+    $session = Yii::$app->session;
+    $refundClaimantid = $session->get('refund_claimant_id');
+    $refund_application_id = $session->get('refund_application_id');
+    //end set session
+    $model = \frontend\modules\repayment\models\RefundClaimant::findOne($id);
+    $model->scenario = 'refundf4educationUpdate';
+    if ($model->load(Yii::$app->request->post())) {
+        $datime = date("Y_m_d_H_i_s");
+        $neweducationAttained=$model->educationAttained;
+        $oldeducationAttained=$model->OldAttributes['educationAttained'];
+        if ($model->educationAttained == 1) {
+            if ($model->f4type == 2) {
+                $model->f4_certificate_document = UploadedFile::getInstance($model, 'f4_certificate_document');
+                if ($model->f4_certificate_document == "") {
+                    if ($oldeducationAttained == 1) {
+                        $model->f4_certificate_document = $model->OldAttributes['f4_certificate_document'];
+                        $old = 1;
+                    } else {
+                        $model->f4_certificate_document = UploadedFile::getInstance($model, 'f4_certificate_document');
+                        $old = 2;
+                    }
+                } else {
+                    $model->f4_certificate_document = UploadedFile::getInstance($model, 'f4_certificate_document');
+                    $old = 2;
+                }
+
+            }
+        } else if ($model->educationAttained == 2) {
+            $model->employer_letter_document = UploadedFile::getInstance($model, 'employer_letter_document');
+            if ($model->employer_letter_document == "") {
+                if($oldeducationAttained==2) {
+                    $model->employer_letter_document = $model->OldAttributes['employer_letter_document'];
+                    $old2 = 1;
+                }else{
+                    $model->employer_letter_document = UploadedFile::getInstance($model, 'employer_letter_document');
+                    $old2 = 2;
+                }
+            }else {
+                $model->employer_letter_document = UploadedFile::getInstance($model, 'employer_letter_document');
+                $old2 = 2;
+            }
+        }
+
+        if ($model->educationAttained == 1 && $model->f4type==2) {
+            if ($old == 2) {
+                $model->scenario = 'refundf4educationUpdate2';
+                //echo "tele";exit;
+            }
+            //echo $old."tele";exit;
+        }
+        if ($model->educationAttained == 2) {
+            if ($old2 == 2) {
+                $model->scenario = 'refundf4educationUpdate3';
+                //echo "tele";exit;
+            }
+            //echo $old."tele";exit;
+        }
+        if ($model->validate()) {
+            if ($model->educationAttained == 1) {
+                if($model->f4type == 2) {
+                    if ($old == 2) {
+                        $model->f4_certificate_document->saveAs(Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension);
+                        $model->f4_certificate_document = Yii::$app->params['refundAttachments'] . "f4_certificate_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->f4_certificate_document->extension;
+                    }
+                }
+            }
+            if ($model->educationAttained == 2) {
+                if ($old2 == 2) {
+                    $model->employer_letter_document->saveAs(Yii::$app->params['refundAttachments'] . "employer_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->employer_letter_document->extension);
+                    $model->employer_letter_document = Yii::$app->params['refundAttachments'] . "employer_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->employer_letter_document->extension;
+                }
+            }
+
+            if ($refundClaimantid != '') {
+                if ($model->educationAttained == 1) {
+                    if ($model->f4type == 2) {
+                        $modelRefundresults = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
+                        $modelRefundresults->f4indexno = $model->f4indexno;
+                        $modelRefundresults->f4_completion_year = $model->f4_completion_year;
+                        $modelRefundresults->necta_firstname = $model->firstname;
+                        $modelRefundresults->necta_middlename = $model->middlename;
+                        $modelRefundresults->necta_surname = $model->surname;
+                        $modelRefundresults->educationAttained = $model->educationAttained;
+                        $modelRefundresults->f4type = $model->f4type;
+                        if ($old == 2) {
+                            $modelRefundresults->f4_certificate_document = $model->f4_certificate_document;
+                        }
+                        $modelRefundresults->save(false);
+                        $savedF4Education = 1;
+                        $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                        $modelRefundApplication_n->educationAttained = $model->educationAttained;
+                        $modelRefundApplication_n->save(false);
+
+                        //set to null
+                        $modelRefundApplication = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                        $modelRefundApplication->employer_letter_document = null;
+                        $modelRefundApplication->save(false);
+                        //end set to null
+                    }else if($model->f4type == 1){
+                        $nectaDataDetails = \frontend\modules\repayment\models\RefundNectaData::getNectaDataDetails($model->f4indexno,$model->f4_completion_year);
+                        $model->firstname=$nectaDataDetails->firstname;
+                        $model->middlename=$nectaDataDetails->middlename;
+                        $model->surname=$nectaDataDetails->lastname;
+                        $modelRefundresults = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
+                        $modelRefundresults->f4indexno = $model->f4indexno;
+                        $modelRefundresults->f4_completion_year = $model->f4_completion_year;
+                        $modelRefundresults->necta_firstname = $model->firstname;
+                        $modelRefundresults->necta_middlename = $model->middlename;
+                        $modelRefundresults->necta_surname = $model->surname;
+                        $modelRefundresults->educationAttained = $model->educationAttained;
+                        $modelRefundresults->f4_certificate_document = null;
+                        $modelRefundresults->f4type = $model->f4type;
+                        $modelRefundresults->save(false);
+                        $savedF4Education = 1;
+                        $modelRefundApplication_n = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                        $modelRefundApplication_n->educationAttained = $model->educationAttained;
+                        $modelRefundApplication_n->save(false);
+
+                        //set to null
+                        $modelRefundApplication = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                        $modelRefundApplication->employer_letter_document = null;
+                        $modelRefundApplication->save(false);
+                        //end set to null
+
+                    }
+                }
+                if ($model->educationAttained == 2) {
+                    $modelRefundApplication = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                    if($old2==2) {
+                        $modelRefundApplication->employer_letter_document = $model->employer_letter_document;
+                    }
+                    $modelRefundApplication->educationAttained = $model->educationAttained;
+                    $modelRefundApplication->save(false);
+                    $savedEmployerLetter = 1;
+
+                    //set to null
+                    $modelRefundresults = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
+                    $modelRefundresults->f4indexno = null;
+                    $modelRefundresults->f4_completion_year = null;
+                    $modelRefundresults->necta_firstname = null;
+                    $modelRefundresults->necta_middlename = null;
+                    $modelRefundresults->necta_surname = null;
+                    $modelRefundresults->f4_certificate_document = null;
+                    $modelRefundresults->educationAttained = $model->educationAttained;
+                    $modelRefundresults->f4type = null;
+                    $modelRefundresults->save(false);
+                    //end set to null
+                }
+                if ($savedF4Education == 1 || $savedEmployerLetter == 1) {
+                    //delete the old
+                    if($neweducationAttained !=1 && $oldeducationAttained==1) {
+                        $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
+                        \backend\modules\repayment\models\RefundClaimantAttachment::deleteClaimantAttachment($refund_application_id, $attachment_code);
+                    }
+                    if($neweducationAttained !=2 && $oldeducationAttained==2) {
+                        $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
+                        \backend\modules\repayment\models\RefundClaimantAttachment::deleteClaimantAttachment($refund_application_id, $attachment_code);
+                    }
+                    if($model->f4type == 1){
+                        $attachment_code1 = \backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
+                        \backend\modules\repayment\models\RefundClaimantAttachment::deleteClaimantAttachment($refund_application_id, $attachment_code1);
+                        $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
+                        \backend\modules\repayment\models\RefundClaimantAttachment::deleteClaimantAttachment($refund_application_id, $attachment_code);
+                    }
+                    //end delete the old
+
+                    if ($old == 2) {
+                        $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::F4_CERTIFICATE_DOCUMENT;
+                        $existAttachmentID = \backend\modules\repayment\models\RefundClaimantAttachment::checkAttachmentExists($refund_application_id, $attachment_code);
+                        if ($existAttachmentID > 0) {
+                            \backend\modules\repayment\models\RefundClaimantAttachment::updateClaimantAttachment($refund_application_id, $attachment_code, $model->f4_certificate_document);
+                        } else {
+                            \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->f4_certificate_document);
+                        }
+                    }
+                    if ($old2 == 2) {
+                        $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
+                        $existAttachmentID = \backend\modules\repayment\models\RefundClaimantAttachment::checkAttachmentExists($refund_application_id, $attachment_code);
+                        if ($existAttachmentID > 0) {
+                            \backend\modules\repayment\models\RefundClaimantAttachment::updateClaimantAttachment($refund_application_id, $attachment_code, $model->employer_letter_document);
+                        } else {
+                            \backend\modules\repayment\models\RefundClaimantAttachment::insertClaimantAttachment($refund_application_id, $attachment_code, $model->employer_letter_document);
+                        }
+                    }
+                    return $this->redirect(['indexf4educationdetails']);
+                }
+            } else {
+                $sms = "<p>Session Expired!</p>";
+                Yii::$app->getSession()->setFlash('error', $sms);
+                return $this->redirect(['indexf4educationdetails']);
+            }
+        }else {
+            return $this->render('updatef4education', [
+                'model' => $model,
+            ]);
+        }
+        //var_dump($model->errors);
+    } else {
+        return $this->render('updatef4education', [
+            'model' => $model,
+        ]);
+    }
+}
+    public function actionUpdatecontacts($id)
+    {
+        $this->layout = "main_public";
+        //set session
+        $session = Yii::$app->session;
+        $refundClaimantid = $session->get('refund_claimant_id');
+        $refund_application_id = $session->get('refund_application_id');
+        //end set session
+        $model = \frontend\modules\repayment\models\RefundContactPerson::findOne($id);
+        $model->scenario = 'refundClaimantContactUpdate';
+        $datime = date("Y_m_d_H_i_s");
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate()) {
+                if($model->save()){
+                    $model->claimant_letter_document = UploadedFile::getInstance($model, 'claimant_letter_document');
+                    if ($model->claimant_letter_document != "") {
+
+                        $model->claimant_letter_document->saveAs(Yii::$app->params['refundAttachments'] . "claimant_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->claimant_letter_document->extension);
+                        $model->claimant_letter_document = Yii::$app->params['refundAttachments'] . "claimant_letter_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->claimant_letter_document->extension;
+                        $claimant_letter_document=$model->claimant_letter_document;
+                        $modelRefundApplication = \frontend\modules\repayment\models\RefundApplication::findOne($refund_application_id);
+                        $modelRefundApplication->claimant_letter_document = $claimant_letter_document;
+                        $modelRefundApplication->save(false);
+                        $attachment_code = \backend\modules\repayment\models\RefundClaimantAttachment::Claimant_refund_letter_document;
+                        \backend\modules\repayment\models\RefundClaimantAttachment::updateClaimantAttachment($refund_application_id, $attachment_code, $claimant_letter_document);
+                    }
+                    return $this->redirect(['index-contactdetails']);
+                }
+        }else{
+            return $this->render('updateContacts', [
+                'model' => $model,
+            ]);
+        }
+        } else {
+            return $this->render('updateContacts', [
+                'model' => $model,
+            ]);
+        }
+    }
 }

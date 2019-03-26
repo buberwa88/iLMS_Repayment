@@ -15,6 +15,17 @@ use frontend\modules\repayment\models\EmployerSearch;
 /* @var $this yii\web\View */
 /* @var $model frontend\modules\repayment\models\RefundEducationHistory */
 /* @var $form yii\widgets\ActiveForm */
+
+$session = Yii::$app->session;
+$refundClaimantid = $session->get('refund_claimant_id');
+$refund_application_id = $session->get('refund_application_id');
+
+$educationResults = \frontend\modules\repayment\models\RefundClaimantEducationHistory::checkExists($refund_application_id);
+if($educationResults==1) {
+    $cancel = 'index-tertiary-education';
+}else{
+    $cancel = 'refund-liststeps';
+}
 ?>
 <style>
     .rowQA {
@@ -47,7 +58,7 @@ use frontend\modules\repayment\models\EmployerSearch;
                     'data' => ArrayHelper::map(backend\modules\application\models\ApplicantCategory::find()->all(), 'applicant_category_id', 'applicant_category'),
                     'options' => [
                         'prompt' => '-- Select --',
-                    //'id' => 'applicant_category_id',
+                        'id' => 'applicant_category_id',
                     ],
                     'pluginOptions' => [
                         'allowClear' => true
@@ -131,11 +142,11 @@ use frontend\modules\repayment\models\EmployerSearch;
 
 
     <div class="text-right">
-        <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+        <?= Html::submitButton($model->isNewRecord ? 'Save' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 
         <?php
         echo Html::resetButton('Reset', ['class' => 'btn btn-default']);
-        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", ['site/index-tertiary-education', 'id' => $employerID], ['class' => 'btn btn-warning']);
+        echo Html::a("Cancel&nbsp;&nbsp;<span class='label label-warning'></span>", [$cancel], ['class' => 'btn btn-warning']);
 
         ActiveForm::end();
         ?>

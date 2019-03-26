@@ -122,4 +122,39 @@ class RefundClaimantController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+    public function actionNectadetails()
+    {
+        $sqlitem=0;
+//  $index="S0750/0023/1891";
+        #############check if this academic year exit or not
+        /*
+        $index = Yii::$app->request->post("registrationId") . "." . Yii::$app->request->post("year");
+
+        $model_year = \common\models\AcademicYear::findOne(["is_current" => 1]);
+        $sqlitem = Yii::$app->db->createCommand("SELECT count(*) FROM `applicant` a join application app on a.`applicant_id`=app.`applicant_id` WHERE a.`f4indexno`='{$index}' AND `academic_year_id`='{$model_year->academic_year_id}'")->queryScalar();
+*/
+        #####################end check###################
+        $f4indexno=Yii::$app->request->post("registrationId");
+        $year=Yii::$app->request->post("year");
+            $model = \frontend\modules\repayment\models\RefundNectaData::getNectaDataDetails($f4indexno,$year);
+            if(count($model) > 0){
+            // print_r($model);
+            /*
+            if (!is_array($model)) {
+                return "<h4><font color='red'>" . $model . "</font></h4>";
+            }
+            */
+             //return print_r($model);
+            return $this->renderPartial('../loan-repayment/_necta_details', [
+                'model' => $model
+            ]);
+        } else {
+            $alert = "alert-error";
+            $message = "F4 index number not found, please contact HESLB for assistance";
+            return $this->renderPartial('../loan-repayment/_message', [
+                'message' => $message,
+                'alert' => $alert,
+            ]);
+        }
+    }
 }

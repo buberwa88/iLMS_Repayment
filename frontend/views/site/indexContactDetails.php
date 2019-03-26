@@ -28,6 +28,8 @@ $refund_application_id = $session->get('refund_application_id');
 /* @var $dataProvider yii\data\ActiveDataProvider */
 $resultsCheckCountSocialFund = RefundApplication::getStageCheckedSocialFund($refund_application_id);
 $resultsCheckCountEmploymentDetails = RefundClaimantEmployment::getStageChecked($refund_application_id);
+$action='index-contactdetails';
+$Claimant_refund_letter_document=\backend\modules\repayment\models\RefundClaimantAttachment::Claimant_refund_letter_document;
 /*
 if ($resultsCheckCountSocialFund > 0) {
     $link='site/index-socialfund';
@@ -129,6 +131,21 @@ $this->params['breadcrumbs'][] = $this->title;
 
                         ],
                     ],
+                    [
+                        'columns' => [
+
+                            [
+                                'label'=>'Refund Application Letter Document',
+                                'value' => call_user_func(function ($data) use($refund_application_id,$Claimant_refund_letter_document,$action) {
+                                    return Html::a("VIEW", ['site/download', 'id'=>$refund_application_id,'attachmentType'=>$Claimant_refund_letter_document,'action'=>$action]);
+                                }, $model),
+                                'format' => 'raw',
+
+                            ],
+
+
+                        ],
+                    ],
                 ];
 
 
@@ -142,7 +159,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 echo '<div class="text-right">
 	<p>';
                 ?>
-                <?= Html::a('Update/Edit', ['contact-details-preview', 'id' =>$model->refund_contact_person_id], ['class' => 'btn btn-primary']) ?>
+                <?= Html::a('Update/Edit Details', ['updatecontacts', 'id' =>$model->refund_contact_person_id], ['class' => 'btn btn-primary']) ?>
                 <?php
                 echo "</p></div>";
             }?>

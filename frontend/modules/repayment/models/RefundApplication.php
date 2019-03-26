@@ -100,6 +100,8 @@ class RefundApplication extends \yii\db\ActiveRecord {
             [['trustee_identity', 'verificationCode'], 'required', 'on' => 'recover-refund-no'],
             [['trustee_identity'], 'validIdentity', 'on' => 'recover-refund-no'],
             [['bank_account_number', 'bank_account_name', 'bank_name', 'bank_card_document'], 'required', 'on' => 'refundBankDetailsAdd'],
+            [['bank_account_number', 'bank_account_name', 'bank_name'], 'required', 'on' => 'updateBankDetails'],
+            [['deed_pole_document'], 'required', 'on' => 'updateBankDetails2'],
             [['death_certificate_number', 'death_certificate_document'], 'required', 'on' => 'refundDeathDetails'],
             [['liquidation_letter_document', 'liquidation_letter_number'], 'required', 'on' => 'refundEmploymentDetails'],
             [['court_letter_number', 'court_letter_certificate_document', 'letter_family_session_document'], 'required', 'on' => 'refundCourtDetails'],
@@ -149,13 +151,14 @@ class RefundApplication extends \yii\db\ActiveRecord {
 				return $('#soccialFundDocument_id input:checked').val() == 1;
 				}
 			}"],
-            [['deed_pole_document'], 'required', 'when' => function ($model) {
+            [['deed_pole_document'], 'required','on'=>'refundBankDetailsAdd', 'when' => function ($model) {
             return $model->claimant_names_changed_status == 1;
         }, 'whenClient' => "function (attribute, value) {
         if ($('#claimant_names_changed_status_id input:checked').val() == 1) {
 				return $('#claimant_names_changed_status_id input:checked').val() == 1;
 				}
 			}"],
+
 //            [['updated_at'], 'required'],
             [['application_number', 'check_number', 'bank_account_number', 'liquidation_letter_number'], 'string', 'max' => 50],
             [['trustee_firstname', 'trustee_midlename', 'trustee_surname'], 'string', 'max' => 45],
@@ -395,6 +398,9 @@ class RefundApplication extends \yii\db\ActiveRecord {
             self::Pending => 'Pending',
             self::Verification_Onprogress => 'Verification Onprogress',
             self::Verification_Complete => 'Verification Complete',
+            self::PAY_LIST_WAITING_QUEUE => 'PAY LIST QUEUE',
+            self::APPLICATION_IN_PALIST => 'IN PAY LIST',
+            self::PAID_APPLICATION => 'PAID',
         ];
     }
 

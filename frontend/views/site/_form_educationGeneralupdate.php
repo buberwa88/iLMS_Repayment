@@ -21,6 +21,7 @@ $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
+$model->employer_letter_document=$resultsCheckResultsGeneral->employer_letter_document;
 
 $listFormiv = [1 => 'NECTA STUDENTS [Completed in Tanzania]', 2 => 'NON NECTA STUDENTS [Holders of Foreign Certificates]'];
 $yearmax = date("Y");
@@ -34,55 +35,105 @@ for ($y = 1982; $y <= $yearmax; $y++) {
     function generalShow(element){
         //alert(element);
         var educationLevelVa=$('#educationAttained_id input:checked').val();
+        var displaymyDiv = document.getElementById("myDIV");
+        var displayDivbelowF4show = document.getElementById("belowF4show");
+        var displayDivolevel_options=document.getElementById("olevel_options");
+        //var f4type=$('#f4type_id input:checked').val();
         if (educationLevelVa==1) {
-            document.getElementById('f4education_show').style.display = 'block';
+            //document.getElementById('f4education_show').style.display = 'block';
+            $('.field-refundClaimant-f4type').attr('style', 'display:block');
             document.getElementById('belowF4show').style.display = 'none';
+            displayDivolevel_options.style.display = "block";
+            displayDivbelowF4show.style.display = "none";
+            $('#employer_letter_document_id').val('');
         }else if(educationLevelVa==2){
-            document.getElementById('f4education_show').style.display = 'none';
+            //document.getElementById('f4education_show').style.display = 'none';
+            $('.field-refundClaimant-f4type').attr('style', 'display:none');
             document.getElementById('belowF4show').style.display = 'block';
+            displayDivbelowF4show.style.display = "block";
+            displayDivolevel_options.style.display = "none";
+            displaymyDiv.style.display = "none";
+            $('#f4_certificate_document_id').val('');
         }else {
-            document.getElementById('f4education_show').style.display = 'none';
+            //document.getElementById('f4education_show').style.display = 'none';
             document.getElementById('belowF4show').style.display = 'none';
+            displayDivbelowF4show.style.display = "none";
+            displayDivolevel_options.style.display = "none";
+            displaymyDiv.style.display = "none";
+            $('.field-refundClaimant-f4type').attr('style', 'display:none');
+            $('#f4_certificate_document_id').val('');
+            $('#employer_letter_document_id').val('');
         }
     }
 
     function setRefundf4ed(type) {
         //alert(type);
         var educationCatV=$('#f4type_id input:checked').val();
+        var displaynecta = document.getElementById("necta");
+        var displaynonnecta = document.getElementById("nonnecta");
+        var displaynonnectablock = document.getElementById("nonnectablock");
+        var displaymyDiv = document.getElementById("myDIV");
         var displaymyDivNecta = document.getElementById("myDivNecta");
         if (educationCatV == 1) {
-            document.getElementById("general").style.display = "block";
-            document.getElementById("necta").style.display = "block";
-            document.getElementById("nonnecta").style.display = "none";
-            document.getElementById("f4certificateDoc").style.display = "none";
+            $('.field-refundClaimant-f4indexno').attr('style', 'display:block');
+            $('.field-refundClaimant-f4_completion_year').attr('style', 'display:block');
+            $('.field-refundClaimant-firstname').attr('style', 'display:none');
+            $('.field-refundClaimant-middlename').attr('style', 'display:none');
+            $('.field-refundClaimant-surname').attr('style', 'display:none');
+            $('.field-refundClaimant-f4_certificate_document').attr('style', 'display:none');
+            $('#switch_right').val('1');
             $("#school_block_id").attr('maxlength','16');
             $('#school_block_id').attr('style', 'display:block');
             $('#nonnecta_block_id').attr('style', 'display:none');
             $('#nonnecta_block_completionyear_id').attr('style', 'display:none');
             $("#refundclaimant-f4indexno").attr('maxlength','10');
-            $('#switch_right').val('1');
             $('#create-button-id').attr('style', 'display: none');
+            $('#reset-button-id').attr('style', 'display: none');
+            displaynecta.style.display = "block";
+            displaymyDiv.style.display = "block";
+            displaynonnecta.style.display = "none";
+            displaynonnectablock.style.display = "none";
         }else if (educationCatV == 2) {
-            document.getElementById("general").style.display = "block";
-            document.getElementById("necta").style.display = "none";
-            document.getElementById("nonnecta").style.display = "block";
-            document.getElementById("f4certificateDoc").style.display = "block";
+            $('.field-refundClaimant-f4indexno').attr('style', 'display:block');
+            $('.field-refundClaimant-f4_completion_year').attr('style', 'display:block');
+            $('.field-refundClaimant-firstname').attr('style', 'display:block');
+            $('.field-refundClaimant-middlename').attr('style', 'display:block');
+            $('.field-refundClaimant-surname').attr('style', 'display:block');
+            $('.field-refundClaimant-f4_certificate_document').attr('style', 'display:block');
             $("#refundclaimant-f4indexno").attr('maxlength','16');
-            $('#nonnecta_block_id').attr('style', 'display:block');
             $('#school_block_id').attr('style', 'display:block');
+            $('#nonnecta_block_id').attr('style', 'display:block');
             $('#nonnecta_block_completionyear_id').attr('style', 'display:block');
             $('#switch_right').val('2');
-            displaymyDivNecta.style.display = "none";
             $('#create-button-id').attr('style', 'display: block');
+            $('#reset-button-id').attr('style', 'display: block');
+            displaynonnecta.style.display = "block";
+            displaynonnectablock.style.display = "block";
+            displaymyDiv.style.display = "block";
+            displaynecta.style.display = "none";
+            displaymyDivNecta.style.display = "none";
+            $('#school_block_id').val('');
+        }else{
+            $('.field-refundClaimant-f4indexno').attr('style', 'display:none');
+            $('.field-refundClaimant-f4_completion_year').attr('style', 'display:none');
+            $('.field-refundClaimant-firstname').attr('style', 'display:none');
+            $('.field-refundClaimant-middlename').attr('style', 'display:none');
+            $('.field-refundClaimant-surname').attr('style', 'display:none');
+            $('.field-refundClaimant-f4_certificate_document').attr('style', 'display:none');
+            displaynonnecta.style.display = "none";
+            displaynecta.style.display = "none";
+            displaynonnectablock.style.display = "none";
+            displaymyDiv.style.display = "none";
         }
     }
+
     function check_refundnecta() {
         var registrationId = document.getElementById('refundclaimant-f4indexno').value;
         var year = document.getElementById('refundclaimant-f4_completion_year').value;
         var status = document.getElementById('switch_right').value;
         //alert(status);
         if(status == 1){
-            $('#create-button-id').attr('style', 'display: none');
+           $('#create-button-id').attr('style', 'display: none');
         }
         //document.getElementById("w5").style.display = "none";
 
@@ -128,7 +179,83 @@ for ($y = 1982; $y <= $yearmax; $y++) {
     #myDivNecta{
         margin-left:50px;
     }
+    #create-button-id{
+        text-align:right;
+    }
 </style>
+<?php
+if ($model->f4type==1 && $model->educationAttained==1) {
+    //$nonenecta = "checked='checked'";
+    echo '<style>
+        .field-refundClaimant-f4type .field-refundClaimant-f4indexno .field-refundClaimant-f4_completion_year{
+            display:none;
+        }
+        #necta{
+        display:block;
+        }
+        #nonnecta{
+        display:none;
+        }
+        #nonnectablock{
+        display:none;
+        }
+        #belowF4show{
+        display:none;
+        }
+    </style>';
+} else if($model->f4type==2  && $model->educationAttained==1){
+    echo '<style>
+      .field-refundClaimant-f4type .field-refundClaimant-f4indexno .field-refundClaimant-f4_completion_year .field-refundClaimant-firstname .field-refundClaimant-middlename .field-refundClaimant-surname .field-refundClaimant-f4_certificate_document{
+            display: block;
+        }
+        #necta{
+        display:none;
+        }
+        #nonnecta{
+        display:block;
+        }
+        #nonnectablock{
+        display:block;
+        }
+        #belowF4show{
+        display:none;
+        }
+    </style>';
+}else{
+    echo '<style>
+      .field-refundClaimant-f4type .field-refundClaimant-f4indexno .field-refundClaimant-f4_completion_year .field-refundClaimant-firstname .field-refundClaimant-middlename .field-refundClaimant-surname .field-refundClaimant-f4_certificate_document {
+            display:none;
+        }
+        #necta{
+        display:none;
+        }
+        #nonnecta{
+        display:none;
+        }
+        #nonnectablock{
+        display:none;
+        }
+        #belowF4show{
+        display:none;
+        }
+    </style>';
+}
+
+if ($model->educationAttained==2) {
+    //$nonenecta = "checked='checked'";
+    echo '<style>
+        #myDIV{
+        display:none;
+        }
+        #olevel_options{
+        display:none;
+        }
+        #belowF4show{
+        display:block;
+        }
+    </style>';
+}
+?>
 <div class="refund-education-history-form">
     <?php
     $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL,'options' => ['enctype' => 'multipart/form-data'],
@@ -143,11 +270,11 @@ for ($y = 1982; $y <= $yearmax; $y++) {
         ]);
     ?>
     <br/>
-    <div id="belowF4show" style="display:none">
+    <div id="belowF4show">
         <legend><small><strong>Provide the below Detail(s)</strong></small></legend>
         <?php
         echo $form->field($model, 'employer_letter_document')->label('Employer Letter Document:')->widget(FileInput::classname(), [
-            'options' => ['accept' => 'site/pdf'],
+            'options' => ['accept' => 'site/pdf','id' => 'employer_letter_document_id'],
             'pluginOptions' => [
                 'showCaption' => false,
                 'showRemove' => TRUE,
@@ -161,13 +288,16 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                 ],
                 'initialCaption'=>$model->employer_letter_document,
                 'initialPreviewAsData'=>true,
+                'initialPreviewConfig' => [
+                    ['type'=> explode(".",$model->employer_letter_document)[1]=="pdf"?"pdf":"image"],
+                ],
             ],
             //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
         ]);
         ?>
     </div>
-    <div id="f4education_show" style="display:none">
-        <legend><small><strong>SELECT OLEVEL EDUCATION OPTIONS</strong></small></legend>
+        <div id="olevel_options">
+            <legend><small><strong>OLEVEL EDUCATION OPTIONS</strong></small></legend>
         <?php
         echo $form->field($model, 'f4type')->label(" ")->radioList($listFormiv,
             [
@@ -176,15 +306,15 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                 'onchange'=>'setRefundf4ed(this)',
             ]);
         ?>
+        </div>
 
+    <div id="myDIV">
 
+            <div class="alert alert-info alert-dismissible">
 
-        <div style='display:none;' id="general">
-            <div class="alert alert-info alert-dismissible" id="labelshow">
-
-                <h4 class="necta" id="necta"><i class="icon fa fa-info"></i>  YOU ARE  APPLYING AS  NECTA  STUDENTS</h4>
-                <h4 class="nonnecta" id="nonnecta">
-                    <i class="icon fa fa-info"></i>YOU ARE APPLYING AS  NON NECTA STUDENTS</h4>
+                <h5 class="necta" id="necta"><i class="icon fa fa-info"></i>  YOU ARE  APPLYING AS  NECTA  STUDENTS</h5>
+                <h5 class="nonnecta" id="nonnecta">
+                    <i class="icon fa fa-info"></i>YOU ARE APPLYING AS  NON NECTA STUDENTS</h5>
             </div>
             <?php
             echo Form::widget([
@@ -207,7 +337,7 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                             'options' => [
                                 'prompt' => 'Select Completion Year',
                                 'onchange' => 'check_refundnecta()',
-                                //'id'=>'entry_year_id'
+                                //'id'=>'f4_completion_year_id',
                             ],
                             'pluginOptions' => [
                                 'allowClear' => true
@@ -217,6 +347,11 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                 ]
             ]);
             ?>
+        <?php
+        echo "<center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center><div style='display:none;' id='myDivNecta' class='animate-bottom'></div>";
+        ?>
+        <?= $form->field($model, 'is_necta')->label(false)->hiddenInput(['maxlength' => true,'id'=>"switch_right"]) ?>
+        <div id="nonnectablock">
             <?php
             echo Form::widget([
                 'model' => $model,
@@ -230,15 +365,9 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                 ]
             ]);
             ?>
-            <?php
-            echo "<center><div id='loader' style='display:none'>  <p><img src='image/loader/loader1.gif' /> Please Wait</p></div></center><div style='display:none;' id='myDivNecta' class='animate-bottom'></div>";
-            ?>
-            <?= $form->field($model, 'is_necta')->label(false)->hiddenInput(['maxlength' => true,'id'=>"switch_right"]) ?>
-            <div style='display:none;' id="f4certificateDoc">
-                <br/>
-                <?php
-                echo $form->field($model, 'f4_certificate_document')->label('F4 Certificate Document:')->widget(FileInput::classname(), [
-                    'options' => ['accept' => 'site/pdf'],
+<?php
+echo $form->field($model, 'f4_certificate_document')->label('F4 Certificate Document:')->widget(FileInput::classname(), [
+                    'options' => ['accept' => 'site/pdf','id' => 'f4_certificate_document_id'],
                     'pluginOptions' => [
                         'showCaption' => false,
                         'showRemove' => TRUE,
@@ -252,15 +381,17 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                         ],
                         'initialCaption'=>$model->f4_certificate_document,
                         'initialPreviewAsData'=>true,
+                        'initialPreviewConfig' => [
+                            ['type'=> explode(".",$model->f4_certificate_document)[1]=="pdf"?"pdf":"image"],
+                        ],
                     ],
 
                 ])->hint('Attach the Certificate Document Having the Same Information as Provided Above');
                 ?>
-            </div>
-        </div>
+    </div>
     </div>
     <div class="text-right">
-        <?= Html::submitButton($model->isNewRecord ? 'Save' : 'Save', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary', 'id' => 'create-button-id']) ?>
+        <?= Html::submitButton($model->isNewRecord ? 'Update' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary', 'id' => 'create-button-id']) ?>
 
         <?php
         ActiveForm::end();
@@ -269,6 +400,6 @@ for ($y = 1982; $y <= $yearmax; $y++) {
     <br/></br/>
     <div class="rowQA">
         <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK",['site/refund-liststeps']);?></div>
-        <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/create-employment-details']);?></div>
+        <div class="block pull-RIGHT"><?= yii\helpers\Html::a("NEXT >>",['site/index-tertiary-education']);?></div>
     </div>
 </div>

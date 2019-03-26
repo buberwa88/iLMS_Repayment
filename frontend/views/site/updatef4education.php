@@ -11,9 +11,9 @@ $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 if($refundTypeId==3){
-    $title="Step 2: Deceased's Primary/Olevel Education";
+    $title="Step 2: Update Deceased's Primary/Olevel Education";
 }else{
-    $title="Step 2: Primary/Olevel Education";
+    $title="Step 2: Update Primary/Olevel Education";
 }
 
 $this->title = $title;
@@ -26,7 +26,7 @@ $this->title = $title;
             <?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-            <?= $this->render('_form_educationGeneral', [
+            <?= $this->render('_form_educationGeneralupdate', [
                 'model' => $model,
             ]) ?>
 

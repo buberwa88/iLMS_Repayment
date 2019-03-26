@@ -696,4 +696,6 @@ ALTER TABLE `refund_internal_operational_setting` ADD `approval_comment` VARCHAR
 ALTER TABLE `refund_paylist_operation` ADD `approval_status` VARCHAR(200) NULL DEFAULT NULL AFTER `status`;
 =========================21/03/2019=======================
 ALTER TABLE `refund_application` ADD `claimant_letter_document` VARCHAR(200) NULL DEFAULT NULL AFTER `deed_pole_document`;
+=========================24/03/2019=======================
+ALTER TABLE `refund_claimant` ADD `educationAttained` TINYINT(2) NULL DEFAULT NULL COMMENT '1: Form IV certificate and above, 2: Below Form IV' AFTER `updated_by`;
 

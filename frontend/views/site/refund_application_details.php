@@ -990,7 +990,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
                 ?>
                 <div class="rowQA">
-                    <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK TO THE LIST", ['site/refund-liststeps']); ?></div>
+                    <?php if ($resultsCheckResultsGeneral->submitted == 3) { ?>
+                    <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK TO THE LIST", ['site/claimant-refunds']); ?></div>
+                    <?php }else{ ?>
+                        <div class="block pull-LEFT"><?= yii\helpers\Html::a("<< BACK TO THE LIST", ['site/refund-liststeps']); ?></div>
+                    <?php } ?>
                 </div>
             </div>
         </div>

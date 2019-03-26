@@ -49,9 +49,6 @@ if($access_role_master=='audit_investigation_department'){
 img:hover {
     box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
 }
-    .modal-lg {
-        width: 80% !important;
-    }
 </style>
 <div class="application-view">
    <div class="panel panel-info">
@@ -165,14 +162,11 @@ img:hover {
                                    <?php
                                    Modal::begin([
                                        'header' => '<h4><strong>CUSTOMER STATEMENT : REPAYMENTS</strong></h4>',
-                                       'size'=>'modal-lg',
+                                       'size'=>'width:100%',
                                        'toggleButton' =>   ['label' => 'View Repayment Statement', 'style'=>'margin-left:4px', 'class' => 'btn btn-primary'],
                                    ]);
                                    ?>
-                                   <div class="modal-dialog modal-lg" role="document">
-
                                            <?= $this->render('../../../report/views/report/customerStatementRepaymentPayments',['applicant_id'=>$applicantID]) ?>
-                                   </div>
                                    <?php
                                    Modal::end();
                                    ?>

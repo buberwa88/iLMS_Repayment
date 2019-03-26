@@ -41,8 +41,8 @@ class RefundEducationHistory extends \yii\db\ActiveRecord
     {
         return [
             [['refund_application_id', 'program_id', 'institution_id', 'entry_year', 'completion_year', 'created_by', 'updated_by', 'is_active'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
-			[['program_id','institution_id','entry_year', 'completion_year'], 'required','on'=>'refundTresuryEducation'],
+            [['created_at', 'updated_at','programme_name','institution_name','study_level'], 'safe'],
+			[['program_id','institution_id','entry_year', 'completion_year','study_level'], 'required','on'=>'refundTresuryEducation'],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'user_id']],
             [['institution_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\allocation\models\LearningInstitution::className(), 'targetAttribute' => ['institution_id' => 'learning_institution_id']],
             [['program_id'], 'exist', 'skipOnError' => true, 'targetClass' => \backend\modules\allocation\models\Programme::className(), 'targetAttribute' => ['program_id' => 'programme_id']],
@@ -100,5 +100,13 @@ class RefundEducationHistory extends \yii\db\ActiveRecord
     public function getUpdatedBy()
     {
         return $this->hasOne(User::className(), ['user_id' => 'updated_by']);
+    }
+    public static function checkExists($refund_application_id){
+        if (RefundEducationHistory::find()
+            ->where(['refund_application_id' => $refund_application_id])->exists()) {
+            return 1;
+        }else{
+            return 0;
+        }
     }
 }
