@@ -38,16 +38,6 @@ $refund_application_id = $session->get('refund_application_id');
         'enableClientValidation' => TRUE,]);
     ?>
     <?php
-    echo Form::widget([ // fields with labels
-        'model'=>$model,
-        'form'=>$form,
-        'columns'=>1,
-        'attributes'=>[
-            'court_letter_number'=>['label'=>'Letter ID:', 'options'=>['placeholder'=>'Enter.']],
-        ]
-    ]);
-    ?>
-    <?php
     echo $form->field($model, 'letter_family_session_document')->label('Family Session Letter Document:')->widget(FileInput::classname(), [
         'options' => ['accept' => 'site/pdf'],
         'pluginOptions' => [
@@ -88,7 +78,7 @@ $refund_application_id = $session->get('refund_application_id');
         ]);
         ?>
         <div class="text-right">
-            <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+            <?= Html::submitButton($model->isNewRecord ? 'Save' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 
             <?php
             echo Html::resetButton('Reset', ['class'=>'btn btn-default']);

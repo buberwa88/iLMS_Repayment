@@ -126,7 +126,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 1: Contacts Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-contactdetails']) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -167,7 +167,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 2: Primary/Form 4 Education</b> </h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/indexf4educationdetails', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">View/Edit</a>
                                 <?php } ?>
                             </div>
 
@@ -209,7 +208,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 <div class="box-header">
                                     <h3 class="box-title"><b>Step <?php echo $step3; ?>: Tertiary Education Details</b></h3>
                                     <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                        <a href="<?= Yii::$app->urlManager->createUrl(['site/index-tertiary-education', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                     <?php } ?>
                                 </div>
                                 <div class="box">
@@ -260,7 +259,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step <?php echo $step4; ?>: Employment Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-employment-details', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -299,7 +298,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step <?php echo $step5; ?>: Bank Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['/site/index-bankdetails', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -349,7 +348,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step <?php echo $step6; ?>: Social Fund Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-socialfund', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -434,7 +433,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 1: Contacts Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-contactdetails', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">View/Update</a>
+
                                 <?php } ?>
                             </div>
 
@@ -474,7 +473,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 2: Employment Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['/site/index-employment-details']) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Add/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -535,7 +534,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 3: Repayment Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-repaymentdetails', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -577,7 +576,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 4: Bank Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-bankdetails', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -620,7 +619,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 5: Social Fund Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-socialfund', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -712,7 +711,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 1: Contacts Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-contactdetails', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -752,7 +751,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 2: Deceased's Form 4 Education</b> </h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-f4educationdetails', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -793,7 +792,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 3: Death Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-deathdetails', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -828,7 +827,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 4: Court Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-courtdetails', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -863,7 +862,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 5: Bank Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['/site/index-bankdetails', 'id' => $modelRefundApplication->refund_application_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 
@@ -913,7 +912,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="box-header">
                                 <h3 class="box-title"><b>Step 6: Social Fund Details</b></h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
-                                    <a href="<?= Yii::$app->urlManager->createUrl(['site/index-socialfund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-warning pull-right" style="margin-right: 5px;">Update/Edit</a>
+
                                 <?php } ?>
                             </div>
 

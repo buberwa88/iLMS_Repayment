@@ -63,6 +63,7 @@ if($refundTypeId==3){
 /* @var $searchModel frontend\modules\repayment\models\RefundClaimantEducationHistorySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
+
 $this->title = $title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -167,7 +168,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label'=>'Employer Letter Document',
+                                'label'=>$model->refund_type_id==3 ? "Deceased's Employer Letter Document":'Employer Letter Document',
                                 'visible'=>$model->educationAttained==2,
                                 'value' => call_user_func(function ($data) use($refund_application_id,$Employer_letter_Document,$action) {
                                     return Html::a("VIEW", ['site/download', 'id'=>$refund_application_id,'attachmentType'=>$Employer_letter_Document,'action'=>$action]);

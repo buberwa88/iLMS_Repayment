@@ -29,7 +29,19 @@ for ($y = 1982; $y <= $yearmax; $y++) {
     $year[$y] = $y;
 }
     $cancel="site/refund-liststeps";
-
+if($refundTypeId !=3){
+    $form4label='Have you graduated from Olevel Education?';
+    $olevelEducationOption="SELECT OLEVEL EDUCATION OPTIONS";
+    $employerLetterDocument="Employer Letter Document:";
+    $f4indexno="F4 Index #";
+    $f4_completion_year="Completion Year";
+}else{
+    $form4label="The Deceased's was graduated from Olevel Education?";
+    $olevelEducationOption="SELECT DECEASED'S O-LEVEL EDUCATION ATTAINED FROM BELOW OPTIONS";
+    $employerLetterDocument="Deceased's Employer Letter Document:";
+    $f4indexno="Deceased's F4 Index #";
+    $f4_completion_year="Deceased's Completion Year";
+}
 ?>
 <script type="text/javascript">
     function generalShow(element){
@@ -258,11 +270,11 @@ if ($model->educationAttained==2) {
 ?>
 <div class="refund-education-history-form">
     <?php
-    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL,'options' => ['enctype' => 'multipart/form-data'],
+    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL,'options' => ['enctype' => 'multipart/form-data'],
         'enableClientValidation' => TRUE,]);
     ?>
     <?php
-    echo $form->field($model, 'educationAttained')->label('Have you graduated from Olevel Education?')->radioList($list,
+    echo $form->field($model, 'educationAttained')->label($form4label)->radioList($list,
         [
         'inline'=>true,
         'id'=>educationAttained_id,
@@ -273,7 +285,7 @@ if ($model->educationAttained==2) {
     <div id="belowF4show">
         <legend><small><strong>Provide the below Detail(s)</strong></small></legend>
         <?php
-        echo $form->field($model, 'employer_letter_document')->label('Employer Letter Document:')->widget(FileInput::classname(), [
+        echo $form->field($model, 'employer_letter_document')->label($employerLetterDocument)->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf','id' => 'employer_letter_document_id'],
             'pluginOptions' => [
                 'showCaption' => false,
@@ -297,7 +309,7 @@ if ($model->educationAttained==2) {
         ?>
     </div>
         <div id="olevel_options">
-            <legend><small><strong>OLEVEL EDUCATION OPTIONS</strong></small></legend>
+            <legend><small><strong><?php echo $olevelEducationOption; ?></strong></small></legend>
         <?php
         echo $form->field($model, 'f4type')->label(" ")->radioList($listFormiv,
             [
@@ -312,9 +324,9 @@ if ($model->educationAttained==2) {
 
             <div class="alert alert-info alert-dismissible">
 
-                <h5 class="necta" id="necta"><i class="icon fa fa-info"></i>  YOU ARE  APPLYING AS  NECTA  STUDENTS</h5>
+                <h5 class="necta" id="necta"><i class="icon fa fa-info"></i>  REFUND APPLICATION AS  NECTA  STUDENTS</h5>
                 <h5 class="nonnecta" id="nonnecta">
-                    <i class="icon fa fa-info"></i>YOU ARE APPLYING AS  NON NECTA STUDENTS</h5>
+                    <i class="icon fa fa-info"></i>REFUND APPLICATION AS  NON NECTA STUDENTS</h5>
             </div>
             <?php
             echo Form::widget([
@@ -323,7 +335,7 @@ if ($model->educationAttained==2) {
                 'id' => "school_block_id",
                 'columns' => 2,
                 'attributes' => [
-                    'f4indexno' => ['type' => Form::INPUT_TEXT, 'label' => 'F4 Index #',
+                    'f4indexno' => ['type' => Form::INPUT_TEXT, 'label' => $f4indexno,
 
                         'options' => ['maxlength'=>10,'placeholder' => '',
                             'onchange' => 'check_refundnecta()',
@@ -331,7 +343,7 @@ if ($model->educationAttained==2) {
                             'data-placement' =>'top','title' => '']],
                     'f4_completion_year' => ['type' => Form::INPUT_WIDGET,
                         'widgetClass' => \kartik\select2\Select2::className(),
-                        'label' => 'Completion Year',
+                        'label' => $f4_completion_year,
                         'options' => [
                             'data' => $year,
                             'options' => [

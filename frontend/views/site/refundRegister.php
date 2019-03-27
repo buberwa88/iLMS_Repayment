@@ -19,7 +19,8 @@ use yii\helpers\Html;
             </font>
         </div>
         <div class="panel-body">
-
+            <div class="col-lg-12" style="text-align: right;"><?php echo Html::a('<i class="glyphicon glyphicon-home"></i>Return Home', ['/application/default/home-page'], ['class' => '','style'=>'margin-top: -10px; margin-bottom: 15px;size:16px']);   ?>
+            </div>
     <?= $this->render('_form_refund_category', [
        'model' => $model,
     ]) ?>

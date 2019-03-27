@@ -38,7 +38,11 @@ $this->title = $title;
             <?= Html::encode($this->title) ?>
         </div>
         <div class="panel-body">
-
+            <?php if($refundTypeId==3){ ?>
+            <div class="alert alert-info alert-dismissible" id="labelshow">
+            <h4 class="necta" id="necta"><i class="icon fa fa-info"></i>Jaza taharifa zilizopo kwenye kiambatanisho kilichothibitishwa na mahakama chenye acount namba ya bank.</h4>
+            </div>
+            <?php } ?>
     <?= $this->render('_form_bankDetails', [
         'model' => $model,
     ]) ?>

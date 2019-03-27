@@ -1039,6 +1039,7 @@ class SiteController extends Controller {
                             $modelRefundresults->necta_firstname = $model->firstname;
                             $modelRefundresults->necta_middlename = $model->middlename;
                             $modelRefundresults->necta_surname = $model->surname;
+                            $modelRefundresults->educationAttained = $model->educationAttained;
                             //$modelRefundresults->firstname = $model->firstname;
                             //$modelRefundresults->middlename = $model->middlename;
                             //$modelRefundresults->surname = $model->surname;
@@ -1082,6 +1083,9 @@ class SiteController extends Controller {
                         $modelRefundApplication->educationAttained = $model->educationAttained;
                         $modelRefundApplication->save(false);
                         $savedEmployerLetter = 1;
+                        $modelRefundresults4 = \frontend\modules\repayment\models\RefundClaimant::findOne($refundClaimantid);
+                        $modelRefundresults4->educationAttained = $model->educationAttained;
+                        $modelRefundresults4->save(false);
                     }
                     if ($savedF4Education == 1 || $savedEmployerLetter == 1) {
                         //$attachment_code='F4CERT';
@@ -1353,6 +1357,7 @@ class SiteController extends Controller {
             if ($model->claimant_names_changed_status == 1) {
                 $model->deed_pole_document = UploadedFile::getInstance($model, 'deed_pole_document');
             }
+        if($model->validate()){
             $model->bank_card_document->saveAs(Yii::$app->params['refundAttachments'] . "bank_card_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->bank_card_document->extension);
             if ($model->claimant_names_changed_status == 1) {
                 $model->deed_pole_document->saveAs(Yii::$app->params['refundAttachments'] . "deed_pole_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->deed_pole_document->extension);
@@ -1394,6 +1399,11 @@ class SiteController extends Controller {
                 Yii::$app->getSession()->setFlash('error', $sms);
                 return $this->redirect(['index-bankdetails']);
             }
+        } else {
+            return $this->render('createRefundBankdetails', [
+                'model' => $model,
+            ]);
+        }
         } else {
             return $this->render('createRefundBankdetails', [
                         'model' => $model,

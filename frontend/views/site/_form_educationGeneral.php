@@ -28,6 +28,27 @@ for ($y = 1982; $y <= $yearmax; $y++) {
     $year[$y] = $y;
 }
     $cancel="site/refund-liststeps";
+if($refundTypeId !=3){
+    $form4label='Have you graduated from Olevel Education?';
+    $olevelEducationOption="SELECT OLEVEL EDUCATION OPTIONS";
+    $employerLetterDocument="Employer Letter Document:";
+    $FirstName='First Name';
+    $middlename='Middle Name';
+    $surname='Last Name';
+    $f4certificateDocu='F4 Certificate Document:';
+    $f4indexno="F4 Index #";
+    $f4_completion_year="Completion Year";
+}else{
+    $form4label="The Deceased's was graduated from Olevel Education?";
+    $olevelEducationOption="SELECT DECEASED'S O-LEVEL EDUCATION ATTAINED FROM BELOW OPTIONS";
+    $employerLetterDocument="Deceased's Employer Letter Document:";
+    $FirstName="Deceased's First Name";
+    $middlename="Deceased's Middle Name";
+    $surname="Deceased's Last Name";
+    $f4certificateDocu="Deceased's F4 Certificate Document:";
+    $f4indexno="Deceased's F4 Index #";
+    $f4_completion_year="Deceased's Completion Year";
+}
 
 ?>
 <script type="text/javascript">
@@ -131,11 +152,11 @@ for ($y = 1982; $y <= $yearmax; $y++) {
 </style>
 <div class="refund-education-history-form">
     <?php
-    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL,'options' => ['enctype' => 'multipart/form-data'],
+    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL,'options' => ['enctype' => 'multipart/form-data'],
         'enableClientValidation' => TRUE,]);
     ?>
     <?php
-    echo $form->field($model, 'educationAttained')->label('Have you graduated from Olevel Education?')->radioList($list,
+    echo $form->field($model, 'educationAttained')->label($form4label)->radioList($list,
         [
         'inline'=>true,
         'id'=>educationAttained_id,
@@ -146,7 +167,7 @@ for ($y = 1982; $y <= $yearmax; $y++) {
     <div id="belowF4show" style="display:none">
         <legend><small><strong>Provide the below Detail(s)</strong></small></legend>
         <?php
-        echo $form->field($model, 'employer_letter_document')->label('Employer Letter Document:')->widget(FileInput::classname(), [
+        echo $form->field($model, 'employer_letter_document')->label($employerLetterDocument)->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf'],
             'pluginOptions' => [
                 'showCaption' => false,
@@ -167,7 +188,7 @@ for ($y = 1982; $y <= $yearmax; $y++) {
         ?>
     </div>
     <div id="f4education_show" style="display:none">
-        <legend><small><strong>SELECT OLEVEL EDUCATION OPTIONS</strong></small></legend>
+        <legend><small><strong><?php echo $olevelEducationOption; ?></strong></small></legend>
         <?php
         echo $form->field($model, 'f4type')->label(" ")->radioList($listFormiv,
             [
@@ -182,9 +203,9 @@ for ($y = 1982; $y <= $yearmax; $y++) {
         <div style='display:none;' id="general">
             <div class="alert alert-info alert-dismissible" id="labelshow">
 
-                <h4 class="necta" id="necta"><i class="icon fa fa-info"></i>  YOU ARE  APPLYING AS  NECTA  STUDENTS</h4>
+                <h4 class="necta" id="necta"><i class="icon fa fa-info"></i>  REFUND APPLICATION AS  NECTA  STUDENTS</h4>
                 <h4 class="nonnecta" id="nonnecta">
-                    <i class="icon fa fa-info"></i>YOU ARE APPLYING AS  NON NECTA STUDENTS</h4>
+                    <i class="icon fa fa-info"></i>REFUND APPLICATION AS  NON NECTA STUDENTS</h4>
             </div>
             <?php
             echo Form::widget([
@@ -193,7 +214,7 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                 'id' => "school_block_id",
                 'columns' => 2,
                 'attributes' => [
-                    'f4indexno' => ['type' => Form::INPUT_TEXT, 'label' => 'F4 Index #',
+                    'f4indexno' => ['type' => Form::INPUT_TEXT, 'label' => $f4indexno,
 
                         'options' => ['maxlength'=>10,'placeholder' => '',
                             'onchange' => 'check_refundnecta()',
@@ -201,7 +222,7 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                             'data-placement' =>'top','title' => '']],
                     'f4_completion_year' => ['type' => Form::INPUT_WIDGET,
                         'widgetClass' => \kartik\select2\Select2::className(),
-                        'label' => 'Completion Year',
+                        'label' => $f4_completion_year,
                         'options' => [
                             'data' => $year,
                             'options' => [
@@ -224,9 +245,9 @@ for ($y = 1982; $y <= $yearmax; $y++) {
                 'columns' => 2,
                 'id' => "nonnecta_block_id",
                 'attributes' => [
-                    'firstname' => ['type' => Form::INPUT_TEXT, 'label' => 'First Name', 'options' => ['placeholder' => 'Enter ']],
-                    'middlename' => ['type' => Form::INPUT_TEXT, 'label' => 'Middle Name', 'options' => ['placeholder' => 'Enter .']],
-                    'surname' => ['type' => Form::INPUT_TEXT, 'label' => 'Last Name', 'options' => ['placeholder' => 'Enter .']],
+                    'firstname' => ['type' => Form::INPUT_TEXT, 'label' => $FirstName, 'options' => ['placeholder' => 'Enter ']],
+                    'middlename' => ['type' => Form::INPUT_TEXT, 'label' => $middlename, 'options' => ['placeholder' => 'Enter .']],
+                    'surname' => ['type' => Form::INPUT_TEXT, 'label' => $surname, 'options' => ['placeholder' => 'Enter .']],
                 ]
             ]);
             ?>
@@ -237,7 +258,7 @@ for ($y = 1982; $y <= $yearmax; $y++) {
             <div style='display:none;' id="f4certificateDoc">
                 <br/>
                 <?php
-                echo $form->field($model, 'f4_certificate_document')->label('F4 Certificate Document:')->widget(FileInput::classname(), [
+                echo $form->field($model, 'f4_certificate_document')->label($f4certificateDocu)->widget(FileInput::classname(), [
                     'options' => ['accept' => 'site/pdf'],
                     'pluginOptions' => [
                         'showCaption' => false,

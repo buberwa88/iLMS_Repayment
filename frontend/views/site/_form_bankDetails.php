@@ -52,8 +52,10 @@ $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 
 if ($refundTypeId == 3) {
     $bankAttLabe = "Court Bank Account Document:";
+    $hint="Weka kiambatanisho chenye account ya bank kilichothibitishwa na mahakama";
 } else {
     $bankAttLabe = "Bank Card Document:";
+    $hint="";
 }
 
 $cancel = "site/refund-liststeps";
@@ -89,7 +91,7 @@ $cancel = "site/refund-liststeps";
                     'data' => ArrayHelper::map(\common\models\Bank::find()->all(), 'bank_name', 'bank_name'),
                     'options' => [
                         'prompt' => '-- Select Bank -- ',
-                        'id' => 'learning_institution_id',
+                        //'id' => 'learning_institution_id',
                     ],
                 ],
             ],
@@ -119,7 +121,7 @@ $cancel = "site/refund-liststeps";
             ],
         ],
             //'hint'=>'<i>Provide the first latest Salary/Pay Slip Document</i>',
-    ]);
+    ])->hint($hint);
     ?>
     <?php if ($refundTypeId != 3) { ?>
         <?php
@@ -156,7 +158,7 @@ $cancel = "site/refund-liststeps";
         ]);
         ?>
     <div class="text-right">
-        <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+        <?= Html::submitButton($model->isNewRecord ? 'Save' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 
         <?php
         echo Html::resetButton('Reset', ['class' => 'btn btn-default']);

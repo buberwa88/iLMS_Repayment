@@ -56,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label' => 'Death ID',
+                                'label' => 'Death Certificate Number',
                                 'value'=>$model->death_certificate_number,
                             ],
 

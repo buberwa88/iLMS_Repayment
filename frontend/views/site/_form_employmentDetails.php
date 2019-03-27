@@ -158,7 +158,7 @@ $cancel="site/refund-liststeps";
         ?>
         <div id="employmentStatusV" style="display:none">
         <div class="text-right">
-            <?= Html::submitButton($model->isNewRecord ? 'Submit' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+            <?= Html::submitButton($model->isNewRecord ? 'Save' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 
             <?php
             echo Html::resetButton('Reset', ['class'=>'btn btn-default']);
