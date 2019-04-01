@@ -23,6 +23,17 @@ $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGener
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 
     $cancel="site/refund-liststeps";
+if($refundTypeId !=3){
+    $socialFundStatus='Are You Retired?';
+    $socialFundDocument="Do You Have Social Security Fund and Receipt Document?";
+    $socialFundDocument2="Social Security Fund Document:";
+    $socialFundReceiptDocument="Receipt Document:";
+}else{
+    $socialFundStatus="The Deceased's was Retired?";
+    $socialFundDocument="Do You Have Social Security Fund and Receipt Document for Deceased?";
+    $socialFundDocument2="Deceased's Social Security Fund Document:";
+    $socialFundReceiptDocument="Deceased's Receipt Document:";
+}
 
 
 
@@ -41,14 +52,18 @@ $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
     function ShowFundStatus(element){
         //alert(element);
         var social_fund_statusV=$('#social_fund_status_id input:checked').val();
+        var displaysoccialFundDocument_show = document.getElementById("soccialFundDocument_show");
         if (social_fund_statusV==1) {
             document.getElementById('soccialFundDocument_show').style.display = 'block';
+            displaysoccialFundDocument_show.style.display = "block";
         } else if(social_fund_statusV==2){
             $('#social_fund_document_id').val('');
             $('#social_fund_receipt_document_id').val('');
             document.getElementById('soccialFundDocument_show').style.display = 'none';
+            displaysoccialFundDocument_show.style.display = "none";
         }else {
             document.getElementById('soccialFundDocument_show').style.display = 'none';
+            displaysoccialFundDocument_show.style.display = "none";
         }
     }
 	function ShowFundStatusDocument(element){
@@ -78,22 +93,52 @@ $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
         zoom: 1;
     }
 </style>
+<?php
+if($model->social_fund_status==1){
+echo '<style>
+    #soccialFundDocument_show{
+        display: block;
+    }    
+</style>';
+}else{
+echo '<style>
+    #soccialFundDocument_show{
+        display:none;
+    }
+</style>';
+}
+?>
+<?php
+if($model->soccialFundDocument==1){
+    echo '<style>
+    #employed_show{
+        display: block;
+    }    
+</style>';
+}else{
+    echo '<style>
+    #employed_show{
+        display:none;
+    }
+</style>';
+}
+?>
 <div class="refund-education-history-form">
     <?php
-    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_HORIZONTAL,'options' => ['enctype' => 'multipart/form-data'],
+    $form = ActiveForm::begin(['type'=>ActiveForm::TYPE_VERTICAL,'options' => ['enctype' => 'multipart/form-data'],
         'enableClientValidation' => TRUE,]);
     ?>
     <?php
-    echo $form->field($model, 'social_fund_status')->label('Are You Retired?')->radioList($list,
+    echo $form->field($model, 'social_fund_status')->label($socialFundStatus)->radioList($list,
         [
         'inline'=>true,
         'id'=>social_fund_status_id,
         'onchange'=>'ShowFundStatus(this)',
         ]);
     ?>
-	<div id="soccialFundDocument_show" style="display:none">
+	<div id="soccialFundDocument_show">
 	<?php
-    echo $form->field($model, 'soccialFundDocument')->label('Do You Have Social Security Fund and Receipt Document?')->radioList($list,
+    echo $form->field($model, 'soccialFundDocument')->label($socialFundDocument)->radioList($list,
         [
         'inline'=>true,
         'id'=>soccialFundDocument_id,
@@ -102,10 +147,10 @@ $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
     ?>
 	</div>
     <br/>
-    <div id="employed_show" style="display:none">
+    <div id="employed_show">
         <legend><small><strong>Provide the below Detail(s)</strong></small></legend>
         <?php
-        echo $form->field($model, 'social_fund_document')->label('Social Security Fund Document:')->widget(FileInput::classname(), [
+        echo $form->field($model, 'social_fund_document')->label($socialFundDocument2)->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf'],
             'pluginOptions' => [
                 'showCaption' => false,
@@ -125,7 +170,7 @@ $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
         ]);
         ?>
         <?php
-        echo $form->field($model, 'social_fund_receipt_document')->label('Receipt Document:')->widget(FileInput::classname(), [
+        echo $form->field($model, 'social_fund_receipt_document')->label($socialFundReceiptDocument)->widget(FileInput::classname(), [
             'options' => ['accept' => 'site/pdf'],
             'pluginOptions' => [
                 'showCaption' => false,

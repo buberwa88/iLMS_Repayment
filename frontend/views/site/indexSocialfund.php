@@ -22,6 +22,9 @@ $refund_application_id = $session->get('refund_application_id');
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($refund_application_id);
 $refundTypeId = $resultsCheckResultsGeneral->refund_type_id;
 $educationAttained=$resultsCheckResultsGeneral->educationAttained;
+$Letter_from_social_security=\backend\modules\repayment\models\RefundClaimantAttachment::Letter_from_social_security;
+$RECEIPT_FROM_SOCIAL_FUND=\backend\modules\repayment\models\RefundClaimantAttachment::RECEIPT_FROM_SOCIAL_FUND;
+$action="index-socialfund";
 
 
 //label sequences
@@ -72,7 +75,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label' => 'Employment Status',
+                                'label' => $model->refund_type_id ==3 ? "Deceased's Employment Status" : 'Employment Status',
                                 'value'=>call_user_func(function ($data) {
                                     if($data->social_fund_status ==1){
                                         return  'Retired';
@@ -89,14 +92,10 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label'=>'Social security fund document',
+                                'label'=>$model->refund_type_id ==3 ? "Deceased's Social Security Fund Document":'Social security fund document',
                                 'visible'=>$model->social_fund_status ==1 && $model->soccialFundDocument==1,
-                                'value'=>call_user_func(function ($data) {
-                                    if($data->social_fund_document !=''){
-                                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->social_fund_document . '")','class'=>'label label-primary']);
-                                    }else{
-                                        return $data->social_fund_document;
-                                    }
+                                'value' => call_user_func(function ($data) use($Letter_from_social_security,$action) {
+                                    return Html::a("VIEW", ['site/download', 'id'=>$data->refund_application_id,'attachmentType'=>$Letter_from_social_security,'action'=>$action]);
                                 }, $model),
                                 'format' => 'raw',
 
@@ -107,15 +106,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => [
 
                             [
-                                'label'=>'Receipt document',
+                                'label'=>$model->refund_type_id ==3 ? "Deceased's Receipt Document":'Receipt document',
                                 'visible'=>$model->social_fund_status ==1 && $model->soccialFundDocument==1,
-                'value'=>call_user_func(function ($data) {
-                    if($data->social_fund_receipt_document !=''){
-                        return  yii\helpers\Html::a("VIEW", '#', ['onclick' => 'viewUploadedFile("uploads/applicant_attachments/' . $data->social_fund_receipt_document . '")','class'=>'label label-primary']);
-                    }else{
-                        return $data->social_fund_receipt_document;
-                    }
-                }, $model),
+                                'value' => call_user_func(function ($data) use($RECEIPT_FROM_SOCIAL_FUND,$action) {
+                                    return Html::a("VIEW", ['site/download', 'id'=>$data->refund_application_id,'attachmentType'=>$RECEIPT_FROM_SOCIAL_FUND,'action'=>$action]);
+                                }, $model),
+                                'format' => 'raw',
                 'format' => 'raw',
 
                             ],

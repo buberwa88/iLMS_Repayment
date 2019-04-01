@@ -14,6 +14,16 @@ $session = Yii::$app->session;
 $refundClaimantid = $session->get('refund_claimant_id');
 $refund_application_id = $session->get('refund_application_id');
 
+$Letter_from_social_security=\backend\modules\repayment\models\RefundClaimantAttachment::Letter_from_social_security;
+$RECEIPT_FROM_SOCIAL_FUND=\backend\modules\repayment\models\RefundClaimantAttachment::RECEIPT_FROM_SOCIAL_FUND;
+$Claimant_refund_letter_document=\backend\modules\repayment\models\RefundClaimantAttachment::Claimant_refund_letter_document;
+$attachmentBankCard=\backend\modules\repayment\models\RefundClaimantAttachment::Bank_Card;
+$Liquidation_letter=\backend\modules\repayment\models\RefundClaimantAttachment::Liquidation_letter;
+$Letter_from_court=\backend\modules\repayment\models\RefundClaimantAttachment::Letter_from_court;
+$Letter_of_family_session=\backend\modules\repayment\models\RefundClaimantAttachment::Letter_of_family_session;
+$Death_Certificate_Document=\backend\modules\repayment\models\RefundClaimantAttachment::Death_Certificate_Document;
+$action="refund-applicationview";
+
 /* @var $this yii\web\View */
 /* @var $model backend\modules\application\models\Application */
 
@@ -32,6 +42,7 @@ if ($modelRefundApplication->refund_type_id == RefundApplication::REFUND_TYPE_NO
 }
 $refund_type = $modelRefundApplication->refund_type_id;
 $educationAttained = $modelRefundApplication->educationAttained;
+$f4type = $modelRefundClaimant->f4type;
 $stepsCount = \frontend\modules\repayment\models\RefundSteps::getCountThestepsAttained($refund_application_id, $refund_type);
 $resultsCheckResultsGeneral = RefundApplication::getStageCheckedApplicationGeneral($model->refund_application_id);
 $this->title = $title;
@@ -59,12 +70,12 @@ $this->params['breadcrumbs'][] = $this->title;
             $vieqw = 0;
             //if($vieqw==1){
             ?>
-
             <a href="<?= Yii::$app->urlManager->createUrl(['site/logout-refund', 'id' => $modelRefundApplication->refund_claimant_id]) ?>" class="btn btn-primary pull-right" style="margin-right: 5px;"><i class="fa  fa-power-off"></i> Logout</a>       
 
         </div>
 
         <div class="panel-body">
+            <a href="<?= Yii::$app->urlManager->createUrl(['site/printapplicationform','refundapplicationid'=>$model->refund_application_id,'refundType'=>$refund_type])?>" class="btn btn-success pull-left" style="margin-right: 5px;"> Download Form</a><br/><br/>
             <?php
             if ($resultsCheckResultsGeneral->refund_type_id == 1) {
 
@@ -149,7 +160,18 @@ $this->params['breadcrumbs'][] = $this->title;
                                                 <td>Phone Number: </td>
                                                 <td><b><?= $contactPersDetails->phone_number; ?></b></td>
                                                 <td>Email: </td>
-                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
+                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>
+                                                <td>Refund Application Letter Document: </td>
+                                                <td ><?php
+                                                    if ($resultsCheckResultsGeneral->claimant_letter_document  != '') {
+                                                        ?>
+                                                        <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Claimant_refund_letter_document,'action'=>$action]); ?>
+                                                        <?php
+                                                    } else {
+                                                        echo "No Document";
+                                                    }
+                                                    ?></td>
+                                            </tr>
                                             <?php //}  ?>
                                         <?php }
                                         ?>
@@ -165,7 +187,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="col-xs-12">
                         <div class="box box-primary">
                             <div class="box-header">
-                                <h3 class="box-title"><b>Step 2: Primary/Form 4 Education</b> </h3>
+                                <h3 class="box-title"><b>Step 2: Primary/Olevel Education</b> </h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
                                 <?php } ?>
                             </div>
@@ -176,14 +198,16 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <table class="table table-condensed">
                                         <tr>
                                             <td>First Name: </td>
-                                            <td><b><?= $modelRefundClaimant->firstname; ?></b></td>
+                                            <td><b><?= $modelRefundClaimant->necta_firstname; ?></b></td>
                                             <td>Middle Name: </td>
-                                            <td><b><?= $modelRefundClaimant->middlename; ?></b></td>
+                                            <td><b><?= $modelRefundClaimant->necta_middlename; ?></b></td>
                                             <td>Last Name: </td>
-                                            <td><b><?= $modelRefundClaimant->surname; ?></b></td>
-                                            <?php if ($educationAttained == 1) { ?>
+                                            <td><b><?= $modelRefundClaimant->necta_surname; ?></b></td>
+                                            <?php if ($educationAttained == 1) {
+                                                if($f4type==2){
+                                                ?>
                                                 <td>Academic Certificate Document:</td>
-                                                <td ><?php
+                                                <td><?php
                                                     if ($modelRefundClaimant->f4_certificate_document != '') {
                                                         ?>
                                                         <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
@@ -192,7 +216,9 @@ $this->params['breadcrumbs'][] = $this->title;
                                                         echo "No Document";
                                                     }
                                                     ?></td>
-                                            <?php } ?>
+                                                <?php
+                                            }
+                                            } ?>
                                         </tr>
                                     </table>
                                 </div>
@@ -231,16 +257,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     <td><b><?= $educationHistory->entry_year; ?></b></td>
                                                     <td>Completion Year: </td>
                                                     <td><b><?= $educationHistory->completion_year; ?></b></td>
-                                                    <td>Academic Certificate Document:</td>
-                                                    <td ><?php
-                                                        if ($educationHistory->certificate_document != '') {
-                                                            ?>
-                                                            <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
-                                                            <?php
-                                                        } else {
-                                                            echo "No Document";
-                                                        }
-                                                        ?></td>
                                                 </tr>
                                                 <?php //} ?>
                                             <?php }
@@ -318,15 +334,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td><b><?= $modelRefundApplication->bank_account_number; ?></b></td>
                                             <td>Account Name: </td>
                                             <td><b><?= $modelRefundApplication->bank_account_name; ?></b></td>
-                                            <td>Account Name: </td>
-                                            <td><b><?= $modelRefundApplication->bank_account_name; ?></b></td>
                                             <td>Branch: </td>
                                             <td><b><?= $modelRefundApplication->branch; ?></b></td>
                                             <td>Bank Card Document:</td>
                                             <td ><?php
                                                 if ($modelRefundApplication->bank_card_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$attachmentBankCard,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -370,11 +384,12 @@ $this->params['breadcrumbs'][] = $this->title;
                                                         echo 'Not Retired';
                                                     }
                                                     ?></b></td>
+                                            <?php if ($modelRefundApplication->social_fund_status == 1) { ?>
                                             <td>Social security fund document:</td>
                                             <td ><?php
                                                 if ($modelRefundApplication->social_fund_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Letter_from_social_security,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -384,12 +399,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td ><?php
                                                 if ($modelRefundApplication->social_fund_receipt_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$RECEIPT_FROM_SOCIAL_FUND,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
                                                 }
                                                 ?></td>
+                                            <?php } ?>
                                         </tr>
                                         <?php //}  ?>
                                         <?php //}   ?>
@@ -456,7 +472,18 @@ $this->params['breadcrumbs'][] = $this->title;
                                                 <td>Phone Number: </td>
                                                 <td><b><?= $contactPersDetails->phone_number; ?></b></td>
                                                 <td>Email: </td>
-                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
+                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>
+                                                <td>Refund Application Letter Document: </td>
+                                                <td ><?php
+                                                    if ($resultsCheckResultsGeneral->claimant_letter_document  != '') {
+                                                        ?>
+                                                        <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Claimant_refund_letter_document,'action'=>$action]); ?>
+                                                        <?php
+                                                    } else {
+                                                        echo "No Document";
+                                                    }
+                                                    ?></td>
+                                            </tr>
                                             <?php //}  ?>
                                         <?php }
                                         ?>
@@ -493,30 +520,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                                         ?></b></td>
                                                 <td>Employee ID/Check #: </td>
                                                 <td><b><?= $employmentDetails->employee_id; ?></b></td>
-                                                <td>Start Date: </td>
-                                                <td><b><?= $employmentDetails->start_date; ?></b></td>
-                                                <td>End Date: </td>
-                                                <td><b><?= $employmentDetails->end_date; ?></b></td>
-                                                <td>Fisrt Salary/Pay Slip Document</td>
-                                                <td ><?php
-                                                    if ($employmentDetails->second_slip_document != '') {
-                                                        ?>
-                                                        <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?= $employmentDetails->first_slip_document; ?>);">VIEW</a>
-                                                        <?php
-                                                    } else {
-                                                        echo "No Document";
-                                                    }
-                                                    ?></td>
-                                                <td>Second Salary/Pay Slip Document</td>
-                                                <td><?php
-                                                    if ($employmentDetails->second_slip_document != '') {
-                                                        ?>
-                                                        <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
-                                                        <?php
-                                                    } else {
-                                                        echo "No Document";
-                                                    }
-                                                    ?></td>
                                             </tr>
                                             <?php //} ?>
                                         <?php }
@@ -548,13 +551,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                         ?>
 
                                         <tr>
-                                            <td>Liquidation Number: </td>
+                                            <td>Liquidation Letter Number: </td>
                                             <td><b><?= $modelRefundApplication->liquidation_letter_number; ?></b></td>
                                             <td>Liquidation Letter Document:</td>
                                             <td ><?php
                                                 if ($modelRefundApplication->liquidation_letter_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Liquidation_letter,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -597,7 +600,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td ><?php
                                                 if ($modelRefundApplication->bank_card_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$attachmentBankCard,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -641,11 +644,12 @@ $this->params['breadcrumbs'][] = $this->title;
                                                         echo 'Not Retired';
                                                     }
                                                     ?></b></td>
+                                            <?php if ($modelRefundApplication->social_fund_status == 1) { ?>
                                             <td>Social security fund document:</td>
                                             <td ><?php
                                                 if ($modelRefundApplication->social_fund_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Letter_from_social_security,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -655,12 +659,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td ><?php
                                                 if ($modelRefundApplication->social_fund_receipt_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$RECEIPT_FROM_SOCIAL_FUND,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
                                                 }
                                                 ?></td>
+                                            <?php } ?>
                                         </tr>
                                         <?php //}  ?>
                                         <?php //}   ?>
@@ -690,7 +695,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <table class="table table-condensed">
                                         <tr>
                                             <td style="width: 4%;">Name: </td>
-                                            <td><b><?= strtoupper($modelRefundClaimant->firstname . ' ' . $modelRefundClaimant->middlename . ' ' . $modelRefundClaimant->surname); ?></b></td>
+                                            <td><b><?= strtoupper($modelRefundClaimant->necta_firstname . ' ' . $modelRefundClaimant->necta_middlename . ' ' . $modelRefundClaimant->necta_surname); ?></b></td>
                                         </tr>
                                         <tr>
                                             <td style="width: 10%">f4 Index #: </td>
@@ -734,7 +739,18 @@ $this->params['breadcrumbs'][] = $this->title;
                                                 <td>Phone Number: </td>
                                                 <td><b><?= $contactPersDetails->phone_number; ?></b></td>
                                                 <td>Email: </td>
-                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>                                                                                 </tr>
+                                                <td><b><?= $contactPersDetails->email_address; ?></b></td>
+                                                <td>Refund Application Letter Document: </td>
+                                                <td ><?php
+                                                    if ($resultsCheckResultsGeneral->claimant_letter_document  != '') {
+                                                        ?>
+                                                        <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Claimant_refund_letter_document,'action'=>$action]); ?>
+                                                        <?php
+                                                    } else {
+                                                        echo "No Document";
+                                                    }
+                                                    ?></td>
+                                            </tr>
                                             <?php //}  ?>
                                         <?php }
                                         ?>
@@ -749,7 +765,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="col-xs-12">
                         <div class="box box-primary">
                             <div class="box-header">
-                                <h3 class="box-title"><b>Step 2: Deceased's Form 4 Education</b> </h3>
+                                <h3 class="box-title"><b>Step 2: Deceased's Primary/Olevel Education</b> </h3>
                                 <?php if ($resultsCheckResultsGeneral->submitted != 3) { ?>
 
                                 <?php } ?>
@@ -761,12 +777,14 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <table class="table table-condensed">
                                         <tr>
                                             <td>First Name: </td>
-                                            <td><b><?= $modelRefundClaimant->firstname; ?></b></td>
+                                            <td><b><?= $modelRefundClaimant->necta_firstname; ?></b></td>
                                             <td>Middle Name: </td>
-                                            <td><b><?= $modelRefundClaimant->middlename; ?></b></td>
+                                            <td><b><?= $modelRefundClaimant->necta_middlename; ?></b></td>
                                             <td>Last Name: </td>
-                                            <td><b><?= $modelRefundClaimant->surname; ?></b></td>
-                                            <?php if ($educationAttained == 1) { ?>
+                                            <td><b><?= $modelRefundClaimant->necta_surname; ?></b></td>
+                                            <?php if ($educationAttained == 1) {
+                                                if($f4type==2){
+                                                ?>
                                                 <td>Academic Certificate Document:</td>
                                                 <td ><?php
                                                     if ($modelRefundClaimant->f4_certificate_document != '') {
@@ -777,7 +795,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                         echo "No Document";
                                                     }
                                                     ?></td>
-                                            <?php } ?>
+                                            <?php } } ?>
                                         </tr>
                                     </table>
                                 </div>
@@ -807,7 +825,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td ><?php
                                                 if ($resultsCheckResultsGeneral->death_certificate_document != '') {
                                                     ?>
-                                                    <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?= $employmentDetails->first_slip_document; ?>);">VIEW</a>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Death_Certificate_Document,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -836,13 +854,21 @@ $this->params['breadcrumbs'][] = $this->title;
                                 <div class="box-body no-padding">
                                     <table class="table table-condensed">
                                         <tr>
-                                            <td>Letter ID: </td>
-                                            <td><b><?= $resultsCheckResultsGeneral->court_letter_number; ?></b></td>
-                                            <td>Court Letter Document: </td>
+                                            <td>Family Session Letter Document: </td>
+                                            <td><?php
+                                                if ($resultsCheckResultsGeneral->court_letter_certificate_document != '') {
+                                                ?>
+                                                <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Letter_of_family_session,'action'=>$action]); ?>
+                                                <?php
+                                                } else {
+                                                    echo "No Document";
+                                                }
+                                                ?></br></td>
+                                            <td>Appointed estate admin confirmation document: </td>
                                             <td ><?php
                                                 if ($resultsCheckResultsGeneral->court_letter_certificate_document != '') {
                                                     ?>
-                                                    <a href="path/to/image.jpg" alt="Image description" target="_blank" style="display: inline-block; width: 50px; height; 50px; background-image: url(<?= $employmentDetails->first_slip_document; ?>);">VIEW</a>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Letter_from_court,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -882,15 +908,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td><b><?= $modelRefundApplication->bank_account_number; ?></b></td>
                                             <td>Account Name: </td>
                                             <td><b><?= $modelRefundApplication->bank_account_name; ?></b></td>
-                                            <td>Account Name: </td>
-                                            <td><b><?= $modelRefundApplication->bank_account_name; ?></b></td>
                                             <td>Branch: </td>
                                             <td><b><?= $modelRefundApplication->branch; ?></b></td>
-                                            <td>Bank Card Document:</td>
+                                            <td>Court Bank Account Document:</td>
                                             <td ><?php
                                                 if ($modelRefundApplication->bank_card_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$attachmentBankCard,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -926,7 +950,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                         ?>
 
                                         <tr>
-                                            <td>Employment Status: </td>
+                                            <td>Deceased's Employment Status: </td>
                                             <td><b><?php
                                                     if ($modelRefundApplication->social_fund_status == 1) {
                                                         echo 'Retired';
@@ -934,11 +958,12 @@ $this->params['breadcrumbs'][] = $this->title;
                                                         echo 'Not Retired';
                                                     }
                                                     ?></b></td>
+                                            <?php if ($modelRefundApplication->social_fund_status == 1) { ?>
                                             <td>Social security fund document:</td>
                                             <td ><?php
                                                 if ($modelRefundApplication->social_fund_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$Letter_from_social_security,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
@@ -948,12 +973,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                             <td ><?php
                                                 if ($modelRefundApplication->social_fund_receipt_document != '') {
                                                     ?>
-                                                    <?= yii\helpers\Html::a("VIEW", ['site/refund-liststeps']); ?>
+                                                    <?= yii\helpers\Html::a("VIEW", ['site/download', 'id'=>$modelRefundApplication->refund_application_id,'attachmentType'=>$RECEIPT_FROM_SOCIAL_FUND,'action'=>$action]); ?>
                                                     <?php
                                                 } else {
                                                     echo "No Document";
                                                 }
                                                 ?></td>
+                                            <?php } ?>
                                         </tr>
                                         <?php //} ?>
                                         <?php //}  ?>

@@ -43,7 +43,7 @@ $refund_application_id = $session->get('refund_application_id');
         'form'=>$form,
         'columns'=>1,
         'attributes'=>[
-            'liquidation_letter_number'=>['label'=>'Liquidation Number:', 'options'=>['placeholder'=>'Enter.']],
+            'liquidation_letter_number'=>['label'=>'Liquidation Letter Number:', 'options'=>['placeholder'=>'Enter.']],
         ]
     ]);
     ?>

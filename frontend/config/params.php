@@ -10,4 +10,5 @@ return [
 	'cancelBillReason'=>'Unconfirmed Bill',
 	'beneficiaryDocument' =>'beneficiary_document/',
 	'employerUpdateBeneficiariesSalaries' =>'frontend/web/uploads/',
+	'HESLBlogo_refund' =>'image/logo/',
 ];

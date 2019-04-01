@@ -1589,15 +1589,17 @@ class SiteController extends Controller {
             if ($model->social_fund_status == 1 && $model->soccialFundDocument == 1) {
                 $model->social_fund_document = UploadedFile::getInstance($model, 'social_fund_document');
                 $model->social_fund_receipt_document = UploadedFile::getInstance($model, 'social_fund_receipt_document');
-
+            } else {
+                $model->social_fund_document = null;
+                $model->social_fund_receipt_document = null;
+            }
+            if ($model->validate()) {
+            if ($model->social_fund_status == 1 && $model->soccialFundDocument == 1) {
                 $model->social_fund_document->saveAs(Yii::$app->params['refundAttachments'] . "social_fund_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_document->extension);
                 $model->social_fund_document = Yii::$app->params['refundAttachments'] . "social_fund_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_document->extension;
 
                 $model->social_fund_receipt_document->saveAs(Yii::$app->params['refundAttachments'] . "social_fund_receipt_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_receipt_document->extension);
                 $model->social_fund_receipt_document = Yii::$app->params['refundAttachments'] . "social_fund_receipt_document" . "_" . $refund_application_id . "_" . $datime . '.' . $model->social_fund_receipt_document->extension;
-            } else {
-                $model->social_fund_document = null;
-                $model->social_fund_receipt_document = null;
             }
 
             if ($refund_application_id != '') {
@@ -1623,6 +1625,11 @@ class SiteController extends Controller {
                 Yii::$app->getSession()->setFlash('error', $sms);
                 return $this->redirect(['index-socialfund']);
             }
+        }else {
+            return $this->render('createSecurityfund', [
+                'model' => $model,
+            ]);
+        }
         } else {
             return $this->render('createSecurityfund', [
                         'model' => $model,
@@ -2292,6 +2299,13 @@ class SiteController extends Controller {
         $attachmentTypeDeedPoll=\backend\modules\repayment\models\RefundClaimantAttachment::Claimant_deed_pole_document;
         $Employer_letter_Document=\backend\modules\repayment\models\RefundClaimantAttachment::Employer_letter_Document;
         $Claimant_refund_letter_document=\backend\modules\repayment\models\RefundClaimantAttachment::Claimant_refund_letter_document;
+        $Letter_from_social_security=\backend\modules\repayment\models\RefundClaimantAttachment::Letter_from_social_security;
+        $RECEIPT_FROM_SOCIAL_FUND=\backend\modules\repayment\models\RefundClaimantAttachment::RECEIPT_FROM_SOCIAL_FUND;
+        $Liquidation_letter=\backend\modules\repayment\models\RefundClaimantAttachment::Liquidation_letter;
+
+        $Letter_from_court=\backend\modules\repayment\models\RefundClaimantAttachment::Letter_from_court;
+        $Letter_of_family_session=\backend\modules\repayment\models\RefundClaimantAttachment::Letter_of_family_session;
+        $Death_Certificate_Document=\backend\modules\repayment\models\RefundClaimantAttachment::Death_Certificate_Document;
         if($attachmentType==$attachmentTypef4cetificate) {
             $att = \frontend\modules\repayment\models\RefundClaimant::findOne(['refund_claimant_id' => $id]);
             $file = $att->f4_certificate_document;
@@ -2312,6 +2326,32 @@ class SiteController extends Controller {
             $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
             $file = $att->claimant_letter_document;
         }
+        if($attachmentType==$Letter_from_social_security) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->social_fund_document;
+        }
+        if($attachmentType==$RECEIPT_FROM_SOCIAL_FUND) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->social_fund_receipt_document;
+        }
+
+        if($attachmentType==$Liquidation_letter) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->liquidation_letter_document;
+        }
+        if($attachmentType==$Letter_from_court) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->court_letter_certificate_document;
+        }
+        if($attachmentType==$Letter_of_family_session) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->letter_family_session_document;
+        }
+        if($attachmentType==$Death_Certificate_Document) {
+            $att = \frontend\modules\repayment\models\RefundApplication::findOne(['refund_application_id' => $id]);
+            $file = $att->death_certificate_document;
+        }
+
 
         //echo $file;exit;
         if (file_exists($file)) {
@@ -2571,5 +2611,23 @@ class SiteController extends Controller {
                 'model' => $model,
             ]);
         }
+    }
+    public function actionPrintapplicationform($refundapplicationid,$refundType)
+    {
+        if($refundType == 1 ){
+        $view = 'refund_application_details_pdf';
+
+    }
+        if($refundType == 2 ){
+            $view = 'refund_application_over_deducted_pdf';
+
+        }
+        if($refundType == 3 ){
+            $view = 'refund_application_deceased_pdf';
+
+        }
+        return $this->render($view, [
+            'refundapplicationid'=>$refundapplicationid,
+        ]);
     }
 }
